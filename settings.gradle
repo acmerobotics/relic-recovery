@@ -1,1 +1,2 @@
-include ':app'
+include ':TeamCode', ':FtcRobotController'
+project(':FtcRobotController').projectDir = new File('ftc_app/FtcRobotController')

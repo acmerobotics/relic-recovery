@@ -28,7 +28,7 @@ android {
         debug {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
-            storeFile rootProject.file('libs/ftc.debug.keystore')
+            storeFile rootProject.file('ftc_app/libs/ftc.debug.keystore')
             storePassword 'android'
         }
     }
@@ -91,13 +91,13 @@ android {
 
     sourceSets.main {
         jni.srcDirs = []
-        jniLibs.srcDir rootProject.file('libs')
+        jniLibs.srcDir rootProject.file('ftc_app/libs')
     }
 }
 
 repositories {
     flatDir {
-        dirs rootProject.file('libs')
+        dirs rootProject.file('ftc_app/libs')
     }
 }
 apply from: 'build.release.gradle'

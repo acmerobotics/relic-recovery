@@ -8,7 +8,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/TeamCode" />
+            <option value="$PROJECT_DIR$/ftc_app/FtcRobotController" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
