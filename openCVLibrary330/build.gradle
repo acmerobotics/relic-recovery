@@ -1,0 +1,15 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '25.0.3'
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 23
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}

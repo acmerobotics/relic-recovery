@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$/RobotLib" />
             <option value="$PROJECT_DIR$/TeamCode" />
             <option value="$PROJECT_DIR$/ftc_app/FtcRobotController" />
+            <option value="$PROJECT_DIR$/openCVLibrary330" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
