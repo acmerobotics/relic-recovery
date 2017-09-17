@@ -1,0 +1,43 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '25.0.0'
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile(name: 'RobotCore-release', ext: 'aar')
+    compile(name: 'Hardware-release', ext: 'aar')
+    compile(name: 'FtcCommon-release', ext: 'aar')
+    compile(name: 'Analytics-release', ext: 'aar')
+    compile(name: 'WirelessP2p-release', ext: 'aar')
+
+    // already in a jar
+//    compile 'org.nanohttpd:nanohttpd:2.3.1'
+//    compile('org.nanohttpd:nanohttpd-webserver:2.3.1') {
+//        exclude module: 'nanohttpd'
+//    }
+    compile('org.nanohttpd:nanohttpd-websocket:2.3.1') {
+        exclude module: 'nanohttpd'
+    }
+    compile 'org.eclipse.jetty.websocket:websocket-client:9.3.0.M2'
+    // already in a jar
+//    compileOnly 'com.google.code.gson:gson:2.8.0'
+
+    compile('com.android.support:support-v13:23.4.0') {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    }
+
+    testCompile 'junit:junit:4.12'
+}

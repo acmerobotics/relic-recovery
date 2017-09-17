@@ -1,4 +1,5 @@
 dependencies {
+    compile project(':RobotLib')
     compile (name:'Inspection-release', ext: 'aar')
     compile (name:'Blocks-release', ext: 'aar')
     compile (name:'RobotCore-release', ext: 'aar')

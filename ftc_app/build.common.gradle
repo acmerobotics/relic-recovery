@@ -93,6 +93,10 @@ android {
         jni.srcDirs = []
         jniLibs.srcDir rootProject.file('ftc_app/libs')
     }
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 repositories {

@@ -3,8 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ftc_app/FtcRobotController/FtcRobotController.iml" filepath="$PROJECT_DIR$/ftc_app/FtcRobotController/FtcRobotController.iml" />
-      <module fileurl="file://$PROJECT_DIR$/TeamCode/app.iml" filepath="$PROJECT_DIR$/TeamCode/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/relic-recovery2.iml" filepath="$PROJECT_DIR$/relic-recovery2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RobotLib/RobotLib.iml" filepath="$PROJECT_DIR$/RobotLib/RobotLib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/TeamCode/TeamCode.iml" filepath="$PROJECT_DIR$/TeamCode/TeamCode.iml" />
+      <module fileurl="file://$PROJECT_DIR$/relic-recovery.iml" filepath="$PROJECT_DIR$/relic-recovery.iml" />
     </modules>
   </component>
 </project>
