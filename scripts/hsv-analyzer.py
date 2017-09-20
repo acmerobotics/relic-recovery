@@ -1,9 +1,11 @@
 import cv2
 from matplotlib import pyplot as plt
 
-IMAGE_FILENAME = 'cryptobox/blue001.jpg'
+IMAGE_FILENAME = 'cryptobox/red004.jpg'
+WIDTH, HEIGHT = 576, 480 # 4:3 aspect ratio
 
 image = cv2.imread(IMAGE_FILENAME)
+image = cv2.resize(image, (WIDTH, HEIGHT), interpolation=cv2.INTER_CUBIC)
 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 hue_hist = cv2.calcHist([hsv], [0], None, [180], [0, 180])
 
