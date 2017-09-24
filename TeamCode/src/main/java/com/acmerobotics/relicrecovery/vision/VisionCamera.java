@@ -79,10 +79,16 @@ public class VisionCamera {
                             this.frame.put(0, 0, frameBuffer);
                             Imgproc.cvtColor(this.frame, this.frame, Imgproc.COLOR_RGB2BGR);
 
-                            onFrame(this.frame);
+                            onFrame(this.frame, vuforiaFrame.getTimeStamp());
                         }
                     }
                     vuforiaFrame.close();
+
+                    try {
+                        Thread.sleep(2);
+                    } catch (InterruptedException e) {
+                        Log.w(TAG, e);
+                    }
                 }
             }
         }
@@ -155,9 +161,9 @@ public class VisionCamera {
         }
     }
 
-    private synchronized void onFrame(Mat frame) {
+    private synchronized void onFrame(Mat frame, double timestamp) {
         for (Tracker tracker : trackers) {
-            tracker.processFrame(frame);
+            tracker.processFrame(frame, timestamp);
         }
 
         overlayView.postInvalidate();

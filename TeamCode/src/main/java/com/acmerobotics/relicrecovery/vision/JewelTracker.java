@@ -30,7 +30,7 @@ public class JewelTracker implements Tracker {
     }
 
     @Override
-    public synchronized void processFrame(Mat frame) {
+    public synchronized void processFrame(Mat frame, double timestamp) {
         if (jewelPlatformRect == null) {
             int imageWidth = frame.width(), imageHeight = frame.height();
             int platformWidth = imageWidth / 2;
