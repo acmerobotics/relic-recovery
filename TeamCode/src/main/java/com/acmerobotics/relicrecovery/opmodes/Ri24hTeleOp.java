@@ -1,6 +1,11 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
+import com.acmerobotics.library.localization.Angle;
+import com.acmerobotics.library.localization.Pose;
+import com.acmerobotics.library.localization.Twist;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
+import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +27,13 @@ public class Ri24hTeleOp extends OpMode {
     private Servo leftGrabber, rightGrabber;
     private DcMotor grabberMotor, leftFront, rightFront, leftRear, rightRear;
 
+    BNO055IMU imu;
+
+    private Pose pose;
+    double lastHeading = 0;
+    double leftLast = 0;
+    double rightLast = 0;
+
     private StickyGamepad stickyGamepad1, stickyGamepad2;
     private boolean grabberClosed, grabberHalfSpeed, driveHalfSpeed;
 
@@ -42,10 +54,39 @@ public class Ri24hTeleOp extends OpMode {
 
         leftGrabber = hardwareMap.servo.get("leftGrabber");
         rightGrabber = hardwareMap.servo.get("rightGrabber");
+
+        pose = new Pose(0, 0, new Angle(0));
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        lastHeading = imu.getAngularOrientation().firstAngle;
+        rightLast = rightRear.getCurrentPosition();
+        leftLast = leftRear.getCurrentPosition();
     }
 
     @Override
     public void loop() {
+
+        double heading = imu.getAngularOrientation().firstAngle;
+        double left = leftFront.getCurrentPosition();
+        double right = rightFront.getCurrentPosition();
+        double dl = left - leftLast;
+        double dr = right - rightLast;
+        Twist update = Twist.fromArcHeading((dl + dr) / 2, new Angle(lastHeading), new Angle(heading));
+        lastHeading = heading;
+        leftLast = left;
+        rightLast = right;
+
+        pose.addTwist(update);
+        telemetry.addData("encoderLeft", left);
+        telemetry.addData("encoderRight", right);
+        telemetry.addData("position", pose.x() + ", " + pose.y());
+        telemetry.addData("speeds", (dl + dr) / 2);
+        telemetry.addData("heading", pose.theta().value());
+
         stickyGamepad1.update();
         stickyGamepad2.update();
 
