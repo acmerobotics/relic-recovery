@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.vision;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -39,17 +40,26 @@ import static com.acmerobotics.relicrecovery.vision.VisionConstants.SMALL_DIMENS
  */
 
 public class CryptoboxTracker implements Tracker {
-    private CryptoboxResult lastBlueResult, lastRedResult;
+    public static final String TAG = "CryptoboxTracker";
+
+    private CryptoboxResult latestResult;
     private int actualWidth, actualHeight;
     private Paint paint;
-    private Mat resized, hsv, red, blue, temp, morphedMask, morphedMask2, openKernel, closeKernel, hierarchy;
+    private Mat resized, hsv, red, blue, temp, morphedMask, openKernel, closeKernel, hierarchy;
+
+    public enum CryptoboxColor {
+        BLUE,
+        RED
+    }
 
     public static class CryptoboxResult {
+        public final CryptoboxColor color;
         public final List<MatOfPoint> contours;
         public final List<Double> lineXs;
         public final double timestamp;
 
-        public CryptoboxResult(List<MatOfPoint> contours, List<Double> lineXs, double timestamp) {
+        public CryptoboxResult(CryptoboxColor color, List<MatOfPoint> contours, List<Double> lineXs, double timestamp) {
+            this.color = color;
             this.contours = contours;
             this.lineXs = lineXs;
             this.timestamp = timestamp;
@@ -76,19 +86,18 @@ public class CryptoboxTracker implements Tracker {
     }
 
 
-    private CryptoboxResult findCryptobox(Mat src, double timestamp) {
+    private CryptoboxResult findCryptobox(Mat src, CryptoboxColor color, double timestamp) {
         List<MatOfPoint> contours = new ArrayList<>();
 
         if (morphedMask == null) {
             morphedMask = new Mat();
-            morphedMask2 = new Mat();
             openKernel = Mat.ones(OPEN_KERNEL_SIZE, OPEN_KERNEL_SIZE, CvType.CV_8U);
             closeKernel = Mat.ones(CLOSE_KERNEL_SIZE, CLOSE_KERNEL_SIZE, CvType.CV_8U);
             hierarchy = new Mat();
         }
 
         Imgproc.morphologyEx(src, morphedMask, Imgproc.MORPH_OPEN, openKernel);
-        Imgproc.morphologyEx(morphedMask, morphedMask2, Imgproc.MORPH_CLOSE, closeKernel);
+        Imgproc.morphologyEx(morphedMask, morphedMask, Imgproc.MORPH_CLOSE, closeKernel);
         Imgproc.findContours(morphedMask, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
         List<Double> lineXs = new ArrayList<>();
@@ -127,10 +136,10 @@ public class CryptoboxTracker implements Tracker {
                 count++;
             }
             mergedXs.add(total / count);
-            return new CryptoboxResult(contours, mergedXs, timestamp);
+            return new CryptoboxResult(color, contours, mergedXs, timestamp);
         }
 
-        return new CryptoboxResult(contours, lineXs, timestamp);
+        return new CryptoboxResult(color, contours, lineXs, timestamp);
     }
 
     @Override
@@ -167,8 +176,14 @@ public class CryptoboxTracker implements Tracker {
         Scalar blueUpperHsv = new Scalar(BLUE_UPPER_HUE, BLUE_UPPER_SAT, BLUE_UPPER_VALUE);
         smartHsvRange(hsv, blueLowerHsv, blueUpperHsv, blue);
 
-        lastRedResult = findCryptobox(red, timestamp);
-        lastBlueResult = findCryptobox(blue, timestamp);
+        int blueCount = Core.countNonZero(blue);
+        int redCount = Core.countNonZero(red);
+        Log.i(TAG, String.format("Pixel counts: %d blue, %d red", blueCount, redCount));
+        if (blueCount > redCount) {
+            latestResult = findCryptobox(blue, CryptoboxColor.BLUE, timestamp);
+        } else {
+            latestResult = findCryptobox(red, CryptoboxColor.RED, timestamp);
+        }
     }
 
     public void drawCryptobox(Canvas canvas, CryptoboxResult result, Paint paint) {
@@ -186,22 +201,17 @@ public class CryptoboxTracker implements Tracker {
         canvas.scale((float) imageWidth / actualWidth, (float) imageHeight / actualHeight);
         canvas.translate(-actualWidth / 2.0f, -actualHeight / 2.0f);
 
-        if (lastRedResult != null) {
-            paint.setColor(Color.RED);
-            drawCryptobox(canvas, lastRedResult, paint);
-        }
-
-        if (lastBlueResult != null) {
-            paint.setColor(Color.BLUE);
-            drawCryptobox(canvas, lastBlueResult, paint);
+        if (latestResult != null) {
+            if (latestResult.color == CryptoboxColor.RED) {
+                paint.setColor(Color.RED);
+            } else {
+                paint.setColor(Color.BLUE);
+            }
+            drawCryptobox(canvas, latestResult, paint);
         }
     }
 
-    public synchronized CryptoboxResult getLastBlueResult() {
-        return lastBlueResult;
-    }
-
-    public synchronized CryptoboxResult getLastRedResult() {
-        return lastRedResult;
+    public synchronized CryptoboxResult getLatestResult() {
+        return latestResult;
     }
 }
