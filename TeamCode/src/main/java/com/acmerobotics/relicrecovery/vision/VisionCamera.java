@@ -43,6 +43,7 @@ public class VisionCamera {
 
     public class FrameConsumer extends Thread {
         private BlockingQueue<VuforiaLocalizer.CloseableFrame> frameQueue;
+        private List<VuforiaLocalizer.CloseableFrame> activeFrames;
         private Mat frame;
         private byte[] frameBuffer;
         private boolean running;
@@ -50,6 +51,7 @@ public class VisionCamera {
         public FrameConsumer(BlockingQueue<VuforiaLocalizer.CloseableFrame> frameQueue) {
             this.frameQueue = frameQueue;
             this.running = true;
+            this.activeFrames = new ArrayList<>();
         }
 
         @Override
@@ -57,12 +59,18 @@ public class VisionCamera {
             while (running) {
                 // grab frames and process them
                 if (!frameQueue.isEmpty()) {
-                    VuforiaLocalizer.CloseableFrame vuforiaFrame = null;
-                    try {
-                        vuforiaFrame = frameQueue.take();
-                    } catch (InterruptedException e) {
-                        Log.w(TAG, e);
+                    activeFrames.clear();
+                    frameQueue.drainTo(activeFrames);
+                    Log.i(TAG, "Drained " + activeFrames.size() + " frames");
+                    for (int i = 0; i < activeFrames.size() - 1; i++) {
+                        VuforiaLocalizer.CloseableFrame frame = activeFrames.get(i);
+                        Log.i(TAG, "Closing " + frame.getTimeStamp());
+                        frame.close();
                     }
+                    VuforiaLocalizer.CloseableFrame vuforiaFrame = activeFrames.get(activeFrames.size() - 1);
+                    Log.i(TAG, "Took " + vuforiaFrame.getTimeStamp());
+
+                    long startTime = System.currentTimeMillis();
                     for (int i = 0; i < vuforiaFrame.getNumImages(); i++) {
                         Image image = vuforiaFrame.getImage(i);
                         if (image.getFormat() == PIXEL_FORMAT.RGB888) {
@@ -83,12 +91,7 @@ public class VisionCamera {
                         }
                     }
                     vuforiaFrame.close();
-
-                    try {
-                        Thread.sleep(2);
-                    } catch (InterruptedException e) {
-                        Log.w(TAG, e);
-                    }
+                    Log.i(TAG, "Processed image in " + (System.currentTimeMillis() - startTime) + "ms");
                 }
             }
         }
@@ -139,7 +142,7 @@ public class VisionCamera {
         this.vuforia = ClassFactory.createVuforiaLocalizer(VisionConstants.VUFORIA_PARAMETERS);
 
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true);
-        vuforia.setFrameQueueCapacity(10);
+        vuforia.setFrameQueueCapacity(25);
 
         frameConsumer = new FrameConsumer(vuforia.getFrameQueue());
         frameConsumer.start();
