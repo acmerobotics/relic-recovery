@@ -10,7 +10,6 @@ import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.R;
@@ -59,6 +58,7 @@ public class VisionCamera {
             while (running) {
                 // grab frames and process them
                 if (!frameQueue.isEmpty()) {
+                    // TODO handle the frame queue better
                     activeFrames.clear();
                     frameQueue.drainTo(activeFrames);
                     Log.i(TAG, "Drained " + activeFrames.size() + " frames");
@@ -101,10 +101,11 @@ public class VisionCamera {
         }
     }
 
-    public VisionCamera(Context context) {
+    public VisionCamera(Context context, VuforiaLocalizer vuforia) {
         this.context = context;
         this.trackers = new ArrayList<>();
-        overlayView = new OverlayView(context);
+        this.overlayView = new OverlayView(context);
+        this.vuforia = vuforia;
     }
 
     public synchronized void addTracker(Tracker tracker) {
@@ -139,10 +140,8 @@ public class VisionCamera {
             }
         });
 
-        this.vuforia = ClassFactory.createVuforiaLocalizer(VisionConstants.VUFORIA_PARAMETERS);
-
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true);
-        vuforia.setFrameQueueCapacity(25);
+        vuforia.setFrameQueueCapacity(VisionConstants.FRAME_QUEUE_CAPACITY);
 
         frameConsumer = new FrameConsumer(vuforia.getFrameQueue());
         frameConsumer.start();
