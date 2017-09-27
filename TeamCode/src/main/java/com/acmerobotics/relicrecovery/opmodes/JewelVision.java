@@ -31,6 +31,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 import com.acmerobotics.relicrecovery.vision.JewelTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
+import com.acmerobotics.relicrecovery.vision.VisionUtil;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -45,6 +46,7 @@ public class JewelVision extends OpMode {
     public void init() {
         jewelTracker = new JewelTracker();
         camera = new VisionCamera(hardwareMap.appContext, ClassFactory.createVuforiaLocalizer(VisionConstants.VUFORIA_PARAMETERS));
+        camera.setImageDir(VisionUtil.getImageDir(this));
         camera.addTracker(jewelTracker);
         camera.initialize();
     }

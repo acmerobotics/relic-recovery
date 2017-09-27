@@ -3,16 +3,23 @@ package com.acmerobotics.relicrecovery.vision;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.os.Environment;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+
+import java.io.File;
 
 /**
  * Created by ryanbrott on 9/23/17.
  */
 
 public class VisionUtil {
+    public static final String BASE_DIRNAME = "ACME";
+
     public static void drawRect(Canvas canvas, Rect rect, Paint paint) {
         canvas.drawRect(rect.x, rect.y, rect.x + rect.width, rect.y + rect.height, paint);
     }
@@ -31,5 +38,12 @@ public class VisionUtil {
         }
         path.close();
         canvas.drawPath(path, paint);
+    }
+
+    public static File getImageDir(OpMode opMode) {
+        String dirName = opMode.getClass().getSimpleName() + "-images-" + System.currentTimeMillis();
+        File dir = new File(Environment.getExternalStorageDirectory(), new File(BASE_DIRNAME, dirName).getPath());
+        dir.mkdirs();
+        return dir;
     }
 }

@@ -18,8 +18,10 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,8 @@ public class VisionCamera {
     private OverlayView overlayView;
     private FrameConsumer frameConsumer;
     private List<Tracker> trackers;
+    private File imageDir;
+    private int imageNum;
 
     public class FrameConsumer extends Thread {
         private BlockingQueue<VuforiaLocalizer.CloseableFrame> frameQueue;
@@ -88,6 +92,12 @@ public class VisionCamera {
                             Imgproc.cvtColor(this.frame, this.frame, Imgproc.COLOR_RGB2BGR);
 
                             onFrame(this.frame, vuforiaFrame.getTimeStamp());
+
+                            if (imageDir != null) {
+                                String filename = imageNum + ".jpg";
+                                Imgcodecs.imwrite(new File(imageDir, filename).getPath(), this.frame);
+                                imageNum++;
+                            }
                         }
                     }
                     vuforiaFrame.close();
@@ -161,6 +171,10 @@ public class VisionCamera {
         } catch (InterruptedException e) {
             Log.w(TAG, e);
         }
+    }
+
+    public void setImageDir(File imageDir) {
+        this.imageDir = imageDir;
     }
 
     private synchronized void onFrame(Mat frame, double timestamp) {
