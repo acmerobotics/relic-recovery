@@ -28,7 +28,7 @@ public class Twist {
         System.out.println("chord length: " + chordLength);
         double dx = Math.cos(chordAngle.value()) * chordLength;
         double dy = Math.sin(chordAngle.value()) * chordLength;
-        return new Twist (dx, dy, theta);
+        return new Twist (direction * dx, direction * dy, theta);
     }
 
     public double dx() {

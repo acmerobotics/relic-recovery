@@ -24,6 +24,10 @@ public class Ri24hTeleOp extends OpMode {
     public static final double LEFT_CLOSED = 0;
     public static final double RIGHT_CLOSED = 0.750;
 
+    public static final double IN_PER_REV = 4 * Math.PI;
+    public static final double TICK_PER_REV = 90 * 4 * 60;
+    public static final double TICKS_PER_INCH = TICK_PER_REV / IN_PER_REV;
+
     private Servo leftGrabber, rightGrabber;
     private DcMotor grabberMotor, leftFront, rightFront, leftRear, rightRear;
 
@@ -63,16 +67,16 @@ public class Ri24hTeleOp extends OpMode {
         imu.initialize(parameters);
 
         lastHeading = imu.getAngularOrientation().firstAngle;
-        rightLast = rightRear.getCurrentPosition();
-        leftLast = leftRear.getCurrentPosition();
+        rightLast = rightRear.getCurrentPosition() / TICKS_PER_INCH;
+        leftLast = leftRear.getCurrentPosition() / TICKS_PER_INCH;
     }
 
     @Override
     public void loop() {
 
         double heading = imu.getAngularOrientation().firstAngle;
-        double left = leftFront.getCurrentPosition();
-        double right = rightFront.getCurrentPosition();
+        double left = leftFront.getCurrentPosition() / TICKS_PER_INCH;
+        double right = rightFront.getCurrentPosition() / TICKS_PER_INCH;
         double dl = left - leftLast;
         double dr = right - rightLast;
         Twist update = Twist.fromArcHeading((dl + dr) / 2, new Angle(lastHeading), new Angle(heading));
