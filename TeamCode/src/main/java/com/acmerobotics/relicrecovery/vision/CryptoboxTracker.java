@@ -16,7 +16,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_LOWER_HUE;
@@ -116,27 +115,6 @@ public class CryptoboxTracker implements Tracker {
             line.get(0, 0, params);
             lineXs.add((double) params[2]);
             i++;
-        }
-
-        if (lineXs.size() >= 4) {
-            Collections.sort(lineXs);
-            double width = lineXs.get(lineXs.size() - 1) - lineXs.get(0);
-            double meanColumnWidth = width / 4;
-            // merge lines that are close together
-            List<Double> mergedXs = new ArrayList<>();
-            double total = lineXs.get(0);
-            int count = 1;
-            for (int j = 1; j < lineXs.size(); j++) {
-                if (lineXs.get(j) - lineXs.get(j - 1) > meanColumnWidth / 4) {
-                    mergedXs.add(total / count);
-                    total = 0;
-                    count = 0;
-                }
-                total += lineXs.get(j);
-                count++;
-            }
-            mergedXs.add(total / count);
-            return new CryptoboxResult(color, contours, mergedXs, timestamp);
         }
 
         return new CryptoboxResult(color, contours, lineXs, timestamp);
