@@ -40,7 +40,7 @@ public class PIDController {
     }
 
     public double update(double error) {
-        return update(error, System.nanoTime() / Math.pow(10, 0));
+        return update(error, System.nanoTime() / Math.pow(10, 9));
     }
 
     /**
