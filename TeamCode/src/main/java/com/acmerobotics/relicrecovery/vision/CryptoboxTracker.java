@@ -77,7 +77,7 @@ public class CryptoboxTracker implements Tracker {
             if (temp == null) {
                 temp = new Mat();
             }
-            Core.inRange(src, new Scalar(0, lowerHsv.val[0], lowerHsv.val[1]), upperHsv, temp);
+            Core.inRange(src, new Scalar(0, lowerHsv.val[1], lowerHsv.val[2]), upperHsv, temp);
             Core.bitwise_or(dest, temp, dest);
         } else {
             Core.inRange(src, lowerHsv, upperHsv, dest);
