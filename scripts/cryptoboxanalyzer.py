@@ -39,6 +39,8 @@ for i, filename in enumerate(os.listdir(INPUT_DIR)):
     image = cv2.pyrDown(image)
     image = cv2.pyrDown(image)
 
+    image_height, image_width = image.shape[:2]
+
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     red = smart_hsv_range(hsv, RED_LOWER_HSV, RED_UPPER_HSV)
     blue = smart_hsv_range(hsv, BLUE_LOWER_HSV, BLUE_UPPER_HSV)
@@ -79,7 +81,6 @@ for i, filename in enumerate(os.listdir(INPUT_DIR)):
 
     cols.sort()
     if len(cols) > 1:
-        image_width = image.shape[1]
         col_width = (max(cols) - min(cols)) / (len(cols) - 1)
         focal_length_px = (image_width * 0.5) / tan(FOV_DEGREES * 0.5 * pi / 180)
         distance = (ACTUAL_COL_WIDTH * focal_length_px) / col_width
@@ -90,6 +91,10 @@ for i, filename in enumerate(os.listdir(INPUT_DIR)):
         # cv2.putText(output, str([int(i) for i in cols]), (5, 60), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
 
     # find glyphs
+
+    full_glyphs, potential_glyphs, partial_glyphs = [], [], []
+    glyph_width_sum, glyph_width_count = 0, 0
+
     for glyph_image, color in ((brown, BROWN), (gray, GRAY)):
         glyph_morph = cv2.morphologyEx(glyph_image, cv2.MORPH_OPEN, OPEN_KERNEL)
         glyph_morph = cv2.morphologyEx(glyph_morph, cv2.MORPH_CLOSE, CLOSE_KERNEL)
@@ -101,11 +106,43 @@ for i, filename in enumerate(os.listdir(INPUT_DIR)):
         for contour in glyph_contours:
             area = cv2.contourArea(contour)
             rect = cv2.boundingRect(contour)
-            print(rect)
             rect_area = rect[2] * rect[3]
-            print(area / rect_area)
+            aspect_ratio = rect[3] / rect[2]
+            aspect_ratio_int = round(aspect_ratio)
             if area / rect_area > 0.85:
-                cv2.rectangle(output, (4 * rect[0], 4 * rect[1]), (4 * (rect[0] + rect[2]), 4 * (rect[1] + rect[3])), (0, 255, 0), 10)
+                if abs(aspect_ratio_int - aspect_ratio) < 0.25:
+                    glyph_width, glyph_height = rect[2], rect[3] / aspect_ratio_int
+                    glyph_width_sum += glyph_width
+                    glyph_width_count += 1
+                    for j in range(aspect_ratio_int):
+                        x, y = rect[0], rect[1] + j * glyph_height
+                        full_glyphs.append((x, y, glyph_width, glyph_height))
+                else:
+                    potential_glyphs.append(rect)
+
+    if glyph_width_count > 0:
+        mean_glyph_size = glyph_width_sum / glyph_width_count
+
+        for rect in potential_glyphs:
+            if rect[0] != 0 and rect[1] != 0 and (rect[0] + rect[2]) != image_width and (rect[1] + rect[3]) != image_height:
+                continue
+
+            width_ratio = rect[2] / mean_glyph_size
+            width_ratio_int = round(width_ratio)
+            height_ratio = rect[3] / mean_glyph_size
+            height_ratio_int = round(height_ratio)
+
+            if abs(width_ratio - width_ratio_int) < 0.2 or abs(height_ratio - height_ratio_int) < 0.2:
+                partial_glyphs.append(rect)
+                cv2.rectangle(output, (int(4 * rect[0]), int(4 * rect[1])),
+                              (int(4 * (rect[0] + rect[2])), int(4 * (rect[1] + rect[3]))), (0, 127, 255), 10)
+            else:
+                cv2.rectangle(output, (int(4 * rect[0]), int(4 * rect[1])),
+                              (int(4 * (rect[0] + rect[2])), int(4 * (rect[1] + rect[3]))), (0, 0, 0), 10)
+
+    for rect in full_glyphs:
+        cv2.rectangle(output, (int(4 * rect[0]), int(4 * rect[1])),
+                      (int(4 * (rect[0] + rect[2])), int(4 * (rect[1] + rect[3]))), (0, 255, 0), 10)
 
     # cv2.imwrite('{}/{}_brown.jpg'.format(OUTPUT_DIR, base_name), brown)
     # cv2.imwrite('{}/{}_gray.jpg'.format(OUTPUT_DIR, base_name), gray)
