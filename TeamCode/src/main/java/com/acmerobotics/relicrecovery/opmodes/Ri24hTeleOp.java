@@ -69,28 +69,28 @@ public class Ri24hTeleOp extends OpMode {
             speedMultiplier = 1.0 / 3.0;
         }
 
-        double sum = Math.abs(axial + lateral);
-        if (sum > 1) {
-            axial /= sum;
-            lateral /= sum;
-        }
+            double sum = Math.abs(axial + lateral);
+            if (sum > 1) {
+                axial /= sum;
+                lateral /= sum;
+            }
 
-        double leftSpeed = axial - lateral;
-        double rightSpeed = axial + lateral;
+            double leftSpeed = axial - lateral;
+            double rightSpeed = axial + lateral;
 
-        leftSpeed *= speedMultiplier;
-        rightSpeed *= speedMultiplier;
+            leftSpeed *= speedMultiplier;
+            rightSpeed *= speedMultiplier;
 
-        leftFront.setPower(leftSpeed);
-        leftRear.setPower(leftSpeed);
-        rightFront.setPower(rightSpeed);
-        rightRear.setPower(rightSpeed);
+            leftFront.setPower(leftSpeed);
+            leftRear.setPower(leftSpeed);
+            rightFront.setPower(rightSpeed);
+            rightRear.setPower(rightSpeed);
 
-        if (stickyGamepad2.a) {
-            grabberClosed = !grabberClosed;
-        }
+            if (stickyGamepad2.a) {
+                grabberClosed = !grabberClosed;
+            }
 
-        if (grabberClosed) {
+            if (grabberClosed) {
             leftGrabber.setPosition(LEFT_CLOSED);
             rightGrabber.setPosition(RIGHT_CLOSED);
         } else {
