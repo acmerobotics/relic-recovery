@@ -139,40 +139,59 @@ for i, filename in enumerate(os.listdir(INPUT_DIR)):
 
         # find partial glyphs
         mean_glyph_size = None
-        partial_glyphs = []
+        partial_width_glyphs, partial_height_glyphs = [], []
+        left_overflow, right_overflow = False, False
 
         if glyph_width_count > 0:
             mean_glyph_size = glyph_width_sum / glyph_width_count
 
-            for rect in potential_glyphs:
-                if rect[0] != 0 and rect[1] != 0 and (rect[0] + rect[2]) != image_width and \
-                                (rect[1] + rect[3]) != image_height:
+            for x, y, width, height in potential_glyphs:
+                right_x = x + width
+                bottom_y = y + height
+
+                if x != 0 and y != 0 and right_x != image_width and bottom_y != image_height:
                     continue
 
-                width_ratio = rect[2] / mean_glyph_size
+                width_ratio = width / mean_glyph_size
                 width_ratio_int = round(width_ratio)
-                height_ratio = rect[3] / mean_glyph_size
+                height_ratio = height / mean_glyph_size
                 height_ratio_int = round(height_ratio)
 
                 if abs(width_ratio - width_ratio_int) < MAX_ASPECT_RATIO_ERROR \
                         or abs(height_ratio - height_ratio_int) < MAX_ASPECT_RATIO_ERROR:
-                    partial_glyphs.append(rect)
-                    cv2.rectangle(output, (int(4 * rect[0]), int(4 * rect[1])),
-                                  (int(4 * (rect[0] + rect[2])), int(4 * (rect[1] + rect[3]))), (0, 127, 255), 10)
+                    if x == 0:
+                        # partial width
+                        left_overflow = True
+                        partial_width_glyphs.append((x, y, width, height))
+                    elif right_x == image_width:
+                        # partial width
+                        right_overflow = True
+                        partial_width_glyphs.append((x, y, width, height))
+                    else:
+                        # partial height
+                        partial_height_glyphs.append((x, y, width, height))
+                    color = (0, 127, 255)
                 else:
-                    cv2.rectangle(output, (int(4 * rect[0]), int(4 * rect[1])),
-                                  (int(4 * (rect[0] + rect[2])), int(4 * (rect[1] + rect[3]))), (0, 0, 0), 10)
+                    color = (0, 0, 0)
+
+                cv2.rectangle(output, (int(4 * x), int(4 * y)), (int(4 * right_x), int(4 * bottom_y)), color, 10)
 
         # find rails from full glyphs
-        if len(full_glyphs) > 0:
+        full_width_glyphs = full_glyphs + partial_height_glyphs
+        if len(full_width_glyphs) > 0:
             glyph_rails = []
-            for x, y, width, height in full_glyphs:
+            for x, y, width, height in full_width_glyphs:
                 glyph_center = x + width / 2
                 rail_gap = width * ACTUAL_RAIL_GAP / ACTUAL_GLYPH_SIZE
                 left_rail = glyph_center - 0.5 * rail_gap
                 right_rail = glyph_center + 0.5 * rail_gap
                 glyph_rails.extend([left_rail, right_rail])
             glyph_rails = non_maximal_suppression(glyph_rails, mean_glyph_size / 4)
+            mean_glyph_rail_gap = sum(glyph_rails) / (len(glyph_rails) - 1)
+            if left_overflow:
+                glyph_rails.insert(0, glyph_rails[0] - mean_glyph_rail_gap)
+            if right_overflow:
+                glyph_rails.append(glyph_rails[-1] + mean_glyph_rail_gap)
             rails.extend(glyph_rails)
             rails = non_maximal_suppression(rails, 3 * mean_glyph_size / 8)
 
