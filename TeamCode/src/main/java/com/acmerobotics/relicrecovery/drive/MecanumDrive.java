@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -21,7 +22,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class MecanumDrive {
 
     /***
-     * K = (wheelbsae width + wheelbase height) / 4
+     * K = (wheelbase width + wheelbase height) / 4
      */
     public static double K = (18 + 18) / 4;
 
@@ -72,6 +73,24 @@ public class MecanumDrive {
         power[1] = vel.x() + vel.y() - K * omega;
         power[2] = vel.x() - vel.y() + K * omega;
         power[3] = vel.x() + vel.y() + K * omega;
+        for (int i = 0; i < 4; i++) {
+            motors[i].setPower(power[i]);
+        }
+    }
+
+    /**
+     * get distance traveled from encoder values
+     * @param rot
+     * @return
+     */
+    public static Pose2d getDelta (int[] rot) {
+        if (rot.length != 4) {
+            throw new IllegalArgumentException("length must be four");
+        }
+        double x = ( rot[0] + rot[1] + rot[2] + rot[3]) / 4;
+        double y = (-rot[0] + rot[1] - rot[2] + rot[3]) / 4;
+        double h = (-rot[0] - rot[1] + rot[2] + rot[3]) / (4 * MecanumDrive.K);
+        return new Pose2d(x, y, h);
     }
 
     public void resetEncoders() {
