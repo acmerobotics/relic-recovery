@@ -11,6 +11,7 @@ import com.google.gson.JsonPrimitive;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,6 +64,9 @@ public class OptionGroup {
             obj.add("name", new JsonPrimitive(name));
             JsonArray options = new JsonArray();
             for (Field f : klass.getFields()) {
+                if (Modifier.isFinal(f.getModifiers())) {
+                    continue;
+                }
                 JsonObject option = new JsonObject();
                 option.add("name", new JsonPrimitive(f.getName()));
                 Class<?> type = f.getType();

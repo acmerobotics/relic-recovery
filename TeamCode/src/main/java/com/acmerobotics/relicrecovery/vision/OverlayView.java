@@ -58,7 +58,11 @@ public class OverlayView extends View {
 
         // draw
         for (Tracker tracker : trackers) {
+            canvas.save();
+
             tracker.drawOverlay(canvas, imageWidth, imageHeight);
+
+            canvas.restore();
         }
     }
 }

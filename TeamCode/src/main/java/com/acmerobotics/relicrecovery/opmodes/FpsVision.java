@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
+import com.acmerobotics.relicrecovery.vision.VisionUtil;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -19,6 +20,7 @@ public class FpsVision extends OpMode {
         camera = new VisionCamera(hardwareMap.appContext);
         fpsTracker = new FpsTracker();
         camera.addTracker(fpsTracker);
+        camera.setImageDir(VisionUtil.getImageDir(this));
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
     }
 

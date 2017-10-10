@@ -48,6 +48,8 @@ public class VisionCamera {
     private int imageNum;
 
     public class FrameConsumer extends Thread {
+        public static final String TAG = "FrameConsumer";
+
         private BlockingQueue<VuforiaLocalizer.CloseableFrame> frameQueue;
         private List<VuforiaLocalizer.CloseableFrame> activeFrames;
         private Mat frame;
@@ -95,6 +97,7 @@ public class VisionCamera {
                                 }
                             }
                             this.frame.put(0, 0, frameBuffer);
+
                             Imgproc.cvtColor(this.frame, this.frame, Imgproc.COLOR_RGB2BGR);
 
                             if (vuforiaParams.cameraDirection == VuforiaLocalizer.CameraDirection.FRONT) {

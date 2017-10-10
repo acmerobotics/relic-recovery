@@ -31,8 +31,6 @@ MAX_ASPECT_RATIO_ERROR, MIN_RECT_FILL = 0.2, 0.85
 
 OPEN_KERNEL_SIZE, CLOSE_KERNEL_SIZE = 5, 5
 
-MIN_DIMENSION = 360
-
 ACTUAL_RAIL_GAP = 7.5  # in
 ACTUAL_GLYPH_SIZE = 6.0  # in
 FOV_DEGREES = 58.5  # deg
@@ -70,10 +68,9 @@ for i, filename in enumerate(os.listdir(INPUT_DIR)):
 
     # color conversion and thresholding
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
     red = smart_hsv_range(hsv, RED_LOWER_HSV, RED_UPPER_HSV)
     blue = smart_hsv_range(hsv, BLUE_LOWER_HSV, BLUE_UPPER_HSV)
-    brown = smart_hsv_range(hsv, BROWN_LOWER_HSV, BROWN_UPPER_HSV)
-    gray = smart_hsv_range(hsv, GRAY_LOWER_HSV, GRAY_UPPER_HSV)
 
     # pick either red or blue to analyze
     red_count = cv2.countNonZero(red)
@@ -108,6 +105,9 @@ for i, filename in enumerate(os.listdir(INPUT_DIR)):
             rails.append(centroid_x)
 
     if EXTENDED_TRACKING:
+        brown = smart_hsv_range(hsv, BROWN_LOWER_HSV, BROWN_UPPER_HSV)
+        gray = smart_hsv_range(hsv, GRAY_LOWER_HSV, GRAY_UPPER_HSV)
+
         # find glyphs
         full_glyphs, potential_glyphs = [], []
         glyph_width_sum, glyph_width_count = 0, 0
