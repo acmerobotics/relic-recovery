@@ -74,7 +74,6 @@ public class Ri24hTeleOp extends OpMode {
             axial /= sum;
             lateral /= sum;
         }
-
         double leftSpeed = axial - lateral;
         double rightSpeed = axial + lateral;
 
