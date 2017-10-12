@@ -138,11 +138,10 @@ public class CryptoboxTracker implements Tracker {
 
     /**
      * Replace groups of values within the threshold with their means (thin out duplicate
-     * detections). Note: this requires a sorted array and preserves that ordering.
+     * detections). Note: this requires a sorted array and preserves the sorting.
      * @link https://www.pyimagesearch.com/2014/11/17/non-maximum-suppression-object-detection-python/
      * @param values
      * @param threshold
-     * @return merged values
      */
     public static List<Double> nonMaximumSuppression(List<Double> values, double threshold) {
         List<Double> outputValues = new ArrayList<>();
@@ -161,15 +160,6 @@ public class CryptoboxTracker implements Tracker {
         outputValues.add(total / count);
         return outputValues;
     }
-
-    // TODO: remove?
-//    public static double getMean(List<Double> rails) {
-//        double mean = 0;
-//        for (double rail : rails) {
-//            mean += rail;
-//        }
-//        return mean / rails.size();
-//    }
 
     /**
      * Compute the mean rail gap given a sequence of rail x-coordinates
@@ -464,7 +454,16 @@ public class CryptoboxTracker implements Tracker {
             rails = nonMaximumSuppression(rails, 3 * meanRailGap / 8);
         }
 
-        // TODO special 3-rail logic
+        if (rails.size() == 3) {
+            double meanRailGap = getMeanRailGap(rails);
+            if (rails.get(0) < meanRailGap && (actualWidth - rails.get(2)) > meanRailGap) {
+                // likely extra rail on the left
+                rails.add(0, rails.get(0) - meanRailGap);
+            } else if (rails.get(0) > meanRailGap && (actualWidth - rails.get(2)) < meanRailGap) {
+                // likely extra rail on the right
+                rails.add(rails.get(2) + meanRailGap);
+            }
+        }
 
         // calculate the distance and horizontal offset of the cryptobox
         double distance = Double.NaN, offsetX = Double.NaN;
