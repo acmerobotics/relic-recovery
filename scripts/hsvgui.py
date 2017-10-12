@@ -35,6 +35,9 @@ def save_hsv_value(event, x, y, flags, param):
 
 
 for filename in os.listdir(INPUT_DIR):
+    if filename.startswith("."):
+        continue
+
     image = cv2.imread(INPUT_DIR + filename)
     print(image.shape)
 

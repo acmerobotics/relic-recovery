@@ -62,13 +62,14 @@ public class CryptoboxTracker implements Tracker {
     public static final String TAG = "CryptoboxTracker";
 
     private CryptoboxResult latestResult;
+    private List<Glyph> latestGlyphs;
     private int actualWidth, actualHeight;
     private Paint paint;
     private Mat resized, hsv, red, blue, brown, gray;
     private Mat temp, morph, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
     private boolean useExtendedTracking, initialized;
-    private double fov; // rad
+    private double focalLengthPx; // px
 
     public enum CryptoboxColor {
         BLUE,
@@ -114,6 +115,14 @@ public class CryptoboxTracker implements Tracker {
         this.useExtendedTracking = useExtendedTracking;
     }
 
+    /**
+     * Thresholds an HSV image. If the lower hue is greater than the upper hue, it thresholds from
+     * 0 to the lower hue and from the upper hue to 180.
+     * @param src
+     * @param lowerHsv
+     * @param upperHsv
+     * @param dest
+     */
     private void smartHsvRange(Mat src, Scalar lowerHsv, Scalar upperHsv, Mat dest) {
         if (lowerHsv.val[0] > upperHsv.val[0]) {
             Core.inRange(src, lowerHsv, new Scalar(180, upperHsv.val[1], upperHsv.val[2]), dest);
@@ -127,8 +136,15 @@ public class CryptoboxTracker implements Tracker {
         }
     }
 
-    public static List<Double> nonMaximalSuppression(List<Double> values, double threshold) {
-        Collections.sort(values);
+    /**
+     * Replace groups of values within the threshold with their means (thin out duplicate
+     * detections). Note: this requires a sorted array and preserves that ordering.
+     * @link https://www.pyimagesearch.com/2014/11/17/non-maximum-suppression-object-detection-python/
+     * @param values
+     * @param threshold
+     * @return merged values
+     */
+    public static List<Double> nonMaximumSuppression(List<Double> values, double threshold) {
         List<Double> outputValues = new ArrayList<>();
         double count = 1, total = values.get(0), lastValue = values.remove(0);
         for (double value : values) {
@@ -146,24 +162,46 @@ public class CryptoboxTracker implements Tracker {
         return outputValues;
     }
 
+    // TODO: remove?
+//    public static double getMean(List<Double> rails) {
+//        double mean = 0;
+//        for (double rail : rails) {
+//            mean += rail;
+//        }
+//        return mean / rails.size();
+//    }
+
+    /**
+     * Compute the mean rail gap given a sequence of rail x-coordinates
+     * @param rails
+     * @return mean rail gap
+     */
+    public static double getMeanRailGap(List<Double> rails) {
+        if (rails.size() < 2) {
+            throw new IllegalArgumentException("Two rails are required to compute the mean rail gap");
+        }
+
+        double min = rails.get(0), max = rails.get(0);
+        for (int i = 1; i < rails.size(); i++) {
+            double rail = rails.get(i);
+            if (rail < min) {
+                min = rail;
+            }
+            if (rail > max) {
+                max = rail;
+            }
+        }
+
+        return (max - min) / (rails.size() - 1);
+    }
+
+    /**
+     * Detect cryptobox-rail-shaped color blobs in an image.
+     * @param mask
+     * @return detected rail x-coordinates
+     */
     public List<Double> analyzeCryptobox(Mat mask) {
         List<Double> rails = new ArrayList<>();
-
-        if (openKernel == null || openKernelSize != OPEN_KERNEL_SIZE) {
-            if (openKernel != null) {
-                openKernel.release();
-            }
-            openKernel = Mat.ones(OPEN_KERNEL_SIZE, OPEN_KERNEL_SIZE, CvType.CV_8U);
-            openKernelSize = OPEN_KERNEL_SIZE;
-        }
-
-        if (closeKernel == null || closeKernelSize != CLOSE_KERNEL_SIZE) {
-            if (closeKernel != null) {
-                closeKernel.release();
-            }
-            closeKernel = Mat.ones(CLOSE_KERNEL_SIZE, CLOSE_KERNEL_SIZE, CvType.CV_8U);
-            closeKernelSize = CLOSE_KERNEL_SIZE;
-        }
 
         Imgproc.morphologyEx(mask, morph, Imgproc.MORPH_OPEN, openKernel);
         Imgproc.morphologyEx(morph, morph, Imgproc.MORPH_CLOSE, closeKernel);
@@ -185,6 +223,11 @@ public class CryptoboxTracker implements Tracker {
         return rails;
     }
 
+    /**
+     * Find glyphs in an image (including partial ones).
+     * @param mask
+     * @return detected glyphs
+     */
     public List<Glyph> findGlyphs(Mat mask) {
         List<Glyph> glyphs = new ArrayList<>();
 
@@ -248,6 +291,11 @@ public class CryptoboxTracker implements Tracker {
         return glyphs;
     }
 
+    /**
+     * Find rails based on glyph detections
+     * @param glyphs
+     * @return detected rail x-coordinates
+     */
     public List<Double> findRailsFromGlyphs(List<Glyph> glyphs) {
         List<Double> rails = new ArrayList<>();
 
@@ -276,6 +324,8 @@ public class CryptoboxTracker implements Tracker {
         }
         meanRailGap /= count;
 
+        Collections.sort(rails);
+
         if (leftOverflow) {
             rails.add(0, rails.get(0) - meanRailGap);
         }
@@ -285,7 +335,7 @@ public class CryptoboxTracker implements Tracker {
         }
 
         if (rails.size() > 0) {
-            rails = nonMaximalSuppression(rails, 3 * meanRailGap / 8);
+            rails = nonMaximumSuppression(rails, 3 * meanRailGap / 8);
         }
 
         return rails;
@@ -293,13 +343,14 @@ public class CryptoboxTracker implements Tracker {
 
     @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
+        actualWidth = frame.cols() / 4;
+        actualHeight = frame.rows() / 4;
+
         if (!initialized) {
             CameraCalibration cameraCalibration = CameraDevice.getInstance().getCameraCalibration();
-            fov = cameraCalibration.getFieldOfViewRads().getData()[0];
-            initialized = true;
-        }
+            double fov = cameraCalibration.getFieldOfViewRads().getData()[0];
+            focalLengthPx = (actualWidth * 0.5) / Math.tan(0.5 * fov);
 
-        if (resized == null) {
             resized = new Mat();
             hsv = new Mat();
             red = new Mat();
@@ -308,10 +359,25 @@ public class CryptoboxTracker implements Tracker {
             gray = new Mat();
             morph = new Mat();
             hierarchy = new Mat();
+
+            initialized = true;
         }
 
-        actualWidth = frame.cols() / 4;
-        actualHeight = frame.rows() / 4;
+        if (openKernel == null || openKernelSize != OPEN_KERNEL_SIZE) {
+            if (openKernel != null) {
+                openKernel.release();
+            }
+            openKernel = Mat.ones(OPEN_KERNEL_SIZE, OPEN_KERNEL_SIZE, CvType.CV_8U);
+            openKernelSize = OPEN_KERNEL_SIZE;
+        }
+
+        if (closeKernel == null || closeKernelSize != CLOSE_KERNEL_SIZE) {
+            if (closeKernel != null) {
+                closeKernel.release();
+            }
+            closeKernel = Mat.ones(CLOSE_KERNEL_SIZE, CLOSE_KERNEL_SIZE, CvType.CV_8U);
+            closeKernelSize = CLOSE_KERNEL_SIZE;
+        }
 
         Imgproc.pyrDown(frame, resized);
         Imgproc.pyrDown(resized, resized);
@@ -328,14 +394,31 @@ public class CryptoboxTracker implements Tracker {
 
         List<Double> rails = new ArrayList<>();
 
+        CryptoboxColor cryptoboxColor = CryptoboxColor.UNKNOWN;
+
         List<Double> redRails = analyzeCryptobox(red);
         List<Double> blueRails = analyzeCryptobox(blue);
 
-        // TODO: do some weird checking
+        if (redRails.size() > blueRails.size()) {
+            rails.addAll(redRails);
+        } else if (blueRails.size() > redRails.size()) {
+            rails.addAll(blueRails);
+        } else {
+            int redCount = Core.countNonZero(red);
+            int blueCount = Core.countNonZero(blue);
 
-        rails.addAll(redRails);
-        rails.addAll(blueRails);
+            if (redCount > blueCount) {
+                cryptoboxColor = CryptoboxColor.RED;
+                rails.addAll(redRails);
+            } else {
+                cryptoboxColor = CryptoboxColor.BLUE;
+                rails.addAll(blueRails);
+            }
+        }
 
+        Collections.sort(rails);
+
+        List<Double> glyphRails = new ArrayList<>();
         if (useExtendedTracking) {
             Scalar brownLowerHsv = new Scalar(BROWN_LOWER_HUE, BROWN_LOWER_SAT, BROWN_LOWER_VALUE);
             Scalar brownUpperHsv = new Scalar(BROWN_UPPER_HUE, BROWN_UPPER_SAT, BROWN_UPPER_VALUE);
@@ -348,37 +431,61 @@ public class CryptoboxTracker implements Tracker {
             List<Glyph> brownGlyphs = findGlyphs(brown);
             List<Glyph> grayGlyphs = findGlyphs(gray);
 
+            if (latestGlyphs == null) {
+                latestGlyphs = new ArrayList<>();
+            } else {
+                latestGlyphs.clear();
+            }
+            latestGlyphs.addAll(brownGlyphs);
+            latestGlyphs.addAll(grayGlyphs);
+
             List<Double> brownRails = findRailsFromGlyphs(brownGlyphs);
             List<Double> grayRails = findRailsFromGlyphs(grayGlyphs);
 
-            rails.addAll(brownRails);
-            rails.addAll(grayRails);
+            glyphRails.addAll(brownRails);
+            glyphRails.addAll(grayRails);
         }
 
-        Collections.sort(rails);
+        // combine all the rails
+        if (glyphRails.size() == 0 || rails.size() == 0) {
+            // no NMS needed
+            rails.addAll(glyphRails);
+        } else if (glyphRails.size() == 1 && rails.size() == 1) {
+            // do nothing
+        } else {
+            // normal NMS
+            double meanRailGap;
+            if (rails.size() > 1) {
+                meanRailGap = getMeanRailGap(rails);
+            } else {
+                meanRailGap = getMeanRailGap(glyphRails);
+            }
+            rails.addAll(glyphRails);
+            rails = nonMaximumSuppression(rails, 3 * meanRailGap / 8);
+        }
 
-        // TODO: final rail NMS
+        // TODO special 3-rail logic
 
-        // TODO: work on NMS first !!!
-//        double distance = Double.NaN, offsetX = Double.NaN;
-//        if (rails.size() > 1) {
-//            double maxRail = rails.get(rails.size() - 1);
-//            double minRail = rails.get(0);
-//            double railGap = (maxRail - minRail) / (rails.size() - 1);
-//            double focalLengthPx = (actualWidth * 0.5) / Math.tan(0.5 * fov);
-//            distance = (ACTUAL_RAIL_GAP * focalLengthPx) / railGap;
-//            if (rails.size() == 4) {
-//                double center = (maxRail - minRail) / 2.0;
-//                offsetX = ((0.5 * actualWidth - center) * distance) / focalLengthPx;
-//            }
-//        }
+        // calculate the distance and horizontal offset of the cryptobox
+        double distance = Double.NaN, offsetX = Double.NaN;
+        if (rails.size() > 1) {
+            double maxRail = rails.get(rails.size() - 1);
+            double minRail = rails.get(0);
+            double railGap = (maxRail - minRail) / (rails.size() - 1);
+            distance = (ACTUAL_RAIL_GAP * focalLengthPx) / railGap;
+            if (rails.size() == 4) {
+                double center = (maxRail - minRail) / 2.0;
+                offsetX = ((0.5 * actualWidth - center) * distance) / focalLengthPx;
+            }
+        }
 
-        latestResult = new CryptoboxResult(CryptoboxColor.UNKNOWN, rails, 0, 0, timestamp);
+        latestResult = new CryptoboxResult(cryptoboxColor, rails, distance, offsetX, timestamp);
     }
 
     @Override
     public synchronized void drawOverlay(Canvas canvas, int imageWidth, int imageHeight) {
         if (latestResult != null) {
+            // draw text before the additional transformation
             paint.setStyle(Paint.Style.FILL_AND_STROKE);
             paint.setStrokeWidth(5.0f);
             paint.setTextSize(45.0f);
@@ -386,14 +493,32 @@ public class CryptoboxTracker implements Tracker {
 
             canvas.drawText(String.format("%.2f, %.2f", latestResult.distance, latestResult.offsetX), 5, 100, paint);
 
+            // transform the canvas to the dimensions of the resized image
             canvas.translate(imageWidth / 2.0f, imageHeight / 2.0f);
             canvas.scale((float) imageWidth / actualWidth, (float) imageHeight / actualHeight);
             canvas.translate(-actualWidth / 2.0f, -actualHeight / 2.0f);
 
             paint.setStyle(Paint.Style.STROKE);
+
+            // draw cryptobox
+            for (Glyph glyph : latestGlyphs) {
+                switch (glyph.type) {
+                    case FULL:
+                        paint.setColor(Color.GREEN);
+                        break;
+                    case PARTIAL_HEIGHT:
+                    case PARTIAL_WIDTH:
+                        // intentional fall through
+                        paint.setColor(Color.YELLOW);
+                        break;
+                }
+                VisionUtil.drawRect(canvas, glyph.rect, paint);
+            }
+
+            // draw rails
             switch (latestResult.color) {
                 case RED:
-                    paint.setColor(Color.YELLOW);
+                    paint.setColor(Color.MAGENTA);
                     break;
                 case BLUE:
                     paint.setColor(Color.CYAN);
@@ -406,16 +531,6 @@ public class CryptoboxTracker implements Tracker {
             for (double rail : latestResult.rails) {
                 VisionUtil.drawLine(canvas, new Point(rail, 0), new Point(rail, imageHeight), paint);
             }
-
-//            paint.setColor(Color.GREEN);
-//            for (Rect rect : latestFullGlyphs) {
-//                VisionUtil.drawRect(canvas, rect, paint);
-//            }
-//
-//            paint.setColor(Color.MAGENTA);
-//            for (Rect rect : latestPartialGlyphs) {
-//                VisionUtil.drawRect(canvas, rect, paint);
-//            }
         }
     }
 
