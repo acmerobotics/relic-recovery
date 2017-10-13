@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.vision;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
@@ -63,6 +64,7 @@ public class CryptoboxTracker implements Tracker {
 
     private CryptoboxResult latestResult;
     private List<Glyph> latestGlyphs;
+    private List<Rail> latestRawRails;
     private int actualWidth, actualHeight;
     private Paint paint;
     private Mat resized, hsv, red, blue, brown, gray;
@@ -108,6 +110,16 @@ public class CryptoboxTracker implements Tracker {
         }
     }
 
+    public static class Rail {
+        public final double x;
+        public final MatOfPoint contour;
+
+        public Rail(double x, MatOfPoint contour) {
+            this.x = x;
+            this.contour = contour;
+        }
+    }
+
     public CryptoboxTracker(boolean useExtendedTracking) {
         paint = new Paint();
         paint.setStrokeWidth(5.0f);
@@ -144,6 +156,7 @@ public class CryptoboxTracker implements Tracker {
      * @param threshold
      */
     public static List<Double> nonMaximumSuppression(List<Double> values, double threshold) {
+        Collections.sort(values);
         List<Double> outputValues = new ArrayList<>();
         double count = 1, total = values.get(0), lastValue = values.remove(0);
         for (double value : values) {
@@ -190,8 +203,8 @@ public class CryptoboxTracker implements Tracker {
      * @param mask
      * @return detected rail x-coordinates
      */
-    public List<Double> analyzeCryptobox(Mat mask) {
-        List<Double> rails = new ArrayList<>();
+    public List<Rail> analyzeCryptobox(Mat mask) {
+        List<Rail> rails = new ArrayList<>();
 
         Imgproc.morphologyEx(mask, morph, Imgproc.MORPH_OPEN, openKernel);
         Imgproc.morphologyEx(morph, morph, Imgproc.MORPH_CLOSE, closeKernel);
@@ -207,7 +220,7 @@ public class CryptoboxTracker implements Tracker {
             }
             Moments moments = Imgproc.moments(contour);
             double centroidX = moments.get_m10() / moments.get_m00();
-            rails.add(centroidX);
+            rails.add(new Rail(centroidX, contour));
         }
 
         return rails;
@@ -386,12 +399,36 @@ public class CryptoboxTracker implements Tracker {
 
         CryptoboxColor cryptoboxColor = CryptoboxColor.UNKNOWN;
 
-        List<Double> redRails = analyzeCryptobox(red);
-        List<Double> blueRails = analyzeCryptobox(blue);
+        if (latestRawRails == null) {
+            latestRawRails = new ArrayList<>();
+        } else {
+            latestRawRails.clear();
+        }
 
-        if (redRails.size() > blueRails.size()) {
+        List<Rail> rawRedRails = analyzeCryptobox(red);
+        List<Rail> rawBlueRails = analyzeCryptobox(blue);
+
+        latestRawRails.addAll(rawRedRails);
+        latestRawRails.addAll(rawBlueRails);
+
+        List<Double> redRails = new ArrayList<>();
+        for (Rail rawRail : rawRedRails) {
+            redRails.add(rawRail.x);
+        }
+
+        List<Double> blueRails = new ArrayList<>();
+        for (Rail rawRail : rawBlueRails) {
+            blueRails.add(rawRail.x);
+        }
+
+        Log.i(TAG, "Red rails: " + rawRedRails);
+        Log.i(TAG, "Blue rails: " + rawBlueRails);
+
+        if (rawRedRails.size() > rawBlueRails.size()) {
+            cryptoboxColor = CryptoboxColor.RED;
             rails.addAll(redRails);
-        } else if (blueRails.size() > redRails.size()) {
+        } else if (rawBlueRails.size() > rawRedRails.size()) {
+            cryptoboxColor = CryptoboxColor.BLUE;
             rails.addAll(blueRails);
         } else {
             int redCount = Core.countNonZero(red);
@@ -406,7 +443,7 @@ public class CryptoboxTracker implements Tracker {
             }
         }
 
-        Collections.sort(rails);
+        Log.i(TAG, "Combined rails: " + rails);
 
         List<Double> glyphRails = new ArrayList<>();
         if (useExtendedTracking) {
@@ -432,6 +469,9 @@ public class CryptoboxTracker implements Tracker {
             List<Double> brownRails = findRailsFromGlyphs(brownGlyphs);
             List<Double> grayRails = findRailsFromGlyphs(grayGlyphs);
 
+            Log.i(TAG, "Brown rails: " + brownRails);
+            Log.i(TAG, "Gray rails: " + grayRails);
+
             glyphRails.addAll(brownRails);
             glyphRails.addAll(grayRails);
         }
@@ -454,6 +494,10 @@ public class CryptoboxTracker implements Tracker {
             rails = nonMaximumSuppression(rails, 3 * meanRailGap / 8);
         }
 
+        Collections.sort(rails);
+
+        Log.i(TAG, "Glyph + normal rails: " + rails);
+
         if (rails.size() == 3) {
             double meanRailGap = getMeanRailGap(rails);
             if (rails.get(0) < meanRailGap && (actualWidth - rails.get(2)) > meanRailGap) {
@@ -468,12 +512,10 @@ public class CryptoboxTracker implements Tracker {
         // calculate the distance and horizontal offset of the cryptobox
         double distance = Double.NaN, offsetX = Double.NaN;
         if (rails.size() > 1) {
-            double maxRail = rails.get(rails.size() - 1);
-            double minRail = rails.get(0);
-            double railGap = (maxRail - minRail) / (rails.size() - 1);
-            distance = (ACTUAL_RAIL_GAP * focalLengthPx) / railGap;
+            double meanRailGap = getMeanRailGap(rails);
+            distance = (ACTUAL_RAIL_GAP * focalLengthPx) / meanRailGap;
             if (rails.size() == 4) {
-                double center = (maxRail - minRail) / 2.0;
+                double center = (Collections.max(rails) + Collections.min(rails)) / 2.0;
                 offsetX = ((0.5 * actualWidth - center) * distance) / focalLengthPx;
             }
         }
@@ -499,19 +541,29 @@ public class CryptoboxTracker implements Tracker {
 
             paint.setStyle(Paint.Style.STROKE);
 
-            // draw cryptobox
-            for (Glyph glyph : latestGlyphs) {
-                switch (glyph.type) {
-                    case FULL:
-                        paint.setColor(Color.GREEN);
-                        break;
-                    case PARTIAL_HEIGHT:
-                    case PARTIAL_WIDTH:
-                        // intentional fall through
-                        paint.setColor(Color.YELLOW);
-                        break;
+            // draw glyphs
+            if (latestGlyphs != null) {
+                for (Glyph glyph : latestGlyphs) {
+                    switch (glyph.type) {
+                        case FULL:
+                            paint.setColor(Color.GREEN);
+                            break;
+                        case PARTIAL_HEIGHT:
+                        case PARTIAL_WIDTH:
+                            // intentional fall through
+                            paint.setColor(Color.YELLOW);
+                            break;
+                    }
+                    VisionUtil.drawRect(canvas, glyph.rect, paint);
                 }
-                VisionUtil.drawRect(canvas, glyph.rect, paint);
+            }
+
+            // draw rail contours
+            paint.setColor(Color.WHITE);
+            if (latestRawRails != null) {
+                for (Rail rawRail : latestRawRails) {
+                    VisionUtil.drawContour(canvas, rawRail.contour, paint);
+                }
             }
 
             // draw rails
