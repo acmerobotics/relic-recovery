@@ -1,6 +1,6 @@
 package com.acmerobotics.velocityvortex.opmodes;
 
-import com.acmerobotics.library.dashboard.Config;
+import com.acmerobotics.library.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 /**

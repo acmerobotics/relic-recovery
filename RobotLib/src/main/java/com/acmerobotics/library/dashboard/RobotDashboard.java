@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.library.dashboard.config.OptionGroup;
 import com.acmerobotics.library.dashboard.draw.Canvas;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageDeserializer;
@@ -71,7 +73,7 @@ public class RobotDashboard {
                 	Log.i(TAG, String.format("Found config class %s", clazz.getCanonicalName()));
                     Config annotation = (Config) clazz.getAnnotation(Config.class);
                     String name = annotation.value().equals("") ? clazz.getSimpleName() : annotation.value();
-                    optionGroups.add(new OptionGroup(clazz, name, prefs));
+//                    optionGroups.add(new OptionGroup(clazz, name, prefs));
                 }
             }
         });
@@ -90,7 +92,7 @@ public class RobotDashboard {
 	}
 
 	public void registerConfigClass(Class<?> configClass, String name) {
-	    optionGroups.add(new OptionGroup(configClass, name, prefs));
+//	    optionGroups.add(new OptionGroup(configClass, name, prefs));
 	    sendAll(new Message(MessageType.RECEIVE_CONFIG, getConfigJson()));
     }
 
