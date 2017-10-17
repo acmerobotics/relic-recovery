@@ -7,8 +7,6 @@ import com.acmerobotics.relicrecovery.vision.VisionUtil;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-
 /**
  * Created by ryanbrott on 9/23/17.
  */
@@ -19,11 +17,11 @@ public class FpsVision extends OpMode {
 
     @Override
     public void init() {
-        camera = new VisionCamera(hardwareMap.appContext, ClassFactory.createVuforiaLocalizer(VisionConstants.VUFORIA_PARAMETERS));
-        camera.setImageDir(VisionUtil.getImageDir(this));
+        camera = new VisionCamera(hardwareMap.appContext);
         fpsTracker = new FpsTracker();
         camera.addTracker(fpsTracker);
-        camera.initialize();
+        camera.setImageDir(VisionUtil.getImageDir(this));
+        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
     }
 
     @Override

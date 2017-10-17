@@ -10,12 +10,14 @@ import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.R;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -37,6 +39,7 @@ public class VisionCamera {
 
     private Context context;
     private VuforiaLocalizer vuforia;
+    private VuforiaLocalizer.Parameters vuforiaParams;
     private FrameLayout parentLayout;
     private OverlayView overlayView;
     private FrameConsumer frameConsumer;
@@ -45,6 +48,8 @@ public class VisionCamera {
     private int imageNum;
 
     public class FrameConsumer extends Thread {
+        public static final String TAG = "FrameConsumer";
+
         private BlockingQueue<VuforiaLocalizer.CloseableFrame> frameQueue;
         private List<VuforiaLocalizer.CloseableFrame> activeFrames;
         private Mat frame;
@@ -86,10 +91,18 @@ public class VisionCamera {
                             byteBuffer.get(frameBuffer);
                             if (this.frame == null) {
                                 this.frame = new Mat(imageHeight, imageWidth, CvType.CV_8UC3);
-                                overlayView.setImageSize(imageWidth, imageHeight);
+
+                                if (overlayView != null) {
+                                    overlayView.setImageSize(imageWidth, imageHeight);
+                                }
                             }
                             this.frame.put(0, 0, frameBuffer);
+
                             Imgproc.cvtColor(this.frame, this.frame, Imgproc.COLOR_RGB2BGR);
+
+                            if (vuforiaParams.cameraDirection == VuforiaLocalizer.CameraDirection.FRONT) {
+                                Core.flip(this.frame, this.frame, 1);
+                            }
 
                             onFrame(this.frame, vuforiaFrame.getTimeStamp());
 
@@ -111,34 +124,35 @@ public class VisionCamera {
         }
     }
 
-    public VisionCamera(Context context, VuforiaLocalizer vuforia) {
+    public VisionCamera(Context context) {
         this.context = context;
         this.trackers = new ArrayList<>();
-        this.overlayView = new OverlayView(context);
-        this.vuforia = vuforia;
     }
 
     public synchronized void addTracker(Tracker tracker) {
         this.trackers.add(tracker);
-        this.overlayView.addTracker(tracker);
+
+        if (overlayView != null) {
+            this.overlayView.addTracker(tracker);
+        }
     }
 
-    public void initialize() {
+    public void initialize(VuforiaLocalizer.Parameters vuforiaParams) {
         final CountDownLatch openCvInitialized = new CountDownLatch(1);
 
         final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(context) {
             @Override
             public void onManagerConnected(int status) {
                 switch (status) {
-                    case LoaderCallbackInterface.SUCCESS:
-                    {
+                    case LoaderCallbackInterface.SUCCESS: {
                         Log.i(TAG, "OpenCV loaded successfully");
                         openCvInitialized.countDown();
-                    } break;
-                    default:
-                    {
+                        break;
+                    }
+                    default: {
                         super.onManagerConnected(status);
-                    } break;
+                        break;
+                    }
                 }
             }
         };
@@ -150,27 +164,38 @@ public class VisionCamera {
             }
         });
 
+        vuforia = ClassFactory.createVuforiaLocalizer(vuforiaParams);
+        this.vuforiaParams = vuforiaParams;
+
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true);
         vuforia.setFrameQueueCapacity(VisionConstants.FRAME_QUEUE_CAPACITY);
 
-        frameConsumer = new FrameConsumer(vuforia.getFrameQueue());
-        frameConsumer.start();
+        if (vuforiaParams.cameraMonitorViewIdParent != 0) {
+            this.overlayView = new OverlayView(context);
 
-        final Activity activity = AppUtil.getInstance().getActivity();
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(R.id.cameraMonitorViewId);
-                parentLayout = (FrameLayout) cameraMonitorView.getParent();
-                parentLayout.addView(overlayView);
+            for (Tracker tracker : trackers) {
+                overlayView.addTracker(tracker);
             }
-        });
+
+            final Activity activity = AppUtil.getInstance().getActivity();
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(R.id.cameraMonitorViewId);
+                    parentLayout = (FrameLayout) cameraMonitorView.getParent();
+                    parentLayout.addView(overlayView);
+                }
+            });
+        }
 
         try {
             openCvInitialized.await();
         } catch (InterruptedException e) {
             Log.w(TAG, e);
         }
+
+        frameConsumer = new FrameConsumer(vuforia.getFrameQueue());
+        frameConsumer.start();
     }
 
     public void setImageDir(File imageDir) {
@@ -182,7 +207,9 @@ public class VisionCamera {
             tracker.processFrame(frame, timestamp);
         }
 
-        overlayView.postInvalidate();
+        if (overlayView != null) {
+            overlayView.postInvalidate();
+        }
     }
 
     public VuforiaLocalizer getVuforia() {
@@ -190,12 +217,15 @@ public class VisionCamera {
     }
 
     public void close() {
-        AppUtil.getInstance().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                parentLayout.removeView(overlayView);
-            }
-        });
+        if (overlayView != null) {
+            AppUtil.getInstance().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    parentLayout.removeView(overlayView);
+                    overlayView = null;
+                }
+            });
+        }
 
         if (frameConsumer != null) {
             frameConsumer.terminate();

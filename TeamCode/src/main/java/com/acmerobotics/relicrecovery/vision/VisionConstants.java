@@ -16,7 +16,7 @@ public class VisionConstants {
 
     static {
         VUFORIA_PARAMETERS.vuforiaLicenseKey = VUFORIA_LICENSE_KEY;
-        VUFORIA_PARAMETERS.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
+        VUFORIA_PARAMETERS.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         VUFORIA_PARAMETERS.useExtendedTracking = false;
     }
 
@@ -25,12 +25,26 @@ public class VisionConstants {
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
 
     // blue HSV range
-    public static int BLUE_LOWER_HUE = 110, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 0;
-    public static int BLUE_UPPER_HUE = 130, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
+    public static int BLUE_LOWER_HUE = 112, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 0;
+    public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
+
+    // brown HSV range
+    public static int BROWN_LOWER_HUE = 0, BROWN_LOWER_SAT = 31, BROWN_LOWER_VALUE = 27;
+    public static int BROWN_UPPER_HUE = 19, BROWN_UPPER_SAT = 94, BROWN_UPPER_VALUE = 104;
+
+    // gray HSV range
+    public static int GRAY_LOWER_HUE = 66, GRAY_LOWER_SAT = 3, GRAY_LOWER_VALUE = 121;
+    public static int GRAY_UPPER_HUE = 126, GRAY_UPPER_SAT = 69, GRAY_UPPER_VALUE = 210;
 
     // binary morphology kernel sizes
-    public static int OPEN_KERNEL_SIZE = 7;
-    public static int CLOSE_KERNEL_SIZE = 15;
+    public static int OPEN_KERNEL_SIZE = 5;
+    public static int CLOSE_KERNEL_SIZE = 5;
 
-    public static int SMALL_DIMENSION = 480;
+    public static double MAX_BLOB_ASPECT_RATIO = 0.5;
+    public static int MIN_BLOB_SIZE = 250;
+    public static double MAX_ASPECT_RATIO_ERROR = 0.2;
+    public static double MIN_RECT_FILL = 0.85;
+
+    public static final double ACTUAL_RAIL_GAP = 7.5; // in
+    public static final double ACTUAL_GLYPH_SIZE = 6.0; // in
 }
