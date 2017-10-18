@@ -4,10 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.config.Configuration;
-import com.acmerobotics.library.dashboard.config.OptionGroup;
-import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageDeserializer;
 import com.acmerobotics.library.dashboard.message.MessageType;
@@ -16,7 +15,6 @@ import com.acmerobotics.library.dashboard.util.ClassFilter;
 import com.acmerobotics.library.dashboard.util.ClasspathScanner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 
@@ -71,7 +69,7 @@ public class RobotDashboard {
             public void processClass(Class clazz) {
                 if (clazz.isAnnotationPresent(Config.class)) {
                 	Log.i(TAG, String.format("Found config class %s", clazz.getCanonicalName()));
-					configuration.addOptionGroup(OptionGroup.createFromClass(clazz));
+					configuration.addOptionsFromClass(clazz);
                 }
             }
         });
@@ -90,7 +88,7 @@ public class RobotDashboard {
 	}
 
 	public void registerConfigClass(Class<?> configClass, String name) {
-	    configuration.addOptionGroup(OptionGroup.createFromClass(configClass, name));
+		configuration.addOptionsFromClass(configClass, name);
 	    sendAll(new Message(MessageType.RECEIVE_CONFIG, configuration));
     }
 
@@ -112,19 +110,12 @@ public class RobotDashboard {
     }
 
     public JsonElement getConfigSchemaJson() {
-	    return GSON.toJsonTree(configuration);
+	    return configuration.getJsonSchema();
     }
 
     public JsonElement getConfigJson() {
-		return null;
+		return configuration.getJson();
 	}
-
-    public void updateConfigWithJson(JsonElement configJson) {
-        JsonArray arr = configJson.getAsJsonArray();
-        for (int i = 0; i < arr.size(); i++) {
-//            optionGroups.get(i).updateJson(arr.get(i));
-        }
-    }
 
 	public synchronized void sendAll(Message message) {
 		for (RobotWebSocket ws : sockets) {
@@ -134,6 +125,7 @@ public class RobotDashboard {
 
 	public synchronized void addSocket(RobotWebSocket socket) {
 		sockets.add(socket);
+		socket.send(new Message(MessageType.RECEIVE_CONFIG_SCHEMA, getConfigSchemaJson()));
 		socket.send(new Message(MessageType.RECEIVE_CONFIG, getConfigJson()));
 	}
 
@@ -148,7 +140,7 @@ public class RobotDashboard {
                 break;
             }
             case UPDATE_CONFIG: {
-                updateConfigWithJson((JsonElement) msg.getData());
+            	configuration.updateJson((JsonElement) msg.getData());
                 break;
             }
             default:

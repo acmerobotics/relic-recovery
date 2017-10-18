@@ -82,21 +82,28 @@ public abstract class Option {
             }
             obj.add("values", values);
             return obj;
-        } else if (type == OptionType.DOUBLE) {
-            return new JsonPrimitive((double) getValue());
-        } else if (type == OptionType.INT) {
-            return new JsonPrimitive((int) getValue());
         } else {
-            return new JsonPrimitive((boolean) getValue());
+            return new JsonPrimitive(type.stringVal);
         }
     }
 
     protected abstract Object getValue();
     protected abstract void setValue(Object object);
 
-    public static Option createFromClass(Field field, Object parent) {
+    public static Option createFromClass(Class<?> klass) {
+        CustomOption customOption = new CustomOption();
+        for (Field field : klass.getFields()) {
+            if (Modifier.isFinal(field.getModifiers())) {
+                continue;
+            }
+
+            customOption.addOption(field.getName(), createFromField(field, null));
+        }
+        return customOption;
+    }
+
+    public static Option createFromField(Field field, Object parent) {
         Class<?> klass = field.getType();
-        System.out.printf("%s\t%b\t%b\n", klass.getSimpleName(), klass.isPrimitive(), klass.isEnum());
         if (klass.isPrimitive() || klass.isEnum() || klass == String.class) {
             return new FieldOption(field, parent);
         }
@@ -109,7 +116,7 @@ public abstract class Option {
 
             String name = nestedField.getName();
             try {
-                option.addOption(name, createFromClass(nestedField, field.get(parent)));
+                option.addOption(name, createFromField(nestedField, field.get(parent)));
             } catch (IllegalAccessException e) {
                 Log.w(TAG, e);
             }

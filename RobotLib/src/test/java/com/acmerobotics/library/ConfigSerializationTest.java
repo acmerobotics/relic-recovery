@@ -1,6 +1,6 @@
 package com.acmerobotics.library;
 
-import com.acmerobotics.library.dashboard.config.OptionGroup;
+import com.acmerobotics.library.dashboard.config.Configuration;
 import com.acmerobotics.library.dashboard.config.OptionType;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -31,12 +31,18 @@ public class ConfigSerializationTest {
 
     @Test
     public void testSerialization() {
-        OptionGroup optionGroup = OptionGroup.createFromClass(B.class);
-        System.out.println(optionGroup.getJsonSchema());
-        System.out.println(optionGroup.getJson());
+        Configuration config = new Configuration();
+        config.addOptionsFromClass(B.class);
+        System.out.println(config.getJsonSchema());
+        System.out.println(config.getJson());
         JsonObject changeObj = new JsonObject();
-        changeObj.add("x", new JsonPrimitive(2.1));
-        optionGroup.updateJson(changeObj);
-        System.out.println(optionGroup.getJson());
+        JsonObject bObj = new JsonObject();
+        JsonObject pidObj = new JsonObject();
+        pidObj.add("i", new JsonPrimitive(27.3));
+        bObj.add("x", new JsonPrimitive(2.1));
+        bObj.add("pid", pidObj);
+        changeObj.add("B", bObj);
+        config.updateJson(changeObj);
+        System.out.println(config.getJson());
     }
 }

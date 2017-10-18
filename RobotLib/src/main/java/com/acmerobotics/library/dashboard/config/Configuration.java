@@ -1,47 +1,57 @@
 package com.acmerobotics.library.dashboard.config;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by ryanbrott on 10/13/17.
  */
 
 public class Configuration {
-    private List<OptionGroup> optionGroups;
+    private Map<String, Option> options;
 
     public Configuration() {
-        optionGroups = new ArrayList<>();
+        options = new HashMap<>();
     }
 
-    public void addOptionGroup(OptionGroup optionGroup) {
-        this.optionGroups.add(optionGroup);
+    public void addOptionsFromClass(Class<?> klass) {
+        String name = klass.getSimpleName();
+        if (klass.isAnnotationPresent(Config.class)) {
+            String altName = klass.getAnnotation(Config.class).value();
+            if (altName.length() != 0) {
+                name = altName;
+            }
+        }
+        addOptionsFromClass(klass, name);
+    }
+
+    public void addOptionsFromClass(Class<?> klass, String name) {
+        options.put(name, Option.createFromClass(klass));
     }
 
     public JsonElement getJson() {
-        JsonArray array = new JsonArray();
-        for (OptionGroup group : optionGroups) {
-            array.add(group.getJson());
+        JsonObject obj = new JsonObject();
+        for (Map.Entry<String, Option> entry : options.entrySet()) {
+            obj.add(entry.getKey(), entry.getValue().getJson());
         }
-        return array;
+        return obj;
+    }
+
+    public void updateJson(JsonElement json) {
+        JsonObject obj = json.getAsJsonObject();
+        for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
+            options.get(entry.getKey()).updateJson(entry.getValue());
+        }
     }
 
     public JsonElement getJsonSchema() {
-        JsonArray array = new JsonArray();
-        for (OptionGroup group : optionGroups) {
-            array.add(group.getJsonSchema());
+        JsonObject obj = new JsonObject();
+        for (Map.Entry<String, Option> entry : options.entrySet()) {
+            obj.add(entry.getKey(), entry.getValue().getSchemaJson());
         }
-        return array;
-    }
-
-    public static Configuration createFromClasses(List<Class<?>> klasses) {
-        Configuration schema = new Configuration();
-        for (Class<?> klass : klasses) {
-            schema.addOptionGroup(OptionGroup.createFromClass(klass));
-        }
-        return schema;
+        return obj;
     }
 }
