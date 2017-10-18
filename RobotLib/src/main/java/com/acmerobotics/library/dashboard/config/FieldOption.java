@@ -15,11 +15,7 @@ public class FieldOption extends Option {
     private transient Object parent;
 
     public FieldOption(Field field, Object parent) {
-        this(field, parent, null);
-    }
-
-    public FieldOption(Field field, Object parent, String[] values) {
-        super(OptionType.fromClass(field.getType()), values);
+        super(OptionType.fromClass(field.getType()));
 
         this.field = field;
         this.parent = parent;

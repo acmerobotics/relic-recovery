@@ -1,22 +1,16 @@
 package com.acmerobotics.library.dashboard.config;
 
-import android.util.Log;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import static com.acmerobotics.library.dashboard.RobotDashboard.TAG;
 
 /**
  * @author Ryan
+ *
  */
 
 public class OptionGroup {
@@ -36,11 +30,7 @@ public class OptionGroup {
         this.options.put(name, option);
     }
 
-    public Map<String, Option> getOptions() {
-        return options;
-    }
-
-    public JsonElement getAsJson() {
+    public JsonElement getJson() {
         JsonObject obj = new JsonObject();
         obj.add("name", new JsonPrimitive(name));
         JsonObject optionsObj = new JsonObject();
@@ -51,46 +41,37 @@ public class OptionGroup {
         return obj;
     }
 
-    public void updateFromJson(JsonElement json) {
+    public void updateJson(JsonElement json) {
         throw new UnsupportedOperationException();
     }
 
-    public static OptionGroup createFromClass(Class<?> klass) {
-        OptionGroup optionGroup = new OptionGroup(klass.getSimpleName());
-        for (Field field : klass.getFields()) {
-            optionGroup.addOption(field.getName(), createOptionFromClass(field, null));
+    public JsonElement getJsonSchema() {
+        JsonObject obj = new JsonObject();
+        obj.add("name", new JsonPrimitive(name));
+        JsonObject schemaObj = new JsonObject();
+        for (Map.Entry<String, Option> entry : options.entrySet()) {
+            schemaObj.add(entry.getKey(), entry.getValue().getSchemaJson());
         }
-        return optionGroup;
+        obj.add("optionsSchema", schemaObj);
+        return obj;
     }
 
-    public static Option createOptionFromClass(Field field, Object parent) {
-        Class<?> klass = field.getType();
-        System.out.printf("%s\t%b\t%b\n", klass.getSimpleName(), klass.isPrimitive(), klass.isEnum());
-        if (klass.isPrimitive() || klass == String.class) {
-            return new FieldOption(field, parent);
-        } else if (klass.isEnum()) {
-            List<?> enumConstants = Arrays.asList(klass.getEnumConstants());
-            String[] values = new String[enumConstants.size()];
-            for (int i = 0; i < values.length; i++) {
-                values[i] = enumConstants.get(i).toString();
-            }
-            return new FieldOption(field, parent, values);
-        }
-
-        CustomOption option = new CustomOption();
-        for (Field nestedField : klass.getFields()) {
-            if (Modifier.isFinal(field.getModifiers())) {
-                continue;
-            }
-
-            String name = nestedField.getName();
-            try {
-                option.addOption(name, createOptionFromClass(nestedField, field.get(parent)));
-            } catch (IllegalAccessException e) {
-                Log.w(TAG, e);
+    public static OptionGroup createFromClass(Class<?> klass) {
+        String name = klass.getSimpleName();
+        if (klass.isAnnotationPresent(Config.class)) {
+            String altName = klass.getAnnotation(Config.class).value();
+            if (altName.length() != 0) {
+                name = altName;
             }
         }
+        return createFromClass(klass, name);
+    }
 
-        return option;
+    public static OptionGroup createFromClass(Class<?> klass, String name) {
+        OptionGroup optionGroup = new OptionGroup(name);
+        for (Field field : klass.getFields()) {
+            optionGroup.addOption(field.getName(), Option.createFromClass(field, null));
+        }
+        return optionGroup;
     }
 }

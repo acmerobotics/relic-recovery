@@ -1,4 +1,4 @@
-package com.acmerobotics.library.dashboard.draw;
+package com.acmerobotics.library.dashboard.canvas;
 
 /**
  * Created by ryanbrott on 8/4/17.

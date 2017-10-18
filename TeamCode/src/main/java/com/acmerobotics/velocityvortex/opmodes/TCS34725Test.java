@@ -1,6 +1,6 @@
 package com.acmerobotics.velocityvortex.opmodes;
 
-import com.acmerobotics.library.dashboard.MultipleTelemetry;
+import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.velocityvortex.sensors.TCS34725ColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;

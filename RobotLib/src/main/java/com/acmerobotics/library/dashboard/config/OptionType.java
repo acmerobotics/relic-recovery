@@ -5,12 +5,18 @@ package com.acmerobotics.library.dashboard.config;
  */
 
 public enum OptionType {
-    BOOLEAN,
-    INT,
-    DOUBLE,
-    STRING,
-    ENUM,
-    CUSTOM;
+    BOOLEAN("boolean"),
+    INT("int"),
+    DOUBLE("double"),
+    STRING("string"),
+    ENUM("enum"),
+    CUSTOM("custom");
+
+    public final String stringVal;
+
+    OptionType(String val) {
+        this.stringVal = val;
+    }
 
     public static OptionType fromClass(Class<?> klass) {
         if (klass == Boolean.class || klass == boolean.class) {
