@@ -1,10 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import ConfigOption from './ConfigOption';
+import Option from './Option';
 import Heading from '../components/Heading';
 import Icon from '../components/Icon';
 
-class ConfigOptionGroup extends React.Component {
+class OptionGroup extends React.Component {
   constructor(props) {
     super(props);
 
@@ -33,7 +33,7 @@ class ConfigOptionGroup extends React.Component {
               <table>
                 <tbody>
                   {this.props.options.map((option, optionIndex) => (
-                    <ConfigOption
+                    <Option
                       key={optionIndex}
                       optionGroup={this.props.name}
                       option={option} />
@@ -48,9 +48,9 @@ class ConfigOptionGroup extends React.Component {
   }
 }
 
-ConfigOptionGroup.propTypes = {
+OptionGroup.propTypes = {
   name: PropTypes.string.isRequired,
   options: PropTypes.array.isRequired
 };
 
-export default ConfigOptionGroup;
+export default OptionGroup;

@@ -76,6 +76,8 @@ const socketMiddleware = store => next => action => {
     break;
   }
   default:
+    console.log(action);
+
     next(action);
 
     break;

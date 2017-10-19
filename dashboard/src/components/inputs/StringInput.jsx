@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const StringOption = ({ value, onChange }) => (
+const StringInput = ({ value, onChange }) => (
   <input
     className="valid"
     type="text"
@@ -10,9 +10,9 @@ const StringOption = ({ value, onChange }) => (
   />
 );
 
-StringOption.propTypes = {
+StringInput.propTypes = {
   value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func // TODO: fix!
 };
 
-export default StringOption;
+export default StringInput;

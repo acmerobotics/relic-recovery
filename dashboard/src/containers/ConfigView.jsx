@@ -1,40 +1,42 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import ConfigOptionGroup from './ConfigOptionGroup';
+import Option from './Option';
 import Heading from '../components/Heading';
 import IconGroup from '../components/IconGroup';
 import Icon from '../components/Icon';
 import { getConfig, updateConfig } from '../actions/config';
 
-const ConfigView = ({ config, onRefresh, onSave }) => (
+const ConfigView = ({ config, configSchema, onRefresh }) => (
   <div>
     <Heading level={2} text="Configuration">
       <IconGroup>
         <Icon icon="refresh" size="small" onClick={onRefresh} />
-        {
-          (config.every(v => !v.invalid || v.invalid.length === 0)) ?
-            <Icon icon="save" size="small" onClick={onSave} /> : undefined
-        }
       </IconGroup>
     </Heading>
-    {config.map((optionGroup, optionGroupIndex) => (
-      <ConfigOptionGroup
-        key={optionGroupIndex}
-        name={optionGroup.name}
-        options={optionGroup.options} />
-    ))}
+    <table>
+      <tbody>
+        {Object.keys(configSchema).map((key) => (
+          <Option
+            key={key}
+            name={key}
+            value={config[key]}
+            schema={configSchema[key]} />
+        ))}
+      </tbody>
+    </table>
   </div>
 );
 
 ConfigView.propTypes = {
-  config: PropTypes.array.isRequired,
-  onRefresh: PropTypes.func.isRequired,
-  onSave: PropTypes.func.isRequired
+  config: PropTypes.object.isRequired,
+  configSchema: PropTypes.object.isRequired,
+  onRefresh: PropTypes.func.isRequired
 };
 
-const mapStateToProps = ({ config }) => ({
-  config
+const mapStateToProps = ({ config, configSchema }) => ({
+  config,
+  configSchema
 });
 
 const mapDispatchToProps = (dispatch) => ({

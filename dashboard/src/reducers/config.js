@@ -1,6 +1,6 @@
 import { RECEIVE_CONFIG, UPDATE_OPTION_VALUE } from '../actions/config';
 
-const initialState = [];
+const initialState = {};
 
 const config = (state = initialState, action) => {
   switch (action.type) {
