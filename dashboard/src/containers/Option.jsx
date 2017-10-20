@@ -39,7 +39,7 @@ class Option extends React.Component {
   render() {
     const { name, value, schema, onChange} = this.props;
 
-    if (!value) {
+    if (typeof value === 'undefined') {
       return null;
     }
 

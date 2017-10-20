@@ -7,6 +7,7 @@ import android.util.Log;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.config.Configuration;
+import com.acmerobotics.library.dashboard.config.Option;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageDeserializer;
 import com.acmerobotics.library.dashboard.message.MessageType;
@@ -81,6 +82,10 @@ public class RobotDashboard {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void addOption(String name, Option option) {
+		configuration.addOption(name, option);
 	}
 
 	public void resetConfigurationForOpMode() {

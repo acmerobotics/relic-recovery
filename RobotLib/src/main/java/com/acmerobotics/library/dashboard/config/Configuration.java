@@ -28,8 +28,12 @@ public class Configuration {
         addOptionsFromClass(klass, name);
     }
 
+    public void addOption(String name, Option option) {
+        options.put(name, option);
+    }
+
     public void addOptionsFromClass(Class<?> klass, String name) {
-        options.put(name, Option.createFromClass(klass));
+        addOption(name, Option.createFromClass(klass));
     }
 
     public JsonElement getJson() {
