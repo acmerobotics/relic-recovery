@@ -11,9 +11,9 @@ public class MotionState {
     public double v; //velocity
     public double a; //acceleration
     public double j; //jerk
-    public long t; // time
+    public double t; // time
 
-    public MotionState (double x, double y, double a, double j, long t) {
+    public MotionState (double x, double v, double a, double j, double t) {
         this.x = x;
         this.v = v;
         this.a = a;
@@ -23,6 +23,10 @@ public class MotionState {
 
     public MotionState (double x, double v, double a, double j) {
         this(x, v, a, j, System.nanoTime());
+    }
+
+    public MotionState flipped() {
+        return new MotionState(-x, -v, -a, -j, t);
     }
 
     public double v2() {
