@@ -1,13 +1,16 @@
 package com.acmerobotics.relicrecovery.motion;
 
 /**
- * Created by kelly on 10/16/2017.
- *
+ * @author kellyrm
+ * goal of a motion profile
  */
 
 public class MotionGoal {
 
     public double pos;
+    /**
+     * max absolute value at pos
+     */
     public double maxAbsV;
 
     public MotionGoal (double pos, double maxAbsV) {

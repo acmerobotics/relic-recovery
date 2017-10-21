@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.motion;
 
 /**
- * Created by kelly on 10/12/2017.
+ * @author kellyrm
  * motion segment with constant jerk
  */
 
@@ -10,11 +10,21 @@ public class MotionSegment {
     private MotionState start;
     private double dt;
 
+    /**
+     * constructs a motion profile with constant jerk over an interval
+     * @param start motion state at the beginning of the segment
+     * @param dt duration of the motion segment
+     */
     public MotionSegment(MotionState start, double dt) {
         this.start = start;
         this.dt = dt;
     }
 
+    /**
+     * Extrapolate the initial conditions to get a motion state at a given time
+     * @param t time
+     * @return the motion state at time t
+     */
     public MotionState get(double t) {
         t = Math.max(Math.min(start.t + dt, t), start.t);
         t -= start.t;
@@ -26,97 +36,38 @@ public class MotionSegment {
         return new MotionState (x, v, a, start.j, start.t + dt);
     }
 
+    /**
+     * get the start state
+     * @return the start state
+     */
     public MotionState start() {
         return start;
     }
 
+    /**
+     * get the end state of the segment
+     * @return the end state
+     */
     public MotionState end() {
         return get(start.t + dt);
     }
 
+    /**
+     * get the duration of the segment
+     * @return the duration
+     */
     public double dt() {
         return dt;
     }
 
+    /**
+     * get the first time, within the bounds of the segment, that it will be at a position
+     * refer to MotionSegment#timesAtPos
+     * @param pos the position
+     * @return -1 if it never passes through the position within the time bounds or if the segment is always at pos
+     */
     public double timeAtPos(double pos) {
-        for (double time: timesAtPos(pos)) {
-            if (containsTime(time)) {
-                return time;
-            }
-        }
-        return -1.0;
-    }
-
-    public double[] timesAtPos(double pos) {
-        if (start.j != 0) {
-            double a = start.a / 2.0;
-            double b = start.v;
-            double c = start.x - pos;
-            double d = start.j / 6.0;
-            double[] result;
-            if (d != 1) {
-                a = a / d;
-                b = b / d;
-                c = c / d;
-            }
-
-            double p = b / 3 - a * a / 9;
-            double q = a * a * a / 27 - a * b / 6 + c / 2;
-            double D = p * p * p + q * q;
-
-            if (Double.compare(D, 0) >= 0) {
-                if (Double.compare(D, 0) == 0) {
-                    double r = Math.cbrt(-q);
-                    result = new double[2];
-                    result[0] = 2 * r;
-                    result[1] = -r;
-                } else {
-                    double r = Math.cbrt(-q + Math.sqrt(D));
-                    double s = Math.cbrt(-q - Math.sqrt(D));
-                    result = new double[1];
-                    result[0] = r + s;
-                }
-            } else {
-                double ang = Math.acos(-q / Math.sqrt(-p * p * p));
-                double r = 2 * Math.sqrt(-p);
-                result = new double[3];
-                for (int k = -1; k <= 1; k++) {
-                    double theta = (ang - 2 * Math.PI * k) / 3;
-                    result[k + 1] = r * Math.cos(theta);
-                }
-
-            }
-            for (int i = 0; i < result.length; i++) {
-                result[i] = result[i] - a / 3;
-            }
-            return result;
-        }
-        if (start.a != 0) {
-            double a = start.a / 2.0;
-            double b = start.v;
-            double c = start.x - pos;
-            double dis = Math.pow(b, 2) - (4.0 * a * c);
-            if (dis < 0) {
-                return new double[]{}; //never at pos
-            }
-            if (dis == 0) {
-                double t = -b / (2.0 * a);
-                return new double[]{t + start.t}; //only at pos once
-            }
-            dis = Math.sqrt(dis);
-            double t1 = (-b + dis) / (2.0 * a);
-            double t2 = (-b - dis) / (2.0 * a);
-            return new double[]{t1 + start.t, t2 + start.t};
-        }
-        if (start.v != 0) {
-            double t = (pos - start.x) / start.t;
-            return new double [] {t + start.t};
-        }
-        return new double[] {};
-    }
-
-    public double timeAtVel(double vel) {
-        for (double time: timesAtVel(vel)) {
+        for (double time: start.timesAtPos(pos)) {
             if (containsTime(time)) {
                 return time;
             }
@@ -125,35 +76,24 @@ public class MotionSegment {
     }
 
     /**
-     *
-     * @param vel velocity to check
-     * @return {} if it never reaches vel or if it is always at vel, otherwise the times it is at vel
+     * get the first time, within the bounds of the segment, that velocity will be at vel
+     * @param vel the velocity to check for
+     * @return -1 if it never reaches vel or is always at vel
      */
-    public double[] timesAtVel(double vel) {
-        if (start.j != 0) {
-            double a = start.j / 2.0;
-            double b = start.a;
-            double c = start.v - vel;
-            double dis = Math.pow(b, 2) - (4.0 * a * c);
-            if (dis < 0) {
-                return new double[]{}; //never at vel
+    public double timeAtVel(double vel) {
+        for (double time: start.timesAtVel(vel)) {
+            if (containsTime(time)) {
+                return time;
             }
-            if (dis == 0) {
-                double t = -b / (2.0 * a);
-                return new double[]{t + start.t}; //only at vel once
-            }
-            dis = Math.sqrt(dis);
-            double t1 = (-b + dis) / (2.0 * a);
-            double t2 = (-b - dis) / (2.0 * a);
-            return new double[]{t1 + start.t, t2 + start.t};
         }
-        if (start.a != 0) {
-            double t = (vel - start.v) / start.a;
-            return new double [] {t + start.t};
-        }
-        return new double[] {};
+        return -1.0;
     }
 
+    /**
+     * check if the segment contains a particular time
+     * @param t time
+     * @return true if it contains the time
+     */
     public boolean containsTime(double t) {
         return start().t <= t && t <= end().t;
     }

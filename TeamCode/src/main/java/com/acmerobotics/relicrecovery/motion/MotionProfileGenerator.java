@@ -5,12 +5,19 @@ import com.acmerobotics.relicrecovery.util.SuperArrayList;
 import java.util.ArrayList;
 
 /**
- * Created by kelly on 10/16/2017.
+ * @author kellyrm
+ *
+ * used to generate jerk-controlled seven-segment motion profiles given start and goal conditions, and some constraints
+ *
+ * like this:
  *        1   2   3      4        5   6   7
  *       ___                             ___
  * J:   |   |___     ___________     ___|   |
  *              |___|           |___|
  *
+ * see <a href="https://pub.uni-bielefeld.de/download/1996788/2280502">this paper</a>
+ * someone should read page 4 and see if they have any clue for a implementation of the last step of the algorithm they outline
+ * what I have now is more a hack than anything
  */
 
 public class MotionProfileGenerator {
@@ -18,10 +25,18 @@ public class MotionProfileGenerator {
     //static class
     private MotionProfileGenerator() {}
 
+    /**
+     * make the motion profile!
+     * @param start the initial state
+     * @param goal the goal of the profile
+     * @param constraints constraints the profile is subject to
+     * @return the motion profile!
+     */
     public static MotionProfile generateProfile(MotionState start, MotionGoal goal, MotionConstraints constraints) {
 
         //for simplicity, assume that the profile requires positive movement
         if (goal.pos < start.x) {
+            //flip the profile and then flip the results
             return generateFlippedProfile(start, goal, constraints);
         }
 
@@ -36,10 +51,12 @@ public class MotionProfileGenerator {
         }
 
         //neat lets go to the goal now
+        //from this point on it only requires positive movement
 
-        boolean canStop = true;
         double dv = profile.end().v - goal.maxAbsV;
+        //check if the profile requires us to slow down
         if (dv > 0) {
+            //test if we can slow without breaking anything
             MotionProfile stoppingProfile = new MotionProfile(profile.end());
             double[] stoppingTimes = getDeltaVTimes(dv, constraints);
             stoppingProfile.appendControl(-constraints.maxJ, stoppingTimes[0]);
@@ -50,24 +67,25 @@ public class MotionProfileGenerator {
             if (stoppingDistance > goal.pos) {
                 //well, we can't stop now
                 if (constraints.endBehavior == MotionConstraints.END_BEHAVIOR.OVERSHOOT) {
-                    System.out.print("overshoot");
+                    //we are going to overshoot so we come to a stop and then reverse back
+                    //first stop
                     stoppingTimes = getDeltaVTimes(start.v, constraints);
                     profile.appendControl(-constraints.maxJ, stoppingTimes[0]);
                     profile.appendControl(0, stoppingTimes[1]);
                     profile.appendControl(constraints.maxJ, stoppingTimes[2]);
+                    //now go back to the goal
                     profile.appendProfile(generateProfile(profile.end(), goal, constraints));
                     return profile;
                 }
                 else if(constraints.endBehavior == MotionConstraints.END_BEHAVIOR.VIOLATE_MAX_ABS_A) {
-                    System.out.println("violate a");
                     // well if we are already slamming on the brakes then we might as well do infinite jerk
+                    //find out how much acceleration it will take
                     double stoppingA = (Math.pow(goal.maxAbsV, 2) - Math.pow(profile.end().v, 2)) / (2 * (goal.pos - profile.end().x));
                     double stoppingTime = (goal.maxAbsV - profile.end().v) / stoppingA;
                     profile.appendInfiniteJerkControl(stoppingA, stoppingTime);
                     return profile;
                 }
                 else if(constraints.endBehavior == MotionConstraints.END_BEHAVIOR.VIOLATE_MAX_ABS_V) {
-                    System.out.println("violate v");
                     //we will just work with what we got - we will slow down as much as possible
                     profile.appendControl(-constraints.maxJ, stoppingTimes[0]);
                     profile.appendControl(0, stoppingTimes[1]);
@@ -83,9 +101,12 @@ public class MotionProfileGenerator {
         double dX = goal.pos - profile.end().x;
         double j = constraints.maxJ;
 
+        //segments 1-3
         double [] timesToAccel = getDeltaVTimes(constraints.maxV - profile.end().v, constraints);
+        //segments 5-7
         double [] timesToDecel = getDeltaVTimes(goal.maxAbsV - constraints.maxV, constraints);
 
+        //figure out how much we are going to have to coast (segment 4)
         MotionProfile accelProfile = new MotionProfile(new MotionState (0,0,0,0,0));
         accelProfile.appendControl(j, timesToAccel[0]);
         accelProfile.appendControl(0, timesToAccel[1]);
@@ -94,8 +115,11 @@ public class MotionProfileGenerator {
         accelProfile.appendControl(j, timesToDecel[2]);
         double dxWithoutCoast = accelProfile.end().x;
 
+        //ok cool we can figure out how far to coast, but this only works if we have enough time to get up to max v
         double dxCoast = dX - dxWithoutCoast;
         double timeCoast = Math.max(0, dxCoast / constraints.maxV);
+
+        //now we need to solve the case where we can not get up to max v
 
         //spend hours trying to figure out the correct way to find max reachable velocity
         //sculpt velocity graphs out of mashed potatoes
@@ -109,6 +133,7 @@ public class MotionProfileGenerator {
         if (dxCoast < 0) {
 
             //yeah its a hack but its so much easier than the alternative, and on the plus side it converges fairly fast and could definitely be optimized
+            //todo optimise this
             int iterations = 0;
             while (Math.abs(dxCoast) > epsilon && iterations < 1000) {
                 iterations ++;
@@ -120,7 +145,7 @@ public class MotionProfileGenerator {
                     maxVmin = maxV;
                     maxV += (maxVmax - maxV)/2;
                 }
-                //this could probably be done the correct way, but this does not slow it down that much and improves readability
+                //this could probably be done the correct way, but this does not slow it down thaaaat much and improves readability...
                 accelProfile = new MotionProfile(new MotionState(0, 0, 0, 0, 0));
                 timesToAccel = getDeltaVTimes(maxV - profile.end().v, constraints);
                 timesToDecel = getDeltaVTimes(goal.maxAbsV - maxV, constraints);
@@ -134,6 +159,7 @@ public class MotionProfileGenerator {
             }
         }
 
+        //neat now lets do it
         profile.appendControl(j, timesToAccel[0]);
         profile.appendControl(0, timesToAccel[1]);
         profile.appendControl(-j, timesToAccel[2]);
@@ -142,9 +168,12 @@ public class MotionProfileGenerator {
         profile.appendControl(0, timesToDecel[1]);
         profile.appendControl(j, timesToDecel[2]);
 
+        profile.dereduntantify();
+
         return profile;
     }
 
+    //get the duration of the three segments needed to achieve a delta v
     private static double[] getDeltaVTimes(double dv, MotionConstraints constraints) {
         dv = Math.abs(dv / 2.0); //it should be symmetrical, so we will only deal with one half of it
         double jerkTime = constraints.maxA / constraints.maxJ; //time to max acceleration
@@ -157,9 +186,12 @@ public class MotionProfileGenerator {
         return new double[] {jerkTime, coastTime * 2.0, jerkTime};
     }
 
+    //generate a profile that requires negative delta x
     private static MotionProfile generateFlippedProfile(MotionState start, MotionGoal goal, MotionConstraints constraints) {
+        //first flip the start and goal
         MotionProfile profile = generateProfile(start.flipped(), goal.flipped(), constraints);
         SuperArrayList<MotionSegment> segments = profile.segments();
+        //then flip the result
         SuperArrayList<MotionSegment> flipped = new SuperArrayList<>();
         for (MotionSegment seg: segments) {
             flipped.add(new MotionSegment(seg.start().flipped(), seg.dt()));

@@ -4,7 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * Created by kelly on 10/19/2017.
+ * @author kellyrm
  *
  */
 
@@ -16,7 +16,7 @@ public class MotionTest {
         doATest("violateV", 5, 5, 0, MotionConstraints.END_BEHAVIOR.VIOLATE_MAX_ABS_V);
         doATest("overshoot", 5, 5, 0, MotionConstraints.END_BEHAVIOR.OVERSHOOT);
         doATest("reversed", -10, 0,0);
-        doATest("short", 2, 0,0);
+        doATest("short", 2.3, 0,0);
 
     }
 
@@ -25,9 +25,9 @@ public class MotionTest {
         MotionGoal goal = new MotionGoal(target, endVel);
         MotionConstraints constraints = new MotionConstraints();
         constraints.endBehavior = behavior;
-        constraints.maxA = 100;
+        constraints.maxA = 1;
         constraints.maxJ = 1;
-        constraints.maxV = 100;
+        constraints.maxV = 2;
         MotionProfile profile = MotionProfileGenerator.generateProfile(state, goal, constraints);
         writeProfile(profile, name);
     }
