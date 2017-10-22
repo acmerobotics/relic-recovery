@@ -129,7 +129,7 @@ public class MotionProfile {
     /**
      * remove all redundant motion segments from the profile
      */
-    public void dereduntantify() {
+    public void doCommenceDeUnConsolidatedification() {
         SuperArrayList<MotionSegment> newSegments = new SuperArrayList<>();
         for (MotionSegment seg: segments) {
             if (seg.dt() > 0) {

@@ -25,7 +25,7 @@ public class MotionConstraints {
     /**
      * behavior in the case that the profile cannot finish slowing before it reaches the target position
      */
-    public enum END_BEHAVIOR {
+    public enum EndBehavior {
         /**
          * Go past the goal and then come back to it - useful if maxA and maxV really can't be violated
          */
@@ -43,16 +43,13 @@ public class MotionConstraints {
         VIOLATE_MAX_ABS_A
     }
 
-    public END_BEHAVIOR endBehavior;
+    public EndBehavior endBehavior;
 
-    public MotionConstraints(double maxV, double maxA, double maxJ, END_BEHAVIOR endBehavior) {
+    public MotionConstraints(double maxV, double maxA, double maxJ, EndBehavior endBehavior) {
         this.maxV = maxV;
         this.maxA = maxA;
         this.maxJ = maxJ;
         this.endBehavior = endBehavior;
     }
 
-    public MotionConstraints() {
-
-    }
 }

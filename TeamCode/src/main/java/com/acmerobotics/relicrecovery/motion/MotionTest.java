@@ -12,28 +12,24 @@ public class MotionTest {
 
     public static void main(String[] args) {
         doATest("basic", 16, 0,0);
-        doATest("violateA", 5, 5, 0, MotionConstraints.END_BEHAVIOR.VIOLATE_MAX_ABS_A);
-        doATest("violateV", 5, 5, 0, MotionConstraints.END_BEHAVIOR.VIOLATE_MAX_ABS_V);
-        doATest("overshoot", 5, 5, 0, MotionConstraints.END_BEHAVIOR.OVERSHOOT);
+        doATest("violateA", 5, 5, 0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_A);
+        doATest("violateV", 5, 5, 0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_V);
+        doATest("overshoot", 5, 5, 0, MotionConstraints.EndBehavior.OVERSHOOT);
         doATest("reversed", -10, 0,0);
         doATest("short", 2.3, 0,0);
 
     }
 
-    public static void doATest(String name, double target, double startVel, double endVel, MotionConstraints.END_BEHAVIOR behavior) {
+    public static void doATest(String name, double target, double startVel, double endVel, MotionConstraints.EndBehavior behavior) {
         MotionState state = new MotionState(0, startVel, 0, 0, 0);
         MotionGoal goal = new MotionGoal(target, endVel);
-        MotionConstraints constraints = new MotionConstraints();
-        constraints.endBehavior = behavior;
-        constraints.maxA = 1;
-        constraints.maxJ = 1;
-        constraints.maxV = 2;
+        MotionConstraints constraints = new MotionConstraints(2, 1, 1, behavior);
         MotionProfile profile = MotionProfileGenerator.generateProfile(state, goal, constraints);
         writeProfile(profile, name);
     }
 
     public static void doATest(String name, double goal, double startVel, double endVel) {
-        doATest(name, goal, startVel, endVel, MotionConstraints.END_BEHAVIOR.OVERSHOOT);
+        doATest(name, goal, startVel, endVel, MotionConstraints.EndBehavior.OVERSHOOT);
     }
 
     public static void writeProfile(MotionProfile profile, String name) {

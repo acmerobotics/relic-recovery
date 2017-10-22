@@ -2,8 +2,6 @@ package com.acmerobotics.relicrecovery.motion;
 
 import com.acmerobotics.relicrecovery.util.SuperArrayList;
 
-import java.util.ArrayList;
-
 /**
  * @author kellyrm
  *
@@ -66,7 +64,7 @@ public class MotionProfileGenerator {
 
             if (stoppingDistance > goal.pos) {
                 //well, we can't stop now
-                if (constraints.endBehavior == MotionConstraints.END_BEHAVIOR.OVERSHOOT) {
+                if (constraints.endBehavior == MotionConstraints.EndBehavior.OVERSHOOT) {
                     //we are going to overshoot so we come to a stop and then reverse back
                     //first stop
                     stoppingTimes = getDeltaVTimes(start.v, constraints);
@@ -77,7 +75,7 @@ public class MotionProfileGenerator {
                     profile.appendProfile(generateProfile(profile.end(), goal, constraints));
                     return profile;
                 }
-                else if(constraints.endBehavior == MotionConstraints.END_BEHAVIOR.VIOLATE_MAX_ABS_A) {
+                else if(constraints.endBehavior == MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_A) {
                     // well if we are already slamming on the brakes then we might as well do infinite jerk
                     //find out how much acceleration it will take
                     double stoppingA = (Math.pow(goal.maxAbsV, 2) - Math.pow(profile.end().v, 2)) / (2 * (goal.pos - profile.end().x));
@@ -85,7 +83,7 @@ public class MotionProfileGenerator {
                     profile.appendInfiniteJerkControl(stoppingA, stoppingTime);
                     return profile;
                 }
-                else if(constraints.endBehavior == MotionConstraints.END_BEHAVIOR.VIOLATE_MAX_ABS_V) {
+                else if(constraints.endBehavior == MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_V) {
                     //we will just work with what we got - we will slow down as much as possible
                     profile.appendControl(-constraints.maxJ, stoppingTimes[0]);
                     profile.appendControl(0, stoppingTimes[1]);
@@ -168,7 +166,7 @@ public class MotionProfileGenerator {
         profile.appendControl(0, timesToDecel[1]);
         profile.appendControl(j, timesToDecel[2]);
 
-        profile.dereduntantify();
+        profile.doCommenceDeUnConsolidatedification();
 
         return profile;
     }

@@ -20,20 +20,8 @@ public class MotionSegment {
         this.dt = dt;
     }
 
-    /**
-     * Extrapolate the initial conditions to get a motion state at a given time
-     * @param t time
-     * @return the motion state at time t
-     */
     public MotionState get(double t) {
-        t = Math.max(Math.min(start.t + dt, t), start.t);
-        t -= start.t;
-        double t2 = t * t;
-        double t3 = t2 * t;
-        double a = start.j * t + start.a;
-        double v = .5 * start.j * t2 + start.a * t + start.v;
-        double x = (1.0/6.0) * start.j * t3 + .5 * start.a * t2 + start.v * t + start.x;
-        return new MotionState (x, v, a, start.j, start.t + dt);
+        return start.get(t);
     }
 
     /**

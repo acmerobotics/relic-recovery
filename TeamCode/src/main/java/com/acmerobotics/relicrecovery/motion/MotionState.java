@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.motion;
 
+import com.acmerobotics.relicrecovery.util.MathUtil;
+
 /**
  *  @author kellyrm
  *  fully defined state of one dimensional motion
@@ -42,6 +44,24 @@ public class MotionState {
     }
 
     /**
+     * Extrapolate the initial conditions to get a motion state at a given time
+     * x(t) = (1/6)jt^3 + (1/2)a(0)t^2 + v(0)t + x(0)
+     * v(t) = (1/2)jt^2 + a(0)t + v(0)
+     * a(t) = jt + a(0)
+     * @param time time
+     * @return the motion state at time t
+     */
+    public MotionState get(double time) {
+        time -= this.t;
+        double t2 = time * time;
+        double t3 = t2 * time;
+        double a = this.j * time + this.a;
+        double v = .5 * this.j * t2 + this.a * time + this.v;
+        double x = (1.0/6.0) * this.j * t3 + .5 * this.a * t2 + this.v * time + this.x;
+        return new MotionState (x, v, a, this.j, time);
+    }
+
+    /**
      * flip the motion state
      * @return a new motion state with everything negated
      */
@@ -57,75 +77,17 @@ public class MotionState {
      */
     public double[] timesAtPos(double pos) {
         //third degree case
+        MotionState stateAt0 = get(0);
         if (j != 0) {
-            //according to the internet this is a way to find roots of cubic functions, and it appears to work
-            //don't ask be what is going on
-            //i'm not quite sure why there are trig functions involved
-            double a = this.a / 2.0;
-            double b = v;
-            double c = x - pos;
-            double d = j / 6.0;
-            double[] result;
-            if (d != 1) {
-                a = a / d;
-                b = b / d;
-                c = c / d;
-            }
-
-            double p = b / 3 - a * a / 9;
-            double q = a * a * a / 27 - a * b / 6 + c / 2;
-            double D = p * p * p + q * q;
-
-            if (Double.compare(D, 0) >= 0) {
-                if (Double.compare(D, 0) == 0) {
-                    double r = Math.cbrt(-q);
-                    result = new double[2];
-                    result[0] = 2 * r;
-                    result[1] = -r;
-                } else {
-                    double r = Math.cbrt(-q + Math.sqrt(D));
-                    double s = Math.cbrt(-q - Math.sqrt(D));
-                    result = new double[1];
-                    result[0] = r + s;
-                }
-            } else {
-                double ang = Math.acos(-q / Math.sqrt(-p * p * p));
-                double r = 2 * Math.sqrt(-p);
-                result = new double[3];
-                for (int k = -1; k <= 1; k++) {
-                    double theta = (ang - 2 * Math.PI * k) / 3;
-                    result[k + 1] = r * Math.cos(theta);
-                }
-
-            }
-            for (int i = 0; i < result.length; i++) {
-                result[i] = this.t + (result[i] - a / 3); //gotta do this because above it assumes that the state is at 0
-            }
-            return result;
+            return MathUtil.solveCubic(stateAt0.j / 6.0, stateAt0.a / 2.0, stateAt0.v, stateAt0.x - pos);
         }
         //second degree case
         if (this.a != 0) {
-            //this ones easy, just solve the quadratic formula
-            double a = this.a / 2.0;
-            double b = this.v;
-            double c = this.x - pos;
-            double dis = Math.pow(b, 2) - (4.0 * a * c);
-            if (dis < 0) {
-                return new double[]{}; //never at pos
-            }
-            if (dis == 0) {
-                double t = -b / (2.0 * a);
-                return new double[]{t + this.t}; //only at pos once
-            }
-            dis = Math.sqrt(dis);
-            double t1 = (-b + dis) / (2.0 * a);
-            double t2 = (-b - dis) / (2.0 * a);
-            return new double[]{t1 + this.t, t2 + this.t};
+            return MathUtil.solveQuadratic(stateAt0.a/2.0, stateAt0.v, stateAt0.x - pos);
         }
         //first degree case
         if (this.v != 0) {
-            double t = (pos - this.x) / this.t;
-            return new double [] {t + this.t};
+            return new double [] {(pos - stateAt0.x) / stateAt0.v };
         }
         return new double[] {}; //we are either always or never at pos
     }
@@ -136,28 +98,14 @@ public class MotionState {
      * @return {} if it never reaches vel or if it is always at vel, otherwise the times it is at vel
      */
     public double[] timesAtVel(double vel) {
+        MotionState stateAt0 = get(0);
         //second degree case
         if (this.j != 0) {
-            double a = this.j / 2.0;
-            double b = this.a;
-            double c = this.v - vel;
-            double dis = Math.pow(b, 2) - (4.0 * a * c);
-            if (dis < 0) {
-                return new double[]{}; //never at vel
-            }
-            if (dis == 0) {
-                double t = -b / (2.0 * a);
-                return new double[]{t + this.t}; //only at vel once
-            }
-            dis = Math.sqrt(dis);
-            double t1 = (-b + dis) / (2.0 * a);
-            double t2 = (-b - dis) / (2.0 * a);
-            return new double[]{t1 + this.t, t2 + this.t};
+            return MathUtil.solveQuadratic(stateAt0.j / 2.0, stateAt0.a, stateAt0.v - vel);
         }
         //first degree case
         if (this.a != 0) {
-            double t = (vel - this.v) / this.a;
-            return new double [] {t + this.t};
+            return new double [] {(vel - stateAt0.v) / stateAt0.a};
         }
         return new double[] {};
     }
