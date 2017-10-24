@@ -98,8 +98,9 @@ public class RobotDashboard {
     }
 
     public void registerConfigClass(Class<?> configClass) {
-	    registerConfigClass(configClass, configClass.getSimpleName());
-    }
+		configuration.addOptionsFromClass(configClass);
+		sendAll(new Message(MessageType.RECEIVE_CONFIG, configuration));
+	}
 
     public Telemetry getTelemetry() {
 	    return telemetry;

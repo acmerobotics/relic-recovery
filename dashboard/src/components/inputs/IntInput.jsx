@@ -11,6 +11,7 @@ class IntInput extends React.Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -31,7 +32,14 @@ class IntInput extends React.Component {
         value: evt.target.value,
         valid: true
       });
-      this.props.onChange(parseInt(evt.target.value, 10));
+      this.props.onChange(evt);
+    }
+  }
+
+  handleKeyPress(evt) {
+    if (evt.key === 'Enter' && this.state.valid) {
+      this.props.onUpdate(parseInt(this.state.value, 10));
+      evt.stopPropagation();
     }
   }
 
@@ -42,6 +50,7 @@ class IntInput extends React.Component {
         type="text"
         value={this.state.value}
         onChange={this.handleChange}
+        onKeyPress={this.handleKeyPress}
       />
     );
   }
@@ -49,7 +58,8 @@ class IntInput extends React.Component {
 
 IntInput.propTypes = {
   value: PropTypes.number.isRequired,
-  onChange: PropTypes.func // TODO: fix!
+  onChange: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired
 };
 
 export default IntInput;

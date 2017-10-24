@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Option from './Option';
+import CustomOption from './CustomOption';
 import Heading from '../components/Heading';
 import IconGroup from '../components/IconGroup';
 import Icon from '../components/Icon';
@@ -16,13 +16,18 @@ const ConfigView = ({ config, configSchema, onRefresh }) => (
     </Heading>
     <table>
       <tbody>
-        {Object.keys(configSchema).map((key) => (
-          <Option
-            key={key}
-            name={key}
-            value={config[key]}
-            schema={configSchema[key]} />
-        ))}
+        {
+          Object.keys(configSchema).map((key) => (
+            <CustomOption
+              key={key}
+              name={key}
+              value={config[key] || {}}
+              schema={configSchema[key]}
+              onUpdate={(update) => this.props.onUpdate({
+                [key]: update
+              })} />
+          ))
+        }
       </tbody>
     </table>
   </div>
@@ -31,7 +36,8 @@ const ConfigView = ({ config, configSchema, onRefresh }) => (
 ConfigView.propTypes = {
   config: PropTypes.object.isRequired,
   configSchema: PropTypes.object.isRequired,
-  onRefresh: PropTypes.func.isRequired
+  onRefresh: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired
 };
 
 const mapStateToProps = ({ config, configSchema }) => ({
@@ -43,8 +49,8 @@ const mapDispatchToProps = (dispatch) => ({
   onRefresh: () => {
     dispatch(getConfig());
   },
-  onSave: () => {
-    dispatch(updateConfig());
+  onUpdate: (update) => {
+    dispatch(updateConfig(update));
   }
 });
 
