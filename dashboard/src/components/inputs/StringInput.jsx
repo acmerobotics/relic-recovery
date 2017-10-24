@@ -31,6 +31,7 @@ class StringInput extends React.Component {
       <input
         className="valid"
         type="text"
+        size={30}
         value={this.state.value}
         onChange={this.handleChange}
       />
