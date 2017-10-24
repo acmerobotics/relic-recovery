@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { isEqual } from 'lodash';
 import Heading from '../components/Heading';
 import Icon from '../components/Icon';
 import BasicOption from './BasicOption';
@@ -25,35 +26,43 @@ class CustomOption extends React.Component {
   render() {
     const { name, value, schema } = this.props;
 
-    const options = Object.keys(value)
+    const optionKeys = Object.keys(value)
       .filter((key) => key in schema)
-      .map((key) => {
-        const onChange = (update) => this.props.onChange({
-          [key]: update
-        });
+      .sort();
 
-        const type = OptionType.getFromSchema(schema[key]);
+    // TODO: hack to reverse sort PID coefficients
+    if (isEqual(optionKeys, ['d', 'i', 'p'])) {
+      optionKeys[0] = 'p';
+      optionKeys[2] = 'd';
+    }
 
-        if (type === OptionType.CUSTOM) {
-          return (
-            <CustomOption
-              key={key}
-              name={key}
-              value={value[key]}
-              schema={schema[key]}
-              onChange={onChange} />
-          );
-        }
+    const options = optionKeys.map((key) => {
+      const onChange = (update) => this.props.onChange({
+        [key]: update
+      });
 
+      const type = OptionType.getFromSchema(schema[key]);
+
+      if (type === OptionType.CUSTOM) {
         return (
-          <BasicOption
+          <CustomOption
             key={key}
             name={key}
             value={value[key]}
             schema={schema[key]}
             onChange={onChange} />
         );
-      });
+      }
+
+      return (
+        <BasicOption
+          key={key}
+          name={key}
+          value={value[key]}
+          schema={schema[key]}
+          onChange={onChange} />
+      );
+    });
 
     return (
       <tr>
