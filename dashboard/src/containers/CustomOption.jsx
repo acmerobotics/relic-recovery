@@ -58,7 +58,7 @@ class CustomOption extends React.Component {
     return (
       <tr>
         <td>
-          <Heading level={3} text={name} >
+          <Heading level={3} text={name}>
             <Icon icon={ this.state.expanded ? 'remove' : 'add' } size='small' onClick={this.toggleVisibility} />
           </Heading>
           {
