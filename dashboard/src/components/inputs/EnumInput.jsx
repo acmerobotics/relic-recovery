@@ -15,7 +15,7 @@ const EnumInput = ({ value, values, onChange }) => (
 EnumInput.propTypes = {
   value: PropTypes.number.isRequired,
   values: PropTypes.arrayOf(PropTypes.string).isRequired,
-  onChange: PropTypes.func // TODO: fix!
+  onChange: PropTypes.func.isRequired
 };
 
 export default EnumInput;

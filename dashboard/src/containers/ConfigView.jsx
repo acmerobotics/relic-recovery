@@ -5,12 +5,13 @@ import CustomOption from './CustomOption';
 import Heading from '../components/Heading';
 import IconGroup from '../components/IconGroup';
 import Icon from '../components/Icon';
-import { getConfig, updateConfig } from '../actions/config';
+import { getConfig, updateConfig, saveConfig } from '../actions/config';
 
-const ConfigView = ({ config, configSchema, onRefresh }) => (
+const ConfigView = ({ config, configSchema, onRefresh, onSave, onChange }) => (
   <div>
     <Heading level={2} text="Configuration">
       <IconGroup>
+        <Icon icon="save" size="small" onClick={onSave} />
         <Icon icon="refresh" size="small" onClick={onRefresh} />
       </IconGroup>
     </Heading>
@@ -23,9 +24,11 @@ const ConfigView = ({ config, configSchema, onRefresh }) => (
               name={key}
               value={config[key] || {}}
               schema={configSchema[key]}
-              onUpdate={(update) => this.props.onUpdate({
-                [key]: update
-              })} />
+              onChange={
+                (value) => onChange({
+                  [key]: value
+                })
+              } />
           ))
         }
       </tbody>
@@ -37,7 +40,8 @@ ConfigView.propTypes = {
   config: PropTypes.object.isRequired,
   configSchema: PropTypes.object.isRequired,
   onRefresh: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired
 };
 
 const mapStateToProps = ({ config, configSchema }) => ({
@@ -49,8 +53,11 @@ const mapDispatchToProps = (dispatch) => ({
   onRefresh: () => {
     dispatch(getConfig());
   },
-  onUpdate: (update) => {
-    dispatch(updateConfig(update));
+  onSave: () => {
+    dispatch(saveConfig());
+  },
+  onChange: (value) => {
+    dispatch(updateConfig(value));
   }
 });
 

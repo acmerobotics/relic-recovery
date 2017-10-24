@@ -7,7 +7,7 @@ const BooleanInput = ({ value, onChange }) => (
 
 BooleanInput.propTypes = {
   value: PropTypes.bool.isRequired,
-  onChange: PropTypes.func // TODO: fix!
+  onChange: PropTypes.func.isRequired
 };
 
 export default BooleanInput;

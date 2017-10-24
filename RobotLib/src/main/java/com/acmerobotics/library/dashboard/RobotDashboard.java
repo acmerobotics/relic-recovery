@@ -145,7 +145,7 @@ public class RobotDashboard {
                 socket.send(new Message(MessageType.RECEIVE_CONFIG, getConfigJson()));
                 break;
             }
-            case UPDATE_CONFIG: {
+			case SAVE_CONFIG: {
             	configuration.updateJson((JsonElement) msg.getData());
                 break;
             }

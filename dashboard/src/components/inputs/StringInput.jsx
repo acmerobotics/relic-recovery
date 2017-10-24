@@ -10,7 +10,6 @@ class StringInput extends React.Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
-    this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
   componentWillReceiveProps() {
@@ -27,13 +26,6 @@ class StringInput extends React.Component {
     this.props.onChange(evt.target.value);
   }
 
-  handleKeyPress(evt) {
-    if (evt.key === 'Enter') {
-      this.props.onUpdate(this.state.value);
-      evt.stopPropagation();
-    }
-  }
-
   render() {
     return (
       <input
@@ -41,7 +33,6 @@ class StringInput extends React.Component {
         type="text"
         value={this.state.value}
         onChange={this.handleChange}
-        onKeyPress={this.handleKeyPress}
       />
     );
   }
@@ -49,8 +40,7 @@ class StringInput extends React.Component {
 
 StringInput.propTypes = {
   value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired
 };
 
 export default StringInput;

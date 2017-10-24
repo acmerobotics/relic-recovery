@@ -8,28 +8,6 @@ import DoubleInput from '../components/inputs/DoubleInput';
 import OptionType from '../enums/OptionType';
 
 class BasicOption extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      dirty: false
-    };
-
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  componentWillReceiveProps() {
-    this.setState({
-      dirty: false
-    });
-  }
-
-  handleChange() {
-    this.setState({
-      dirty: true
-    });
-  }
-
   render() {
     const { name, value, schema } = this.props;
 
@@ -39,19 +17,19 @@ class BasicOption extends React.Component {
 
     switch (type) {
     case OptionType.INT:
-      input = <IntInput value={value} onChange={this.handleChange} onUpdate={this.props.onUpdate} />;
+      input = <IntInput value={value} onChange={this.props.onChange} />;
       break;
     case OptionType.DOUBLE:
-      input = <DoubleInput value={value} onChange={this.handleChange} onUpdate={this.props.onUpdate} />;
+      input = <DoubleInput value={value} onChange={this.props.onChange} />;
       break;
     case OptionType.STRING:
-      input = <StringInput value={value} onChange={this.handleChange} onUpdate={this.props.onUpdate} />;
+      input = <StringInput value={value} onChange={this.props.onChange} />;
       break;
     case OptionType.BOOLEAN:
-      input = <BooleanInput value={value} onChange={this.handleChange} onUpdate={this.props.onUpdate} />;
+      input = <BooleanInput value={value} onChange={this.props.onChange} />;
       break;
     case OptionType.ENUM:
-      input = <EnumInput value={value} values={schema.values} onChange={this.handleChange} onUpdate={this.props.onUpdate} />;
+      input = <EnumInput value={value} values={schema.values} onChange={this.props.onChange} />;
       break;
     default:
       input = <p>Unknown option type: {type}</p>;
@@ -59,7 +37,7 @@ class BasicOption extends React.Component {
 
     return (
       <tr>
-        <td>{this.state.dirty ? '*' : ''}{name}</td>
+        <td>{name}</td>
         <td>{input}</td>
       </tr>
     );
@@ -70,7 +48,7 @@ BasicOption.propTypes = {
   name: PropTypes.string.isRequired,
   value: PropTypes.any.isRequired,
   schema: PropTypes.any.isRequired,
-  onUpdate: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired
 };
 
 export default BasicOption;

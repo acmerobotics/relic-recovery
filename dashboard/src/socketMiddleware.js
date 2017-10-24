@@ -10,7 +10,7 @@ import {
 } from './actions/socket';
 import {
   GET_CONFIG,
-  UPDATE_CONFIG
+  SAVE_CONFIG
 } from './actions/config';
 
 let socket, pingSentTime;
@@ -66,7 +66,7 @@ const socketMiddleware = store => next => action => {
   }
   case PING:
   case GET_CONFIG:
-  case UPDATE_CONFIG: {
+  case SAVE_CONFIG: {
     const { isConnected } = store.getState().socket;
 
     if (isConnected) {

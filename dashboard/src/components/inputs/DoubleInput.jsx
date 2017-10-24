@@ -51,7 +51,7 @@ class DoubleInput extends React.Component {
 
 DoubleInput.propTypes = {
   value: PropTypes.number.isRequired,
-  onChange: PropTypes.func // TODO: fix!
+  onChange: PropTypes.func.isRequired
 };
 
 export default DoubleInput;
