@@ -1,9 +1,5 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
@@ -19,15 +15,8 @@ public class JewelTracker implements Tracker {
     public static final float JEWEL_PLATFORM_ASPECT_RATIO = 2.6f; // width/height
     public static final double COLOR_THRESHOLD = 0.7;
 
-    private Paint paint;
     private Rect jewelPlatformRect, leftJewelRect, rightJewelRect;
     private double leftRed, leftBlue, rightRed, rightBlue;
-
-    public JewelTracker() {
-        paint = new Paint();
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(5.0f);
-    }
 
     @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
@@ -75,28 +64,29 @@ public class JewelTracker implements Tracker {
     }
 
     @Override
-    public synchronized void drawOverlay(Canvas canvas, int imageWidth, int imageHeight) {
+    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
         if (jewelPlatformRect != null) {
-            paint.setColor(Color.GREEN);
-            VisionUtil.drawRect(canvas, jewelPlatformRect, paint);
+            overlay.strokeRect(jewelPlatformRect, new Scalar(0, 255, 0), 5);
 
+            Scalar leftColor;
             if (leftBlue > COLOR_THRESHOLD) {
-                paint.setColor(Color.BLUE);
+                leftColor = new Scalar(255, 0, 0);
             } else if (leftRed > COLOR_THRESHOLD) {
-                paint.setColor(Color.RED);
+                leftColor = new Scalar(0, 0, 255);
             } else {
-                paint.setColor(Color.GREEN);
+                leftColor = new Scalar(0, 255, 0);
             }
-            VisionUtil.drawRect(canvas, leftJewelRect, paint);
+            overlay.strokeRect(leftJewelRect, leftColor, 5);
 
+            Scalar rightColor;
             if (rightBlue > COLOR_THRESHOLD) {
-                paint.setColor(Color.BLUE);
+                rightColor = new Scalar(255, 0, 0);
             } else if (rightRed > COLOR_THRESHOLD) {
-                paint.setColor(Color.RED);
+                rightColor = new Scalar(0, 0, 255);
             } else {
-                paint.setColor(Color.GREEN);
+                rightColor = new Scalar(0, 255, 0);
             }
-            VisionUtil.drawRect(canvas, rightJewelRect, paint);
+            overlay.strokeRect(rightJewelRect, rightColor, 5);
         }
     }
 

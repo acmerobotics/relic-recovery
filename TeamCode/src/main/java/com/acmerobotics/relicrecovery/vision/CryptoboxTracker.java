@@ -1,8 +1,5 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.util.Log;
 
 import com.vuforia.CameraCalibration;
@@ -21,6 +18,7 @@ import org.opencv.imgproc.Moments;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import static com.acmerobotics.relicrecovery.vision.VisionConstants.ACTUAL_GLYPH_SIZE;
 import static com.acmerobotics.relicrecovery.vision.VisionConstants.ACTUAL_RAIL_GAP;
@@ -66,7 +64,6 @@ public class CryptoboxTracker implements Tracker {
     private List<Glyph> latestGlyphs;
     private List<Rail> latestRawRails;
     private int actualWidth, actualHeight;
-    private Paint paint;
     private Mat resized, hsv, red, blue, brown, gray;
     private Mat temp, morph, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
@@ -121,9 +118,6 @@ public class CryptoboxTracker implements Tracker {
     }
 
     public CryptoboxTracker(boolean useExtendedTracking) {
-        paint = new Paint();
-        paint.setStrokeWidth(5.0f);
-        paint.setStyle(Paint.Style.STROKE);
         this.useExtendedTracking = useExtendedTracking;
     }
 
@@ -524,63 +518,57 @@ public class CryptoboxTracker implements Tracker {
     }
 
     @Override
-    public synchronized void drawOverlay(Canvas canvas, int imageWidth, int imageHeight) {
+    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
         if (latestResult != null) {
-            // draw text before the additional transformation
-            paint.setStyle(Paint.Style.FILL_AND_STROKE);
-            paint.setStrokeWidth(5.0f);
-            paint.setTextSize(45.0f);
-            paint.setColor(Color.YELLOW);
+            overlay.putText(
+                    String.format(Locale.ENGLISH, "%.2f, %.2f", latestResult.distance, latestResult.offsetX),
+                    Overlay.TextAlign.LEFT,
+                    new Point(5, 100),
+                    new Scalar(0, 0, 255),
+                    45
+            );
 
-            canvas.drawText(String.format("%.2f, %.2f", latestResult.distance, latestResult.offsetX), 5, 100, paint);
-
-            // transform the canvas to the dimensions of the resized image
-            canvas.translate(imageWidth / 2.0f, imageHeight / 2.0f);
-            canvas.scale((float) imageWidth / actualWidth, (float) imageHeight / actualHeight);
-            canvas.translate(-actualWidth / 2.0f, -actualHeight / 2.0f);
-
-            paint.setStyle(Paint.Style.STROKE);
+            overlay.setScalingFactor(imageWidth / actualWidth);
 
             // draw glyphs
             if (latestGlyphs != null) {
                 for (Glyph glyph : latestGlyphs) {
                     switch (glyph.type) {
                         case FULL:
-                            paint.setColor(Color.GREEN);
+                            overlay.strokeRect(glyph.rect, new Scalar(0, 255, 0), 5);
                             break;
                         case PARTIAL_HEIGHT:
                         case PARTIAL_WIDTH:
                             // intentional fall through
-                            paint.setColor(Color.YELLOW);
+                            overlay.strokeRect(glyph.rect, new Scalar(255, 0, 255), 5);
                             break;
                     }
-                    VisionUtil.drawRect(canvas, glyph.rect, paint);
                 }
             }
 
             // draw rail contours
-            paint.setColor(Color.WHITE);
             if (latestRawRails != null) {
                 for (Rail rawRail : latestRawRails) {
-                    VisionUtil.drawContour(canvas, rawRail.contour, paint);
+                    overlay.strokeContour(rawRail.contour, new Scalar(255, 255, 255), 5);
                 }
             }
 
             // draw rails
+            Scalar railColor = null;
             switch (latestResult.color) {
                 case RED:
-                    paint.setColor(Color.MAGENTA);
+                    railColor = new Scalar(255, 0, 255);
                     break;
                 case BLUE:
-                    paint.setColor(Color.CYAN);
+                    railColor = new Scalar(255, 255, 0);
                     break;
                 case UNKNOWN:
-                    paint.setColor(Color.GRAY);
+                    railColor = new Scalar(0, 0, 0);
                     break;
             }
 
             for (double rail : latestResult.rails) {
-                VisionUtil.drawLine(canvas, new Point(rail, 0), new Point(rail, imageHeight), paint);
+                overlay.strokeLine(new Point(rail, 0), new Point(rail, actualHeight), railColor, 25);
             }
         }
     }
