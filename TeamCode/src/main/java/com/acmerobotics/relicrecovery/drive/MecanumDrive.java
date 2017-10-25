@@ -114,7 +114,7 @@ public class MecanumDrive {
      * @param rot rotation of each wheel, in radians
      * @return movement of robot
      */
-    public static Pose2d getDelta (int[] rot) {
+    public static Pose2d getDelta(int[] rot) {
         if (rot.length != 4) {
             throw new IllegalArgumentException("length must be four");
         }

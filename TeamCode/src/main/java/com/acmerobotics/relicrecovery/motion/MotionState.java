@@ -58,7 +58,7 @@ public class MotionState {
         double a = this.j * time + this.a;
         double v = .5 * this.j * t2 + this.a * time + this.v;
         double x = (1.0/6.0) * this.j * t3 + .5 * this.a * t2 + this.v * time + this.x;
-        return new MotionState (x, v, a, this.j, time);
+        return new MotionState (x, v, a, this.j, time + this.t);
     }
 
     /**
