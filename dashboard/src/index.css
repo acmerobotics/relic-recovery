@@ -6,11 +6,14 @@ h1, h2, h3 { margin: 0; }
 .tile { border: 1px solid #EEE; padding: 16px; overflow: auto; }
 .heading { display: flex; justify-content: space-between; align-items: center; }
 table { margin: 0; border-collapse: collapse; text-align: left; }
+table table { margin-left: 24px; }
 td { padding: 4px; }
 input { font-size: inherit; outline: none; }
 .invalid { border: 2px solid red; }
+.option-header { display: flex; }
 .icon-group { display: flex; align-items: center; order: 10; }
 .icon { background-repeat: round; margin: 4px; }
+.icon.tiny { width: 16px; height: 16px; }
 .icon.small { width: 24px; height: 24px; }
 .icon.large { width: 36px; height: 36px; }
 .save { background-image: url('icons/save.svg'); }
@@ -21,3 +24,5 @@ input { font-size: inherit; outline: none; }
 .refresh { background-image: url('icons/refresh.svg'); }
 .add { background-image: url('icons/add.svg'); }
 .remove { background-image: url('icons/remove.svg'); }
+.expand-less { background-image: url('icons/expand_less.svg'); }
+.expand-more { background-image: url('icons/expand_more.svg'); }

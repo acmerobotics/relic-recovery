@@ -1,7 +1,8 @@
-package com.acmerobotics.library.dashboard;
+package com.acmerobotics.library.dashboard.telemetry;
 
 import android.support.annotation.Nullable;
 
+import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageType;
 

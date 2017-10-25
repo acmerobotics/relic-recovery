@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-class DoubleOption extends React.Component {
+class IntInput extends React.Component {
   constructor(props) {
     super(props);
 
@@ -21,19 +21,17 @@ class DoubleOption extends React.Component {
   }
 
   handleChange(evt) {
-    if (evt.target.value === ''
-        || /^-0?$/.test(evt.target.value)
-        || /^-?\d*\.([1-9]*0+)*$/.test(evt.target.value)) {
+    if (evt.target.value === '-' || evt.target.value === '') {
       this.setState({
         value: evt.target.value,
         valid: false
       });
-    } else if (/^-?\d*\.?\d*$/.test(evt.target.value)) {
+    } else if (/^-?\d*$/.test(evt.target.value)) {
       this.setState({
         value: evt.target.value,
         valid: true
       });
-      this.props.onChange(parseFloat(evt.target.value));
+      this.props.onChange(parseInt(evt.target.value, 10));
     }
   }
 
@@ -42,6 +40,7 @@ class DoubleOption extends React.Component {
       <input
         className={ this.state.valid ? 'valid' : 'invalid' }
         type="text"
+        size={8}
         value={this.state.value}
         onChange={this.handleChange}
       />
@@ -49,9 +48,9 @@ class DoubleOption extends React.Component {
   }
 }
 
-DoubleOption.propTypes = {
+IntInput.propTypes = {
   value: PropTypes.number.isRequired,
   onChange: PropTypes.func.isRequired
 };
 
-export default DoubleOption;
+export default IntInput;

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const EnumOption = ({ value, values, onChange }) => (
+const EnumInput = ({ value, values, onChange }) => (
   <select
     className="valid"
     value={values[value]}
@@ -12,10 +12,10 @@ const EnumOption = ({ value, values, onChange }) => (
   </select>
 );
 
-EnumOption.propTypes = {
+EnumInput.propTypes = {
   value: PropTypes.number.isRequired,
   values: PropTypes.arrayOf(PropTypes.string).isRequired,
   onChange: PropTypes.func.isRequired
 };
 
-export default EnumOption;
+export default EnumInput;

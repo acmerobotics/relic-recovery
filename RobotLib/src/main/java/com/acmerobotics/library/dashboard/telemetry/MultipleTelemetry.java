@@ -1,4 +1,4 @@
-package com.acmerobotics.library.dashboard;
+package com.acmerobotics.library.dashboard.telemetry;
 
 import android.support.annotation.Nullable;
 

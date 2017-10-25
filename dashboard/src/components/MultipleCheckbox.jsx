@@ -51,7 +51,7 @@ MultipleCheckbox.propTypes = {
   arr: PropTypes.arrayOf(PropTypes.string).isRequired,
   selected: PropTypes.arrayOf(PropTypes.string),
   exclude: PropTypes.arrayOf(PropTypes.string),
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func // TODO: fix!
 };
 
 export default MultipleCheckbox;

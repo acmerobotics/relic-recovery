@@ -1,4 +1,4 @@
-package com.acmerobotics.library.dashboard.draw;
+package com.acmerobotics.library.dashboard.canvas;
 
 import com.google.gson.annotations.SerializedName;
 
