@@ -40,9 +40,9 @@ public class ClasspathScanner {
         for (String className : classNames) {
             if (filter.shouldProcessClass(className)) {
                 try {
-                    Class clazz = Class.forName(className, false, classLoader);
+                    Class klass = Class.forName(className, false, classLoader);
 
-                    filter.processClass(clazz);
+                    filter.processClass(klass);
                 } catch (ClassNotFoundException e) {
                     Log.w(TAG, e);
                 }

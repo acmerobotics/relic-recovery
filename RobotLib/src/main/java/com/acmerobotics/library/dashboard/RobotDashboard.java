@@ -7,7 +7,7 @@ import android.util.Log;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.config.Configuration;
-import com.acmerobotics.library.dashboard.config.Option;
+import com.acmerobotics.library.dashboard.config.options.Option;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageDeserializer;
 import com.acmerobotics.library.dashboard.message.MessageType;
@@ -67,10 +67,10 @@ public class RobotDashboard {
             }
 
             @Override
-            public void processClass(Class clazz) {
-                if (clazz.isAnnotationPresent(Config.class)) {
-                	Log.i(TAG, String.format("Found config class %s", clazz.getCanonicalName()));
-					configuration.addOptionsFromClass(clazz);
+            public void processClass(Class klass) {
+                if (klass.isAnnotationPresent(Config.class)) {
+                	Log.i(TAG, String.format("Found config class %s", klass.getCanonicalName()));
+					configuration.addOptionsFromClass(klass);
                 }
             }
         });

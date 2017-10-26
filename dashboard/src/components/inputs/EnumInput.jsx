@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 const EnumInput = ({ value, values, onChange }) => (
   <select
     className="valid"
-    value={values[value]}
-    onChange={evt => onChange(evt.target.selectedIndex)}>
+    value={value}
+    onChange={evt => onChange(evt.target.value)}>
     {
       values.map(v => (<option key={v} value={v}>{v}</option>))
     }
@@ -13,7 +13,7 @@ const EnumInput = ({ value, values, onChange }) => (
 );
 
 EnumInput.propTypes = {
-  value: PropTypes.number.isRequired,
+  value: PropTypes.string.isRequired,
   values: PropTypes.arrayOf(PropTypes.string).isRequired,
   onChange: PropTypes.func.isRequired
 };

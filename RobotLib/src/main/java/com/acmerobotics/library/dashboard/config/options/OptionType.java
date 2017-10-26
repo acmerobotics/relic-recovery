@@ -1,4 +1,4 @@
-package com.acmerobotics.library.dashboard.config;
+package com.acmerobotics.library.dashboard.config.options;
 
 /**
  * Created by ryanbrott on 10/13/17.

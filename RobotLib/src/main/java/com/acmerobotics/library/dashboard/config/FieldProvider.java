@@ -10,21 +10,19 @@ import static com.acmerobotics.library.dashboard.RobotDashboard.TAG;
  * Created by ryanbrott on 10/13/17.
  */
 
-public class FieldOption extends Option {
-    private transient Field field;
-    private transient Object parent;
+public class FieldProvider<T> implements ValueProvider<T> {
+    private Field field;
+    private Object parent;
 
-    public FieldOption(Field field, Object parent) {
-        super(OptionType.fromClass(field.getType()));
-
+    public FieldProvider(Field field, Object parent) {
         this.field = field;
         this.parent = parent;
     }
 
     @Override
-    public Object getValue() {
+    public T get() {
         try {
-            return field.get(parent);
+            return (T) field.get(parent);
         } catch (IllegalAccessException e) {
             Log.w(TAG, e);
         }
@@ -32,9 +30,9 @@ public class FieldOption extends Option {
     }
 
     @Override
-    public void setValue(Object o) {
+    public void set(T value) {
         try {
-            field.set(parent, o);
+            field.set(parent, value);
         } catch (IllegalAccessException e) {
             Log.w(TAG, e);
         }

@@ -1,5 +1,6 @@
 package com.acmerobotics.library.dashboard.message;
 
+import com.acmerobotics.library.dashboard.util.EnumUtil;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;

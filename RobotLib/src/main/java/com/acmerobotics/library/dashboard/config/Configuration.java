@@ -1,5 +1,6 @@
 package com.acmerobotics.library.dashboard.config;
 
+import com.acmerobotics.library.dashboard.config.options.Option;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 

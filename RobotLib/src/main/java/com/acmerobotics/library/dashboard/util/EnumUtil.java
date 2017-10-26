@@ -1,6 +1,4 @@
-package com.acmerobotics.library.dashboard.message;
-
-import com.google.gson.annotations.SerializedName;
+package com.acmerobotics.library.dashboard.util;
 
 import java.lang.reflect.Field;
 
@@ -17,9 +15,7 @@ public class EnumUtil {
             } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             }
-            if ((field.isAnnotationPresent(SerializedName.class) &&
-                    field.getAnnotation(SerializedName.class).value().equals(value)) ||
-                    (field.getName().equals(value))) {
+            if (field.getName().equals(value)) {
                 return type;
             }
         }
