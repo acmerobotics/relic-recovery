@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '25.0.3'
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         minSdkVersion 19
@@ -11,33 +11,38 @@ android {
         versionName "1.0"
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     lintOptions {
         abortOnError false
     }
 }
 
 dependencies {
-    compile(name: 'RobotCore-release', ext: 'aar')
-    compile(name: 'Hardware-release', ext: 'aar')
-    compile(name: 'FtcCommon-release', ext: 'aar')
-    compile(name: 'Analytics-release', ext: 'aar')
-    compile(name: 'WirelessP2p-release', ext: 'aar')
+    implementation(name: 'RobotCore-release', ext: 'aar')
+    implementation(name: 'Hardware-release', ext: 'aar')
+    implementation(name: 'FtcCommon-release', ext: 'aar')
+    implementation(name: 'Analytics-release', ext: 'aar')
+    implementation(name: 'WirelessP2p-release', ext: 'aar')
 
     // already in a jar
-//    compile 'org.nanohttpd:nanohttpd:2.3.1'
-//    compile('org.nanohttpd:nanohttpd-webserver:2.3.1') {
+//    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+//    implementation('org.nanohttpd:nanohttpd-webserver:2.3.1') {
 //        exclude module: 'nanohttpd'
 //    }
-    compile('org.nanohttpd:nanohttpd-websocket:2.3.1') {
+    implementation('org.nanohttpd:nanohttpd-websocket:2.3.1') {
         exclude module: 'nanohttpd'
     }
-    compile 'org.eclipse.jetty.websocket:websocket-client:9.3.0.M2'
+    implementation 'org.eclipse.jetty.websocket:websocket-client:9.3.0.M2'
     // already in a jar
-//    compileOnly 'com.google.code.gson:gson:2.8.0'
+//    implementationOnly 'com.google.code.gson:gson:2.8.0'
 
-    compile('com.android.support:support-v13:23.4.0') {
+    implementation('com.android.support:support-v13:23.4.0') {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }

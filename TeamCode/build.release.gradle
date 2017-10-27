@@ -1,12 +1,12 @@
 dependencies {
-    compile project(':FtcRobotController')
-    compile project(':RobotLib')
-    compile project(':openCVLibrary330')
-    compile (name: 'RobotCore-release', ext: 'aar')
-    compile (name: 'Hardware-release', ext: 'aar')
-    compile (name: 'FtcCommon-release', ext: 'aar')
-    compile (name: 'Analytics-release', ext: 'aar')
-    compile (name: 'WirelessP2p-release', ext: 'aar')
+    implementation project(':FtcRobotController')
+    implementation project(':RobotLib')
+    implementation project(':openCVLibrary330')
+    implementation (name: 'RobotCore-release', ext: 'aar')
+    implementation (name: 'Hardware-release', ext: 'aar')
+    implementation (name: 'FtcCommon-release', ext: 'aar')
+    implementation (name: 'Analytics-release', ext: 'aar')
+    implementation (name: 'WirelessP2p-release', ext: 'aar')
 
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
