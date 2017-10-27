@@ -22,7 +22,7 @@ public abstract class Option {
     public static Option createFromClass(Class<?> klass) {
         CustomOption customOption = new CustomOption();
         for (Field field : klass.getFields()) {
-            if (!Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers())) {
+            if (!Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers())) {
                 continue;
             }
 

@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC" name="software">
+    <MotorController name="rightDrive" serialNumber="AL00XPYM">
+        <NeveRest60Gearmotor name="rearRight" port="1" />
+        <NeveRest60Gearmotor name="frontRight" port="2" />
+    </MotorController>
+    <MotorController name="leftDrive" serialNumber="AL00VKFT">
+        <NeveRest60Gearmotor name="frontLeft" port="1" />
+        <NeveRest60Gearmotor name="rearLeft" port="2" />
+    </MotorController>
+    <DeviceInterfaceModule name="dim" serialNumber="AI02RLOW">
+        <AdafruitBNO055IMU name="imu" port="0" />
+    </DeviceInterfaceModule>
+</Robot>

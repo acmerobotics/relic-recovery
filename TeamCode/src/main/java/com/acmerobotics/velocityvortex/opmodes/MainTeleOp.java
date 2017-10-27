@@ -1,7 +1,7 @@
 package com.acmerobotics.velocityvortex.opmodes;
 
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.velocityvortex.drive.EnhancedMecanumDrive;
 import com.acmerobotics.velocityvortex.drive.MecanumDrive;
 import com.acmerobotics.velocityvortex.drive.Vector2d;
@@ -18,8 +18,6 @@ import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-import java.util.Arrays;
 
 @TeleOp(name = "VV TeleOp", group = "TeleOp")
 public class MainTeleOp extends OpMode {
@@ -56,7 +54,7 @@ public class MainTeleOp extends OpMode {
     @Override
     public void init() {
         dashboard = RobotDashboard.getInstance();
-        telemetry = new MultipleTelemetry(Arrays.asList(telemetry, dashboard.getTelemetry()));
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         hardwareMap.dcMotor.get("leftFront").setDirection(DcMotorSimple.Direction.REVERSE);
         hardwareMap.dcMotor.get("leftBack").setDirection(DcMotorSimple.Direction.REVERSE);

@@ -40,7 +40,7 @@ class IntInput extends React.Component {
       <input
         className={ this.state.valid ? 'valid' : 'invalid' }
         type="text"
-        size={8}
+        size={15}
         value={this.state.value}
         onChange={this.handleChange}
       />

@@ -6,6 +6,7 @@ import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -215,12 +216,8 @@ public class MultipleTelemetry implements Telemetry {
     private List<Telemetry> telemetryList;
     private MultipleLog log;
 
-    public MultipleTelemetry() {
-        this(new ArrayList<Telemetry>());
-    }
-
-    public MultipleTelemetry(List<Telemetry> telemetryList) {
-        this.telemetryList = telemetryList;
+    public MultipleTelemetry(Telemetry... telemetryList) {
+        this.telemetryList = new ArrayList<>(Arrays.asList(telemetryList));
         this.log = new MultipleLog();
         for (Telemetry telemetry : telemetryList) {
             this.log.addLog(telemetry.log());

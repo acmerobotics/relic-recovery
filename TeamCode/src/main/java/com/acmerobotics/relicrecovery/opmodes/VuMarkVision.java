@@ -28,8 +28,8 @@
  */
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -47,8 +47,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
-import java.util.Arrays;
-
 @TeleOp
 public class VuMarkVision extends LinearOpMode {
     public static final String TAG = "VuMarkVision";
@@ -56,7 +54,7 @@ public class VuMarkVision extends LinearOpMode {
     VuforiaLocalizer vuforia;
 
     @Override public void runOpMode() throws InterruptedException {
-        telemetry = new MultipleTelemetry(Arrays.asList(telemetry, RobotDashboard.getInstance().getTelemetry()));
+        telemetry = new MultipleTelemetry(telemetry, RobotDashboard.getInstance().getTelemetry());
 
         this.vuforia = ClassFactory.createVuforiaLocalizer(VisionConstants.VUFORIA_PARAMETERS);
 

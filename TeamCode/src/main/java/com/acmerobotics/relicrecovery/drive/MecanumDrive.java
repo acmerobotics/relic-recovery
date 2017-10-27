@@ -58,6 +58,8 @@ public class MecanumDrive {
         if (names.length != 4) {
             throw new IllegalArgumentException("must be four for motors");
         }
+        offsets = new int[4];
+        motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
             motors[i] = map.dcMotor.get(names[i]);
         }
