@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -16,7 +17,6 @@ import static org.junit.Assert.assertEquals;
  */
 
 public class CryptoboxTrackerTest {
-
     @Test
     public void testNonMaximumSuppression() {
         List<Double> values = new ArrayList<>(Arrays.asList(1.0, 1.01, 1.5, 2.0, 3.0, 3.15, 4.0));
@@ -34,7 +34,10 @@ public class CryptoboxTrackerTest {
     }
 
     @Test
+    @Ignore
     public void testSampleImages() {
+        CryptoboxTracker.isUnitTest = true;
+
         CryptoboxTracker tracker = new CryptoboxTracker(true);
 
         File imageSourceDir = new File("scripts/cryptobox/images");
@@ -47,10 +50,12 @@ public class CryptoboxTrackerTest {
             }
             Mat image = Imgcodecs.imread(imageFile.getAbsolutePath());
 
-            tracker.analyzeCryptobox(image);
+            tracker.processFrame(image, 0);
+
+            MatOverlay overlay = new MatOverlay(image);
+            tracker.drawOverlay(overlay, image.cols(), image.rows());
 
             Imgcodecs.imwrite(new File(imageOutputDir, imageFile.getName()).getAbsolutePath(), image);
         }
     }
-
 }

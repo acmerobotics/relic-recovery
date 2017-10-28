@@ -31,6 +31,6 @@ public class FpsTracker implements Tracker {
 
     @Override
     public void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
-        overlay.putText(String.format(Locale.ENGLISH, "%.2f FPS", 1 / avgTimeDelta), Overlay.TextAlign.LEFT, new Point(5, 45), new Scalar(0, 0, 255), 45);
+        overlay.putText(String.format(Locale.ENGLISH, "%.2f FPS", 1 / avgTimeDelta), Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, 45), new Scalar(0, 0, 255), 45);
     }
 }

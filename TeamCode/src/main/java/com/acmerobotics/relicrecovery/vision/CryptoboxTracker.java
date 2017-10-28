@@ -1,7 +1,5 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import android.util.Log;
-
 import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
 
@@ -60,6 +58,9 @@ import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_UPPER_VA
 public class CryptoboxTracker implements Tracker {
     public static final String TAG = "CryptoboxTracker";
 
+    // TODO: hack!
+    public static boolean isUnitTest;
+
     private CryptoboxResult latestResult;
     private List<Glyph> latestGlyphs;
     private List<Rail> latestRawRails;
@@ -68,7 +69,7 @@ public class CryptoboxTracker implements Tracker {
     private Mat temp, morph, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
     private boolean useExtendedTracking, initialized;
-    private double focalLengthPx; // px
+    private double focalLengthPx;
 
     public enum CryptoboxColor {
         BLUE,
@@ -344,9 +345,15 @@ public class CryptoboxTracker implements Tracker {
         actualHeight = frame.rows() / 4;
 
         if (!initialized) {
-            CameraCalibration cameraCalibration = CameraDevice.getInstance().getCameraCalibration();
-            double fov = cameraCalibration.getFieldOfViewRads().getData()[0];
-            focalLengthPx = (actualWidth * 0.5) / Math.tan(0.5 * fov);
+            // TODO: this is a bad hack!! find a better way to do this
+            if (isUnitTest) {
+                focalLengthPx = 270.451191280832; // Moto G4 Play
+            } else {
+                CameraCalibration cameraCalibration = CameraDevice.getInstance().getCameraCalibration();
+                double fov = cameraCalibration.getFieldOfViewRads().getData()[0];
+                focalLengthPx = (actualWidth * 0.5) / Math.tan(0.5 * fov);
+                System.out.println(focalLengthPx);
+            }
 
             resized = new Mat();
             hsv = new Mat();
@@ -415,9 +422,6 @@ public class CryptoboxTracker implements Tracker {
             blueRails.add(rawRail.x);
         }
 
-        Log.i(TAG, "Red rails: " + rawRedRails);
-        Log.i(TAG, "Blue rails: " + rawBlueRails);
-
         if (rawRedRails.size() > rawBlueRails.size()) {
             cryptoboxColor = CryptoboxColor.RED;
             rails.addAll(redRails);
@@ -436,8 +440,6 @@ public class CryptoboxTracker implements Tracker {
                 rails.addAll(blueRails);
             }
         }
-
-        Log.i(TAG, "Combined rails: " + rails);
 
         List<Double> glyphRails = new ArrayList<>();
         if (useExtendedTracking) {
@@ -463,9 +465,6 @@ public class CryptoboxTracker implements Tracker {
             List<Double> brownRails = findRailsFromGlyphs(brownGlyphs);
             List<Double> grayRails = findRailsFromGlyphs(grayGlyphs);
 
-            Log.i(TAG, "Brown rails: " + brownRails);
-            Log.i(TAG, "Gray rails: " + grayRails);
-
             glyphRails.addAll(brownRails);
             glyphRails.addAll(grayRails);
         }
@@ -489,8 +488,6 @@ public class CryptoboxTracker implements Tracker {
         }
 
         Collections.sort(rails);
-
-        Log.i(TAG, "Glyph + normal rails: " + rails);
 
         if (rails.size() == 3) {
             double meanRailGap = getMeanRailGap(rails);
@@ -520,31 +517,7 @@ public class CryptoboxTracker implements Tracker {
     @Override
     public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
         if (latestResult != null) {
-            overlay.putText(
-                    String.format(Locale.ENGLISH, "%.2f, %.2f", latestResult.distance, latestResult.offsetX),
-                    Overlay.TextAlign.LEFT,
-                    new Point(5, 100),
-                    new Scalar(0, 0, 255),
-                    45
-            );
-
             overlay.setScalingFactor(imageWidth / actualWidth);
-
-            // draw glyphs
-            if (latestGlyphs != null) {
-                for (Glyph glyph : latestGlyphs) {
-                    switch (glyph.type) {
-                        case FULL:
-                            overlay.strokeRect(glyph.rect, new Scalar(0, 255, 0), 5);
-                            break;
-                        case PARTIAL_HEIGHT:
-                        case PARTIAL_WIDTH:
-                            // intentional fall through
-                            overlay.strokeRect(glyph.rect, new Scalar(255, 0, 255), 5);
-                            break;
-                    }
-                }
-            }
 
             // draw rail contours
             if (latestRawRails != null) {
@@ -568,8 +541,34 @@ public class CryptoboxTracker implements Tracker {
             }
 
             for (double rail : latestResult.rails) {
-                overlay.strokeLine(new Point(rail, 0), new Point(rail, actualHeight), railColor, 25);
+                overlay.strokeLine(new Point(rail, 0), new Point(rail, actualHeight), railColor, 10);
             }
+
+            // draw glyphs
+            if (latestGlyphs != null) {
+                for (Glyph glyph : latestGlyphs) {
+                    switch (glyph.type) {
+                        case FULL:
+                            overlay.strokeRect(glyph.rect, new Scalar(0, 255, 0), 5);
+                            break;
+                        case PARTIAL_HEIGHT:
+                        case PARTIAL_WIDTH:
+                            // intentional fall through
+                            overlay.strokeRect(glyph.rect, new Scalar(255, 0, 255), 5);
+                            break;
+                    }
+                }
+            }
+
+            overlay.setScalingFactor(1);
+
+            overlay.putText(
+                    String.format(Locale.ENGLISH, "%.2f, %.2f", latestResult.distance, latestResult.offsetX),
+                    Overlay.TextAlign.LEFT,
+                    new Point(5, 50),
+                    new Scalar(0, 0, 255),
+                    45
+            );
         }
     }
 
