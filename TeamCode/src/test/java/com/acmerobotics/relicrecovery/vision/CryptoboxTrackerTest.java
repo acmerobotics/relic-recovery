@@ -29,13 +29,11 @@ public class CryptoboxTrackerTest {
         }
     }
 
-    static {
-        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
-    }
-
     @Test
     @Ignore
     public void testSampleImages() {
+        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
+
         CryptoboxTracker.isUnitTest = true;
 
         CryptoboxTracker tracker = new CryptoboxTracker(true);
