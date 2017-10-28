@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="/Users/ryanbrott/Desktop/Robotics/relic-recovery/openCVLibrary331/src/main/assets"/><source path="/Users/ryanbrott/Desktop/Robotics/relic-recovery/openCVLibrary331/build/generated/assets/shaders/debug"/></dataSet><dataSet config="debug"><source path="/Users/ryanbrott/Desktop/Robotics/relic-recovery/openCVLibrary331/src/debug/assets"/></dataSet></merger>
