@@ -18,7 +18,7 @@ public class PoseEstimator implements Loop {
     }
 
     @Override
-    public void onLoop(long timestamp) {
+    public synchronized void onLoop(long timestamp) {
         if (lastPositions == null) {
             lastPositions = drive.getPositions();
         } else {
@@ -35,7 +35,11 @@ public class PoseEstimator implements Loop {
         }
     }
 
-    public Pose2d getPose() {
+    public synchronized Pose2d getPose() {
         return pose.copy();
+    }
+
+    public synchronized void setPose(Pose2d pose) {
+        this.pose = pose;
     }
 }
