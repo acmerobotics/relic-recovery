@@ -9,7 +9,7 @@ import com.acmerobotics.relicrecovery.loops.Loop;
 
 public class PoseEstimator implements Loop {
     private MecanumDrive drive;
-    private int[] lastPositions;
+    private double[] lastRotations;
     private Pose2d pose;
 
     public PoseEstimator(MecanumDrive drive, Pose2d startingPose) {
@@ -19,19 +19,19 @@ public class PoseEstimator implements Loop {
 
     @Override
     public synchronized void onLoop(long timestamp) {
-        if (lastPositions == null) {
-            lastPositions = drive.getPositions();
+        if (lastRotations == null) {
+            lastRotations = drive.getRotations();
         } else {
-            int[] positions = drive.getPositions();
-            int[] positionDeltas = new int[positions.length];
-            for (int i = 0; i < positions.length; i++) {
-                positionDeltas[i] = positions[i] - lastPositions[i];
+            double[] rotations = drive.getRotations();
+            double[] rotationDeltas = new double[rotations.length];
+            for (int i = 0; i < rotationDeltas.length; i++) {
+                rotationDeltas[i] = rotations[i] - lastRotations[i];
             }
 
-            Pose2d poseDelta = MecanumDrive.getDelta(positionDeltas);
+            Pose2d poseDelta = drive.getPoseDelta(rotationDeltas);
             pose.add(poseDelta);
 
-            lastPositions = positions;
+            lastRotations = rotations;
         }
     }
 
