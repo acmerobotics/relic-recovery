@@ -7,7 +7,8 @@ import IconGroup from '../components/IconGroup';
 import Icon from '../components/Icon';
 import TelemetryView from './TelemetryView';
 import ConfigView from './ConfigView';
-import GraphView from './GraphView';
+// import GraphView from './GraphView';
+import FieldView from './FieldView';
 import Tile from '../components/Tile';
 import TileGrid from '../components/TileGrid';
 import { connect, disconnect } from '../actions/socket';
@@ -38,7 +39,8 @@ class Dashboard extends Component {
         </Header>
         <TileGrid>
           <Tile row="1 / span 2" col={1} hidden>
-            <GraphView />
+            {/* <GraphView /> */}
+            <FieldView />
           </Tile>
           <Tile row={1} col={2}>
             <ConfigView />
