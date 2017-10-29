@@ -47,6 +47,14 @@ public class Pose2d {
         return heading;
     }
 
+    public void add(Pose2d other) {
+
+    }
+
+    public Pose2d copy() {
+        return new Pose2d(pos.x(), pos.y(), heading);
+    }
+
     public double dist(Pose2d other) {
         return Math.hypot(pos.x() - other.pos.x(), pos.y() - other.pos.y());
     }
