@@ -33,8 +33,11 @@ export default class Field {
   }
 
   renderField(x, y, width, height) {
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.25;
     this.ctx.drawImage(fieldImage, x, y, width, height);
-    // this.renderGridLines(x, y, width, height, 7, 7);
+    this.ctx.restore();
+    this.renderGridLines(x, y, width, height, 7, 7);
     this.renderOverlay(x, y, width, height);
   }
 
