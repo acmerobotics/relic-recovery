@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import android.util.Log;
+
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.loops.Loop;
 
@@ -29,6 +31,9 @@ public class PoseEstimator implements Loop {
             }
 
             Pose2d poseDelta = MecanumDrive.getDelta(positionDeltas);
+
+            Log.i("PoseEstimator", poseDelta.toString());
+
             pose.add(poseDelta);
 
             lastPositions = positions;
