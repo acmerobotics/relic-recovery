@@ -198,7 +198,7 @@ public class CryptoboxTracker implements Tracker {
      * @param mask
      * @return detected rail x-coordinates
      */
-    public List<Rail> analyzeCryptobox(Mat mask) {
+    public List<Rail> findRailsFromMask(Mat mask) {
         List<Rail> rails = new ArrayList<>();
 
         Imgproc.morphologyEx(mask, morph, Imgproc.MORPH_OPEN, openKernel);
@@ -397,6 +397,7 @@ public class CryptoboxTracker implements Tracker {
         smartHsvRange(hsv, blueLowerHsv, blueUpperHsv, blue);
 
         List<Double> rails = new ArrayList<>();
+        List<Rail> rawRails = new ArrayList<>();
 
         CryptoboxColor cryptoboxColor = CryptoboxColor.UNKNOWN;
 
@@ -406,8 +407,8 @@ public class CryptoboxTracker implements Tracker {
             latestRawRails.clear();
         }
 
-        List<Rail> rawRedRails = analyzeCryptobox(red);
-        List<Rail> rawBlueRails = analyzeCryptobox(blue);
+        List<Rail> rawRedRails = findRailsFromMask(red);
+        List<Rail> rawBlueRails = findRailsFromMask(blue);
 
         latestRawRails.addAll(rawRedRails);
         latestRawRails.addAll(rawBlueRails);
@@ -425,9 +426,11 @@ public class CryptoboxTracker implements Tracker {
         if (rawRedRails.size() > rawBlueRails.size()) {
             cryptoboxColor = CryptoboxColor.RED;
             rails.addAll(redRails);
+            rawRails.addAll(rawRedRails);
         } else if (rawBlueRails.size() > rawRedRails.size()) {
             cryptoboxColor = CryptoboxColor.BLUE;
             rails.addAll(blueRails);
+            rawRails.addAll(rawBlueRails);
         } else {
             int redCount = Core.countNonZero(red);
             int blueCount = Core.countNonZero(blue);
@@ -435,10 +438,21 @@ public class CryptoboxTracker implements Tracker {
             if (redCount > blueCount) {
                 cryptoboxColor = CryptoboxColor.RED;
                 rails.addAll(redRails);
+                rawRails.addAll(rawRedRails);
             } else {
                 cryptoboxColor = CryptoboxColor.BLUE;
                 rails.addAll(blueRails);
+                rawRails.addAll(rawBlueRails);
             }
+        }
+
+        if (rawRails.size() > 0) {
+            double meanRailWidth = 0;
+            for (Rail rail : rawRails) {
+                meanRailWidth += Imgproc.boundingRect(rail.contour).width;
+            }
+            meanRailWidth /= rawRails.size();
+            rails = nonMaximumSuppression(rails, 2.5 * meanRailWidth);
         }
 
         List<Double> glyphRails = new ArrayList<>();
@@ -489,14 +503,18 @@ public class CryptoboxTracker implements Tracker {
 
         Collections.sort(rails);
 
-        if (rails.size() == 3) {
+        if (rails.size() == 2 || rails.size() == 3) {
             double meanRailGap = getMeanRailGap(rails);
-            if (rails.get(0) < meanRailGap && (actualWidth - rails.get(2)) > meanRailGap) {
-                // likely extra rail on the left
-                rails.add(0, rails.get(0) - meanRailGap);
-            } else if (rails.get(0) > meanRailGap && (actualWidth - rails.get(2)) < meanRailGap) {
-                // likely extra rail on the right
-                rails.add(rails.get(2) + meanRailGap);
+            if (rails.get(0) < meanRailGap) {
+                while (actualWidth - rails.get(rails.size() - 1) > meanRailGap && rails.size() < 4) {
+                    // add extra rail on the left
+                    rails.add(0, rails.get(0) - meanRailGap);
+                }
+            } else if (actualWidth - rails.get(rails.size() - 1) < meanRailGap) {
+                while (rails.get(0) > meanRailGap && rails.size() < 4) {
+                    // add extra rail on the right
+                    rails.add(rails.get(rails.size() - 1) + meanRailGap);
+                }
             }
         }
 
