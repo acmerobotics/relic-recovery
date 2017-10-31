@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import com.acmerobotics.library.dashboard.config.Config;
 import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
 
@@ -18,45 +19,41 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.ACTUAL_GLYPH_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.ACTUAL_RAIL_GAP;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_UPPER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_UPPER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.CLOSE_KERNEL_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_UPPER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MAX_ASPECT_RATIO_ERROR;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MAX_BLOB_ASPECT_RATIO;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MIN_BLOB_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MIN_RECT_FILL;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.OPEN_KERNEL_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_UPPER_VALUE;
-
 /**
  * Created by ryanbrott on 9/23/17.
  */
 
+@Config
 public class CryptoboxTracker implements Tracker {
     public static final String TAG = "CryptoboxTracker";
+
+    // red HSV range
+    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
+    public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
+
+    // blue HSV range
+    public static int BLUE_LOWER_HUE = 112, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 0;
+    public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
+
+    // brown HSV range
+    public static int BROWN_LOWER_HUE = 0, BROWN_LOWER_SAT = 31, BROWN_LOWER_VALUE = 27;
+    public static int BROWN_UPPER_HUE = 19, BROWN_UPPER_SAT = 94, BROWN_UPPER_VALUE = 104;
+
+    // gray HSV range
+    public static int GRAY_LOWER_HUE = 66, GRAY_LOWER_SAT = 3, GRAY_LOWER_VALUE = 121;
+    public static int GRAY_UPPER_HUE = 126, GRAY_UPPER_SAT = 69, GRAY_UPPER_VALUE = 210;
+
+    // binary morphology kernel sizes
+    public static int OPEN_KERNEL_SIZE = 5;
+    public static int CLOSE_KERNEL_SIZE = 5;
+
+    public static double MAX_BLOB_ASPECT_RATIO = 0.5;
+    public static int MIN_BLOB_SIZE = 250;
+    public static double MAX_ASPECT_RATIO_ERROR = 0.2;
+    public static double MIN_RECT_FILL = 0.85;
+
+    public static final double ACTUAL_RAIL_GAP = 7.5; // in
+    public static final double ACTUAL_GLYPH_SIZE = 6.0; // in
 
     // TODO: hack!
     public static boolean isUnitTest;

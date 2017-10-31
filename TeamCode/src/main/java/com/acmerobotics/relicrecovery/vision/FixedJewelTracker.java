@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import com.acmerobotics.library.dashboard.config.Config;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
@@ -9,11 +11,12 @@ import org.opencv.core.Scalar;
  * Created by ryanbrott on 9/23/17.
  */
 
-public class JewelTracker implements Tracker {
-    public static final String TAG = "JewelTracker";
+@Config
+public class FixedJewelTracker implements Tracker {
+    public static final String TAG = "FixedJewelTracker";
 
     public static final float JEWEL_PLATFORM_ASPECT_RATIO = 2.6f; // width/height
-    public static final double COLOR_THRESHOLD = 0.7;
+    public static double COLOR_THRESHOLD = 0.7;
 
     private Rect jewelPlatformRect, leftJewelRect, rightJewelRect;
     private double leftRed, leftBlue, rightRed, rightBlue;

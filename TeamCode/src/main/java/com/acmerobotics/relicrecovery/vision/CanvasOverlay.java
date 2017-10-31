@@ -39,8 +39,8 @@ public class CanvasOverlay implements Overlay {
         canvas.drawRect(
                 (float) scalingFactor * rect.x,
                 (float) scalingFactor * rect.y,
-                (float) (rect.x + rect.width),
-                (float) (rect.y + rect.height),
+                (float) scalingFactor * (rect.x + rect.width),
+                (float) scalingFactor * (rect.y + rect.height),
                 paint
         );
     }

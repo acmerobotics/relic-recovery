@@ -28,21 +28,21 @@
  */
 package com.acmerobotics.relicrecovery.opmodes;
 
+import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.JewelTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp
-public class JewelVision extends OpMode {
+public class FixedJewelVision extends OpMode {
     private VisionCamera camera;
-    private JewelTracker jewelTracker;
+    private FixedJewelTracker jewelTracker;
 
     @Override
     public void init() {
-        jewelTracker = new JewelTracker();
+        jewelTracker = new FixedJewelTracker();
         camera = new VisionCamera(hardwareMap.appContext);
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
