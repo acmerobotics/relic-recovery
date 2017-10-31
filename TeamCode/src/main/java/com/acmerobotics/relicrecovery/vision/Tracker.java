@@ -1,7 +1,5 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import android.graphics.Canvas;
-
 import org.opencv.core.Mat;
 
 /**
@@ -10,5 +8,5 @@ import org.opencv.core.Mat;
 
 public interface Tracker {
     void processFrame(Mat frame, double timestamp);
-    void drawOverlay(Canvas canvas, int imageWidth, int imageHeight);
+    void drawOverlay(Overlay overlay, int imageWidth, int imageHeight);
 }

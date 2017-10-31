@@ -1,10 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.util.Log;
-
+import com.acmerobotics.library.dashboard.config.Config;
 import com.vuforia.CameraCalibration;
 import com.vuforia.CameraDevice;
 
@@ -21,57 +17,56 @@ import org.opencv.imgproc.Moments;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.ACTUAL_GLYPH_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.ACTUAL_RAIL_GAP;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BLUE_UPPER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.BROWN_UPPER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.CLOSE_KERNEL_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.GRAY_UPPER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MAX_ASPECT_RATIO_ERROR;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MAX_BLOB_ASPECT_RATIO;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MIN_BLOB_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.MIN_RECT_FILL;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.OPEN_KERNEL_SIZE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_LOWER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_LOWER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_LOWER_VALUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_UPPER_HUE;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_UPPER_SAT;
-import static com.acmerobotics.relicrecovery.vision.VisionConstants.RED_UPPER_VALUE;
+import java.util.Locale;
 
 /**
  * Created by ryanbrott on 9/23/17.
  */
 
+@Config
 public class CryptoboxTracker implements Tracker {
     public static final String TAG = "CryptoboxTracker";
+
+    // red HSV range
+    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
+    public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
+
+    // blue HSV range
+    public static int BLUE_LOWER_HUE = 112, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 0;
+    public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
+
+    // brown HSV range
+    public static int BROWN_LOWER_HUE = 0, BROWN_LOWER_SAT = 31, BROWN_LOWER_VALUE = 27;
+    public static int BROWN_UPPER_HUE = 19, BROWN_UPPER_SAT = 94, BROWN_UPPER_VALUE = 104;
+
+    // gray HSV range
+    public static int GRAY_LOWER_HUE = 66, GRAY_LOWER_SAT = 3, GRAY_LOWER_VALUE = 121;
+    public static int GRAY_UPPER_HUE = 126, GRAY_UPPER_SAT = 69, GRAY_UPPER_VALUE = 210;
+
+    // binary morphology kernel sizes
+    public static int OPEN_KERNEL_SIZE = 5;
+    public static int CLOSE_KERNEL_SIZE = 5;
+
+    public static double MAX_BLOB_ASPECT_RATIO = 0.5;
+    public static int MIN_BLOB_SIZE = 250;
+    public static double MAX_ASPECT_RATIO_ERROR = 0.2;
+    public static double MIN_RECT_FILL = 0.85;
+
+    public static final double ACTUAL_RAIL_GAP = 7.5; // in
+    public static final double ACTUAL_GLYPH_SIZE = 6.0; // in
+
+    // TODO: hack!
+    public static boolean isUnitTest;
 
     private CryptoboxResult latestResult;
     private List<Glyph> latestGlyphs;
     private List<Rail> latestRawRails;
     private int actualWidth, actualHeight;
-    private Paint paint;
     private Mat resized, hsv, red, blue, brown, gray;
     private Mat temp, morph, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
     private boolean useExtendedTracking, initialized;
-    private double focalLengthPx; // px
+    private double focalLengthPx;
 
     public enum CryptoboxColor {
         BLUE,
@@ -121,9 +116,6 @@ public class CryptoboxTracker implements Tracker {
     }
 
     public CryptoboxTracker(boolean useExtendedTracking) {
-        paint = new Paint();
-        paint.setStrokeWidth(5.0f);
-        paint.setStyle(Paint.Style.STROKE);
         this.useExtendedTracking = useExtendedTracking;
     }
 
@@ -203,7 +195,7 @@ public class CryptoboxTracker implements Tracker {
      * @param mask
      * @return detected rail x-coordinates
      */
-    public List<Rail> analyzeCryptobox(Mat mask) {
+    public List<Rail> findRailsFromMask(Mat mask) {
         List<Rail> rails = new ArrayList<>();
 
         Imgproc.morphologyEx(mask, morph, Imgproc.MORPH_OPEN, openKernel);
@@ -350,9 +342,15 @@ public class CryptoboxTracker implements Tracker {
         actualHeight = frame.rows() / 4;
 
         if (!initialized) {
-            CameraCalibration cameraCalibration = CameraDevice.getInstance().getCameraCalibration();
-            double fov = cameraCalibration.getFieldOfViewRads().getData()[0];
-            focalLengthPx = (actualWidth * 0.5) / Math.tan(0.5 * fov);
+            // TODO: this is a bad hack!! find a better way to do this
+            if (isUnitTest) {
+                focalLengthPx = 270.451191280832; // Moto G4 Play
+            } else {
+                CameraCalibration cameraCalibration = CameraDevice.getInstance().getCameraCalibration();
+                double fov = cameraCalibration.getFieldOfViewRads().getData()[0];
+                focalLengthPx = (actualWidth * 0.5) / Math.tan(0.5 * fov);
+                System.out.println(focalLengthPx);
+            }
 
             resized = new Mat();
             hsv = new Mat();
@@ -396,6 +394,7 @@ public class CryptoboxTracker implements Tracker {
         smartHsvRange(hsv, blueLowerHsv, blueUpperHsv, blue);
 
         List<Double> rails = new ArrayList<>();
+        List<Rail> rawRails = new ArrayList<>();
 
         CryptoboxColor cryptoboxColor = CryptoboxColor.UNKNOWN;
 
@@ -405,8 +404,8 @@ public class CryptoboxTracker implements Tracker {
             latestRawRails.clear();
         }
 
-        List<Rail> rawRedRails = analyzeCryptobox(red);
-        List<Rail> rawBlueRails = analyzeCryptobox(blue);
+        List<Rail> rawRedRails = findRailsFromMask(red);
+        List<Rail> rawBlueRails = findRailsFromMask(blue);
 
         latestRawRails.addAll(rawRedRails);
         latestRawRails.addAll(rawBlueRails);
@@ -421,15 +420,14 @@ public class CryptoboxTracker implements Tracker {
             blueRails.add(rawRail.x);
         }
 
-        Log.i(TAG, "Red rails: " + rawRedRails);
-        Log.i(TAG, "Blue rails: " + rawBlueRails);
-
         if (rawRedRails.size() > rawBlueRails.size()) {
             cryptoboxColor = CryptoboxColor.RED;
             rails.addAll(redRails);
+            rawRails.addAll(rawRedRails);
         } else if (rawBlueRails.size() > rawRedRails.size()) {
             cryptoboxColor = CryptoboxColor.BLUE;
             rails.addAll(blueRails);
+            rawRails.addAll(rawBlueRails);
         } else {
             int redCount = Core.countNonZero(red);
             int blueCount = Core.countNonZero(blue);
@@ -437,13 +435,22 @@ public class CryptoboxTracker implements Tracker {
             if (redCount > blueCount) {
                 cryptoboxColor = CryptoboxColor.RED;
                 rails.addAll(redRails);
+                rawRails.addAll(rawRedRails);
             } else {
                 cryptoboxColor = CryptoboxColor.BLUE;
                 rails.addAll(blueRails);
+                rawRails.addAll(rawBlueRails);
             }
         }
 
-        Log.i(TAG, "Combined rails: " + rails);
+        if (rawRails.size() > 0) {
+            double meanRailWidth = 0;
+            for (Rail rail : rawRails) {
+                meanRailWidth += Imgproc.boundingRect(rail.contour).width;
+            }
+            meanRailWidth /= rawRails.size();
+            rails = nonMaximumSuppression(rails, 2.5 * meanRailWidth);
+        }
 
         List<Double> glyphRails = new ArrayList<>();
         if (useExtendedTracking) {
@@ -469,9 +476,6 @@ public class CryptoboxTracker implements Tracker {
             List<Double> brownRails = findRailsFromGlyphs(brownGlyphs);
             List<Double> grayRails = findRailsFromGlyphs(grayGlyphs);
 
-            Log.i(TAG, "Brown rails: " + brownRails);
-            Log.i(TAG, "Gray rails: " + grayRails);
-
             glyphRails.addAll(brownRails);
             glyphRails.addAll(grayRails);
         }
@@ -496,16 +500,18 @@ public class CryptoboxTracker implements Tracker {
 
         Collections.sort(rails);
 
-        Log.i(TAG, "Glyph + normal rails: " + rails);
-
-        if (rails.size() == 3) {
+        if (rails.size() == 2 || rails.size() == 3) {
             double meanRailGap = getMeanRailGap(rails);
-            if (rails.get(0) < meanRailGap && (actualWidth - rails.get(2)) > meanRailGap) {
-                // likely extra rail on the left
-                rails.add(0, rails.get(0) - meanRailGap);
-            } else if (rails.get(0) > meanRailGap && (actualWidth - rails.get(2)) < meanRailGap) {
-                // likely extra rail on the right
-                rails.add(rails.get(2) + meanRailGap);
+            if (rails.get(0) < meanRailGap) {
+                while (actualWidth - rails.get(rails.size() - 1) > meanRailGap && rails.size() < 4) {
+                    // add extra rail on the left
+                    rails.add(0, rails.get(0) - meanRailGap);
+                }
+            } else if (actualWidth - rails.get(rails.size() - 1) < meanRailGap) {
+                while (rails.get(0) > meanRailGap && rails.size() < 4) {
+                    // add extra rail on the right
+                    rails.add(rails.get(rails.size() - 1) + meanRailGap);
+                }
             }
         }
 
@@ -524,64 +530,60 @@ public class CryptoboxTracker implements Tracker {
     }
 
     @Override
-    public synchronized void drawOverlay(Canvas canvas, int imageWidth, int imageHeight) {
+    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
         if (latestResult != null) {
-            // draw text before the additional transformation
-            paint.setStyle(Paint.Style.FILL_AND_STROKE);
-            paint.setStrokeWidth(5.0f);
-            paint.setTextSize(45.0f);
-            paint.setColor(Color.YELLOW);
+            overlay.setScalingFactor(imageWidth / actualWidth);
 
-            canvas.drawText(String.format("%.2f, %.2f", latestResult.distance, latestResult.offsetX), 5, 100, paint);
+            // draw rail contours
+            if (latestRawRails != null) {
+                for (Rail rawRail : latestRawRails) {
+                    overlay.strokeContour(rawRail.contour, new Scalar(255, 255, 255), 5);
+                }
+            }
 
-            // transform the canvas to the dimensions of the resized image
-            canvas.translate(imageWidth / 2.0f, imageHeight / 2.0f);
-            canvas.scale((float) imageWidth / actualWidth, (float) imageHeight / actualHeight);
-            canvas.translate(-actualWidth / 2.0f, -actualHeight / 2.0f);
+            // draw rails
+            Scalar railColor = null;
+            switch (latestResult.color) {
+                case RED:
+                    railColor = new Scalar(255, 0, 255);
+                    break;
+                case BLUE:
+                    railColor = new Scalar(255, 255, 0);
+                    break;
+                case UNKNOWN:
+                    railColor = new Scalar(0, 0, 0);
+                    break;
+            }
 
-            paint.setStyle(Paint.Style.STROKE);
+            for (double rail : latestResult.rails) {
+                overlay.strokeLine(new Point(rail, 0), new Point(rail, actualHeight), railColor, 10);
+            }
 
             // draw glyphs
             if (latestGlyphs != null) {
                 for (Glyph glyph : latestGlyphs) {
                     switch (glyph.type) {
                         case FULL:
-                            paint.setColor(Color.GREEN);
+                            overlay.strokeRect(glyph.rect, new Scalar(0, 255, 0), 5);
                             break;
                         case PARTIAL_HEIGHT:
                         case PARTIAL_WIDTH:
                             // intentional fall through
-                            paint.setColor(Color.YELLOW);
+                            overlay.strokeRect(glyph.rect, new Scalar(255, 0, 255), 5);
                             break;
                     }
-                    VisionUtil.drawRect(canvas, glyph.rect, paint);
                 }
             }
 
-            // draw rail contours
-            paint.setColor(Color.WHITE);
-            if (latestRawRails != null) {
-                for (Rail rawRail : latestRawRails) {
-                    VisionUtil.drawContour(canvas, rawRail.contour, paint);
-                }
-            }
+            overlay.setScalingFactor(1);
 
-            // draw rails
-            switch (latestResult.color) {
-                case RED:
-                    paint.setColor(Color.MAGENTA);
-                    break;
-                case BLUE:
-                    paint.setColor(Color.CYAN);
-                    break;
-                case UNKNOWN:
-                    paint.setColor(Color.GRAY);
-                    break;
-            }
-
-            for (double rail : latestResult.rails) {
-                VisionUtil.drawLine(canvas, new Point(rail, 0), new Point(rail, imageHeight), paint);
-            }
+            overlay.putText(
+                    String.format(Locale.ENGLISH, "%.2f, %.2f", latestResult.distance, latestResult.offsetX),
+                    Overlay.TextAlign.LEFT,
+                    new Point(5, 50),
+                    new Scalar(0, 0, 255),
+                    45
+            );
         }
     }
 

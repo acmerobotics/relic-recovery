@@ -3,10 +3,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 from util import resize_min_dim, smart_hsv_range
 
-IMAGE_FILENAME = 'cryptobox/images/blue001.jpg'
+IMAGE_FILENAME = 'jewel/blue_jewel.jpg'
 MIN_DIMENSION = 480
 # LOWER_HSV, UPPER_HSV = (170, 80, 0), (7, 255, 255)
-LOWER_HSV, UPPER_HSV = (178, 25, 61), (0, 93, 142)
+LOWER_HSV, UPPER_HSV = (95, 80, 10), (112, 255, 255)
 
 image = cv2.imread(IMAGE_FILENAME)
 
