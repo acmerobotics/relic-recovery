@@ -1,9 +1,5 @@
 package com.acmerobotics.relicrecovery.motion;
 
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.path.LinearPathSegment;
-import com.acmerobotics.relicrecovery.path.PathSegment;
-
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -22,17 +18,18 @@ public class MotionTest {
         doATest("reversed", -10, 0,0);
         doATest("short", 2.3, 0,0);*/
 
-        PathSegment segment = new LinearPathSegment(
-                new Pose2d(0, 0, 0),
-                new Pose2d(10, 0, Math.PI/2),
-                new MotionConstraints(3, 1, 1, MotionConstraints.EndBehavior.OVERSHOOT),
-                new MotionConstraints(1, .5, .5, MotionConstraints.EndBehavior.OVERSHOOT),
-                new MotionState(0, 0, 0, 0, 0),
-                0
-        );
-        writeProfile(segment.posProfile(), "posProfile");
-        writeProfile(segment.headingProfile(), "headingProfile");
-        writeSegment (segment, "basicSegments");
+        // TODO: finish implementing this
+//        PathSegment segment = new LinearPathSegment(
+//                new Pose2d(0, 0, 0),
+//                new Pose2d(10, 0, Math.PI/2),
+//                new MotionConstraints(3, 1, 1, MotionConstraints.EndBehavior.OVERSHOOT),
+//                new MotionConstraints(1, .5, .5, MotionConstraints.EndBehavior.OVERSHOOT),
+//                new MotionState(0, 0, 0, 0, 0),
+//                0
+//        );
+//        writeProfile(segment.posProfile(), "posProfile");
+//        writeProfile(segment.headingProfile(), "headingProfile");
+//        writeSegment (segment, "basicSegments");
 
 
     }
@@ -63,17 +60,20 @@ public class MotionTest {
         }
     }
 
-    public static void writeSegment(PathSegment seg, String name) {
-        try {
-            FileWriter writer = new FileWriter("./out/paths/" + name + ".csv");
-            writer.write("t, x, y, heading\n");
-            for (double t = 0; t < seg.headingProfile().end().t; t += .01) {
-                Pose2d pose = seg.getPose(t);
-                writer.write(String.format("%f, %f, %f, %f\n", t, pose.x(), pose.y(), pose.heading()));
-            }
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // TODO: this too
+    // also, consider ways to make this into a unit test
+
+//    public static void writeSegment(PathSegment seg, String name) {
+//        try {
+//            FileWriter writer = new FileWriter("./out/paths/" + name + ".csv");
+//            writer.write("t, x, y, heading\n");
+//            for (double t = 0; t < seg.headingProfile().end().t; t += .01) {
+//                Pose2d pose = seg.getPose(t);
+//                writer.write(String.format("%f, %f, %f, %f\n", t, pose.x(), pose.y(), pose.heading()));
+//            }
+//            writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

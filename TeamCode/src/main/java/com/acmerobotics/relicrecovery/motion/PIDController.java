@@ -3,6 +3,8 @@ package com.acmerobotics.relicrecovery.motion;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.util.Range;
 
+import java.util.Locale;
+
 /**
  * This class implements a regular PID controller.
  */
@@ -158,7 +160,7 @@ public class PIDController {
 
     @Override
     public String toString() {
-        return String.format("(%4.3f,%4.3f,%4.3f)", coeff.p, coeff.i, coeff.d);
+        return String.format(Locale.ENGLISH,"(%4.3f, %4.3f, %4.3f)", coeff.p, coeff.i, coeff.d);
     }
 
 }

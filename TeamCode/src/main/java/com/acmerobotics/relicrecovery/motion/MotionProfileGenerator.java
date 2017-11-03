@@ -13,7 +13,7 @@ import com.acmerobotics.relicrecovery.util.SuperArrayList;
  * J:   |   |___     ___________     ___|   |
  *              |___|           |___|
  *
- * see <a href="https://pub.uni-bielefeld.de/download/1996788/2280502">this paper</a>
+ * see <a href="https://pub.uni-bielefeld.de/download/1996788/2280502">this paper</a> (also in doc/Jerk_Limited_Trajectory_Planning.pdf)
  * someone should read page 4 and see if they have any clue for a implementation of the last step of the algorithm they outline
  * what I have now is more a hack than anything
  */
