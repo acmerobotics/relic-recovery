@@ -34,7 +34,6 @@ public class MotionState {
      */
     public double t;
 
-
     public MotionState (double x, double v, double a, double j, double t) {
         this.x = x;
         this.v = v;

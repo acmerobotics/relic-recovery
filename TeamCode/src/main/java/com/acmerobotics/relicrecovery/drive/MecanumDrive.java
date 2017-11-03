@@ -95,8 +95,13 @@ public class MecanumDrive {
         power[1] = vel.x() + vel.y() - K * omega;
         power[2] = vel.x() - vel.y() + K * omega;
         power[3] = vel.x() + vel.y() + K * omega;
+
+        double max = Collections.max(Arrays.asList(1, Math.abs(power[0]), 
+			Math.abs(power[1]), Math.abs(power[2]), Math.abs(power[3]))
+
+
         for (int i = 0; i < 4; i++) {
-            motors[i].setPower(power[i]);
+            motors[i].setPower(power[i] / max);
         }
     }
 
@@ -114,7 +119,7 @@ public class MecanumDrive {
      * @param rot rotation of each wheel, in radians
      * @return movement of robot
      */
-    public static Pose2d getDelta(int[] rot) {
+    public static Pose2d getDelta(double [] rot) {
         if (rot.length != 4) {
             throw new IllegalArgumentException("length must be four");
         }

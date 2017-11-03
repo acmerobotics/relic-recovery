@@ -35,4 +35,13 @@ public class Pose2d {
         return heading;
     }
 
+    public double dist(Pose2d other) {
+        return Math.hypot(pos.x() - other.pos.x(), pos.y() - other.pos.y());
+    }
+
+    public void add(Pose2d other) {
+        pos.add(other.pos);
+        heading = Angle.norm(heading + other.heading);
+    }
+
 }

@@ -111,6 +111,12 @@ public class MotionProfile {
         return newProfile;
     }
 
+    public MotionProfile capVelocity(double maxV) {
+        MotionConstraints newConstraints = constraints;
+        newConstraints.maxV = maxV;
+        return MotionProfileGenerator.generateProfile(start(), new MotionGoal(end.x, end.v), newConstraints);
+    }
+
     /**
      * remove all parts of the profile before a time
      * @param t time
@@ -178,6 +184,10 @@ public class MotionProfile {
 
     public SuperArrayList<MotionSegment> segments() {
         return segments;
+    }
+
+    public MotionConstraints constraints() {
+        return constraints;
     }
 
 }

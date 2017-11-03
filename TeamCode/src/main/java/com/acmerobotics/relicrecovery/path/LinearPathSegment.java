@@ -1,7 +1,12 @@
 package com.acmerobotics.relicrecovery.path;
 
+import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
+import com.acmerobotics.relicrecovery.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
+import com.acmerobotics.relicrecovery.motion.MotionGoal;
+import com.acmerobotics.relicrecovery.motion.MotionProfile;
+import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
 
 /**
@@ -11,11 +16,6 @@ import com.acmerobotics.relicrecovery.motion.MotionState;
 
 public class LinearPathSegment extends PathSegment{
 
-    public LinearPathSegment (Pose2d start, Pose2d end, MotionConstraints posConstraints, MotionConstraints headingConstraints, MotionState startState) {
-        this.start = start;
-        this.end = end;
 
-
-    }
 
 }

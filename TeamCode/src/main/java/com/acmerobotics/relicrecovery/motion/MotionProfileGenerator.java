@@ -119,7 +119,7 @@ public class MotionProfileGenerator {
 
         //now we need to solve the case where we can not get up to max v
 
-               double maxV = constraints.maxV;
+        double maxV = constraints.maxV;
         double epsilon = 1E-10;
         double maxVmax = constraints.maxV;
         double maxVmin = 0;
