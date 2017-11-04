@@ -33,35 +33,35 @@ public class LinearPathTest {
     @Test
     public void testSegmentPosition() {
         assertTrue(simpleSeg.getPoint(0.5).equals(new Vector2d(1, 1)));
-        assertEquals(0.5, simpleSeg.getPosition(new Vector2d(1, 1)), 0.0001);
+        assertEquals(0.5, simpleSeg.getPosition(new Vector2d(1, 1)), Vector2d.EPSILON);
         assertTrue(simpleSeg.getBoundedPoint(1.5).equals(simpleSeg.end()));
     }
 
     @Test
     public void testSegmentLength() {
-        assertEquals(Math.sqrt(8), simpleSeg.length(), 0.0001);
+        assertEquals(Math.sqrt(8), simpleSeg.length(), Vector2d.EPSILON);
     }
 
     @Test
     public void testSegmentClosestPoint() {
-        assertEquals(0.25, simpleSeg.getClosestPositionOnPath(new Vector2d(1, 0)), 0.0001);
+        assertEquals(0.25, simpleSeg.getClosestPositionOnPath(new Vector2d(1, 0)), Vector2d.EPSILON);
     }
 
     @Test
     public void testPathPosition() {
         assertTrue(simplePath.getPoint(0.5).equals(new Vector2d(2, 2)));
-        assertEquals(0.75, simplePath.getPosition(new Vector2d(3, 1)), 0.0001);
+        assertEquals(0.75, simplePath.getPosition(new Vector2d(3, 1)), Vector2d.EPSILON);
     }
 
     @Test
     public void testPathLength() {
-        assertEquals(Math.sqrt(32), simplePath.length(), 0.0001);
+        assertEquals(Math.sqrt(32), simplePath.length(), Vector2d.EPSILON);
     }
 
     @Test
     public void testPathDistance() {
         LinearPath.DistanceReport report = simplePath.getDistanceReport(new Vector2d(0, 1));
-        assertEquals(Math.hypot(0.5, 0.5), report.distance, 0.0001);
+        assertEquals(Math.hypot(0.5, 0.5), report.distance, Vector2d.EPSILON);
         assertTrue(report.pathPoint.equals(new Vector2d(0.5, 0.5)));
     }
 

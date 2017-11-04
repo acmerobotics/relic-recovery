@@ -2,7 +2,6 @@ package com.acmerobotics.relicrecovery.drive;
 
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -151,17 +150,12 @@ public class MecanumDrive {
     }
 
     // TODO: stub
-    public void setTargetHeading(double heading) {
+    public void turn(double angle) {
 
     }
 
     // TODO: stub
-    public void turnSync(double angle, LinearOpMode opMode) {
-
-    }
-
-    // TODO: stub
-    public void move(double distance, double speed, LinearOpMode opMode) {
+    public void move(double distance, double speed) {
 
     }
 }

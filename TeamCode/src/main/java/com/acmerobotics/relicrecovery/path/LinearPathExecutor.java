@@ -9,8 +9,6 @@ import com.acmerobotics.relicrecovery.localization.Vector2d;
  */
 
 public class LinearPathExecutor {
-    public static final double MOVEMENT_SPEED = 0.5;
-
     private MecanumDrive drive;
 
     public LinearPathExecutor(MecanumDrive drive) {
@@ -25,11 +23,11 @@ public class LinearPathExecutor {
             double newHeading = Angle.norm(Math.atan2(deltaY, deltaX) - Math.PI / 2);
             double turnAngle = Angle.norm(newHeading - heading);
             if (turnAngle > Vector2d.EPSILON) {
-                drive.turnSync(turnAngle, null);
+                drive.turn(turnAngle);
             }
             double length = segment.length();
             if (length > Vector2d.EPSILON) {
-                drive.move(length, speed, null);
+                drive.move(length, speed);
             }
             heading = newHeading;
         }

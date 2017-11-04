@@ -29,9 +29,9 @@ public class LinearPathExecutorTest {
         executor.execute(path, 0.5, 0);
 
         InOrder inOrder = inOrder(drive);
-        inOrder.verify(drive).move(2, LinearPathExecutor.MOVEMENT_SPEED, null);
-        inOrder.verify(drive).turnSync(Math.PI / 2, null);
-        inOrder.verify(drive).move(2, LinearPathExecutor.MOVEMENT_SPEED, null);
+        inOrder.verify(drive).move(2, 0.5);
+        inOrder.verify(drive).turn(Math.PI / 2);
+        inOrder.verify(drive).move(2, 0.5);
     }
 
 }
