@@ -1,6 +1,5 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
 
 import java.util.ArrayList;
@@ -21,14 +20,24 @@ public class LinearPath {
     }
 
     public static class Segment {
-        public final Vector2d start, end, seg;
-        public final double finalHeading;
+        private Vector2d start, end, seg;
 
-        public Segment(Pose2d start, Pose2d end) {
-            this.start = start.pos();
-            this.end = end.pos();
-            this.finalHeading = end.heading();
+        public Segment(Vector2d start, Vector2d end) {
+            this.start = start;
+            this.end = end;
             this.seg = this.start.negated().add(this.end);
+        }
+
+        public Vector2d start() {
+            return start;
+        }
+
+        public Vector2d end() {
+            return end;
+        }
+
+        public Vector2d seg() {
+            return seg;
         }
 
         public double length() {
@@ -97,7 +106,7 @@ public class LinearPath {
     private List<Segment> segments;
     private double length;
 
-    public LinearPath(List<Pose2d> waypoints) {
+    public LinearPath(List<Vector2d> waypoints) {
         segments = new ArrayList<>();
         for (int i = 0; i < waypoints.size() - 1; i++) {
             Segment s = new Segment(waypoints.get(i), waypoints.get(i+1));
@@ -163,7 +172,7 @@ public class LinearPath {
         report.distance = Double.POSITIVE_INFINITY;
         for (Segment s : segments) {
             double t = s.getClosestPositionOnPath(point);
-            double distance = s.getDistance(point, s.getBoundedPoint(t));
+            double distance = Segment.getDistance(point, s.getBoundedPoint(t));
             if (distance < report.distance) {
                 report.segment = s;
                 report.distance = distance;
@@ -199,5 +208,9 @@ public class LinearPath {
             }
         }
         return segments.get(segments.size() - 1).end.copy();
+    }
+
+    public int size() {
+        return segments.size();
     }
 }

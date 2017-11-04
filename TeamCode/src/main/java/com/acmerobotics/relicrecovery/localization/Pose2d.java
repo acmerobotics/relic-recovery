@@ -19,6 +19,10 @@ public class Pose2d {
         this.heading = Angle.norm(heading);
     }
 
+    public Pose2d(double x, double y) {
+        this(x, y, 0);
+    }
+
     public Pose2d(double x, double y, double heading) {
         this(new Vector2d(x, y), heading);
     }

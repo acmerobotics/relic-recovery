@@ -1,6 +1,14 @@
 package com.acmerobotics.relicrecovery.path;
 
+import com.acmerobotics.relicrecovery.drive.MecanumDrive;
+import com.acmerobotics.relicrecovery.localization.Vector2d;
+
 import org.junit.Test;
+import org.mockito.InOrder;
+
+import java.util.Arrays;
+
+import static org.mockito.Mockito.*;
 
 /**
  * @author Ryan
@@ -9,24 +17,21 @@ import org.junit.Test;
 public class LinearPathExecutorTest {
 
     @Test
-    public void testBasicPathExecutor() {
-        // TODO make this good (Mockito!!)
-//        List expectedActions = Arrays.asList(
-//                new MockHolonomicDrive.Turn(90),
-//                new MockHolonomicDrive.Move(2),
-//                new MockHolonomicDrive.Turn(-90),
-//                new MockHolonomicDrive.Move(2)
-//        );
-//
-//        MockHolonomicDrive drive = new MockHolonomicDrive();
-//        LinearPath path = new LinearPath(Arrays.asList(
-//                new LinearPath.Waypoint(0, 0),
-//                new LinearPath.Waypoint(2, 0),
-//                new LinearPath.Waypoint(2, 2)
-//        ));
-//        LinearPathExecutor executor = new LinearPathExecutor(drive, path, true);
-//        executor.executeAll(null);
-//        assertEquals(expectedActions, drive.getActions());
+    public void testBasicPathExecution() {
+        MecanumDrive drive = mock(MecanumDrive.class);
+
+        LinearPath path = new LinearPath(Arrays.asList(
+                new Vector2d(0, 0),
+                new Vector2d(2, 0),
+                new Vector2d(2, 2)
+        ));
+        LinearPathExecutor executor = new LinearPathExecutor(drive);
+        executor.execute(path, 0.5, 0);
+
+        InOrder inOrder = inOrder(drive);
+        inOrder.verify(drive).move(2, LinearPathExecutor.MOVEMENT_SPEED, null);
+        inOrder.verify(drive).turnSync(Math.PI / 2, null);
+        inOrder.verify(drive).move(2, LinearPathExecutor.MOVEMENT_SPEED, null);
     }
 
 }
