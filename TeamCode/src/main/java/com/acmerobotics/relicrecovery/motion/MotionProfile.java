@@ -12,16 +12,19 @@ public class MotionProfile {
 
     private SuperArrayList<MotionSegment> segments;
     private MotionState end;
+    private MotionConstraints constraints;
 
 
-    public MotionProfile(MotionState start) {
+    public MotionProfile(MotionState start, MotionConstraints constraints) {
         segments = new SuperArrayList<>();
         this.end = start;
+        this.constraints = constraints;
     }
 
-    protected MotionProfile(SuperArrayList<MotionSegment> segments) {
+    protected MotionProfile(SuperArrayList<MotionSegment> segments, MotionConstraints constraints) {
         this.segments = segments;
         this.end = segments.get(-1).end();
+        this.constraints = constraints;
     }
 
     /**
@@ -57,6 +60,10 @@ public class MotionProfile {
         }
     }
 
+    public MotionState start() {
+        return segments.get(0).start();
+    }
+
     public MotionState end() {
         return end;
     }
@@ -72,6 +79,42 @@ public class MotionProfile {
             }
         }
         return null;
+    }
+
+    public MotionProfile stretch(double duration) {
+        double dt = end().t - start().t;
+        if (Double.compare(dt, duration) >= 0) {
+            System.out.println("no stretch");
+            return this;
+        }
+        double maxVmin = 0;
+        double maxVmax = constraints.maxV;
+        double epsilon = 1E-10;
+
+        MotionProfile newProfile = new MotionProfile(segments, constraints);
+
+        int iterations = 0;
+
+        while (Math.abs(dt - duration) > epsilon) {
+            if (dt - duration > 0) {
+                maxVmin = constraints.maxV;
+                constraints.maxV += (maxVmax - constraints.maxV) / 2;
+            } else {
+                maxVmax = constraints.maxV;
+                constraints.maxV -= (constraints.maxV - maxVmin) / 2;
+            }
+            newProfile = MotionProfileGenerator.generateProfile(start(), new MotionGoal(end.x, end.v), constraints);
+            dt = newProfile.end().t - newProfile.start().t;
+            iterations ++;
+            System.out.println(iterations + ", " + constraints.maxV);
+        }
+        return newProfile;
+    }
+
+    public MotionProfile capVelocity(double maxV) {
+        MotionConstraints newConstraints = constraints;
+        newConstraints.maxV = maxV;
+        return MotionProfileGenerator.generateProfile(start(), new MotionGoal(end.x, end.v), newConstraints);
     }
 
     /**
@@ -91,7 +134,7 @@ public class MotionProfile {
                 newSegments.add(segment);
             }
         }
-        return new MotionProfile(newSegments);
+        return new MotionProfile(newSegments, constraints);
     }
 
     /**
@@ -111,7 +154,7 @@ public class MotionProfile {
                 newSegments.add(segment);
             }
         }
-        return new MotionProfile(newSegments);
+        return new MotionProfile(newSegments, constraints);
     }
 
     /**
@@ -141,6 +184,10 @@ public class MotionProfile {
 
     public SuperArrayList<MotionSegment> segments() {
         return segments;
+    }
+
+    public MotionConstraints constraints() {
+        return constraints;
     }
 
 }

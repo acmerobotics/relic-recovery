@@ -13,7 +13,7 @@ import com.acmerobotics.relicrecovery.util.SuperArrayList;
  * J:   |   |___     ___________     ___|   |
  *              |___|           |___|
  *
- * see <a href="https://pub.uni-bielefeld.de/download/1996788/2280502">this paper</a>
+ * see <a href="https://pub.uni-bielefeld.de/download/1996788/2280502">this paper</a> (also in doc/Jerk_Limited_Trajectory_Planning.pdf)
  * someone should read page 4 and see if they have any clue for a implementation of the last step of the algorithm they outline
  * what I have now is more a hack than anything
  */
@@ -38,7 +38,7 @@ public class MotionProfileGenerator {
             return generateFlippedProfile(start, goal, constraints);
         }
 
-        MotionProfile profile = new MotionProfile(start);
+        MotionProfile profile = new MotionProfile(start, constraints);
 
         //if we are headed away from the goal, first come to a stop
         if (start.v < 0) {
@@ -55,7 +55,7 @@ public class MotionProfileGenerator {
         //check if the profile requires us to slow down
         if (dv > 0) {
             //test if we can slow without breaking anything
-            MotionProfile stoppingProfile = new MotionProfile(profile.end());
+            MotionProfile stoppingProfile = new MotionProfile(profile.end(), constraints);
             double[] stoppingTimes = getDeltaVTimes(dv, constraints);
             stoppingProfile.appendControl(-constraints.maxJ, stoppingTimes[0]);
             stoppingProfile.appendControl(0, stoppingTimes[1]);
@@ -105,7 +105,7 @@ public class MotionProfileGenerator {
         double [] timesToDecel = getDeltaVTimes(goal.maxAbsV - constraints.maxV, constraints);
 
         //figure out how much we are going to have to coast (segment 4)
-        MotionProfile accelProfile = new MotionProfile(new MotionState (0,0,0,0,0));
+        MotionProfile accelProfile = new MotionProfile(new MotionState (0,0,0,0,0), constraints);
         accelProfile.appendControl(j, timesToAccel[0]);
         accelProfile.appendControl(0, timesToAccel[1]);
         accelProfile.appendControl(-j, timesToAccel[2] + timesToDecel[0]);
@@ -118,11 +118,6 @@ public class MotionProfileGenerator {
         double timeCoast = Math.max(0, dxCoast / constraints.maxV);
 
         //now we need to solve the case where we can not get up to max v
-
-        //spend hours trying to figure out the correct way to find max reachable velocity
-        //sculpt velocity graphs out of mashed potatoes
-        //loose sleep over it
-        //give up and decide a binary search is not that bad
 
         double maxV = constraints.maxV;
         double epsilon = 1E-10;
@@ -144,7 +139,7 @@ public class MotionProfileGenerator {
                     maxV += (maxVmax - maxV)/2;
                 }
                 //this could probably be done the correct way, but this does not slow it down thaaaat much and improves readability...
-                accelProfile = new MotionProfile(new MotionState(0, 0, 0, 0, 0));
+                accelProfile = new MotionProfile(new MotionState(0, 0, 0, 0, 0), constraints);
                 timesToAccel = getDeltaVTimes(maxV - profile.end().v, constraints);
                 timesToDecel = getDeltaVTimes(goal.maxAbsV - maxV, constraints);
                 accelProfile.appendControl(j, timesToAccel[0]);
@@ -194,7 +189,7 @@ public class MotionProfileGenerator {
         for (MotionSegment seg: segments) {
             flipped.add(new MotionSegment(seg.start().flipped(), seg.dt()));
         }
-        return new MotionProfile (flipped);
+        return new MotionProfile (flipped, constraints);
     }
 
 }

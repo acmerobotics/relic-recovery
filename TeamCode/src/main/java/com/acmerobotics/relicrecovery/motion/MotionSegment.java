@@ -86,5 +86,8 @@ public class MotionSegment {
         return start().t <= t && t <= end().t;
     }
 
+    public MotionState getByPos(double pos) {
+        return get(Math.min(end().t, Math.max(0, timeAtPos(pos))));
+    }
 
 }
