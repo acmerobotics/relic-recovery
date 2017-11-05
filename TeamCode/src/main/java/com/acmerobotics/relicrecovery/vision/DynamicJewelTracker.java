@@ -22,7 +22,27 @@ import java.util.List;
 
 @Config
 public class DynamicJewelTracker implements Tracker {
-    public static int OPEN_KERNEL_SIZE = 5;
+
+    public enum JewelColor {
+        RED,
+        BLUE,
+        UNKNOWN;
+
+        // this is a weird workaround; avoids self-reference errors
+        static {
+            RED.opp = BLUE;
+            BLUE.opp = RED;
+            UNKNOWN.opp = UNKNOWN;
+        }
+
+        private JewelColor opp;
+
+        public JewelColor opposite() {
+            return opp;
+        }
+    }
+
+    public static int OPEN_KERNEL_SIZE = 9;
     public static int CLOSE_KERNEL_SIZE = 15;
 
     // red HSV range
@@ -33,16 +53,19 @@ public class DynamicJewelTracker implements Tracker {
     public static int BLUE_LOWER_HUE = 99, BLUE_LOWER_SAT = 41, BLUE_LOWER_VALUE = 62;
     public static int BLUE_UPPER_HUE = 120, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
 
-    public static int MIN_BLOB_SIZE = 1000;
+    public static int MIN_BLOB_SIZE = 500;
     public static double MAX_ASPECT_RATIO_ERROR = 0.3;
-    public static double MAX_ECCENTRICITY_ERROR = 0.2;
+    public static double MAX_ECCENTRICITY_ERROR = 0.3;
+
+    public static double DIST_RATIO = 6.0 / 1.875; // distance between centers / radius
+    public static double MAX_DIST_RATIO_ERROR = 0.2;
 
     private Mat resized, hsv, red, blue;
     private Mat temp, morph, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
     private List<RotatedRect> lastRedJewels, lastBlueJewels;
     private List<MatOfPoint> lastContours;
-    private volatile boolean isLeftRed;
+    private JewelColor leftJewelColor = JewelColor.UNKNOWN;
 
     private void smartHsvRange(Mat src, Scalar lowerHsv, Scalar upperHsv, Mat dest) {
         if (lowerHsv.val[0] > upperHsv.val[0]) {
@@ -139,11 +162,31 @@ public class DynamicJewelTracker implements Tracker {
         lastBlueJewels = findJewelEllipses(blue);
 
         if (lastRedJewels.size() == 0 || lastBlueJewels.size() == 0) {
-            return;
+            leftJewelColor = JewelColor.UNKNOWN;
+        } else {
+            double minDistRatioError = Double.POSITIVE_INFINITY;
+            RotatedRect bestRedJewel = null, bestBlueJewel = null;
+            for (RotatedRect redJewel : lastRedJewels) {
+                double redRadius = (redJewel.size.width + redJewel.size.height) / 4.0;
+                for (RotatedRect blueJewel : lastBlueJewels) {
+                    double blueRadius = (blueJewel.size.width + blueJewel.size.height) / 4.0;
+                    double meanRadius = (redRadius + blueRadius) / 2.0;
+                    double distance = Math.hypot(redJewel.center.x - blueJewel.center.x, redJewel.center.y - blueJewel.center.y);
+                    double distanceRatio = distance / meanRadius;
+                    double distanceRatioError = Math.abs(distanceRatio - DIST_RATIO);
+                    if (distanceRatioError < minDistRatioError) {
+                        minDistRatioError = distanceRatioError;
+                        bestRedJewel = redJewel;
+                        bestBlueJewel = blueJewel;
+                    }
+                }
+            }
+            if (minDistRatioError > MAX_DIST_RATIO_ERROR) {
+                leftJewelColor = JewelColor.UNKNOWN;
+            } else {
+                leftJewelColor = bestRedJewel.center.x < bestBlueJewel.center.x ? JewelColor.RED : JewelColor.BLUE;
+            }
         }
-
-        // TODO: consider doing a better check
-//        isLeftRed = lastRedJewels.get(0).x < lastBlueJewels.get(0).x;
     }
 
     @Override
@@ -167,7 +210,7 @@ public class DynamicJewelTracker implements Tracker {
         overlay.setScalingFactor(1);
 
         overlay.putText(
-                isLeftRed ? "R / B" : "B / R",
+                toString(),
                 Overlay.TextAlign.LEFT,
                 new Point(5, 50),
                 new Scalar(0, 0, 255),
@@ -175,11 +218,16 @@ public class DynamicJewelTracker implements Tracker {
         );
     }
 
-    public synchronized boolean isLeftRed() {
-        return isLeftRed;
+    public synchronized JewelColor getLeftColor() {
+        return leftJewelColor;
     }
 
-    public synchronized boolean isLeftBlue() {
-        return !isLeftRed;
+    public synchronized JewelColor getRightColor() {
+        return leftJewelColor.opposite();
+    }
+
+    @Override
+    public synchronized String toString() {
+        return leftJewelColor + " / " + leftJewelColor.opposite();
     }
 }
