@@ -72,8 +72,13 @@ public class Vector2d {
         return y;
     }
 
-    public boolean equals(Vector2d other) {
-        return Math.abs(x - other.x) < EPSILON && Math.abs(y - other.y) < EPSILON;
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Vector2d) {
+            Vector2d otherVector = (Vector2d) other;
+            return Math.abs(x - otherVector.x) < EPSILON && Math.abs(y - otherVector.y) < EPSILON;
+        }
+        return false;
     }
 
     @Override

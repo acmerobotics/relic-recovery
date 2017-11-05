@@ -1,14 +1,15 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.relicrecovery.localization.Pose2d;
 
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import java.util.Arrays;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Ryan
@@ -21,9 +22,9 @@ public class LinearPathExecutorTest {
         MecanumDrive drive = mock(MecanumDrive.class);
 
         LinearPath path = new LinearPath(Arrays.asList(
-                new Vector2d(0, 0),
-                new Vector2d(2, 0),
-                new Vector2d(2, 2)
+                new Pose2d(0, 0),
+                new Pose2d(2, 0),
+                new Pose2d(2, 2)
         ));
         LinearPathExecutor executor = new LinearPathExecutor(drive);
         executor.execute(path, 0.5, 0);

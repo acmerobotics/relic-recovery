@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.localization;
 
+import static com.acmerobotics.relicrecovery.localization.Vector2d.EPSILON;
+
 /**
  * Created by kelly on 9/28/2017.
  *
@@ -50,6 +52,19 @@ public class Pose2d {
     public void add(Pose2d other) {
         pos.add(other.pos);
         heading = Angle.norm(heading + other.heading);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof Pose2d) {
+            Pose2d otherPose = (Pose2d) other;
+            return otherPose.pos().equals(pos) && Math.abs(heading - otherPose.heading()) < EPSILON;
+        }
+        return false;
+    }
+
+    public Pose2d copy() {
+        return new Pose2d(pos.copy(), heading);
     }
 
 }

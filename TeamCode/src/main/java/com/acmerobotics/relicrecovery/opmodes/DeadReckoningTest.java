@@ -14,17 +14,15 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @TeleOp(name="Dead Reckoning Test")
 public class DeadReckoningTest extends OpMode{
 
-    public static final double TICS_PER_REV = 20;
-
     private MecanumDrive drive;
     private BNO055IMU imu;
     private Pose2d position;
-    private int[] encoders;
+    private double[] lastRotations;
 
     public void init() {
         position = new Pose2d(0, 0, 0);
         drive = new MecanumDrive(hardwareMap);
-        encoders = drive.getPositions();
+        lastRotations = drive.getRotations();
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
@@ -43,12 +41,12 @@ public class DeadReckoningTest extends OpMode{
             position = new Pose2d (0,0,0);
         }
 
-        int[] encodersNew = drive.getPositions();
-        double[] rotations = new double[4];
+        double[] rotations = drive.getRotations();
+        double[] rotationsDelta = new double[4];
         for (int i = 0; i < 4; i++) {
-            rotations[i] = (encodersNew[i] - encoders[i]) / TICS_PER_REV;
+            rotationsDelta[i] = rotations[i] - lastRotations[i];
         }
-        position.add(drive.getDelta(rotations));
+        position.add(drive.getPoseDelta(rotationsDelta));
 
         telemetry.addData("x", position.x());
         telemetry.addData("y", position.y());

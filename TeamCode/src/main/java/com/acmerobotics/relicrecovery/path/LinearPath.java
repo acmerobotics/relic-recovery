@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.path;
 
+import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
 
 import java.util.ArrayList;
@@ -7,32 +8,40 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by Ryan on 4/5/2017.
+ * Class representing a piecewise linear path (i.e. a path composed of linear segments)
  */
 public class LinearPath {
 
     public static final double EPSILON = 0.0001;
 
+    /**
+     * Report describing the distance between a path and a point
+     * @see LinearPath#getDistanceReport(Vector2d)
+     */
     public static class DistanceReport {
         public Segment segment;
         public Vector2d queryPoint, pathPoint;
         public double distance;
     }
 
+    /**
+     * Class representing a single segment of a piecewise linear path
+     */
     public static class Segment {
-        private Vector2d start, end, seg;
+        private Pose2d start, end;
+        private Vector2d seg;
 
-        public Segment(Vector2d start, Vector2d end) {
+        public Segment(Pose2d start, Pose2d end) {
             this.start = start;
             this.end = end;
-            this.seg = this.start.negated().add(this.end);
+            this.seg = this.start.pos().negated().add(this.end.pos());
         }
 
-        public Vector2d start() {
+        public Pose2d start() {
             return start;
         }
 
-        public Vector2d end() {
+        public Pose2d end() {
             return end;
         }
 
@@ -45,23 +54,28 @@ public class LinearPath {
         }
 
         /** @param t range [0, 1] inclusive */
-        public Vector2d getPoint(double t) {
-            return this.seg.multiplied(t).add(this.start);
+        public Pose2d getPose(double t) {
+            Vector2d interpolatedPos = this.seg.multiplied(t).add(this.start.pos());
+            double interpolatedHeading = this.start.heading() + t * (this.start.heading() - this.end.heading());
+            return new Pose2d(interpolatedPos, interpolatedHeading);
         }
 
-        public Vector2d getBoundedPoint(double t) {
+        /**
+         * @return start if t <= 0, end if t >= 1, and {@link Segment#getPose(double)} otherwise
+         */
+        public Pose2d getBoundedPose(double t) {
             if (t <= 0) {
                 return this.start.copy();
             } else if (t >= 1) {
                 return this.end.copy();
             } else {
-                return getPoint(t);
+                return getPose(t);
             }
         }
 
         /** @return [0, 1] position on curve; NaN if not on curve */
         public double getPosition(Vector2d point) {
-            Vector2d adj = this.start.negated().add(point);
+            Vector2d adj = this.start.pos().negated().add(point);
             double tX = adj.x() / seg.x();
             double tY = adj.y() / seg.y();
             if (Math.abs(seg.x()) < EPSILON) {
@@ -81,7 +95,7 @@ public class LinearPath {
         }
 
         public double getClosestPositionOnPath(Vector2d point) {
-            double a = seg.dot(start.negated().add(point));
+            double a = seg.dot(start.pos().negated().add(point));
             return a / seg.dot(seg);
         }
 
@@ -106,10 +120,10 @@ public class LinearPath {
     private List<Segment> segments;
     private double length;
 
-    public LinearPath(List<Vector2d> waypoints) {
+    public LinearPath(List<Pose2d> poses) {
         segments = new ArrayList<>();
-        for (int i = 0; i < waypoints.size() - 1; i++) {
-            Segment s = new Segment(waypoints.get(i), waypoints.get(i+1));
+        for (int i = 0; i < poses.size() - 1; i++) {
+            Segment s = new Segment(poses.get(i), poses.get(i+1));
             segments.add(s);
             length += s.length();
         }
@@ -152,7 +166,7 @@ public class LinearPath {
         return Double.NaN;
     }
 
-    public Vector2d getPoint(double t) {
+    public Pose2d getPose(double t) {
         double s = t * length;
         if (s <= 0) {
             return segments.get(0).start;
@@ -160,7 +174,7 @@ public class LinearPath {
         for (Segment seg : segments) {
             double segLength = seg.length();
             if (segLength > s) {
-                return seg.getPoint(s / segLength);
+                return seg.getPose(s / segLength);
             }
             s -= segLength;
         }
@@ -172,12 +186,12 @@ public class LinearPath {
         report.distance = Double.POSITIVE_INFINITY;
         for (Segment s : segments) {
             double t = s.getClosestPositionOnPath(point);
-            double distance = Segment.getDistance(point, s.getBoundedPoint(t));
+            double distance = Segment.getDistance(point, s.getBoundedPose(t).pos());
             if (distance < report.distance) {
                 report.segment = s;
                 report.distance = distance;
                 report.queryPoint = point;
-                report.pathPoint = s.getBoundedPoint(t);
+                report.pathPoint = s.getBoundedPose(t).pos();
             }
         }
         return report;
@@ -203,11 +217,11 @@ public class LinearPath {
             if (disc >= 0) {
                 double t = (-b + Math.sqrt(disc)) / (2 * a);
                 if (t >= 0 && t <= 1) {
-                    return s.getBoundedPoint(t);
+                    return s.getBoundedPose(t).pos();
                 }
             }
         }
-        return segments.get(segments.size() - 1).end.copy();
+        return segments.get(segments.size() - 1).end.pos().copy();
     }
 
     public int size() {

@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.path;
 
+import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
 
 import org.junit.Test;
@@ -16,13 +17,13 @@ import static junit.framework.Assert.assertTrue;
 public class LinearPathTest {
 
     private LinearPath.Segment simpleSeg = new LinearPath.Segment(
-            new Vector2d(0, 0),
-            new Vector2d(2, 2));
+            new Pose2d(0, 0),
+            new Pose2d(2, 2));
     private LinearPath simplePath = new LinearPath(Arrays.asList(
-            new Vector2d(0, 0),
-            new Vector2d(2, 2),
-            new Vector2d(3, 1),
-            new Vector2d(4, 2)
+            new Pose2d(0, 0),
+            new Pose2d(2, 2),
+            new Pose2d(3, 1),
+            new Pose2d(4, 2)
     ));
 
     @Test
@@ -32,9 +33,9 @@ public class LinearPathTest {
 
     @Test
     public void testSegmentPosition() {
-        assertTrue(simpleSeg.getPoint(0.5).equals(new Vector2d(1, 1)));
+        assertEquals(new Vector2d(1, 1), simpleSeg.getPose(0.5).pos());
         assertEquals(0.5, simpleSeg.getPosition(new Vector2d(1, 1)), Vector2d.EPSILON);
-        assertTrue(simpleSeg.getBoundedPoint(1.5).equals(simpleSeg.end()));
+        assertEquals(simpleSeg.end(), simpleSeg.getBoundedPose(1.5));
     }
 
     @Test
@@ -49,7 +50,7 @@ public class LinearPathTest {
 
     @Test
     public void testPathPosition() {
-        assertTrue(simplePath.getPoint(0.5).equals(new Vector2d(2, 2)));
+        assertEquals(new Vector2d(2, 2), simplePath.getPose(0.5).pos());
         assertEquals(0.75, simplePath.getPosition(new Vector2d(3, 1)), Vector2d.EPSILON);
     }
 
@@ -62,7 +63,7 @@ public class LinearPathTest {
     public void testPathDistance() {
         LinearPath.DistanceReport report = simplePath.getDistanceReport(new Vector2d(0, 1));
         assertEquals(Math.hypot(0.5, 0.5), report.distance, Vector2d.EPSILON);
-        assertTrue(report.pathPoint.equals(new Vector2d(0.5, 0.5)));
+        assertEquals(new Vector2d(0.5, 0.5), report.pathPoint);
     }
 
 }

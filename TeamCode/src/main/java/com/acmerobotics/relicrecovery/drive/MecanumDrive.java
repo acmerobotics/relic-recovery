@@ -40,6 +40,10 @@ public class MecanumDrive {
     public static final double RADIUS = 2;
 
     private DcMotor[] motors;
+
+    /**
+     * units in encoder ticks; solely intended for internal use
+     */
     private int[] offsets;
 
     /**
@@ -116,7 +120,7 @@ public class MecanumDrive {
      * @param rot rotation of each wheel, in radians
      * @return movement of robot
      */
-    public Pose2d getDelta(double[] rot) {
+    public Pose2d getPoseDelta(double[] rot) {
         if (rot.length != 4) {
             throw new IllegalArgumentException("length must be four");
         }
@@ -126,27 +130,43 @@ public class MecanumDrive {
         return new Pose2d(x, y, h);
     }
 
-    public double ticksToRadians(int motor, int ticks) {
-        double ticksPerRev = motors[motor].getMotorType().getTicksPerRev();
-        return 2 * Math.PI * ticks / ticksPerRev;
-    }
-
     public void resetEncoders() {
         for(int i = 0; i < 4; i++) {
             offsets[i] = -motors[i].getCurrentPosition();
         }
     }
 
+    /** @return motor rotations in radians */
+    public double[] getRotations() {
+        double[] rotations = new double[4];
+        for (int i = 0; i < 4; i++) {
+            rotations[i] = getRotation(i);
+        }
+        return rotations;
+    }
+
+    /** @return motor rotation in radians */
+    public double getRotation(int motor) {
+        return ticksToRadians(motor, getPosition(motor));
+    }
+
+    /** @return motor positions in encoder ticks */
     public int[] getPositions() {
         int[] positions = new int[4];
         for (int i = 0; i < 4; i++) {
-            positions[i] = offsets[i] + motors[i].getCurrentPosition();
+            positions[i] = getPosition(i);
         }
         return positions;
     }
 
+    /** @return motor position in encoder ticks */
     public int getPosition(int motor) {
-        return getPositions()[motor];
+        return offsets[motor] + motors[motor].getCurrentPosition();
+    }
+
+    private double ticksToRadians(int motor, int ticks) {
+        double ticksPerRev = motors[motor].getMotorType().getTicksPerRev();
+        return 2 * Math.PI * ticks / ticksPerRev;
     }
 
     // TODO: stub
