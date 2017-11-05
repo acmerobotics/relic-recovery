@@ -478,6 +478,12 @@ public class CryptoboxTracker implements Tracker {
 
             glyphRails.addAll(brownRails);
             glyphRails.addAll(grayRails);
+
+            if (brownRails.size() > 1) {
+                glyphRails = nonMaximumSuppression(glyphRails, 3 * getMeanRailGap(brownRails) / 8);
+            } else if (grayRails.size() > 1) {
+                glyphRails = nonMaximumSuppression(glyphRails, 3 * getMeanRailGap(grayRails) / 8);
+            }
         }
 
         // combine all the rails

@@ -4,10 +4,8 @@ import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.drive.PoseEstimator;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
-import com.acmerobotics.relicrecovery.loops.Looper;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -25,11 +23,11 @@ public class PoseEstimationTest extends OpMode {
     private RobotDashboard dashboard;
     private Canvas fieldOverlay;
 
-    private Looper looper;
-
     private BNO055IMU imu;
+
     private MecanumDrive drive;
-    private PoseEstimator poseEstimator;
+    private int[] lastPositions;
+    private Pose2d pose;
 
     @Override
     public void init() {
@@ -42,25 +40,37 @@ public class PoseEstimationTest extends OpMode {
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imu.initialize(parameters);
 
-        looper = new Looper(20);
         drive = new MecanumDrive(hardwareMap);
-        poseEstimator = new PoseEstimator(drive, new Pose2d(0, 0, 0));
-        looper.addLoop(poseEstimator);
-        looper.start();
+
+        pose = new Pose2d(0, 0, 0);
     }
 
     @Override
     public void loop() {
+        if (lastPositions == null) {
+            lastPositions = drive.getPositions();
+        } else {
+            int[] positions = drive.getPositions();
+            int[] positionDeltas = new int[positions.length];
+            for (int i = 0; i < positions.length; i++) {
+                positionDeltas[i] = positions[i] - lastPositions[i];
+            }
+
+            Pose2d poseDelta = drive.getDelta(positionDeltas);
+
+            pose.add(poseDelta);
+
+            lastPositions = positions;
+        }
+
         if (gamepad1.a) {
-            poseEstimator.setPose(new Pose2d(0, 0, 0));
+            pose = new Pose2d(0, 0, 0);
         }
 
         drive.setVelocity(new Vector2d(
                 -gamepad1.left_stick_y,
                 -gamepad1.left_stick_x
         ), -gamepad1.right_stick_y);
-
-        Pose2d pose = poseEstimator.getPose();
 
         double actualHeading = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
 
@@ -83,10 +93,5 @@ public class PoseEstimationTest extends OpMode {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    @Override
-    public void stop() {
-        looper.terminate();
     }
 }
