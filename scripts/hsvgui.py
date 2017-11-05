@@ -3,8 +3,8 @@ import numpy as np
 import os
 from util import resize_min_dim, smart_hsv_range
 
-INPUT_DIR = "cryptobox/images/"
-OUTPUT_DIR = 'cryptobox/output/'
+INPUT_DIR = '/Users/ryanbrott/Desktop/jewel-test/' # "cryptobox/images/"
+OUTPUT_DIR = None # 'cryptobox/output/'
 MIN_DIMENSION = 480
 
 IMAGE_WIN = "image"
@@ -70,13 +70,15 @@ for filename in os.listdir(INPUT_DIR):
             satUpper = max(hsv_values, key=lambda x: x[1])[1]
             valUpper = max(hsv_values, key=lambda x: x[2])[2]
 
-            for hue, _, _ in hsv_values:
-                if hue != hueLower and hue != hueUpper and (hue < hueLower or hue > hueUpper):
-                    hueLower, hueUpper = hueUpper, hueLower
-                    break
+            # for hue, _, _ in hsv_values:
+            #     if hue != hueLower and hue != hueUpper and (hue < hueLower or hue > hueUpper):
+            #         hueLower, hueUpper = hueUpper, hueLower
+            #         break
 
-            # if (hueLower + 180 - hueUpper) < (hueUpper - hueLower):
-            #     hueLower, hueUpper = hueUpper, hueLower
+            if (hueLower + 180 - hueUpper) < (hueUpper - hueLower):
+                # hueLower, hueUpper = hueUpper, hueLower
+                hueLower = min([hue for hue, _, _ in hsv_values if hue >= 90])
+                hueUpper = max([hue for hue, _, _ in hsv_values if hue < 90])
 
             lower_hsv = (hueLower, satLower, valLower)
             upper_hsv = (hueUpper, satUpper, valUpper)
