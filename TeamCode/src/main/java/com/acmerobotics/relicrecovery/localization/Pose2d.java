@@ -2,6 +2,8 @@ package com.acmerobotics.relicrecovery.localization;
 
 import java.util.Locale;
 
+import static com.acmerobotics.relicrecovery.localization.Vector2d.EPSILON;
+
 /**
  * Created by kelly on 9/28/2017.
  *

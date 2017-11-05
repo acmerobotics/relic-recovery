@@ -26,7 +26,7 @@ public class PoseEstimationTest extends OpMode {
     private BNO055IMU imu;
 
     private MecanumDrive drive;
-    private int[] lastPositions;
+    private double[] lastRotations;
     private Pose2d pose;
 
     @Override
@@ -47,20 +47,19 @@ public class PoseEstimationTest extends OpMode {
 
     @Override
     public void loop() {
-        if (lastPositions == null) {
-            lastPositions = drive.getPositions();
+        if (lastRotations == null) {
+            lastRotations = drive.getRotations();
         } else {
-            int[] positions = drive.getPositions();
-            int[] positionDeltas = new int[positions.length];
-            for (int i = 0; i < positions.length; i++) {
-                positionDeltas[i] = positions[i] - lastPositions[i];
+            double[] rotations = drive.getRotations();
+            double[] rotationDeltas = new double[rotations.length];
+            for (int i = 0; i < rotationDeltas.length; i++) {
+                rotationDeltas[i] = rotations[i] - lastRotations[i];
             }
 
-            Pose2d poseDelta = drive.getDelta(positionDeltas);
-
+            Pose2d poseDelta = drive.getPoseDelta(rotationDeltas);
             pose.add(poseDelta);
 
-            lastPositions = positions;
+            lastRotations = rotations;
         }
 
         if (gamepad1.a) {
