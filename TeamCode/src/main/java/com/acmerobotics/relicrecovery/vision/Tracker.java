@@ -8,5 +8,5 @@ import org.opencv.core.Mat;
 
 public interface Tracker {
     void processFrame(Mat frame, double timestamp);
-    void drawOverlay(Overlay overlay, int imageWidth, int imageHeight);
+    void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug);
 }

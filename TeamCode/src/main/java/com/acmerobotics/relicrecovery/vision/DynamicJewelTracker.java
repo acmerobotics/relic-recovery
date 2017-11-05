@@ -190,7 +190,7 @@ public class DynamicJewelTracker implements Tracker {
     }
 
     @Override
-    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
+    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
         overlay.setScalingFactor(4);
 
         if (lastRedJewels != null) {

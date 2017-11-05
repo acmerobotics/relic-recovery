@@ -536,7 +536,7 @@ public class CryptoboxTracker implements Tracker {
     }
 
     @Override
-    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
+    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
         if (latestResult != null) {
             overlay.setScalingFactor(imageWidth / actualWidth);
 

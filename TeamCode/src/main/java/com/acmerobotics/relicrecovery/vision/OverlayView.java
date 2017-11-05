@@ -13,6 +13,7 @@ import java.util.List;
 public class OverlayView extends View {
     private List<Tracker> trackers;
     private int imageHeight, imageWidth;
+    private boolean debug;
 
     public OverlayView(Context context) {
         super(context);
@@ -27,6 +28,14 @@ public class OverlayView extends View {
 
     public void addTracker(Tracker tracker) {
         this.trackers.add(tracker);
+    }
+
+    public boolean getDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 
     @Override
@@ -60,7 +69,7 @@ public class OverlayView extends View {
         for (Tracker tracker : trackers) {
             canvas.save();
 
-            tracker.drawOverlay(new CanvasOverlay(canvas), imageWidth, imageHeight);
+            tracker.drawOverlay(new CanvasOverlay(canvas), imageWidth, imageHeight, debug);
 
             canvas.restore();
         }

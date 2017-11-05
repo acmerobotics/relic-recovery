@@ -55,7 +55,7 @@ public class CryptoboxTrackerTest {
             tracker.processFrame(image, 0);
 
             MatOverlay overlay = new MatOverlay(image);
-            tracker.drawOverlay(overlay, image.cols(), image.rows());
+            tracker.drawOverlay(overlay, image.cols(), image.rows(), true);
 
             Imgcodecs.imwrite(new File(imageOutputDir, imageFile.getName()).getAbsolutePath(), image);
         }
