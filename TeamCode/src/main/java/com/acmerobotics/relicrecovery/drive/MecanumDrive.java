@@ -2,15 +2,12 @@ package com.acmerobotics.relicrecovery.drive;
 
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
-import com.acmerobotics.relicrecovery.motion.MotionGoal;
-import com.acmerobotics.relicrecovery.motion.MotionProfile;
-import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
-import com.acmerobotics.relicrecovery.motion.MotionState;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.configuration.MotorConfigurationType;
-import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,6 +49,9 @@ public class MecanumDrive {
      */
     private int[] offsets;
 
+    private BNO055IMU imu;
+    private double headingOffset;
+
     /**
      * construct drive with default configuration names
      * @param map hardware map
@@ -70,10 +70,19 @@ public class MecanumDrive {
             throw new IllegalArgumentException("must be four for motors");
         }
 
+        imu = map.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu.initialize(parameters);
+
+        resetHeading();
+
         offsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
             motors[i] = map.dcMotor.get(names[i]);
+            motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
@@ -173,6 +182,18 @@ public class MecanumDrive {
     private double ticksToRadians(int motor, int ticks) {
         double ticksPerRev = motors[motor].getMotorType().getTicksPerRev();
         return 2 * Math.PI * ticks / ticksPerRev;
+    }
+
+    private double getRawHeading() {
+        return imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+    }
+
+    public double getHeading() {
+        return getRawHeading() + headingOffset;
+    }
+
+    public void resetHeading() {
+        headingOffset = -getRawHeading();
     }
 
     // TODO: stub

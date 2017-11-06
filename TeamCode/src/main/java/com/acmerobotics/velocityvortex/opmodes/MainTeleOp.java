@@ -19,7 +19,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "VV TeleOp", group = "TeleOp")
+@TeleOp(name = "VV MainTeleOp", group = "MainTeleOp")
 public class MainTeleOp extends OpMode {
 
     public static final int BLUE_LED_CHANNEL = 0;
