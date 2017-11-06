@@ -14,12 +14,12 @@ import static junit.framework.Assert.assertTrue;
  * @author Ryan
  */
 
-public class LinearPathTest {
+public class PathTest {
 
-    private LinearPath.Segment simpleSeg = new LinearPath.Segment(
+    private LinearSegment simpleSeg = new LinearSegment(
             new Pose2d(0, 0),
             new Pose2d(2, 2));
-    private LinearPath simplePath = new LinearPath(Arrays.asList(
+    private Path simplePath = new Path(Arrays.asList(
             new Pose2d(0, 0),
             new Pose2d(2, 2),
             new Pose2d(3, 1),
@@ -61,7 +61,7 @@ public class LinearPathTest {
 
     @Test
     public void testPathDistance() {
-        LinearPath.DistanceReport report = simplePath.getDistanceReport(new Vector2d(0, 1));
+        Path.DistanceReport report = simplePath.getDistanceReport(new Vector2d(0, 1));
         assertEquals(Math.hypot(0.5, 0.5), report.distance, Vector2d.EPSILON);
         assertEquals(new Vector2d(0.5, 0.5), report.pathPoint);
     }

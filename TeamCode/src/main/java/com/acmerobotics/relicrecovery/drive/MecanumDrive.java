@@ -1,7 +1,12 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import com.acmerobotics.relicrecovery.localization.Angle;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.relicrecovery.loops.Loop;
+import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -27,7 +32,12 @@ import java.util.Collections;
  *
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
-public class MecanumDrive {
+public class MecanumDrive implements Loop {
+    public enum Mode {
+        OPEN_LOOP,
+        FOLLOW_PATH
+    }
+
     // TODO: should these be extracted into some kind of configuration object?
     public static final double WHEELBASE_WIDTH = 18;
     public static final double WHEELBASE_HEIGHT = 18;
@@ -49,8 +59,15 @@ public class MecanumDrive {
      */
     private int[] offsets;
 
+    private Pose2d estimatedPose;
+    private double[] lastRotations;
+
     private BNO055IMU imu;
     private double headingOffset;
+
+    private PathFollower pathFollower;
+
+    private Mode mode = Mode.OPEN_LOOP;
 
     /**
      * construct drive with default configuration names
@@ -135,7 +152,7 @@ public class MecanumDrive {
      * @param rot rotation of each wheel, in radians
      * @return movement of robot
      */
-    public Pose2d getPoseDelta(double[] rot) {
+    public static Pose2d getPoseDelta(double[] rot) {
         if (rot.length != 4) {
             throw new IllegalArgumentException("length must be four");
         }
@@ -189,20 +206,42 @@ public class MecanumDrive {
     }
 
     public double getHeading() {
-        return getRawHeading() + headingOffset;
+        return Angle.norm(getRawHeading() + headingOffset);
     }
 
     public void resetHeading() {
         headingOffset = -getRawHeading();
     }
 
-    // TODO: stub
-    public void turn(double angle) {
-
+    public void registerLoops(Looper looper) {
+        looper.addLoop(this);
     }
 
-    // TODO: stub
-    public void move(double distance, double speed) {
+    @Override
+    public void onLoop(long timestamp) {
+        // pose estimation
+        if (lastRotations == null) {
+            lastRotations = getRotations();
+        } else {
+            double[] rotations = getRotations();
+            double[] rotationDeltas = new double[rotations.length];
+            for (int i = 0; i < rotationDeltas.length; i++) {
+                rotationDeltas[i] = rotations[i] - lastRotations[i];
+            }
 
+            Pose2d poseDelta = getPoseDelta(rotationDeltas);
+            estimatedPose = new Pose2d(estimatedPose.pos().added(poseDelta.pos()), getHeading());
+
+            lastRotations = rotations;
+        }
+
+        switch (mode) {
+            case OPEN_LOOP:
+                // do nothing
+                break;
+            case FOLLOW_PATH:
+                pathFollower.update()
+                break;
+        }
     }
 }
