@@ -1,50 +1,44 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import android.util.Log;
-
 import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.loops.Loop;
 
 /**
  * Created by ryanbrott on 10/28/17.
  */
 
-public class PoseEstimator implements Loop {
+public class PoseEstimator {
     private MecanumDrive drive;
-    private int[] lastPositions;
+    private double[] lastRotations;
     private Pose2d pose;
 
-    public PoseEstimator(MecanumDrive drive, Pose2d startingPose) {
+    public PoseEstimator(MecanumDrive drive, Pose2d initialPose) {
         this.drive = drive;
-        this.pose = startingPose;
+        this.pose = initialPose;
     }
 
-    @Override
-    public synchronized void onLoop(long timestamp) {
-        if (lastPositions == null) {
-            lastPositions = drive.getPositions();
+    public void update(long timestamp) {
+        if (lastRotations == null) {
+            lastRotations = drive.getRotations();
         } else {
-            int[] positions = drive.getPositions();
-            int[] positionDeltas = new int[positions.length];
-            for (int i = 0; i < positions.length; i++) {
-                positionDeltas[i] = positions[i] - lastPositions[i];
+            double[] rotations = drive.getRotations();
+            double[] rotationDeltas = new double[4];
+            for (int i = 0; i < 4; i++) {
+                rotationDeltas[i] = rotations[i] - lastRotations[i];
             }
 
-            Pose2d poseDelta = MecanumDrive.getDelta(positionDeltas);
+            Pose2d poseDelta = MecanumDrive.getPoseDelta(rotationDeltas);
 
-            Log.i("PoseEstimator", poseDelta.toString());
+            pose.add(new Pose2d(poseDelta.pos(), drive.getHeading()));
 
-            pose.add(poseDelta);
-
-            lastPositions = positions;
+            lastRotations = rotations;
         }
     }
 
-    public synchronized Pose2d getPose() {
+    public Pose2d getPose() {
         return pose.copy();
     }
 
-    public synchronized void setPose(Pose2d pose) {
+    public void setPose(Pose2d pose) {
         this.pose = pose;
     }
 }

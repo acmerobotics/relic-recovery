@@ -9,5 +9,6 @@ import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 
 @Config
 public class DriveConstants {
-    public static MotionConstraints DRIVE_MOTION_CONSTRAINTS = new MotionConstraints(0, 0, 0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(0, 0, 0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(0, 0, 0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_V);
 }

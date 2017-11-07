@@ -3,9 +3,19 @@ package com.acmerobotics.relicrecovery.path;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 
 /**
- * Created by ryanbrott on 11/5/17.
+ * Class representing a segment of a {@link Path}
  */
 
 public interface PathSegment {
-    Pose2d getPoseUpdate(Pose2d currentPose);
+    /** @return duration in seconds */
+    double duration();
+
+    /** @return the pose at a time t in seconds */
+    Pose2d getPose(double time);
+
+    /** @return the pose velocity at time t in seconds */
+    Pose2d getPoseVelocity(double time);
+
+    /** @return the pose acceleration at time t in seconds */
+    Pose2d getPoseAcceleration(double time);
 }

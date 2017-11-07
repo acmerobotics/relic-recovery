@@ -11,7 +11,7 @@ import java.util.Locale;
 public class PIDController {
 
     private boolean outputBounded, inputBounded, shouldReset;
-    private double minOutput, maxOutput, minInput, maxInput, maxSum;
+    private double setpoint, minOutput, maxOutput, minInput, maxInput, maxSum;
 
     private PIDCoefficients coeff;
 
@@ -30,7 +30,15 @@ public class PIDController {
         reset();
     }
 
-    public double getError(double actual, double setpoint) {
+    public double getSetpoint() {
+        return setpoint;
+    }
+
+    public void setSetpoint(double setpoint) {
+        this.setpoint = setpoint;
+    }
+
+    public double getError(double actual) {
         double error = actual - setpoint;
         if (inputBounded) {
             double inputRange = maxInput - minInput;
@@ -49,7 +57,7 @@ public class PIDController {
      * Run a single iteration of the feedback update with the provided
      * error.
      *
-     * @param error calculated error
+     * @param error
      * @return the calculated correction (update)
      */
     public double update(double error, double time) {

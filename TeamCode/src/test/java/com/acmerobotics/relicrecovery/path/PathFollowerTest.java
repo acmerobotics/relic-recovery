@@ -1,15 +1,14 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
+import com.acmerobotics.relicrecovery.localization.Vector2d;
 
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.util.Arrays;
+import java.util.List;
 
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Ryan
@@ -18,21 +17,21 @@ import static org.mockito.Mockito.mock;
 public class PathFollowerTest {
 
     @Test
-    public void testBasicPathExecution() {
-        MecanumDrive drive = mock(MecanumDrive.class);
+    public void testPathCreationFromPoses() {
+        List<PathSegment> expectedSegments = Arrays.asList(
+                new LinearSegment(new Vector2d(0, 0), new Vector2d(2, 0)),
+                new PointTurn(new Vector2d(2, 0), Math.PI / 2),
+                new LinearSegment(new Vector2d(2, 0), new Vector2d(2, 2)),
+                new PointTurn(new Vector2d(2, 2), Math.PI / 2)
+        );
 
-        Path path = new Path(Arrays.asList(
+        Path path = Path.createFromPoses(Arrays.asList(
                 new Pose2d(0, 0),
                 new Pose2d(2, 0),
-                new Pose2d(2, 2)
+                new Pose2d(2, 2, Math.PI)
         ));
-        PathFollower executor = new PathFollower(drive);
-        executor.execute(path, 0.5, 0);
 
-        InOrder inOrder = inOrder(drive);
-        inOrder.verify(drive).move(2, 0.5);
-        inOrder.verify(drive).turn(Math.PI / 2);
-        inOrder.verify(drive).move(2, 0.5);
+        assertEquals(expectedSegments, path.getSegments());
     }
 
 }

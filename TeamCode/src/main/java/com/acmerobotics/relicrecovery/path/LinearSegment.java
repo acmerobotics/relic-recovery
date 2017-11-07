@@ -1,28 +1,36 @@
 package com.acmerobotics.relicrecovery.path;
 
+import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.relicrecovery.motion.MotionGoal;
+import com.acmerobotics.relicrecovery.motion.MotionProfile;
+import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
+import com.acmerobotics.relicrecovery.motion.MotionState;
 
 import java.util.Locale;
 
 /**
- * Class representing a single segment of a piecewise linear path
+ * Class representing a linear path segment
  */
 public class LinearSegment implements PathSegment {
-    private Pose2d start, end;
-    private Vector2d seg;
+    private Vector2d start, end, seg;
+    private MotionProfile profile;
 
-    public LinearSegment(Pose2d start, Pose2d end) {
+    public LinearSegment(Vector2d start, Vector2d end) {
         this.start = start;
         this.end = end;
-        this.seg = this.start.pos().negated().add(this.end.pos());
+        this.seg = this.start.negated().add(this.end);
+        MotionState startState = new MotionState(0, 0, 0, 0, 0);
+        MotionGoal goal = new MotionGoal(length(), 0);
+        this.profile = MotionProfileGenerator.generateProfile(startState, goal, DriveConstants.AXIAL_CONSTRAINTS);
     }
 
-    public Pose2d start() {
+    public Vector2d start() {
         return start;
     }
 
-    public Pose2d end() {
+    public Vector2d end() {
         return end;
     }
 
@@ -35,35 +43,33 @@ public class LinearSegment implements PathSegment {
     }
 
     /** @param t range [0, 1] inclusive */
-    public Pose2d getPose(double t) {
-        Vector2d interpolatedPos = this.seg.multiplied(t).add(this.start.pos());
-        double interpolatedHeading = this.start.heading() + t * (this.start.heading() - this.end.heading());
-        return new Pose2d(interpolatedPos, interpolatedHeading);
+    public Vector2d get(double t) {
+        return this.seg.multiplied(t).add(this.start);
     }
 
     /**
-     * @return start if t <= 0, end if t >= 1, and {@link LinearSegment#getPose(double)} otherwise
+     * @return start if t <= 0, end if t >= 1, and {@link LinearSegment#get(double)} otherwise
      */
-    public Pose2d getBoundedPose(double t) {
+    public Vector2d getBounded(double t) {
         if (t <= 0) {
             return this.start.copy();
         } else if (t >= 1) {
             return this.end.copy();
         } else {
-            return getPose(t);
+            return get(t);
         }
     }
 
     /** @return [0, 1] position on curve; NaN if not on curve */
     public double getPosition(Vector2d point) {
-        Vector2d adj = this.start.pos().negated().add(point);
+        Vector2d adj = this.start.negated().add(point);
         double tX = adj.x() / seg.x();
         double tY = adj.y() / seg.y();
-        if (Math.abs(seg.x()) < Path.EPSILON) {
+        if (Math.abs(seg.x()) < Vector2d.EPSILON) {
             return tY;
-        } else if (Math.abs(seg.y()) < Path.EPSILON) {
+        } else if (Math.abs(seg.y()) < Vector2d.EPSILON) {
             return tX;
-        } else if (Math.abs(tX - tY) < Path.EPSILON) {
+        } else if (Math.abs(tX - tY) < Vector2d.EPSILON) {
             return (tX + tY) / 2.0;
         } else {
             return Double.NaN;
@@ -76,7 +82,7 @@ public class LinearSegment implements PathSegment {
     }
 
     public double getClosestPositionOnPath(Vector2d point) {
-        double a = seg.dot(start.pos().negated().add(point));
+        double a = seg.dot(start.negated().add(point));
         return a / seg.dot(seg);
     }
 
@@ -84,8 +90,13 @@ public class LinearSegment implements PathSegment {
         return a.negated().add(b).norm();
     }
 
-    public boolean equals(LinearSegment s) {
-        return s.start.equals(start) && s.end.equals(end);
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof LinearSegment) {
+            LinearSegment otherSegment = (LinearSegment) other;
+            return otherSegment.start.equals(start) && otherSegment.end.equals(end);
+        }
+        return false;
     }
 
     @Override
@@ -98,7 +109,22 @@ public class LinearSegment implements PathSegment {
     }
 
     @Override
-    public Pose2d getPoseUpdate(Pose2d currentPose) {
-        return null;
+    public double duration() {
+        return profile.end().t;
+    }
+
+    @Override
+    public Pose2d getPose(double time) {
+        return new Pose2d(new Vector2d(profile.get(time).x, 0), 0);
+    }
+
+    @Override
+    public Pose2d getPoseVelocity(double time) {
+        return new Pose2d(new Vector2d(profile.get(time).v, 0), 0);
+    }
+
+    @Override
+    public Pose2d getPoseAcceleration(double time) {
+        return new Pose2d(new Vector2d(profile.get(time).a, 0), 0);
     }
 }
