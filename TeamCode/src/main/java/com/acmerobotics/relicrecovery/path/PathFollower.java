@@ -16,9 +16,6 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 @Config
 public class PathFollower {
-    public static PIDFCoefficients HEADING_COEFFS = new PIDFCoefficients();
-    public static PIDFCoefficients AXIAL_COEFFS = new PIDFCoefficients();
-    public static PIDCoefficients LATERAL_COEFFS = new PIDCoefficients();
 
     private MecanumDrive drive;
     private PIDFController headingController, axialController;
@@ -26,17 +23,17 @@ public class PathFollower {
     private Path path;
     private long pathStartTimestamp;
 
-    public PathFollower(MecanumDrive drive) {
+    public PathFollower(MecanumDrive drive, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDCoefficients lateralCoeff) {
         this.drive = drive;
 
-        headingController = new PIDFController(HEADING_COEFFS);
+        headingController = new PIDFController(headingCoeff);
         headingController.setInputBounds(-Math.PI / 2, Math.PI / 2);
         headingController.setOutputBounds(-1, 1);
 
-        axialController = new PIDFController(AXIAL_COEFFS);
+        axialController = new PIDFController(axialCoeff);
         axialController.setOutputBounds(-1, 1);
 
-        lateralController = new PIDController(LATERAL_COEFFS);
+        lateralController = new PIDController(lateralCoeff);
         lateralController.setOutputBounds(-1, 1);
     }
 
@@ -71,13 +68,14 @@ public class PathFollower {
         double headingError = headingController.getPositionError(robotPose.heading());
         double headingUpdate = headingController.update(headingError, time);
 
-        double xError = robotPose.x() - pose.x();
-        double yError = robotPose.y() - pose.y();
-        double distanceError = Math.hypot(xError, yError);
+        Vector2d fieldError = robotPose.pos().add(pose.pos().negated());
+        Vector2d robotError = fieldError.rotated(robotPose.heading());
 
-        double theta = robotPose.heading() - Math.atan2(xError, yError);
-        double axialError = distanceError * Math.sin(theta);
-        double lateralError = distanceError * Math.cos(theta);
+        System.out.println(fieldError);
+        System.out.println(robotError);
+
+        double lateralError = robotError.x();
+        double axialError = robotError.y();
 
         MotionState axialState = new MotionState(pose.x(), poseVelocity.x(), poseAcceleration.x(), 0, 0);
         axialController.setSetpoint(axialState);

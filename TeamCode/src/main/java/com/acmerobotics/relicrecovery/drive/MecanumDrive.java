@@ -5,6 +5,7 @@ import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -101,6 +102,9 @@ public class MecanumDrive implements Loop {
 
         motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
+
+        poseEstimator = new PoseEstimator(this, new Pose2d(0, 0));
+        pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         resetEncoders();
     }
@@ -214,6 +218,19 @@ public class MecanumDrive implements Loop {
         looper.addLoop(this);
     }
 
+    public void followPath(Path path) {
+        pathFollower.follow(path);
+        mode = Mode.FOLLOW_PATH;
+    }
+
+    public Pose2d getEstimatedPose() {
+        return poseEstimator.getPose();
+    }
+
+    public void setEstimatedPose(Pose2d pose) {
+        poseEstimator.setPose(pose);
+    }
+
     @Override
     public void onLoop(long timestamp) {
         // pose estimation
@@ -224,7 +241,9 @@ public class MecanumDrive implements Loop {
                 // do nothing
                 break;
             case FOLLOW_PATH:
-//                pathFollower.update()
+                if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
+                    mode = Mode.OPEN_LOOP;
+                }
                 break;
         }
     }

@@ -27,7 +27,7 @@ public class Looper extends Thread {
                 loop.onLoop(startTime);
             }
 
-            while (System.currentTimeMillis() - startTime > loopMs) {
+            while (System.currentTimeMillis() - startTime < loopMs) {
                 try {
                     Thread.sleep(0, 250);
                 } catch (InterruptedException e) {

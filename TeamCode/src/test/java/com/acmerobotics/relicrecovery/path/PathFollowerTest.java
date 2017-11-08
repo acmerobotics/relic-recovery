@@ -1,14 +1,15 @@
 package com.acmerobotics.relicrecovery.path;
 
+import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * @author Ryan
@@ -17,21 +18,23 @@ import static org.junit.Assert.assertEquals;
 public class PathFollowerTest {
 
     @Test
-    public void testPathCreationFromPoses() {
-        List<PathSegment> expectedSegments = Arrays.asList(
-                new LinearSegment(new Vector2d(0, 0), new Vector2d(2, 0)),
-                new PointTurn(new Vector2d(2, 0), Math.PI / 2),
-                new LinearSegment(new Vector2d(2, 0), new Vector2d(2, 2)),
-                new PointTurn(new Vector2d(2, 2), Math.PI / 2)
-        );
+    public void testPathFollower() {
+        Path path = mock(Path.class);
 
-        Path path = Path.createFromPoses(Arrays.asList(
-                new Pose2d(0, 0),
-                new Pose2d(2, 0),
-                new Pose2d(2, 2, Math.PI)
-        ));
+        when(path.getPose(anyDouble())).thenReturn(new Pose2d(0, 0, Math.PI / 4));
+        when(path.getPoseVelocity(anyDouble())).thenReturn(new Pose2d(0, 0, 0));
+        when(path.getPoseAcceleration(anyDouble())).thenReturn(new Pose2d(0, 0, 0));
+        when(path.duration()).thenReturn(100.0);
 
-        assertEquals(expectedSegments, path.getSegments());
+        Pose2d robotPose = new Pose2d(-1, 1, Math.PI / 4);
+
+        MecanumDrive drive = mock(MecanumDrive.class, withSettings().verboseLogging());
+
+        PIDFCoefficients emptyPIDF = new PIDFCoefficients(1, 0, 0, 0, 0);
+        PathFollower follower = new PathFollower(drive, emptyPIDF, emptyPIDF, emptyPIDF);
+
+        follower.follow(path);
+        follower.update(robotPose, System.currentTimeMillis());
     }
 
 }

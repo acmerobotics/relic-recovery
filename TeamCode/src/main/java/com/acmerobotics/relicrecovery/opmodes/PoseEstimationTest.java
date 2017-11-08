@@ -6,11 +6,9 @@ import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.acmerobotics.relicrecovery.loops.Looper;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 
 import java.util.Locale;
 
@@ -19,78 +17,58 @@ import java.util.Locale;
  */
 
 @TeleOp(name = "Pose Estimation Test")
-public class PoseEstimationTest extends OpMode {
+public class PoseEstimationTest extends LinearOpMode {
+    private Looper looper;
+
     private RobotDashboard dashboard;
     private Canvas fieldOverlay;
 
-    private BNO055IMU imu;
-
     private MecanumDrive drive;
-    private double[] lastRotations;
-    private Pose2d pose;
 
     @Override
-    public void init() {
+    public void runOpMode() {
         dashboard = RobotDashboard.getInstance();
         fieldOverlay = dashboard.getFieldOverlay();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imu.initialize(parameters);
+        looper = new Looper(20);
 
         drive = new MecanumDrive(hardwareMap);
+        drive.registerLoops(looper);
 
-        pose = new Pose2d(0, 0, 0);
-    }
+        waitForStart();
 
-    @Override
-    public void loop() {
-        if (lastRotations == null) {
-            lastRotations = drive.getRotations();
-        } else {
-            double[] rotations = drive.getRotations();
-            double[] rotationDeltas = new double[rotations.length];
-            for (int i = 0; i < rotationDeltas.length; i++) {
-                rotationDeltas[i] = rotations[i] - lastRotations[i];
+        looper.start();
+
+        while (opModeIsActive()) {
+            if (gamepad1.a) {
+                drive.setEstimatedPose(new Pose2d(0, 0, 0));
             }
 
-            Pose2d poseDelta = drive.getPoseDelta(rotationDeltas);
-            pose.add(poseDelta);
+            drive.setVelocity(new Vector2d(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x
+            ), -gamepad1.right_stick_y);
 
-            lastRotations = rotations;
+            Pose2d estimatedPose = drive.getEstimatedPose();
+
+            fieldOverlay.setFill("green");
+            fieldOverlay.fillCircle(estimatedPose.x(), estimatedPose.y(), 5);
+            dashboard.drawOverlay();
+
+            telemetry.addData(">", "Press [A] to reset pose to (0, 0, 0)");
+            telemetry.addData("x", estimatedPose.x());
+            telemetry.addData("y", estimatedPose.y());
+            telemetry.addData("heading", String.format(Locale.ENGLISH, "%.2f (%.2fdeg)", estimatedPose.heading(), Math.toDegrees(estimatedPose.heading())));
+            int[] pos = drive.getPositions();
+            for (int i = 0; i < pos.length; i++) {
+                telemetry.addData("encoder" + i, pos[i]);
+            }
+            telemetry.update();
+
+            sleep(20);
         }
 
-        if (gamepad1.a) {
-            pose = new Pose2d(0, 0, 0);
-        }
-
-        drive.setVelocity(new Vector2d(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x
-        ), -gamepad1.right_stick_y);
-
-        double actualHeading = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
-
-        fieldOverlay.setFill("green");
-        fieldOverlay.fillCircle(pose.x(), pose.y(), 5);
-        dashboard.drawOverlay();
-
-        telemetry.addData(">", "Press [A] to reset pose to (0, 0, 0)");
-        telemetry.addData("x", pose.x());
-        telemetry.addData("y", pose.y());
-        telemetry.addData("estimatedHeading", String.format(Locale.ENGLISH, "%.2f (%.2fdeg)", pose.heading(), Math.toDegrees(pose.heading())));
-        int[] pos = drive.getPositions();
-        for (int i = 0; i < pos.length; i++) {
-            telemetry.addData("encoder" + i, pos[i]);
-        }
-        telemetry.addData("actualHeading", actualHeading);
-
-        try {
-            Thread.sleep(25);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        looper.terminate();
     }
 }

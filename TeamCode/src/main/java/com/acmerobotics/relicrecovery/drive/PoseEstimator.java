@@ -28,7 +28,7 @@ public class PoseEstimator {
 
             Pose2d poseDelta = MecanumDrive.getPoseDelta(rotationDeltas);
 
-            pose.add(new Pose2d(poseDelta.pos(), drive.getHeading()));
+            pose = new Pose2d(pose.pos().added(poseDelta.pos().rotated(drive.getHeading())), drive.getHeading());
 
             lastRotations = rotations;
         }

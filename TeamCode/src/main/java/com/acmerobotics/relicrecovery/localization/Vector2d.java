@@ -64,6 +64,17 @@ public class Vector2d {
         return copy().negate();
     }
 
+    public Vector2d rotate(double angle) {
+        double oldX = x;
+        x = x * Math.cos(angle) - y * Math.sin(angle);
+        y = oldX * Math.sin(angle) + y * Math.cos(angle);
+        return this;
+    }
+
+    public Vector2d rotated(double angle) {
+        return copy().rotate(angle);
+    }
+
     public double x() {
         return x;
     }
