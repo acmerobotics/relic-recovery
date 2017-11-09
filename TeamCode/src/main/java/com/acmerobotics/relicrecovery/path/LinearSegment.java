@@ -101,7 +101,7 @@ public class LinearSegment implements PathSegment {
 
     @Override
     public String toString() {
-        return String.format(Locale.ENGLISH, "<%f, %f> to <%f, %f>", start.x(), start.y(), end.x(), end.y());
+        return seg.toString();
     }
 
     public String getEquation() {

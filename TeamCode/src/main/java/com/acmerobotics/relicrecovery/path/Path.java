@@ -29,14 +29,15 @@ public class Path {
             double deltaY = pose.y() - lastPose.y();
             double newHeading = Angle.norm(Math.atan2(deltaY, deltaX));
             double turnAngle = Angle.norm(newHeading - heading);
-            if (Math.abs(turnAngle) > Vector2d.EPSILON) {
+            if ((Math.abs(deltaX) > Vector2d.EPSILON || Math.abs(deltaY) > Vector2d.EPSILON) &&
+                Math.abs(turnAngle) > Vector2d.EPSILON) {
                 segments.add(new PointTurn(lastPose.pos(), turnAngle));
+                heading = newHeading;
             }
             double length = lastPose.pos().negated().add(pose.pos()).norm();
             if (length > Vector2d.EPSILON) {
                 segments.add(new LinearSegment(lastPose.pos(), pose.pos()));
             }
-            heading = newHeading;
         }
         Pose2d finalPose = poses.get(poses.size() - 1);
         double finalTurnAngle = Angle.norm(finalPose.heading() - heading);

@@ -223,6 +223,10 @@ public class MecanumDrive implements Loop {
         mode = Mode.FOLLOW_PATH;
     }
 
+    public boolean isFollowingPath() {
+        return pathFollower.isFollowingPath();
+    }
+
     public Pose2d getEstimatedPose() {
         return poseEstimator.getPose();
     }

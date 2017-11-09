@@ -38,10 +38,14 @@ public class LineTest extends LinearOpMode {
 
         waitForStart();
 
+        looper.start();
+
         drive.followPath(path);
 
         while (opModeIsActive()) {
             telemetry.update();
+
+            sleep(20);
         }
 
         looper.terminate();

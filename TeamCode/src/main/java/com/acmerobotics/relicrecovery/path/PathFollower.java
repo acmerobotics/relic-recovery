@@ -27,7 +27,7 @@ public class PathFollower {
         this.drive = drive;
 
         headingController = new PIDFController(headingCoeff);
-        headingController.setInputBounds(-Math.PI / 2, Math.PI / 2);
+        headingController.setInputBounds(-Math.PI, Math.PI);
         headingController.setOutputBounds(-1, 1);
 
         axialController = new PIDFController(axialCoeff);
@@ -44,6 +44,10 @@ public class PathFollower {
         headingController.reset();
         axialController.reset();
         lateralController.reset();
+    }
+
+    public boolean isFollowingPath() {
+        return path == null && (pathStartTimestamp - System.currentTimeMillis()) / 1000.0 < path.duration();
     }
 
     /**
@@ -70,9 +74,6 @@ public class PathFollower {
 
         Vector2d fieldError = robotPose.pos().add(pose.pos().negated());
         Vector2d robotError = fieldError.rotated(robotPose.heading());
-
-        System.out.println(fieldError);
-        System.out.println(robotError);
 
         double lateralError = robotError.x();
         double axialError = robotError.y();
