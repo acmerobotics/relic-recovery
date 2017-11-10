@@ -47,7 +47,7 @@ public class PathFollower {
     }
 
     public boolean isFollowingPath() {
-        return path == null && (pathStartTimestamp - System.currentTimeMillis()) / 1000.0 < path.duration();
+        return path == null && (System.currentTimeMillis() - pathStartTimestamp) / 1000.0 < path.duration();
     }
 
     /**
@@ -57,7 +57,7 @@ public class PathFollower {
      * @return true if the path is finished
      */
     public boolean update(Pose2d robotPose, long timestamp) {
-        double time = (pathStartTimestamp - timestamp) / 1000.0;
+        double time = (timestamp - pathStartTimestamp) / 1000.0;
         if (time > path.duration()) {
             drive.setVelocity(new Vector2d(0, 0), 0);
             return false;

@@ -16,7 +16,10 @@ public class Path {
     private double duration;
 
     public Path(List<PathSegment> segments) {
-        this.segments = segments;
+        this.segments = new ArrayList<>();
+        for (PathSegment segment : segments) {
+            addSegment(segment);
+        }
     }
 
     public static Path createFromPoses(List<Pose2d> poses) {

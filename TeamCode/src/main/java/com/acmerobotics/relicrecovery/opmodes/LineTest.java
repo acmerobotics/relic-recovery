@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 @Autonomous
 public class LineTest extends LinearOpMode {
     private RobotDashboard dashboard;
+    private Canvas fieldOverlay;
     private MecanumDrive drive;
     private Looper looper;
 
@@ -25,10 +27,11 @@ public class LineTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Path path = Path.createFromPoses(Arrays.asList(
                 new Pose2d(0, 0),
-                new Pose2d(36, 0)
+                new Pose2d(72, 0)
         ));
 
         dashboard = RobotDashboard.getInstance();
+        fieldOverlay = dashboard.getFieldOverlay();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         looper = new Looper(20);
@@ -43,6 +46,14 @@ public class LineTest extends LinearOpMode {
         drive.followPath(path);
 
         while (opModeIsActive()) {
+            Pose2d estimatedPose = drive.getEstimatedPose();
+
+            fieldOverlay.setFill("green");
+            fieldOverlay.fillCircle(estimatedPose.x(), estimatedPose.y(), 5);
+            dashboard.drawOverlay();
+
+            telemetry.addData("x", estimatedPose.x());
+            telemetry.addData("Y", estimatedPose.y());
             telemetry.update();
 
             sleep(20);
