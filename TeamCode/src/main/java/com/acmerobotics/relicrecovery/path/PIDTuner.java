@@ -9,7 +9,9 @@ import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.motion.PIDController;
+import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -20,9 +22,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @Config
 @TeleOp
 public class PIDTuner extends OpMode {
-    public static final double RADIUS = 10;
+    public static final double RADIUS = 9 * Math.sqrt(2);
     
-    public static Pose2d setpoint;
+    public static double xSetpoint = 0;
+    public static double ySetpoint = 0;
+    public static double headingSetpoint = 0;
 
     private RobotDashboard dashboard;
     private Canvas fieldOverlay;
@@ -44,26 +48,39 @@ public class PIDTuner extends OpMode {
         axialController = new PIDController(DriveConstants.AXIAL_COEFFS);
         lateralController = new PIDController(DriveConstants.LATERAL_COEFFS);
 
+        headingController.setInputBounds(-Math.PI, Math.PI);
+        headingController.setOutputBounds(-1, 1);
+
+        axialController.setOutputBounds(-1, 1);
+
+        lateralController.setOutputBounds(-1, 1);
+
         looper = new Looper(20);
         looper.addLoop((timestamp, dt) -> {
             double time = getRuntime();
 
             Pose2d robotPose = drive.getEstimatedPose();
 
-            headingController.setSetpoint(setpoint.heading());
+            headingController.setSetpoint(headingSetpoint);
             double headingError = headingController.getError(robotPose.heading());
             double headingUpdate = headingController.update(headingError, time);
 
-            Vector2d fieldError = robotPose.pos().add(setpoint.pos().negated());
-            Vector2d robotError = fieldError.rotated(robotPose.heading());
+//            axialController.setSetpoint(xSetpoint);
+//            double axialError = axialController.getError(robotPose.x());
+//            double axialUpdate = axialController.update(axialError, time);
+//
+//            lateralController.setSetpoint(ySetpoint);
+//            double lateralError = lateralController.getError(robotPose.y());
+//            double lateralUpdate = lateralController.update(lateralError, time);
 
-            double lateralError = robotError.x();
-            double axialError = robotError.y();
+            Pose2d pose = new Pose2d(xSetpoint, ySetpoint, headingSetpoint);
+            Vector2d fieldError = robotPose.pos().added(pose.pos().negated());
+            Vector2d robotError = fieldError.rotated(-robotPose.heading());
 
-            axialController.setSetpoint(setpoint.x());
+            double axialError = robotError.x();
+            double lateralError = robotError.y();
+
             double axialUpdate = axialController.update(axialError, time);
-
-            lateralController.setSetpoint(setpoint.y());
             double lateralUpdate = lateralController.update(lateralError, time);
 
             drive.setVelocity(new Vector2d(axialUpdate, lateralUpdate), headingUpdate);
@@ -81,20 +98,36 @@ public class PIDTuner extends OpMode {
             telemetry.addData("lateralError", lateralError);
             telemetry.addData("lateralUpdate", lateralUpdate);
 
+            telemetry.update();
+
+            fieldOverlay.setFill("green");
+            fieldOverlay.fillCircle(xSetpoint, ySetpoint, 1);
+
             fieldOverlay.setFill("blue");
-            fieldOverlay.setStrokeWidth(2);
+            fieldOverlay.setStrokeWidth(4);
             fieldOverlay.strokeLine(
                     robotPose.x() + 0.5 * RADIUS * Math.cos(robotPose.heading()),
                     robotPose.y() + 0.5 * RADIUS * Math.sin(robotPose.heading()),
                     robotPose.x() + RADIUS * Math.cos(robotPose.heading()),
                     robotPose.y() + RADIUS * Math.sin(robotPose.heading()));
             fieldOverlay.strokeCircle(robotPose.x(), robotPose.y(), RADIUS);
+
             dashboard.drawOverlay();
         });
 
         drive.registerLoops(looper);
 
         looper.start();
+    }
+
+    @Override
+    public void internalPostInitLoop() {
+
+    }
+
+    @Override
+    public void internalPostLoop() {
+
     }
 
     @Override

@@ -82,7 +82,7 @@ export default class Field {
         this.ctx.arc(
           scale(op.y, 72, -72, x, width + x),
           scale(op.x, 72, -72, y, height + y),
-          op.radius, 0, 2 * Math.PI);
+          scale(op.radius, 0, 72, 0, width / 2), 0, 2 * Math.PI);
         if (op.stroke) {
           this.ctx.stroke();
         } else {

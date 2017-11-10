@@ -72,11 +72,11 @@ public class PathFollower {
         double headingError = headingController.getPositionError(robotPose.heading());
         double headingUpdate = headingController.update(headingError, time);
 
-        Vector2d fieldError = robotPose.pos().add(pose.pos().negated());
+        Vector2d fieldError = robotPose.pos().added(pose.pos().negated());
         Vector2d robotError = fieldError.rotated(robotPose.heading());
 
-        double lateralError = robotError.x();
-        double axialError = robotError.y();
+        double axialError = robotError.x();
+        double lateralError = robotError.y();
 
         MotionState axialState = new MotionState(pose.x(), poseVelocity.x(), poseAcceleration.x(), 0, 0);
         axialController.setSetpoint(axialState);
