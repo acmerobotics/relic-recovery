@@ -35,6 +35,7 @@ import java.util.Collections;
 public class MecanumDrive implements Loop {
     public enum Mode {
         OPEN_LOOP,
+        OPEN_LOOP_RAMP,
         FOLLOW_PATH
     }
 
@@ -67,6 +68,8 @@ public class MecanumDrive implements Loop {
 
     private Mode mode = Mode.OPEN_LOOP;
 
+    private double[] powers, targetPowers;
+
     /**
      * construct drive with default configuration names
      * @param map hardware map
@@ -92,6 +95,8 @@ public class MecanumDrive implements Loop {
 
         resetHeading();
 
+        powers = new double[4];
+        targetPowers = new double[4];
         offsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
@@ -107,6 +112,14 @@ public class MecanumDrive implements Loop {
         pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         resetEncoders();
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    public Mode getMode() {
+        return mode;
     }
 
     /**
@@ -125,17 +138,16 @@ public class MecanumDrive implements Loop {
      */
     // TODO: do these equations hold for a non-square wheelbase?
     public void setVelocity(Vector2d vel, double omega) {
-        double[] power = new double[4];
-        power[0] = vel.x() - vel.y() - K * omega;
-        power[1] = vel.x() + vel.y() - K * omega;
-        power[2] = vel.x() - vel.y() + K * omega;
-        power[3] = vel.x() + vel.y() + K * omega;
+        targetPowers[0] = vel.x() - vel.y() - K * omega;
+        targetPowers[1] = vel.x() + vel.y() - K * omega;
+        targetPowers[2] = vel.x() - vel.y() + K * omega;
+        targetPowers[3] = vel.x() + vel.y() + K * omega;
 
-        double max = Collections.max(Arrays.asList(1.0, Math.abs(power[0]),
-			Math.abs(power[1]), Math.abs(power[2]), Math.abs(power[3])));
+        double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
+			Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
 
         for (int i = 0; i < 4; i++) {
-            motors[i].setPower(power[i] / max);
+            targetPowers[i] /= max;
         }
     }
 
@@ -236,13 +248,36 @@ public class MecanumDrive implements Loop {
     }
 
     @Override
-    public void onLoop(long timestamp) {
+    public void onLoop(long timestamp, long dt) {
         // pose estimation
         poseEstimator.update(timestamp);
 
         switch (mode) {
             case OPEN_LOOP:
-                // do nothing
+                powers = targetPowers;
+                for (int i = 0; i < 4; i++) {
+                    motors[i].setPower(powers[i]);
+                }
+                break;
+            case OPEN_LOOP_RAMP:
+                double[] accels = new double[4];
+                double maxDesiredAccel = 0;
+                for (int i = 0; i < 4; i++) {
+                    accels[i] = (targetPowers[i] - powers[i]) / (dt / 1000.0);
+                    if (accels[i] > maxDesiredAccel) {
+                        maxDesiredAccel = accels[i];
+                    }
+                }
+                double multiplier;
+                if (maxDesiredAccel > DriveConstants.RAMP_MAX_ACCEL) {
+                    multiplier = DriveConstants.RAMP_MAX_ACCEL / maxDesiredAccel;
+                } else {
+                    multiplier = 1;
+                }
+                for (int i = 0; i < 4; i++) {
+                    powers[i] += accels[i] * multiplier;
+                    motors[i].setPower(powers[i]);
+                }
                 break;
             case FOLLOW_PATH:
                 if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
