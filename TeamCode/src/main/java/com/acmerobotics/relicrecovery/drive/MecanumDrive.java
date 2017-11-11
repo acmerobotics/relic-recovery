@@ -136,7 +136,6 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
-    // TODO: do these equations hold for a non-square wheelbase?
     public void setVelocity(Vector2d vel, double omega) {
         targetPowers[0] = vel.x() - vel.y() - K * omega;
         targetPowers[1] = vel.x() + vel.y() - K * omega;
@@ -215,7 +214,6 @@ public class MecanumDrive implements Loop {
     }
 
     private double getRawHeading() {
-        // TODO!!!! CHANGE!!
         return imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
     }
 
@@ -261,22 +259,24 @@ public class MecanumDrive implements Loop {
                 }
                 break;
             case OPEN_LOOP_RAMP:
-                double[] accels = new double[4];
-                double maxDesiredAccel = 0;
+                double[] powerDeltas = new double[4];
+                double maxDesiredAbsPowerDelta = 0;
                 for (int i = 0; i < 4; i++) {
-                    accels[i] = (targetPowers[i] - powers[i]) / (dt / 1000.0);
-                    if (accels[i] > maxDesiredAccel) {
-                        maxDesiredAccel = accels[i];
+                    powerDeltas[i] = (targetPowers[i] - powers[i]);
+                    double desiredAbsPowerDelta = Math.abs(powerDeltas[i]);
+                    if (desiredAbsPowerDelta > maxDesiredAbsPowerDelta) {
+                        maxDesiredAbsPowerDelta = desiredAbsPowerDelta;
                     }
                 }
+                double maxAbsPowerDelta = DriveConstants.RAMP_MAX_ACCEL * (dt / 1000.0);
                 double multiplier;
-                if (maxDesiredAccel > DriveConstants.RAMP_MAX_ACCEL) {
-                    multiplier = DriveConstants.RAMP_MAX_ACCEL / maxDesiredAccel;
+                if (maxDesiredAbsPowerDelta > maxAbsPowerDelta) {
+                    multiplier = maxAbsPowerDelta / maxDesiredAbsPowerDelta;
                 } else {
                     multiplier = 1;
                 }
                 for (int i = 0; i < 4; i++) {
-                    powers[i] += accels[i] * multiplier;
+                    powers[i] += powerDeltas[i] * multiplier;
                     motors[i].setPower(powers[i]);
                 }
                 break;
