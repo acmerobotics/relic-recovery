@@ -51,7 +51,7 @@ public class Auto extends LinearOpMode {
         looper.start();
 
         Pose2d initialPose = new Pose2d(48, -48, Math.PI);
-        Pose2d jewelPose = new Pose2d(initialPose.pos(), jewelTracker.isLeftBlue() ? 3 * Math.PI / 4 : 5 * Math.PI / 4);
+        Pose2d jewelPose = new Pose2d(initialPose.pos(), jewelTracker.getLeftColor() == DynamicJewelTracker.JewelColor.BLUE ? 3 * Math.PI / 4 : 5 * Math.PI / 4);
         Path jewelTurn = Path.createFromPoses(Arrays.asList(
                 initialPose,
                 jewelPose
