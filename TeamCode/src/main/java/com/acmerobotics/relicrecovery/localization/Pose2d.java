@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.localization;
 
+import java.util.Locale;
+
 import static com.acmerobotics.relicrecovery.localization.Vector2d.EPSILON;
 
 /**
@@ -65,6 +67,11 @@ public class Pose2d {
 
     public Pose2d copy() {
         return new Pose2d(pos.copy(), heading);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(Locale.ENGLISH, "<%.2f, %.2f, %.2f (%.2f deg)>", pos.x(), pos.y(), heading, Math.toDegrees(heading));
     }
 
 }

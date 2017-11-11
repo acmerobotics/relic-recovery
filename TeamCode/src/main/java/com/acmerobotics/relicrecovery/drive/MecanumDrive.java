@@ -1,10 +1,18 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import com.acmerobotics.relicrecovery.localization.Angle;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.relicrecovery.loops.Loop;
+import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.PathFollower;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,7 +32,13 @@ import java.util.Collections;
  *
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
-public class MecanumDrive {
+public class MecanumDrive implements Loop {
+    public enum Mode {
+        OPEN_LOOP,
+        OPEN_LOOP_RAMP,
+        FOLLOW_PATH
+    }
+
     // TODO: should these be extracted into some kind of configuration object?
     public static final double WHEELBASE_WIDTH = 18;
     public static final double WHEELBASE_HEIGHT = 18;
@@ -46,6 +60,16 @@ public class MecanumDrive {
      */
     private int[] offsets;
 
+    private BNO055IMU imu;
+    private double headingOffset;
+
+    private PoseEstimator poseEstimator;
+    private PathFollower pathFollower;
+
+    private Mode mode = Mode.OPEN_LOOP;
+
+    private double[] powers, targetPowers;
+
     /**
      * construct drive with default configuration names
      * @param map hardware map
@@ -64,16 +88,38 @@ public class MecanumDrive {
             throw new IllegalArgumentException("must be four for motors");
         }
 
+        imu = map.get(BNO055IMU.class, "imu");
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu.initialize(parameters);
+
+        resetHeading();
+
+        powers = new double[4];
+        targetPowers = new double[4];
         offsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
             motors[i] = map.dcMotor.get(names[i]);
+            motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
 
+        poseEstimator = new PoseEstimator(this, new Pose2d(0, 0));
+        pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+
         resetEncoders();
+    }
+
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
+    public Mode getMode() {
+        return mode;
     }
 
     /**
@@ -90,19 +136,17 @@ public class MecanumDrive {
      * @param vel
      * @param omega
      */
-    // TODO: do these equations hold for a non-square wheelbase?
     public void setVelocity(Vector2d vel, double omega) {
-        double[] power = new double[4];
-        power[0] = vel.x() - vel.y() - K * omega;
-        power[1] = vel.x() + vel.y() - K * omega;
-        power[2] = vel.x() - vel.y() + K * omega;
-        power[3] = vel.x() + vel.y() + K * omega;
+        targetPowers[0] = vel.x() - vel.y() - K * omega;
+        targetPowers[1] = vel.x() + vel.y() - K * omega;
+        targetPowers[2] = vel.x() - vel.y() + K * omega;
+        targetPowers[3] = vel.x() + vel.y() + K * omega;
 
-        double max = Collections.max(Arrays.asList(1.0, Math.abs(power[0]),
-			Math.abs(power[1]), Math.abs(power[2]), Math.abs(power[3])));
+        double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
+			Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
 
         for (int i = 0; i < 4; i++) {
-            motors[i].setPower(power[i] / max);
+            targetPowers[i] /= max;
         }
     }
 
@@ -120,7 +164,7 @@ public class MecanumDrive {
      * @param rot rotation of each wheel, in radians
      * @return movement of robot
      */
-    public Pose2d getPoseDelta(double[] rot) {
+    public static Pose2d getPoseDelta(double[] rot) {
         if (rot.length != 4) {
             throw new IllegalArgumentException("length must be four");
         }
@@ -169,13 +213,78 @@ public class MecanumDrive {
         return 2 * Math.PI * ticks / ticksPerRev;
     }
 
-    // TODO: stub
-    public void turn(double angle) {
-
+    private double getRawHeading() {
+        return imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
     }
 
-    // TODO: stub
-    public void move(double distance, double speed) {
+    public double getHeading() {
+        return Angle.norm(getRawHeading() + headingOffset);
+    }
 
+    public void resetHeading() {
+        headingOffset = -getRawHeading();
+    }
+
+    public void registerLoops(Looper looper) {
+        looper.addLoop(this);
+    }
+
+    public void followPath(Path path) {
+        pathFollower.follow(path);
+        mode = Mode.FOLLOW_PATH;
+    }
+
+    public boolean isFollowingPath() {
+        return pathFollower.isFollowingPath();
+    }
+
+    public Pose2d getEstimatedPose() {
+        return poseEstimator.getPose();
+    }
+
+    public void setEstimatedPose(Pose2d pose) {
+        poseEstimator.setPose(pose);
+    }
+
+    @Override
+    public void onLoop(long timestamp, long dt) {
+        // pose estimation
+        poseEstimator.update(timestamp);
+
+        switch (mode) {
+            case OPEN_LOOP:
+                powers = targetPowers;
+                for (int i = 0; i < 4; i++) {
+                    motors[i].setPower(powers[i]);
+                }
+                break;
+            case OPEN_LOOP_RAMP:
+                double[] powerDeltas = new double[4];
+                double maxDesiredAbsPowerDelta = 0;
+                for (int i = 0; i < 4; i++) {
+                    powerDeltas[i] = (targetPowers[i] - powers[i]);
+                    double desiredAbsPowerDelta = Math.abs(powerDeltas[i]);
+                    if (desiredAbsPowerDelta > maxDesiredAbsPowerDelta) {
+                        maxDesiredAbsPowerDelta = desiredAbsPowerDelta;
+                    }
+                }
+                double maxAbsPowerDelta = DriveConstants.RAMP_MAX_ACCEL * (dt / 1000.0);
+                double multiplier;
+                if (maxDesiredAbsPowerDelta > maxAbsPowerDelta) {
+                    multiplier = maxAbsPowerDelta / maxDesiredAbsPowerDelta;
+                } else {
+                    multiplier = 1;
+                }
+                for (int i = 0; i < 4; i++) {
+                    powers[i] += powerDeltas[i] * multiplier;
+                    motors[i].setPower(powers[i]);
+                }
+                break;
+            case FOLLOW_PATH:
+                if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
+                    mode = Mode.OPEN_LOOP;
+                }
+                break;
+        }
     }
 }

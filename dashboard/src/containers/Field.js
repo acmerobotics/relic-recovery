@@ -1,3 +1,7 @@
+import fieldImageName from '../assets/field.png';
+const fieldImage = new Image();
+fieldImage.src = fieldImageName;
+
 const DEFAULT_OPTIONS = {
   padding: 15,
   gridLineColor: 'rgb(120, 120, 120)',
@@ -29,6 +33,10 @@ export default class Field {
   }
 
   renderField(x, y, width, height) {
+    this.ctx.save();
+    this.ctx.globalAlpha = 0.25;
+    this.ctx.drawImage(fieldImage, x, y, width, height);
+    this.ctx.restore();
     this.renderGridLines(x, y, width, height, 7, 7);
     this.renderOverlay(x, y, width, height);
   }
@@ -72,9 +80,9 @@ export default class Field {
       case 'circle':
         this.ctx.beginPath();
         this.ctx.arc(
-          scale(op.x, 0, 1, x, width + x),
-          scale(op.y, 0, 1, y, height + y),
-          op.radius, 0, 2 * Math.PI);
+          scale(op.y, 72, -72, x, width + x),
+          scale(op.x, 72, -72, y, height + y),
+          scale(op.radius, 0, 72, 0, width / 2), 0, 2 * Math.PI);
         if (op.stroke) {
           this.ctx.stroke();
         } else {
@@ -84,11 +92,11 @@ export default class Field {
       case 'polygon': {
         this.ctx.beginPath();
         const { xPoints, yPoints, stroke } = op;
-        this.ctx.moveTo(scale(xPoints[0], 0, 1, x, width + x),
-          scale(yPoints[0], 0, 1, y, height + y));
+        this.ctx.moveTo(scale(yPoints[0], 72, -72, x, width + x),
+          scale(xPoints[0], 72, -72, y, height + y));
         for (let i = 1; i < xPoints.length; i += 1) {
-          this.ctx.lineTo(scale(xPoints[i], 0, 1, x, width + x),
-            scale(yPoints[i], 0, 1, y, height + y));
+          this.ctx.lineTo(scale(yPoints[i], 72, -72, x, width + x),
+            scale(xPoints[i], 72, -72, y, height + y));
         }
         this.ctx.closePath();
         if (stroke) {
@@ -101,11 +109,11 @@ export default class Field {
       case 'polyline': {
         this.ctx.beginPath();
         const { xPoints, yPoints } = op;
-        this.ctx.moveTo(scale(xPoints[0], 0, 1, x, width + x),
-          scale(yPoints[0], 0, 1, y, height + y));
+        this.ctx.moveTo(scale(yPoints[0], 72, -72, x, width + x),
+          scale(xPoints[0], 72, -72, y, height + y));
         for (let i = 1; i < xPoints.length; i += 1) {
-          this.ctx.lineTo(scale(xPoints[i], 0, 1, x, width + x),
-            scale(yPoints[i], 0, 1, y, height + y));
+          this.ctx.lineTo(scale(yPoints[i], 72, -72, x, width + x),
+            scale(xPoints[i], 72, -72, y, height + y));
         }
         this.ctx.stroke();
         break;

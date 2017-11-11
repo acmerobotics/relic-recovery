@@ -32,7 +32,7 @@ public class CryptoboxTrackerTest {
     @Test
     @Ignore
     public void testSampleImages() {
-//        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
+        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
 //        System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
 
         CryptoboxTracker.isUnitTest = true;
@@ -40,6 +40,7 @@ public class CryptoboxTrackerTest {
         CryptoboxTracker tracker = new CryptoboxTracker(true);
 
         File imageSourceDir = new File("scripts/cryptobox/images");
+//        File imageSourceDir = new File("/Users/ryanbrott/Downloads/Cryptoboxes");
         File imageOutputDir = new File("scripts/cryptobox/output");
         imageOutputDir.mkdirs();
 
@@ -47,6 +48,8 @@ public class CryptoboxTrackerTest {
             if (imageFile.getName().startsWith(".")) {
                 continue;
             }
+            System.out.println("processing " + imageFile.getName());
+
             Mat image = Imgcodecs.imread(imageFile.getAbsolutePath());
 
             tracker.processFrame(image, 0);

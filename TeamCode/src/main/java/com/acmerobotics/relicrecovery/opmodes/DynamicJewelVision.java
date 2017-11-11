@@ -28,6 +28,7 @@
  */
 package com.acmerobotics.relicrecovery.opmodes;
 
+import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
@@ -44,6 +45,7 @@ public class DynamicJewelVision extends OpMode {
     public void init() {
         jewelTracker = new DynamicJewelTracker();
         camera = new VisionCamera(hardwareMap.appContext);
+        camera.setImageDir(LoggingUtil.getImageDir(this));
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);

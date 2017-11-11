@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * @author kellyrm
  */
 
+// TODO: refactor; combine w/ PoseEstimationTest?
 @TeleOp(name="Dead Reckoning Test")
 public class DeadReckoningTest extends OpMode{
 

@@ -7,7 +7,7 @@ const Tile = ({ children, hidden, row, col }) => (
     style={{
       overflow: hidden ? 'hidden' : 'auto',
       gridRow: row,
-      gridcol: col,
+      gridColumn: col,
     }}>
     { children }
   </div>
