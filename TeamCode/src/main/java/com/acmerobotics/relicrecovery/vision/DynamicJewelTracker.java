@@ -23,25 +23,6 @@ import java.util.List;
 @Config
 public class DynamicJewelTracker implements Tracker {
 
-    public enum JewelColor {
-        RED,
-        BLUE,
-        UNKNOWN;
-
-        // this is a weird workaround; avoids self-reference errors
-        static {
-            RED.opp = BLUE;
-            BLUE.opp = RED;
-            UNKNOWN.opp = UNKNOWN;
-        }
-
-        private JewelColor opp;
-
-        public JewelColor opposite() {
-            return opp;
-        }
-    }
-
     public static int OPEN_KERNEL_SIZE = 9;
     public static int CLOSE_KERNEL_SIZE = 15;
 
