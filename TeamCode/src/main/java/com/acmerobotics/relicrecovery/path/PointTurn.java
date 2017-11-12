@@ -1,14 +1,12 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
 import com.acmerobotics.relicrecovery.motion.MotionProfile;
 import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
-import com.qualcomm.hardware.motors.NeveRest20Gearmotor;
-import com.qualcomm.robotcore.hardware.configuration.MotorConfigurationType;
 
 import java.util.Locale;
 

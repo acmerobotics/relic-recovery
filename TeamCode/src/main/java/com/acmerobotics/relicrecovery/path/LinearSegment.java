@@ -1,8 +1,8 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
 import com.acmerobotics.relicrecovery.motion.MotionProfile;
 import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;

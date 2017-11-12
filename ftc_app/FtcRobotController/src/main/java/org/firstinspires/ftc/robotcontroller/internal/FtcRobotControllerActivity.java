@@ -56,6 +56,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.acmerobotics.library.configuration.OpModeConfigurationActivity;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.google.blocks.ftcrobotcontroller.BlocksActivity;
 import com.google.blocks.ftcrobotcontroller.ProgrammingModeActivity;
@@ -494,6 +495,9 @@ public class FtcRobotControllerActivity extends Activity
       AppUtil.getInstance().showToast(UILocation.BOTH, context, context.getString(R.string.toastRestartingRobot));
       requestRobotRestart();
       return true;
+    }
+    else if (id == R.id.action_configure_opmode) {
+      startActivity(new Intent(this, OpModeConfigurationActivity.class));
     }
     else if (id == R.id.action_configure_robot) {
       EditParameters parameters = new EditParameters();

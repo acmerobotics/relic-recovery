@@ -2,14 +2,13 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * @author Ryan

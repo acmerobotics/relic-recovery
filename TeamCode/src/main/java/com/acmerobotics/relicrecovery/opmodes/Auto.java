@@ -3,7 +3,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
+import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;

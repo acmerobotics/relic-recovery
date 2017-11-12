@@ -1,8 +1,6 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-
-import java.sql.Time;
+import com.acmerobotics.library.localization.Pose2d;
 
 /**
  * Created by ryanbrott on 10/28/17.

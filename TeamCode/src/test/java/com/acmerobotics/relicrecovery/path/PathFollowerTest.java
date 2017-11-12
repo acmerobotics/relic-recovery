@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
+import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 
 import org.junit.Test;
