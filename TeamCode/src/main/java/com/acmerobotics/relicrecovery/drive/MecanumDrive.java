@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.relicrecovery.localization.Angle;
 import com.acmerobotics.relicrecovery.localization.Pose2d;
 import com.acmerobotics.relicrecovery.localization.Vector2d;
@@ -12,6 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 
 import java.util.Arrays;
@@ -70,12 +73,19 @@ public class MecanumDrive implements Loop {
 
     private double[] powers, targetPowers;
 
+    private Telemetry telemetry;
+    private Canvas fieldOverlay;
+
+    public MecanumDrive(HardwareMap map) {
+        this(map, null);
+    }
+
     /**
      * construct drive with default configuration names
      * @param map hardware map
      */
-    public MecanumDrive(HardwareMap map) {
-        this(map, new String[]{"frontLeft", "rearLeft", "rearRight", "frontRight"});
+    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
+        this(map, telemetry, new String[]{"frontLeft", "rearLeft", "rearRight", "frontRight"});
     }
 
     /**
@@ -83,10 +93,13 @@ public class MecanumDrive implements Loop {
      * @param map hardware map
      * @param names names of the motors in the hardware mapping
      */
-    public MecanumDrive(HardwareMap map, String[] names) {
+    public MecanumDrive(HardwareMap map, Telemetry telemetry, String[] names) {
         if (names.length != 4) {
             throw new IllegalArgumentException("must be four for motors");
         }
+
+        this.telemetry = telemetry;
+        this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
         imu = map.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -286,5 +299,31 @@ public class MecanumDrive implements Loop {
                 }
                 break;
         }
+
+        Pose2d estimatedPose = poseEstimator.getPose();
+
+        if (telemetry != null) {
+            telemetry.addData("timestamp", timestamp);
+            telemetry.addData("mode", mode);
+
+            telemetry.addData("estimatedX", estimatedPose.x());
+            telemetry.addData("estimatedY", estimatedPose.y());
+            telemetry.addData("heading", estimatedPose.heading());
+
+            for (int i = 0; i < 4; i++) {
+                telemetry.addData("power" + i, powers[i]);
+                telemetry.addData("pos" + i, getPosition(i));
+            }
+        }
+
+        double robotRadius = 9;
+        fieldOverlay.setFill("blue");
+        fieldOverlay.setStrokeWidth(4);
+        fieldOverlay.strokeLine(
+            estimatedPose.x() + 0.5 * robotRadius * Math.cos(estimatedPose.heading()),
+            estimatedPose.y() + 0.5 * robotRadius * Math.sin(estimatedPose.heading()),
+            estimatedPose.x() + robotRadius * Math.cos(estimatedPose.heading()),
+            estimatedPose.y() + robotRadius * Math.sin(estimatedPose.heading()));
+        fieldOverlay.strokeCircle(estimatedPose.x(), estimatedPose.y(), robotRadius);
     }
 }
