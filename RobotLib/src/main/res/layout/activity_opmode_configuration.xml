@@ -150,6 +150,12 @@
             android:progress="0" />
     </LinearLayout>
 
+    <com.acmerobotics.library.configuration.FieldView
+        android:layout_width="@dimen/field_size"
+        android:layout_height="@dimen/field_size"
+        android:id="@+id/field_view"
+        android:layout_gravity="center"/>
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

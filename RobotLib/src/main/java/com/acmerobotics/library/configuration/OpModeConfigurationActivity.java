@@ -24,6 +24,9 @@ public class OpModeConfigurationActivity extends Activity {
 
         final LinearLayout matchNumberLayout = (LinearLayout) findViewById(R.id.match_number_layout);
 
+        FieldView fieldView = (FieldView) findViewById(R.id.field_view);
+        fieldView.setConfiguration(configuration);
+
         Spinner matchTypeSpinner = (Spinner) findViewById(R.id.match_type_spinner);
         MatchType type = configuration.getMatchType();
         if (type == MatchType.PRACTICE) {
@@ -105,6 +108,7 @@ public class OpModeConfigurationActivity extends Activity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 int index = position + 2 * configuration.getAllianceColor().getIndex();
                 configuration.setBalancingStone(BalancingStone.fromIndex(index));
+                fieldView.postInvalidate();
             }
 
             @Override
@@ -121,6 +125,7 @@ public class OpModeConfigurationActivity extends Activity {
                 configuration.setAllianceColor(AllianceColor.fromIndex(position));
                 int index = balancingStoneSpinner.getSelectedItemPosition() + 2 * position;
                 configuration.setBalancingStone(BalancingStone.fromIndex(index));
+                fieldView.postInvalidate();
             }
 
             @Override
@@ -128,12 +133,5 @@ public class OpModeConfigurationActivity extends Activity {
 
             }
         });
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        configuration.commit();
     }
 }

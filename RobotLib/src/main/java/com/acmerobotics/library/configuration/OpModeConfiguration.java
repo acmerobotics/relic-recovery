@@ -32,6 +32,7 @@ public class OpModeConfiguration {
 
     public void setAllianceColor(AllianceColor color) {
         editor.putInt(PREF_ALLIANCE_COLOR, color.getIndex());
+        editor.commit();
     }
 
     public int getDelay() {
@@ -41,6 +42,7 @@ public class OpModeConfiguration {
     public void setDelay(int delay) {
         if (0 <= delay && delay <= 30) {
             editor.putInt(PREF_DELAY, delay);
+            editor.commit();
         }
     }
 
@@ -50,6 +52,7 @@ public class OpModeConfiguration {
 
     public void setBalancingStone(BalancingStone balancingStone) {
         editor.putInt(PREF_BALANCING_STONE, balancingStone.getIndex());
+        editor.commit();
     }
 
     public MatchType getMatchType() {
@@ -58,6 +61,7 @@ public class OpModeConfiguration {
 
     public void setMatchType(MatchType type) {
         editor.putInt(PREF_MATCH_TYPE, type.getIndex());
+        editor.commit();
     }
 
     public int getMatchNumber() {
@@ -66,6 +70,7 @@ public class OpModeConfiguration {
 
     public void setMatchNumber(int num) {
         editor.putInt(PREF_MATCH_NUMBER, num);
+        editor.commit();
     }
 
     public double getLastHeading() {
@@ -74,15 +79,12 @@ public class OpModeConfiguration {
 
     public void setLastHeading(double heading) {
         editor.putFloat(PREF_AUTO_HEADING, (float) heading);
+        editor.commit();
     }
 
     public String getActiveConfigName() {
         RobotConfigFileManager manager = new RobotConfigFileManager((Activity) context);
         return manager.getActiveConfig().getName();
-    }
-
-    public boolean commit() {
-        return editor.commit();
     }
 
 }
