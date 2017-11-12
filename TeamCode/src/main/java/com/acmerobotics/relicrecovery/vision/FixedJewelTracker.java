@@ -67,7 +67,7 @@ public class FixedJewelTracker implements Tracker {
     }
 
     @Override
-    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight) {
+    public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
         if (jewelPlatformRect != null) {
             overlay.strokeRect(jewelPlatformRect, new Scalar(0, 255, 0), 5);
 

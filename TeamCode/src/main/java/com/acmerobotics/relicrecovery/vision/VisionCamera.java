@@ -3,8 +3,12 @@ package com.acmerobotics.relicrecovery.vision;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ToggleButton;
 
 import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
@@ -37,10 +41,14 @@ import java.util.concurrent.CountDownLatch;
 public class VisionCamera {
     public static final String TAG = "VisionCamera";
 
+    public static final String DEBUG_TOGGLE_TEXT = "DEBUG";
+
     private Context context;
     private VuforiaLocalizer vuforia;
     private VuforiaLocalizer.Parameters vuforiaParams;
-    private FrameLayout parentLayout;
+    private FrameLayout cameraLayout;
+    private RelativeLayout mainLayout;
+    private ToggleButton debugToggle;
     private OverlayView overlayView;
     private FrameConsumer frameConsumer;
     private List<Tracker> trackers;
@@ -182,8 +190,26 @@ public class VisionCamera {
                 @Override
                 public void run() {
                     LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(R.id.cameraMonitorViewId);
-                    parentLayout = (FrameLayout) cameraMonitorView.getParent();
-                    parentLayout.addView(overlayView);
+                    cameraLayout = (FrameLayout) cameraMonitorView.getParent();
+                    cameraLayout.addView(overlayView);
+
+                    mainLayout = (RelativeLayout) activity.findViewById(R.id.RelativeLayout);
+                    debugToggle = new ToggleButton(context);
+                    debugToggle.setText(DEBUG_TOGGLE_TEXT);
+                    debugToggle.setTextOff(DEBUG_TOGGLE_TEXT);
+                    debugToggle.setTextOn(DEBUG_TOGGLE_TEXT);
+                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, R.id.textOpMode);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                    debugToggle.setLayoutParams(layoutParams);
+                    debugToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                            overlayView.setDebug(b);
+                        }
+                    });
+                    mainLayout.addView(debugToggle);
                 }
             });
         }
@@ -221,7 +247,8 @@ public class VisionCamera {
             AppUtil.getInstance().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    parentLayout.removeView(overlayView);
+                    cameraLayout.removeView(overlayView);
+                    mainLayout.removeView(debugToggle);
                     overlayView = null;
                 }
             });

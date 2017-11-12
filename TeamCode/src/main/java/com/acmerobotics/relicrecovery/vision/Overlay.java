@@ -22,6 +22,8 @@ public interface Overlay {
     void putText(String text, TextAlign align, Point org, Scalar color, int fontSize);
     void strokeContour(MatOfPoint contour, Scalar color, int thickness);
     void fillContour(MatOfPoint contour, Scalar color);
+    void strokeCircle(Point center, double radius, Scalar color, int thickness);
+    void fillCircle(Point center, double radius, Scalar color);
     double getScalingFactor();
     void setScalingFactor(double factor);
 }

@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 
@@ -35,6 +36,11 @@ public class CanvasOverlay implements Overlay {
         this.scalingFactor = 1;
     }
 
+    // TODO: find a better way to manage colors
+    public static int getColorFromScalarBGR(Scalar scalar) {
+        return Color.rgb((int) scalar.val[2], (int) scalar.val[1], (int) scalar.val[0]);
+    }
+
     private void internalDrawRect(Rect rect) {
         canvas.drawRect(
                 (float) scalingFactor * rect.x,
@@ -48,7 +54,7 @@ public class CanvasOverlay implements Overlay {
     @Override
     public void strokeRect(Rect rect, Scalar color, int thickness) {
         paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(VisionUtil.getColorFromScalarBGR(color));
+        paint.setColor(getColorFromScalarBGR(color));
         paint.setStrokeWidth(thickness);
         internalDrawRect(rect);
     }
@@ -56,14 +62,14 @@ public class CanvasOverlay implements Overlay {
     @Override
     public void fillRect(Rect rect, Scalar color) {
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(VisionUtil.getColorFromScalarBGR(color));
+        paint.setColor(getColorFromScalarBGR(color));
         internalDrawRect(rect);
     }
 
     @Override
     public void strokeLine(Point p1, Point p2, Scalar color, int thickness) {
         paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(VisionUtil.getColorFromScalarBGR(color));
+        paint.setColor(getColorFromScalarBGR(color));
         paint.setStrokeWidth(thickness);
         canvas.drawLine(
                 (float) (scalingFactor * p1.x),
@@ -77,7 +83,7 @@ public class CanvasOverlay implements Overlay {
     @Override
     public void putText(String text, TextAlign align, Point org, Scalar color, int fontSize) {
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(VisionUtil.getColorFromScalarBGR(color));
+        paint.setColor(getColorFromScalarBGR(color));
         paint.setTextSize(fontSize);
         paint.setTextAlign(PAINT_ALIGN_MAP.get(align));
         canvas.drawText(text, (float) (scalingFactor * org.x), (float) (scalingFactor * org.y), paint);
@@ -98,7 +104,7 @@ public class CanvasOverlay implements Overlay {
     @Override
     public void strokeContour(MatOfPoint contour, Scalar color, int thickness) {
         paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(VisionUtil.getColorFromScalarBGR(color));
+        paint.setColor(getColorFromScalarBGR(color));
         paint.setStrokeWidth(thickness);
         internalDrawContour(contour);
     }
@@ -106,8 +112,27 @@ public class CanvasOverlay implements Overlay {
     @Override
     public void fillContour(MatOfPoint contour, Scalar color) {
         paint.setStyle(Paint.Style.FILL);
-        paint.setColor(VisionUtil.getColorFromScalarBGR(color));
+        paint.setColor(getColorFromScalarBGR(color));
         internalDrawContour(contour);
+    }
+
+    private void internalDrawCircle(Point center, double radius) {
+        canvas.drawCircle((float) (scalingFactor * center.x), (float) (scalingFactor * center.y), (float) (scalingFactor * radius), paint);
+    }
+
+    @Override
+    public void strokeCircle(Point center, double radius, Scalar color, int thickness) {
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(getColorFromScalarBGR(color));
+        paint.setStrokeWidth(thickness);
+        internalDrawCircle(center, radius);
+    }
+
+    @Override
+    public void fillCircle(Point center, double radius, Scalar color) {
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(getColorFromScalarBGR(color));
+        internalDrawCircle(center, radius);
     }
 
     @Override

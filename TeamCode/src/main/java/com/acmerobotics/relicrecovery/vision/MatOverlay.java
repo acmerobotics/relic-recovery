@@ -82,6 +82,16 @@ public class MatOverlay implements Overlay {
     }
 
     @Override
+    public void strokeCircle(Point center, double radius, Scalar color, int thickness) {
+        Imgproc.circle(dest, center, (int) radius, color, thickness);
+    }
+
+    @Override
+    public void fillCircle(Point center, double radius, Scalar color) {
+        strokeCircle(center, radius, color, Core.FILLED);
+    }
+
+    @Override
     public double getScalingFactor() {
         return scalingFactor;
     }

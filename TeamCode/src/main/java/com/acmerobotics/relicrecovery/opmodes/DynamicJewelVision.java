@@ -53,7 +53,7 @@ public class DynamicJewelVision extends OpMode {
 
     @Override
     public void loop() {
-        telemetry.addData("jewel", jewelTracker.isLeftRed() ? "R / B" : "B / R");
+        telemetry.addData("jewel", jewelTracker.toString());
     }
 
     @Override
