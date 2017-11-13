@@ -31,7 +31,7 @@ public class PathFollowerTest {
         MecanumDrive drive = mock(MecanumDrive.class, withSettings().verboseLogging());
 
         PIDFCoefficients emptyPIDF = new PIDFCoefficients(1, 0, 0, 0, 0);
-        PathFollower follower = new PathFollower(drive, emptyPIDF, emptyPIDF, emptyPIDF);
+        PathFollower follower = new PathFollower(drive, null, emptyPIDF, emptyPIDF, emptyPIDF);
 
         follower.follow(path);
         follower.update(robotPose, System.currentTimeMillis());

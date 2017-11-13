@@ -20,9 +20,9 @@ public class PathTest {
     public void testPathCreationFromPoses() {
         List<PathSegment> expectedSegments = Arrays.asList(
                 new LinearSegment(new Vector2d(0, 0), new Vector2d(2, 0)),
-                new PointTurn(new Vector2d(2, 0), Math.PI / 2),
+                new PointTurn(new Pose2d(2, 0), Math.PI / 2),
                 new LinearSegment(new Vector2d(2, 0), new Vector2d(2, 2)),
-                new PointTurn(new Vector2d(2, 2), Math.PI / 2)
+                new PointTurn(new Pose2d(2, 2), Math.PI / 2)
         );
 
         Path path = Path.createFromPoses(Arrays.asList(
