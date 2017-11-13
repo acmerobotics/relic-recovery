@@ -10,6 +10,8 @@ import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * @author Ryan
  */
@@ -22,9 +24,12 @@ public class PathFollower {
     private PIDController lateralController;
     private Path path;
     private long pathStartTimestamp;
+    private Telemetry telemetry;
 
-    public PathFollower(MecanumDrive drive, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDCoefficients lateralCoeff) {
+    public PathFollower(MecanumDrive drive, Telemetry telemetry, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDCoefficients lateralCoeff) {
         this.drive = drive;
+
+        this.telemetry = telemetry;
 
         headingController = new PIDFController(headingCoeff);
         headingController.setInputBounds(-Math.PI, Math.PI);
@@ -47,7 +52,7 @@ public class PathFollower {
     }
 
     public boolean isFollowingPath() {
-        return path == null && (System.currentTimeMillis() - pathStartTimestamp) / 1000.0 < path.duration();
+        return path != null && (System.currentTimeMillis() - pathStartTimestamp) / 1000.0 < path.duration();
     }
 
     /**
@@ -73,7 +78,7 @@ public class PathFollower {
         double headingUpdate = headingController.update(headingError, time);
 
         Vector2d fieldError = robotPose.pos().added(pose.pos().negated());
-        Vector2d robotError = fieldError.rotated(robotPose.heading());
+        Vector2d robotError = fieldError.rotated(-robotPose.heading());
 
         double axialError = robotError.x();
         double lateralError = robotError.y();
@@ -86,6 +91,20 @@ public class PathFollower {
         double lateralUpdate = lateralController.update(lateralError, time);
 
         drive.setVelocity(new Vector2d(axialUpdate, lateralUpdate), headingUpdate);
+
+        if (telemetry != null) {
+            telemetry.addData("headingError", headingError);
+            telemetry.addData("headingUpdate", headingUpdate);
+
+            telemetry.addData("fieldError", fieldError);
+            telemetry.addData("robotError", robotError);
+
+            telemetry.addData("axialError", axialError);
+            telemetry.addData("lateralError", lateralError);
+
+            telemetry.addData("axialUpdate", axialUpdate);
+            telemetry.addData("lateralUpdate", lateralUpdate);
+        }
 
         return false;
     }

@@ -8,6 +8,8 @@ import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import static java.lang.Thread.sleep;
 
@@ -21,9 +23,16 @@ public class MainTeleOp extends OpMode {
     private boolean fieldCentric, halfSpeed;
     private StickyGamepad stickyGamepad1;
     private Looper looper;
+    private CRServo frontLeftIntake, frontRightIntake;
+    private DcMotor frontLift;
 
     @Override
     public void init() {
+        frontLeftIntake = hardwareMap.crservo.get("frontLeftIntake");
+        frontRightIntake = hardwareMap.crservo.get("frontRightIntake");
+
+        frontLift = hardwareMap.dcMotor.get("frontLift");
+
         telemetry = new MultipleTelemetry(telemetry, RobotDashboard.getInstance().getTelemetry());
         drive = new MecanumDrive(hardwareMap);
         stickyGamepad1 = new StickyGamepad(gamepad1);
@@ -50,6 +59,17 @@ public class MainTeleOp extends OpMode {
 
         if (stickyGamepad1.y) {
             halfSpeed = !halfSpeed;
+        }
+
+        frontLeftIntake.setPower(-gamepad1.left_trigger);
+        frontRightIntake.setPower(gamepad1.right_trigger);
+
+        if (gamepad1.dpad_up) {
+            frontLift.setPower(1);
+        } else if (gamepad1.dpad_down) {
+            frontLift.setPower(-1);
+        } else {
+            frontLift.setPower(0);
         }
 
         double x = -gamepad1.left_stick_y;

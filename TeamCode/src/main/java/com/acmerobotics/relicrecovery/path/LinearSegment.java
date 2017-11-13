@@ -115,7 +115,7 @@ public class LinearSegment implements PathSegment {
 
     @Override
     public Pose2d getPose(double time) {
-        return new Pose2d(new Vector2d(profile.get(time).x, 0), 0);
+        return new Pose2d(new Vector2d(profile.get(time).x + start.x(), start.y()), 0);
     }
 
     @Override

@@ -3,19 +3,15 @@ package com.acmerobotics.relicrecovery.path;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
-import com.acmerobotics.library.dashboard.telemetry.DataFile;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.relicrecovery.drive.DriveConstants;
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.drive.DriveConstants;
+import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import java.io.File;
 
 /**
  * Created by ryanbrott on 11/9/17.
@@ -44,9 +40,10 @@ public class PIDTuner extends OpMode {
         fieldOverlay = dashboard.getFieldOverlay();
 
         String opModeDir = "PIDTuner-" + System.currentTimeMillis();
-        drive = new MecanumDrive(hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(),
-                new CSVLoggingTelemetry(new File(DataFile.getStorageDir(),
-                        opModeDir + File.pathSeparator + "MecanumDrive.csv").getPath())));
+//        drive = new MecanumDrive(hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(),
+//                new CSVLoggingTelemetry(new File(DataFile.getStorageDir(),
+//                        opModeDir + File.pathSeparator + "MecanumDrive.csv").getPath())));
+        drive = new MecanumDrive(hardwareMap);
 
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 

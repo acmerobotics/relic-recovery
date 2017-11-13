@@ -156,6 +156,6 @@ public class CSVLoggingTelemetry implements Telemetry {
 
     @Override
     public Log log() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 }

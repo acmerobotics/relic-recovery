@@ -122,7 +122,7 @@ public class MecanumDrive implements Loop {
         motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
 
         poseEstimator = new PoseEstimator(this, new Pose2d(0, 0));
-        pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+        pathFollower = new PathFollower(this, telemetry, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         resetEncoders();
     }
@@ -133,6 +133,10 @@ public class MecanumDrive implements Loop {
 
     public Mode getMode() {
         return mode;
+    }
+
+    public void setHeading(double heading) {
+        headingOffset = -getRawHeading() + heading;
     }
 
     /**
@@ -235,7 +239,7 @@ public class MecanumDrive implements Loop {
     }
 
     public void resetHeading() {
-        headingOffset = -getRawHeading();
+        setHeading(0);
     }
 
     public void registerLoops(Looper looper) {
@@ -267,9 +271,6 @@ public class MecanumDrive implements Loop {
         switch (mode) {
             case OPEN_LOOP:
                 powers = targetPowers;
-                for (int i = 0; i < 4; i++) {
-                    motors[i].setPower(powers[i]);
-                }
                 break;
             case OPEN_LOOP_RAMP:
                 double[] powerDeltas = new double[4];
@@ -290,7 +291,6 @@ public class MecanumDrive implements Loop {
                 }
                 for (int i = 0; i < 4; i++) {
                     powers[i] += powerDeltas[i] * multiplier;
-                    motors[i].setPower(powers[i]);
                 }
                 break;
             case FOLLOW_PATH:
@@ -298,6 +298,10 @@ public class MecanumDrive implements Loop {
                     mode = Mode.OPEN_LOOP;
                 }
                 break;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            motors[i].setPower(powers[i]);
         }
 
         Pose2d estimatedPose = poseEstimator.getPose();
@@ -314,6 +318,8 @@ public class MecanumDrive implements Loop {
                 telemetry.addData("power" + i, powers[i]);
                 telemetry.addData("pos" + i, getPosition(i));
             }
+
+            telemetry.update();
         }
 
         double robotRadius = 9;
@@ -325,5 +331,6 @@ public class MecanumDrive implements Loop {
             estimatedPose.x() + robotRadius * Math.cos(estimatedPose.heading()),
             estimatedPose.y() + robotRadius * Math.sin(estimatedPose.heading()));
         fieldOverlay.strokeCircle(estimatedPose.x(), estimatedPose.y(), robotRadius);
+        RobotDashboard.getInstance().drawOverlay();
     }
 }
