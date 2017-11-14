@@ -2,8 +2,8 @@ package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -39,7 +39,6 @@ public class MainTeleOp extends OpMode {
 
         looper = new Looper(20);
         drive.registerLoops(looper);
-        drive.setMode(MecanumDrive.Mode.OPEN_LOOP_RAMP);
         looper.start();
     }
 
@@ -55,6 +54,10 @@ public class MainTeleOp extends OpMode {
 
         if (stickyGamepad1.a) {
             fieldCentric = !fieldCentric;
+        }
+
+        if (stickyGamepad1.b) {
+            drive.autoBalance();
         }
 
         if (stickyGamepad1.y) {
@@ -84,12 +87,13 @@ public class MainTeleOp extends OpMode {
         }
 
         if (fieldCentric) {
-            drive.setVelocity(new Vector2d(x * Math.cos(heading) - y * Math.sin(heading), x * Math.sin(heading) + y * Math.cos(heading)), omega);
+            drive.setVelocity(new Vector2d(x, y).rotated(-heading), omega, true);
         } else {
-            drive.setVelocity(new Vector2d(x, y), omega);
+            drive.setVelocity(new Vector2d(x, y), omega, true);
         }
 
         telemetry.addData(">", fieldCentric ? "Field Centric (A to switch)" : "Robot Centric (A to switch)");
+        telemetry.addData(">", drive.getMode() == MecanumDrive.Mode.AUTO_BALANCE ? "Auto balancing" : "Press B to auto balance");
         telemetry.addData("x", x);
         telemetry.addData("y", y);
         telemetry.addData("omega", omega);

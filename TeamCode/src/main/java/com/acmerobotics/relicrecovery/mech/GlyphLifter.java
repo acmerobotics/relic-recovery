@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.mech;
 
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
@@ -19,6 +20,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
  * Created by ryanbrott on 11/12/17.
  */
 
+@Config
 public class GlyphLifter implements Loop {
     public static MotionConstraints GLYPH_MOTION_CONSTRAINTS = new MotionConstraints(0, 0, 0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_A);
     public static PIDFCoefficients GLYPH_PIDF_COEFF = new PIDFCoefficients(0, 0, 0, 0, 0);
@@ -153,7 +155,6 @@ public class GlyphLifter implements Loop {
                 double time = (timestamp - profileStartTimestamp) / 1000.0;
                 if (time > profile.end().t) {
                     setLiftPower(0, 0);
-                    mode = Mode.OPEN_LOOP;
                 } else {
                     MotionState state = profile.get(time);
                     controller.setSetpoint(state);
@@ -178,7 +179,8 @@ public class GlyphLifter implements Loop {
                     resetEncoder();
                     mode = Mode.OPEN_LOOP;
                 }
-                setLiftPower(ballScrewZeroed ? 0 : -ZERO_BALL_SCREW_POWER, rackZeroed ? 0 : -PINION_POWER);
+                ballScrewMotor.setPower(ballScrewZeroed ? 0 : -ZERO_BALL_SCREW_POWER);
+                pinionServo.setPower(rackZeroed ? 0 : -PINION_POWER);
                 break;
         }
     }

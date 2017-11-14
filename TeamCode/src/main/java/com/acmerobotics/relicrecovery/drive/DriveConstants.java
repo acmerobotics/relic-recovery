@@ -18,5 +18,8 @@ public class DriveConstants {
     public static PIDFCoefficients AXIAL_COEFFS = new PIDFCoefficients(-0.5, 0, 0, 1 / 22.0, 0);
     public static PIDCoefficients LATERAL_COEFFS = new PIDCoefficients(-0.5, 0, 0);
 
+    public static PIDCoefficients BALANCE_AXIAL_COEFFS = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients BALANCE_LATERAL_COEFFS = new PIDCoefficients(0, 0, 0);
+
     public static double RAMP_MAX_ACCEL = 25;
 }

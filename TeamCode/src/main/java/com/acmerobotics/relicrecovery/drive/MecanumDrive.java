@@ -7,8 +7,8 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,7 +40,8 @@ public class MecanumDrive implements Loop {
     public enum Mode {
         OPEN_LOOP,
         OPEN_LOOP_RAMP,
-        FOLLOW_PATH
+        FOLLOW_PATH,
+        AUTO_BALANCE
     }
 
     // TODO: should these be extracted into some kind of configuration object?
@@ -69,9 +71,14 @@ public class MecanumDrive implements Loop {
     private PoseEstimator poseEstimator;
     private PathFollower pathFollower;
 
+    /* inputs are pitch and roll, respectively */
+    private PIDController balanceAxialController, balanceLateralController;
+
     private Mode mode = Mode.OPEN_LOOP;
+    private Mode lastMode;
 
     private double[] powers, targetPowers;
+    private Vector2d lastVel = new Vector2d(0, 0);
 
     private Telemetry telemetry;
     private Canvas fieldOverlay;
@@ -124,11 +131,24 @@ public class MecanumDrive implements Loop {
         poseEstimator = new PoseEstimator(this, new Pose2d(0, 0));
         pathFollower = new PathFollower(this, telemetry, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
+        balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
+        balanceAxialController.setOutputBounds(-1, 1);
+        balanceAxialController.setSetpoint(0);
+
+        balanceLateralController = new PIDController(DriveConstants.BALANCE_LATERAL_COEFFS);
+        balanceLateralController.setOutputBounds(-1, 1);
+        balanceLateralController.setSetpoint(0);
+
         resetEncoders();
     }
 
-    public void setMode(Mode mode) {
+    private void setMode(Mode mode) {
+        this.lastMode = this.mode;
         this.mode = mode;
+    }
+
+    private void revertMode() {
+        this.mode = this.lastMode;
     }
 
     public Mode getMode() {
@@ -153,18 +173,32 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
+    public void setVelocity(Vector2d vel, double omega, boolean ramp) {
+        if (vel.equals(lastVel)) {
+            return;
+        }
+        internalSetVelocity(vel, omega);
+        setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
+    }
+
     public void setVelocity(Vector2d vel, double omega) {
+        setVelocity(vel, omega, false);
+    }
+
+    void internalSetVelocity(Vector2d vel, double omega) {
         targetPowers[0] = vel.x() - vel.y() - K * omega;
         targetPowers[1] = vel.x() + vel.y() - K * omega;
         targetPowers[2] = vel.x() - vel.y() + K * omega;
         targetPowers[3] = vel.x() + vel.y() + K * omega;
 
         double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
-			Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
+                Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
 
         for (int i = 0; i < 4; i++) {
             targetPowers[i] /= max;
         }
+
+        lastVel = vel;
     }
 
     /**
@@ -248,7 +282,7 @@ public class MecanumDrive implements Loop {
 
     public void followPath(Path path) {
         pathFollower.follow(path);
-        mode = Mode.FOLLOW_PATH;
+        setMode(Mode.FOLLOW_PATH);
     }
 
     public boolean isFollowingPath() {
@@ -261,6 +295,12 @@ public class MecanumDrive implements Loop {
 
     public void setEstimatedPose(Pose2d pose) {
         poseEstimator.setPose(pose);
+    }
+
+    public void autoBalance() {
+        setMode(Mode.AUTO_BALANCE);
+        balanceAxialController.reset();
+        balanceLateralController.reset();
     }
 
     @Override
@@ -295,8 +335,22 @@ public class MecanumDrive implements Loop {
                 break;
             case FOLLOW_PATH:
                 if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
-                    mode = Mode.OPEN_LOOP;
+                    revertMode();
                 }
+                break;
+            case AUTO_BALANCE:
+                Orientation angularOrientation = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
+                double pitch = angularOrientation.secondAngle;
+                double roll = angularOrientation.firstAngle;
+
+                double axialError = balanceAxialController.getError(pitch);
+                double lateralError = balanceLateralController.getError(roll);
+
+                double axialUpdate = balanceAxialController.update(axialError);
+                double lateralUpdate = balanceLateralController.update(lateralError);
+
+                internalSetVelocity(new Vector2d(axialUpdate, lateralUpdate), 0);
+
                 break;
         }
 

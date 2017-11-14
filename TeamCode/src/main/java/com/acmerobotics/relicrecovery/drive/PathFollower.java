@@ -1,13 +1,13 @@
-package com.acmerobotics.relicrecovery.path;
+package com.acmerobotics.relicrecovery.drive;
 
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
+import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -90,7 +90,7 @@ public class PathFollower {
         lateralController.setSetpoint(pose.y());
         double lateralUpdate = lateralController.update(lateralError, time);
 
-        drive.setVelocity(new Vector2d(axialUpdate, lateralUpdate), headingUpdate);
+        drive.internalSetVelocity(new Vector2d(axialUpdate, lateralUpdate), headingUpdate);
 
         if (telemetry != null) {
             telemetry.addData("headingError", headingError);
