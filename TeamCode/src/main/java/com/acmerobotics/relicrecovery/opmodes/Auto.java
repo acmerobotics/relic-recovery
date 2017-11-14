@@ -5,11 +5,13 @@ import com.acmerobotics.library.configuration.BalancingStone;
 import com.acmerobotics.library.configuration.OpModeConfiguration;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.PointTurn;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.JewelColor;
@@ -17,6 +19,8 @@ import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 import java.util.Arrays;
 
@@ -89,12 +93,12 @@ public class Auto extends LinearOpMode {
             sleep(10);
         }
 
-        Pose2d balancingStonePoseRotated = new Pose2d(balancingStonePose.pos(),
-                jewelTracker.getLeftColor().getAllianceColor() == allianceColor ? 7 * Math.PI / 8 : 9 * Math.PI / 8);
-
-        Path jewelTurn = Path.createFromPoses(Arrays.asList(
-                balancingStonePose,
-                balancingStonePoseRotated
+        boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
+        double turnAngle = turnLeft ? Math.toRadians(15) : -Math.toRadians(15);
+        Path jewelTurn = new Path(Arrays.asList(
+                new PointTurn(balancingStonePose, turnAngle),
+                new PointTurn(new Pose2d(balancingStonePose.pos(),
+                        Angle.norm(balancingStonePose.heading() + turnAngle)), -turnAngle)
         ));
 
         drive.followPath(jewelTurn);
@@ -102,14 +106,7 @@ public class Auto extends LinearOpMode {
             sleep(10);
         }
 
-        // TODO: make this alliance/balancing stone agnostic
-        Path pathToCryptobox = Path.createFromPoses(Arrays.asList(
-                balancingStonePoseRotated,
-                new Pose2d(12, -48, Math.PI)
-//                new Pose2d(12, -60, Math.PI / 2)
-        ));
-
-        drive.followPath(pathToCryptobox);
+        drive.followPath(AutoPaths.makePathToCryptobox(balancingStone, RelicRecoveryVuMark.CENTER));
         while (opModeIsActive() && drive.isFollowingPath()) {
             sleep(10);
         }
