@@ -39,7 +39,7 @@ public class Path {
             }
             double length = lastPose.pos().negated().add(pose.pos()).norm();
             if (length > Vector2d.EPSILON) {
-                segments.add(new LinearSegment(lastPose.pos(), pose.pos()));
+                segments.add(new LinearSegment(lastPose, pose.pos()));
             }
         }
         Pose2d finalPose = poses.get(poses.size() - 1);

@@ -14,20 +14,21 @@ import java.util.Locale;
  * Class representing a linear path segment
  */
 public class LinearSegment implements PathSegment {
-    private Vector2d start, end, seg;
+    private Pose2d start;
+    private Vector2d end, seg;
     private MotionProfile profile;
 
-    public LinearSegment(Vector2d start, Vector2d end) {
+    public LinearSegment(Pose2d start, Vector2d end) {
         this.start = start;
         this.end = end;
-        this.seg = this.start.negated().add(this.end);
+        this.seg = this.start.pos().negated().add(this.end);
         MotionState startState = new MotionState(0, 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(length(), 0);
         this.profile = MotionProfileGenerator.generateProfile(startState, goal, DriveConstants.AXIAL_CONSTRAINTS);
     }
 
     public Vector2d start() {
-        return start;
+        return start.pos();
     }
 
     public Vector2d end() {
@@ -44,7 +45,7 @@ public class LinearSegment implements PathSegment {
 
     /** @param t range [0, 1] inclusive */
     public Vector2d get(double t) {
-        return this.seg.multiplied(t).add(this.start);
+        return this.seg.multiplied(t).add(this.start.pos());
     }
 
     /**
@@ -52,7 +53,7 @@ public class LinearSegment implements PathSegment {
      */
     public Vector2d getBounded(double t) {
         if (t <= 0) {
-            return this.start.copy();
+            return this.start.pos().copy();
         } else if (t >= 1) {
             return this.end.copy();
         } else {
@@ -62,7 +63,7 @@ public class LinearSegment implements PathSegment {
 
     /** @return [0, 1] position on curve; NaN if not on curve */
     public double getPosition(Vector2d point) {
-        Vector2d adj = this.start.negated().add(point);
+        Vector2d adj = this.start.pos().negated().add(point);
         double tX = adj.x() / seg.x();
         double tY = adj.y() / seg.y();
         if (Math.abs(seg.x()) < Vector2d.EPSILON) {
@@ -82,7 +83,7 @@ public class LinearSegment implements PathSegment {
     }
 
     public double getClosestPositionOnPath(Vector2d point) {
-        double a = seg.dot(start.negated().add(point));
+        double a = seg.dot(start.pos().negated().add(point));
         return a / seg.dot(seg);
     }
 
@@ -115,7 +116,7 @@ public class LinearSegment implements PathSegment {
 
     @Override
     public Pose2d getPose(double time) {
-        return new Pose2d(new Vector2d(profile.get(time).x + start.x(), start.y()), 0);
+        return new Pose2d(new Vector2d(profile.get(time).x + start.x(), start.y()), start.heading());
     }
 
     @Override
