@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
@@ -10,7 +10,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 /**
  * Created by ryanbrott on 9/23/17.
  */
-@TeleOp
+
+@TeleOp(name = "Cryptobox Vision", group = "vision")
 public class CryptoboxVision extends OpMode {
     private VisionCamera camera;
     private CryptoboxTracker cryptoboxTracker;

@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
@@ -35,7 +35,7 @@ import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp
+@TeleOp(name = "FixedJewelVision", group = "vision")
 public class FixedJewelVision extends OpMode {
     private VisionCamera camera;
     private FixedJewelTracker jewelTracker;

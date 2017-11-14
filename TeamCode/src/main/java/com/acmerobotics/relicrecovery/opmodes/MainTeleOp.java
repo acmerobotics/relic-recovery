@@ -17,7 +17,7 @@ import static java.lang.Thread.sleep;
  * Created by ryanbrott on 11/5/17.
  */
 
-@TeleOp
+@TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
     private MecanumDrive drive;
     private boolean fieldCentric, halfSpeed;

@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;

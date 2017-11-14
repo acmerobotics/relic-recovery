@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
@@ -47,7 +47,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
-@TeleOp
+@TeleOp(name = "VuMark Vision", group = "vision")
 public class VuMarkVision extends LinearOpMode {
     public static final String TAG = "VuMarkVision";
 

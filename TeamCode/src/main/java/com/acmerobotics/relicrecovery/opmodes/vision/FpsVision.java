@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 /**
  * Created by ryanbrott on 9/23/17.
  */
-@TeleOp
+@TeleOp(name = "FPS Vision", group = "vision")
 public class FpsVision extends OpMode {
     private VisionCamera camera;
     private FpsTracker fpsTracker;

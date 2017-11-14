@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.library.localization.Pose2d;
@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  */
 
 // TODO: refactor; combine w/ PoseEstimationTest?
-@TeleOp(name="Dead Reckoning Test")
+@TeleOp(name = "Dead Reckoning Test", group = "test")
 public class DeadReckoningTest extends OpMode{
 
     private MecanumDrive drive;

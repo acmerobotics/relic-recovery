@@ -24,7 +24,7 @@ import java.util.Arrays;
  * @author Ryan
  */
 
-@Autonomous
+@Autonomous(name = "Auto", group = "auto")
 public class Auto extends LinearOpMode {
     private RobotDashboard dashboard;
     private Looper looper;

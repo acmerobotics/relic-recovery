@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.config.Config;
@@ -22,7 +22,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
  */
 
 @Config
-@TeleOp(name = "Vision Alignment Test")
+@TeleOp(name = "Vision Alignment Test", group = "test")
 public class VisionAlignmentTest extends LinearOpMode {
     public static final long LOOP_MS = 20;
 
