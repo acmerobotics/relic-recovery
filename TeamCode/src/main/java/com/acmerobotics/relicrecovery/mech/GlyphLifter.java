@@ -103,10 +103,12 @@ public class GlyphLifter implements Loop {
 
     public void setBallScrewPower(double power) {
         ballScrewPower = power;
+        mode = Mode.OPEN_LOOP;
     }
 
     public void setPinionPower(double power) {
         pinionPower = power;
+        mode = Mode.OPEN_LOOP;
     }
 
     public void setLiftPower(double ballScrewPower, double pinionPower) {
@@ -143,23 +145,30 @@ public class GlyphLifter implements Loop {
     public void onLoop(long timestamp, long dt) {
         switch (mode) {
             case OPEN_LOOP:
+                ballScrewMotor.setPower(ballScrewPower);
+                pinionServo.setPower(pinionPower);
                 break;
             case FOLLOW_PROFILE:
                 // ball screw
                 double time = (timestamp - profileStartTimestamp) / 1000.0;
-                MotionState state = profile.get(time);
-                controller.setSetpoint(state);
-                double actualHeight = getBallScrewHeight();
-                double heightError = controller.getPositionError(actualHeight);
-                double heightUpdate = controller.update(heightError);
-                setBallScrewPower(heightUpdate);
-                // rack and pinion
-                if (extendRack && !upperRackTouch.getState()) {
-                    pinionServo.setPower(PINION_POWER);
-                } else if (!extendRack && !lowerRackTouch.getState()) {
-                    pinionServo.setPower(-PINION_POWER);
+                if (time > profile.end().t) {
+                    setLiftPower(0, 0);
+                    mode = Mode.OPEN_LOOP;
                 } else {
-                    pinionServo.setPower(0);
+                    MotionState state = profile.get(time);
+                    controller.setSetpoint(state);
+                    double actualHeight = getBallScrewHeight();
+                    double heightError = controller.getPositionError(actualHeight);
+                    double heightUpdate = controller.update(heightError);
+                    ballScrewMotor.setPower(heightUpdate);
+                    // rack and pinion
+                    if (extendRack && !upperRackTouch.getState()) {
+                        pinionServo.setPower(PINION_POWER);
+                    } else if (!extendRack && !lowerRackTouch.getState()) {
+                        pinionServo.setPower(-PINION_POWER);
+                    } else {
+                        pinionServo.setPower(0);
+                    }
                 }
                 break;
             case ZERO:
@@ -172,8 +181,5 @@ public class GlyphLifter implements Loop {
                 setLiftPower(ballScrewZeroed ? 0 : -ZERO_BALL_SCREW_POWER, rackZeroed ? 0 : -PINION_POWER);
                 break;
         }
-
-        ballScrewMotor.setPower(ballScrewPower);
-        pinionServo.setPower(pinionPower);
     }
 }
