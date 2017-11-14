@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/configuration_screen"
     android:layout_width="match_parent"
@@ -8,74 +8,20 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:orientation="vertical"
     android:keepScreenOn="true"
     tools:context="com.acmerobotics.library.configuration.OpModeConfigurationActivity">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/opmode_configuration_title"
-        android:padding="16dp"
-        android:textSize="24sp" />
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:orientation="vertical">
 
         <TextView
-            android:text="@string/alliance_color_text"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:gravity="center_vertical"
-            android:textSize="@dimen/pref_text_size"
-            android:id="@+id/alliance_color_text_view"
-            android:layout_weight="1" />
-
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/alliance_color_spinner"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:gravity="center_vertical"
-            android:layout_weight="1"
-            android:entries="@array/alliance_colors" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:text="@string/match_type_text"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:gravity="center_vertical"
-            android:textSize="@dimen/pref_text_size"
-            android:id="@+id/match_type_text_view"
-            android:layout_weight="1" />
-
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/match_type_spinner"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:gravity="center_vertical"
-            android:layout_weight="1"
-            android:entries="@array/match_types" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/match_number_layout">
+            android:layout_height="wrap_content"
+            android:text="@string/opmode_configuration_title"
+            android:padding="16dp"
+            android:textSize="24sp" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -83,38 +29,25 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/match_number_text"
+                android:text="@string/alliance_color_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/match_number_text_view"
-                android:layout_margin="@dimen/pref_item_margin"
-                android:layout_weight="1"
-                android:textSize="@dimen/pref_text_size"
-                android:gravity="center_vertical" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/match_number_value_text_view"
                 android:layout_margin="@dimen/pref_item_margin"
                 android:gravity="center_vertical"
                 android:textSize="@dimen/pref_text_size"
+                android:id="@+id/alliance_color_text_view"
                 android:layout_weight="1" />
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/alliance_color_spinner"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:entries="@array/alliance_colors" />
+
         </LinearLayout>
-
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:id="@+id/match_number_seek_bar"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:max="29"
-            android:progress="0" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
 
         <LinearLayout
             android:orientation="horizontal"
@@ -122,64 +55,162 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:text="@string/delay_text"
+                android:text="@string/match_type_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/delay_text_view"
-                android:layout_margin="@dimen/pref_item_margin"
-                android:layout_weight="1"
-                android:textSize="@dimen/pref_text_size"
-                android:gravity="center_vertical" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/delay_value_text_view"
                 android:layout_margin="@dimen/pref_item_margin"
                 android:gravity="center_vertical"
                 android:textSize="@dimen/pref_text_size"
+                android:id="@+id/match_type_text_view"
                 android:layout_weight="1" />
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/match_type_spinner"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:entries="@array/match_types" />
+
         </LinearLayout>
 
-        <SeekBar
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:id="@+id/delay_seek_bar"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:max="30"
-            android:progress="0" />
+            android:layout_height="wrap_content"
+            android:id="@+id/match_number_layout">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="@string/match_number_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/match_number_text_view"
+                    android:layout_margin="@dimen/pref_item_margin"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/pref_text_size"
+                    android:gravity="center_vertical" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/match_number_value_text_view"
+                    android:layout_margin="@dimen/pref_item_margin"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/pref_text_size"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:id="@+id/match_number_seek_bar"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:max="29"
+                android:progress="0" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:text="@string/delay_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/delay_text_view"
+                    android:layout_margin="@dimen/pref_item_margin"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/pref_text_size"
+                    android:gravity="center_vertical" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/delay_value_text_view"
+                    android:layout_margin="@dimen/pref_item_margin"
+                    android:gravity="center_vertical"
+                    android:textSize="@dimen/pref_text_size"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <SeekBar
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:id="@+id/delay_seek_bar"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:max="30"
+                android:progress="0" />
+        </LinearLayout>
+
+        <com.acmerobotics.library.configuration.FieldView
+            android:layout_width="@dimen/field_size"
+            android:layout_height="@dimen/field_size"
+            android:id="@+id/field_view"
+            android:layout_gravity="center"/>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/balancing_stone_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/pref_text_size"
+                android:id="@+id/balancing_stone_text_view"
+                android:layout_weight="1" />
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/balancing_stone_spinner"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:entries="@array/balancing_stones" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:text="@string/auto_transition_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/pref_text_size"
+                android:id="@+id/auto_transition_text_view"
+                android:layout_weight="1" />
+
+            <Spinner
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/auto_transition_spinner"
+                android:layout_margin="@dimen/pref_item_margin"
+                android:gravity="center_vertical"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <com.acmerobotics.library.configuration.FieldView
-        android:layout_width="@dimen/field_size"
-        android:layout_height="@dimen/field_size"
-        android:id="@+id/field_view"
-        android:layout_gravity="center"/>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:text="@string/balancing_stone_text"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:gravity="center_vertical"
-            android:textSize="@dimen/pref_text_size"
-            android:id="@+id/balancing_stone_text_view"
-            android:layout_weight="1" />
-
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/balancing_stone_spinner"
-            android:layout_margin="@dimen/pref_item_margin"
-            android:gravity="center_vertical"
-            android:layout_weight="1"
-            android:entries="@array/balancing_stones" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

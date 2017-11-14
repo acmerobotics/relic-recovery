@@ -15,6 +15,9 @@ public class OpModeConfiguration {
     public static final String PREF_MATCH_TYPE = "match_type";
     public static final String PREF_MATCH_NUMBER = "match_number";
     public static final String PREF_AUTO_HEADING = "auto_heading";
+    public static final String PREF_AUTO_TRANSITION = "auto_transition";
+
+    public static final String NO_AUTO_TRANSITION = "None";
 
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
@@ -73,12 +76,21 @@ public class OpModeConfiguration {
         editor.commit();
     }
 
-    public double getLastHeading() {
+    public double getAutoHeading() {
         return preferences.getFloat(PREF_AUTO_HEADING, 0);
     }
 
-    public void setLastHeading(double heading) {
+    public void setAutoHeading(double heading) {
         editor.putFloat(PREF_AUTO_HEADING, (float) heading);
+        editor.commit();
+    }
+
+    public String getAutoTransition() {
+        return preferences.getString(PREF_AUTO_TRANSITION, NO_AUTO_TRANSITION);
+    }
+
+    public void setAutoTransition(String autoTransition) {
+        editor.putString(PREF_AUTO_TRANSITION, autoTransition);
         editor.commit();
     }
 

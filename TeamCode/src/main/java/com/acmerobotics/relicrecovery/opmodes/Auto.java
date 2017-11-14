@@ -76,6 +76,11 @@ public class Auto extends LinearOpMode {
 
         looper.start();
 
+        String autoTransition = configuration.getAutoTransition();
+        if (!autoTransition.equals(OpModeConfiguration.NO_AUTO_TRANSITION)) {
+            AutoTransitioner.transitionOnStop(this, autoTransition);
+        }
+
         waitForStart();
 
         sleep(configuration.getDelay() * 1000);

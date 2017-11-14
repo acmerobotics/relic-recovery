@@ -4,12 +4,18 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.acmerobotics.library.R;
+
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
+import org.firstinspires.ftc.robotcore.internal.opmode.RegisteredOpModes;
+
+import java.util.List;
 
 public class OpModeConfigurationActivity extends Activity {
 
@@ -21,6 +27,38 @@ public class OpModeConfigurationActivity extends Activity {
         setContentView(R.layout.activity_opmode_configuration);
 
         configuration = new OpModeConfiguration(this);
+
+        RegisteredOpModes registeredOpModes = RegisteredOpModes.getInstance();
+        registeredOpModes.waitOpModesRegistered();
+        List<OpModeMeta> opModeMetas = registeredOpModes.getOpModes();
+        String[] opModes = new String[opModeMetas.size() + 1];
+        opModes[0] = OpModeConfiguration.NO_AUTO_TRANSITION;
+        String autoTransition = configuration.getAutoTransition();
+        int selectedOpMode = 0;
+        for (int i = 1; i < opModes.length; i++) {
+            opModes[i] = opModeMetas.get(i - 1).name;
+            if (opModes[i].equals(autoTransition)) {
+                selectedOpMode = i;
+            }
+        }
+
+        Spinner autoTransitionSpinner = (Spinner) findViewById(R.id.auto_transition_spinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, opModes);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        autoTransitionSpinner.setAdapter(adapter);
+
+        autoTransitionSpinner.setSelection(selectedOpMode);
+        autoTransitionSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                configuration.setAutoTransition(opModes[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         final LinearLayout matchNumberLayout = (LinearLayout) findViewById(R.id.match_number_layout);
 

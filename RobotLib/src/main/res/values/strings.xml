@@ -9,4 +9,5 @@
     <string name="balancing_stone_text">Balancing Stone</string>
     <string name="match_type_text">Match Type</string>
     <string name="match_number_text">Match Number</string>
+    <string name="auto_transition_text">Auto Transition</string>
 </resources>
