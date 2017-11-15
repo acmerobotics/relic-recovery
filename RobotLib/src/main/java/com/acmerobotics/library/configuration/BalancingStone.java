@@ -8,9 +8,9 @@ import com.acmerobotics.library.localization.Pose2d;
 
 public enum BalancingStone {
     NEAR_BLUE(0, AllianceColor.BLUE, new Pose2d(48, -48, Math.PI)),
-    FAR_BLUE(1, AllianceColor.BLUE, new Pose2d(-24, -48, Math.PI / 2)),
-    NEAR_RED(2, AllianceColor.RED, new Pose2d(48, 48, Math.PI)),
-    FAR_RED(3, AllianceColor.RED, new Pose2d(-24, 48, -Math.PI / 2));
+    FAR_BLUE(1, AllianceColor.BLUE, new Pose2d(-24, -48, Math.PI)),
+    NEAR_RED(2, AllianceColor.RED, new Pose2d(48, 48, 0)),
+    FAR_RED(3, AllianceColor.RED, new Pose2d(-24, 48, 0));
 
     private int index;
     private AllianceColor allianceColor;

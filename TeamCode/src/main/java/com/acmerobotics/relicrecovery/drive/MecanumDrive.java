@@ -337,6 +337,7 @@ public class MecanumDrive implements Loop {
                 if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
                     revertMode();
                 }
+                powers = targetPowers;
                 break;
             case AUTO_BALANCE:
                 Orientation angularOrientation = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
@@ -350,6 +351,8 @@ public class MecanumDrive implements Loop {
                 double lateralUpdate = balanceLateralController.update(lateralError);
 
                 internalSetVelocity(new Vector2d(axialUpdate, lateralUpdate), 0);
+
+                powers = targetPowers;
 
                 break;
         }
@@ -377,7 +380,7 @@ public class MecanumDrive implements Loop {
         }
 
         double robotRadius = 9;
-        fieldOverlay.setFill("blue");
+        fieldOverlay.setStroke("blue");
         fieldOverlay.setStrokeWidth(4);
         fieldOverlay.strokeLine(
             estimatedPose.x() + 0.5 * robotRadius * Math.cos(estimatedPose.heading()),

@@ -94,7 +94,7 @@ public class Auto extends LinearOpMode {
         }
 
         boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
-        double turnAngle = turnLeft ? Math.toRadians(15) : -Math.toRadians(15);
+        double turnAngle = turnLeft ? Math.toRadians(30) : -Math.toRadians(30);
         Path jewelTurn = new Path(Arrays.asList(
                 new PointTurn(balancingStonePose, turnAngle),
                 new PointTurn(new Pose2d(balancingStonePose.pos(),

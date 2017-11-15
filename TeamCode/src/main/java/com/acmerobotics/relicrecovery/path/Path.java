@@ -34,12 +34,12 @@ public class Path {
             double turnAngle = Angle.norm(newHeading - heading);
             if ((Math.abs(deltaX) > Vector2d.EPSILON || Math.abs(deltaY) > Vector2d.EPSILON) &&
                 Math.abs(turnAngle) > Vector2d.EPSILON) {
-                segments.add(new PointTurn(pose, turnAngle));
+                segments.add(new PointTurn(new Pose2d(lastPose.pos(), heading), turnAngle));
                 heading = newHeading;
             }
-            double length = lastPose.pos().negated().add(pose.pos()).norm();
+            double length = lastPose.pos().negated().added(pose.pos()).norm();
             if (length > Vector2d.EPSILON) {
-                segments.add(new LinearSegment(lastPose, pose.pos()));
+                segments.add(new LinearSegment(new Pose2d(lastPose.pos(), heading), pose.pos()));
             }
         }
         Pose2d finalPose = poses.get(poses.size() - 1);

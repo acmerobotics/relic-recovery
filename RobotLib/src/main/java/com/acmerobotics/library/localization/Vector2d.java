@@ -4,7 +4,7 @@ public class Vector2d {
 
     public static final double EPSILON = 0.00001;
 
-    private double x, y;
+    private final double x, y;
 
     public Vector2d(double x, double y) {
         this.x = x;
@@ -15,15 +15,13 @@ public class Vector2d {
         return new Vector2d(x, y);
     }
 
-    public Vector2d normalize() {
+    public Vector2d normalized() {
         double norm = norm();
         if (norm < EPSILON) {
-            x = 1;
-            y = 0;
+            return new Vector2d(1, 0);
         } else {
-            multiply(1.0 / norm());
+            return multiplied(1.0 / norm());
         }
-        return this;
     }
 
     public double norm() {
@@ -34,45 +32,22 @@ public class Vector2d {
         return x * other.x() + y * other.y();
     }
 
-    public Vector2d multiply(double scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
-        return this;
-    }
-
     public Vector2d multiplied(double scalar) {
-        return copy().multiply(scalar);
-    }
-
-    public Vector2d add(Vector2d other) {
-        this.x += other.x();
-        this.y += other.y();
-        return this;
+        return new Vector2d(scalar * x, scalar * y);
     }
 
     public Vector2d added(Vector2d other) {
-        return copy().add(other);
-    }
-
-    public Vector2d negate() {
-        x = -x;
-        y = -y;
-        return this;
+        return new Vector2d(x + other.x, y + other.y);
     }
 
     public Vector2d negated() {
-        return copy().negate();
-    }
-
-    public Vector2d rotate(double angle) {
-        double oldX = x;
-        x = x * Math.cos(angle) - y * Math.sin(angle);
-        y = oldX * Math.sin(angle) + y * Math.cos(angle);
-        return this;
+        return new Vector2d(-x, -y);
     }
 
     public Vector2d rotated(double angle) {
-        return copy().rotate(angle);
+        double newX = x * Math.cos(angle) - y * Math.sin(angle);
+        double newY = x * Math.sin(angle) + y * Math.cos(angle);
+        return new Vector2d(newX, newY);
     }
 
     public double x() {

@@ -39,7 +39,7 @@ public class PointTurn implements PathSegment {
 
     @Override
     public String toString() {
-        return String.format(Locale.ENGLISH, "%1.4f (%.2f deg)", angle, Math.toDegrees(angle));
+        return String.format(Locale.ENGLISH, "%s, %1.4f (%.2f deg)", initialPose.toString(), angle, Math.toDegrees(angle));
     }
 
     @Override

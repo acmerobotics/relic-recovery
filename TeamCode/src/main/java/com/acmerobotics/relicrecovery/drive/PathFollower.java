@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -104,6 +106,18 @@ public class PathFollower {
 
             telemetry.addData("axialUpdate", axialUpdate);
             telemetry.addData("lateralUpdate", lateralUpdate);
+
+            RobotDashboard dashboard = RobotDashboard.getInstance();
+            Canvas fieldOverlay = dashboard.getFieldOverlay();
+            double robotRadius = 9;
+            fieldOverlay.setStroke("red");
+            fieldOverlay.setStrokeWidth(4);
+            fieldOverlay.strokeLine(
+                    pose.x() + 0.5 * robotRadius * Math.cos(pose.heading()),
+                    pose.y() + 0.5 * robotRadius * Math.sin(pose.heading()),
+                    pose.x() + robotRadius * Math.cos(pose.heading()),
+                    pose.y() + robotRadius * Math.sin(pose.heading()));
+            fieldOverlay.strokeCircle(pose.x(), pose.y(), robotRadius);
         }
 
         return false;

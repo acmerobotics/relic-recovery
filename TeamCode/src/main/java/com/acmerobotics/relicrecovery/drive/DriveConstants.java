@@ -14,9 +14,9 @@ public class DriveConstants {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(16.0, 32.0, 64.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(1.5, 3.0, 6.0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_V);
 
-    public static PIDFCoefficients HEADING_COEFFS = new PIDFCoefficients(-0.5, 0, 0, 1 / 2.44, 0);
-    public static PIDFCoefficients AXIAL_COEFFS = new PIDFCoefficients(-0.5, 0, 0, 1 / 22.0, 0);
-    public static PIDCoefficients LATERAL_COEFFS = new PIDCoefficients(-0.5, 0, 0);
+    public static PIDFCoefficients HEADING_COEFFS = new PIDFCoefficients(-0.05, 0, 0, 0.1, 0);
+    public static PIDFCoefficients AXIAL_COEFFS = new PIDFCoefficients(-0.15, 0, 0, -1 / 22.0, 0);
+    public static PIDCoefficients LATERAL_COEFFS = new PIDCoefficients(-0.15, 0, 0);
 
     public static PIDCoefficients BALANCE_AXIAL_COEFFS = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients BALANCE_LATERAL_COEFFS = new PIDCoefficients(0, 0, 0);
