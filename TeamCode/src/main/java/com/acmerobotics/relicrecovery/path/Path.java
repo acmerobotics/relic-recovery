@@ -32,6 +32,9 @@ public class Path {
             double deltaY = pose.y() - lastPose.y();
             double newHeading = Angle.norm(Math.atan2(deltaY, deltaX));
             double turnAngle = Angle.norm(newHeading - heading);
+            if (Math.abs(turnAngle) > Math.PI / 2) {
+                turnAngle = Math.PI - turnAngle;
+            }
             if ((Math.abs(deltaX) > Vector2d.EPSILON || Math.abs(deltaY) > Vector2d.EPSILON) &&
                 Math.abs(turnAngle) > Vector2d.EPSILON) {
                 segments.add(new PointTurn(new Pose2d(lastPose.pos(), heading), turnAngle));
@@ -39,7 +42,7 @@ public class Path {
             }
             double length = lastPose.pos().negated().added(pose.pos()).norm();
             if (length > Vector2d.EPSILON) {
-                segments.add(new LinearSegment(new Pose2d(lastPose.pos(), heading), pose.pos()));
+                segments.add(new LineSegment(new Pose2d(lastPose.pos(), heading), new Pose2d(pose.pos(), heading)));
             }
         }
         Pose2d finalPose = poses.get(poses.size() - 1);

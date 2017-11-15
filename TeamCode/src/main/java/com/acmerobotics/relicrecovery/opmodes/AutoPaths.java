@@ -35,15 +35,15 @@ public class AutoPaths {
             case FAR_BLUE:
                 return Path.createFromPoses(Arrays.asList(
                         new Pose2d(-24, -48, Math.PI),
-                        new Pose2d(-48, -48),
-                        new Pose2d(-48, -36 - 7.5 * vuMarkMap.get(vuMark)),
+                        new Pose2d(-50, -48),
+                        new Pose2d(-50, -36 - 7.5 * vuMarkMap.get(vuMark)),
                         new Pose2d(-60, -36 - 7.5 * vuMarkMap.get(vuMark), Math.PI)
                 ));
             case FAR_RED:
                 return Path.createFromPoses(Arrays.asList(
                         new Pose2d(-24, 48, 0),
-                        new Pose2d(-48, 48),
-                        new Pose2d(-48, 36 - 7.5 * vuMarkMap.get(vuMark)),
+                        new Pose2d(-50, 48),
+                        new Pose2d(-50, 36 - 7.5 * vuMarkMap.get(vuMark)),
                         new Pose2d(-60, 36 - 7.5 * vuMarkMap.get(vuMark), 0)
                 ));
             case NEAR_RED:
