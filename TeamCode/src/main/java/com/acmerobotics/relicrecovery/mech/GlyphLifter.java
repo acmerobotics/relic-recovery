@@ -16,6 +16,8 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 /**
  * Created by ryanbrott on 11/12/17.
  */
@@ -33,15 +35,23 @@ public class GlyphLifter implements Loop {
     public static double ZERO_BALL_SCREW_POWER = 0.5;
     public static double PINION_POWER = 1;
 
+    public static double SLOW_INTAKE_POWER = 0.5;
+    public static double FAST_INTAKE_POWER = 1;
+
     public enum Side {
         FRONT,
         REAR
     }
 
-    public enum Mode {
+    public enum LifterMode {
         OPEN_LOOP,
         FOLLOW_PROFILE,
         ZERO
+    }
+
+    public enum IntakeMode {
+        OPEN_LOOP,
+        INTAKE_GLYPH
     }
 
     private DcMotor ballScrewMotor;
@@ -51,8 +61,10 @@ public class GlyphLifter implements Loop {
     private DigitalChannel ballScrewTouch, lowerRackTouch, upperRackTouch;
 
     private double ballScrewPower, pinionPower;
+    private double leftIntakePower, rightIntakePower;
 
-    private Mode mode;
+    private LifterMode lifterMode;
+    private IntakeMode intakeMode;
 
     private long profileStartTimestamp;
     private boolean extendRack;
@@ -88,7 +100,8 @@ public class GlyphLifter implements Loop {
 
         controller = new PIDFController(GLYPH_PIDF_COEFF);
 
-        mode = Mode.OPEN_LOOP;
+        lifterMode = LifterMode.OPEN_LOOP;
+        intakeMode = IntakeMode.OPEN_LOOP;
     }
 
     private int getRawEncoderPosition() {
@@ -105,17 +118,23 @@ public class GlyphLifter implements Loop {
 
     public void setBallScrewPower(double power) {
         ballScrewPower = power;
-        mode = Mode.OPEN_LOOP;
+        lifterMode = LifterMode.OPEN_LOOP;
     }
 
     public void setPinionPower(double power) {
         pinionPower = power;
-        mode = Mode.OPEN_LOOP;
+        lifterMode = LifterMode.OPEN_LOOP;
     }
 
     public void setLiftPower(double ballScrewPower, double pinionPower) {
         setBallScrewPower(ballScrewPower);
         setPinionPower(pinionPower);
+    }
+
+    public void setIntakePower(double leftPower, double rightPower) {
+        this.leftIntakePower = leftPower;
+        this.rightIntakePower = rightPower;
+        this.intakeMode = IntakeMode.OPEN_LOOP;
     }
 
     public double getBallScrewHeight() {
@@ -140,12 +159,24 @@ public class GlyphLifter implements Loop {
         MotionGoal goal = new MotionGoal(height, 0);
         profile = MotionProfileGenerator.generateProfile(start, goal, GLYPH_MOTION_CONSTRAINTS);
         profileStartTimestamp = System.currentTimeMillis();
-        mode = Mode.FOLLOW_PROFILE;
+        lifterMode = LifterMode.FOLLOW_PROFILE;
+    }
+
+    public void intakeGlyph() {
+        intakeMode = IntakeMode.INTAKE_GLYPH;
+    }
+
+    public void zeroLifter() {
+        lifterMode = LifterMode.ZERO;
+    }
+
+    public boolean isLifterZeroing() {
+        return lifterMode == LifterMode.ZERO;
     }
 
     @Override
     public void onLoop(long timestamp, long dt) {
-        switch (mode) {
+        switch (lifterMode) {
             case OPEN_LOOP:
                 ballScrewMotor.setPower(ballScrewPower);
                 pinionServo.setPower(pinionPower);
@@ -177,10 +208,27 @@ public class GlyphLifter implements Loop {
                 boolean rackZeroed = lowerRackTouch.getState();
                 if (ballScrewZeroed && rackZeroed) {
                     resetEncoder();
-                    mode = Mode.OPEN_LOOP;
+                    lifterMode = LifterMode.OPEN_LOOP;
                 }
                 ballScrewMotor.setPower(ballScrewZeroed ? 0 : -ZERO_BALL_SCREW_POWER);
                 pinionServo.setPower(rackZeroed ? 0 : -PINION_POWER);
+                break;
+        }
+
+        switch (intakeMode) {
+            case OPEN_LOOP:
+                leftIntake.setPower(leftIntakePower);
+                rightIntake.setPower(rightIntakePower);
+                break;
+            case INTAKE_GLYPH:
+                if (distanceSensor.getDistance(DistanceUnit.INCH) <= 2) {
+                    leftIntake.setPower(0);
+                    rightIntake.setPower(0);
+                    intakeMode = IntakeMode.OPEN_LOOP;
+                } else {
+                    leftIntake.setPower(SLOW_INTAKE_POWER);
+                    rightIntake.setPower(FAST_INTAKE_POWER);
+                }
                 break;
         }
     }

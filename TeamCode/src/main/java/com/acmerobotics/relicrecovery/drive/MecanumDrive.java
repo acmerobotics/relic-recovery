@@ -44,7 +44,6 @@ public class MecanumDrive implements Loop {
         AUTO_BALANCE
     }
 
-    // TODO: should these be extracted into some kind of configuration object?
     public static final double WHEELBASE_WIDTH = 18;
     public static final double WHEELBASE_HEIGHT = 18;
 
