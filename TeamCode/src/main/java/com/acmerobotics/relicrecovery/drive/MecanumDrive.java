@@ -388,8 +388,6 @@ public class MecanumDrive implements Loop {
 
             telemetry.addData("pathLateralError", pathFollower.getLateralError());
             telemetry.addData("pathLateralUpdate", pathFollower.getLateralUpdate());
-
-            telemetry.update();
         }
 
         double robotRadius = 9;

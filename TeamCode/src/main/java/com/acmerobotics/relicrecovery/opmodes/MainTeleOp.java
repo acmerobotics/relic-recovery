@@ -2,14 +2,13 @@ package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.mech.GlyphLift;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import static java.lang.Thread.sleep;
 
@@ -23,23 +22,27 @@ public class MainTeleOp extends OpMode {
     private boolean fieldCentric, halfSpeed;
     private StickyGamepad stickyGamepad1;
     private Looper looper;
-    private CRServo frontLeftIntake, frontRightIntake;
-    private DcMotor frontLift;
+    private GlyphLift frontLift;
+
 
     @Override
     public void init() {
-        frontLeftIntake = hardwareMap.crservo.get("frontLeftIntake");
-        frontRightIntake = hardwareMap.crservo.get("frontRightIntake");
-
-        frontLift = hardwareMap.dcMotor.get("frontLift");
-
         telemetry = new MultipleTelemetry(telemetry, RobotDashboard.getInstance().getTelemetry());
-        drive = new MecanumDrive(hardwareMap);
         stickyGamepad1 = new StickyGamepad(gamepad1);
 
+        frontLift = new GlyphLift(hardwareMap, telemetry, GlyphLift.Side.FRONT);
+        drive = new MecanumDrive(hardwareMap, telemetry, new Pose2d(0, 0, 0));
+
         looper = new Looper(20);
+        looper.addLoop((timestamp, dt) -> {
+            telemetry.update();
+        });
+
+        frontLift.registerLoops(looper);
         drive.registerLoops(looper);
         looper.start();
+
+        frontLift.zeroLift();
     }
 
     @Override
@@ -56,23 +59,36 @@ public class MainTeleOp extends OpMode {
             fieldCentric = !fieldCentric;
         }
 
-        if (stickyGamepad1.b) {
-            drive.autoBalance();
-        }
-
         if (stickyGamepad1.y) {
             halfSpeed = !halfSpeed;
         }
 
-        frontLeftIntake.setPower(-gamepad1.left_trigger);
-        frontRightIntake.setPower(gamepad1.right_trigger);
+        double leadScrewPower, pinionPower;
+
+        if (gamepad1.y) {
+            pinionPower = 1;
+        } else if (gamepad1.a) {
+            pinionPower = -1;
+        } else {
+            pinionPower = 0;
+        }
 
         if (gamepad1.dpad_up) {
-            frontLift.setPower(1);
+            leadScrewPower = 1;
         } else if (gamepad1.dpad_down) {
-            frontLift.setPower(-1);
+            leadScrewPower = -1;
         } else {
-            frontLift.setPower(0);
+            leadScrewPower = 0;
+        }
+
+        frontLift.setLiftPower(leadScrewPower, pinionPower);
+
+        if (gamepad1.left_bumper) {
+            frontLift.setIntakePower(1, -0.5);
+        } else if (gamepad1.right_bumper) {
+            frontLift.setIntakePower(-1, 1);
+        } else {
+            frontLift.setIntakePower(0, 0);
         }
 
         double x = -gamepad1.left_stick_y;
@@ -85,24 +101,21 @@ public class MainTeleOp extends OpMode {
             y *= 0.5;
             omega *= 0.5;
         }
-
-        if (fieldCentric) {
-            drive.setVelocity(new Vector2d(x, y).rotated(-heading), omega, true);
-        } else {
-            drive.setVelocity(new Vector2d(x, y), omega, true);
-        }
-
-        telemetry.addData(">", fieldCentric ? "Field Centric (A to switch)" : "Robot Centric (A to switch)");
-        telemetry.addData(">", drive.getMode() == MecanumDrive.Mode.AUTO_BALANCE ? "Auto balancing" : "Press B to auto balance");
-        telemetry.addData("x", x);
-        telemetry.addData("y", y);
-        telemetry.addData("omega", omega);
-        telemetry.addData("heading", heading);
     }
 
     @Override
     public void stop() {
         looper.terminate();
+    }
+
+    @Override
+    public void internalPostInitLoop() {
+
+    }
+
+    @Override
+    public void internalPostLoop() {
+
     }
 }
 
