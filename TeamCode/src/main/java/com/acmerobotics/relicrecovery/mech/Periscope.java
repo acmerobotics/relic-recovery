@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * Created by ryanbrott on 11/16/17.
  */
 
-public class CameraMount implements Loop {
+public class Periscope implements Loop {
     private CRServo cameraLift;
     private Servo cameraRotate;
     private DigitalChannel cameraTouch;
@@ -22,7 +22,7 @@ public class CameraMount implements Loop {
 
     private Telemetry telemetry;
 
-    public CameraMount(HardwareMap map, Telemetry telemetry) {
+    public Periscope(HardwareMap map, Telemetry telemetry) {
         cameraLift = map.crservo.get("cameraLift");
         cameraRotate = map.servo.get("cameraRotate");
         cameraTouch = map.digitalChannel.get("cameraTouch");

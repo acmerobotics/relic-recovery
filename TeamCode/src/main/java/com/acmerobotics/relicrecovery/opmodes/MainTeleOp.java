@@ -9,6 +9,7 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.mech.GlyphLift;
+import com.acmerobotics.relicrecovery.mech.Periscope;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -27,7 +28,7 @@ public class MainTeleOp extends OpMode {
     private StickyGamepad stickyGamepad1;
     private Looper looper;
     private GlyphLift frontLift;
-
+    private Periscope periscope;
 
     @Override
     public void init() {
@@ -42,16 +43,20 @@ public class MainTeleOp extends OpMode {
         Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
         drive = new MecanumDrive(hardwareMap, subsystemTelemetry, new Pose2d(0, 0, 0));
+        frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
+        periscope = new Periscope(hardwareMap, subsystemTelemetry);
 
         looper = new Looper(20);
         frontLift.registerLoops(looper);
         drive.registerLoops(looper);
+        periscope.registerLoops(looper);
         looper.addLoop((timestamp, dt) -> allTelemetry.update());
         looper.start();
 
         frontLift.zeroLift();
+
+        periscope.extend();
     }
 
     @Override

@@ -17,7 +17,9 @@ import java.io.File;
 public class LoggingUtil {
     public static File getLogRoot(OpMode opMode) {
         String dirName = opMode.hardwareMap.appContext.getResources().getString(R.string.log_root);
-        return new File(Environment.getExternalStorageDirectory(), dirName);
+        File dir = new File(Environment.getExternalStorageDirectory(), dirName);
+        dir.mkdirs();
+        return dir;
     }
 
     public static File getLogFile(OpMode opMode, OpModeConfiguration configuration) {
@@ -28,7 +30,7 @@ public class LoggingUtil {
         } else {
             filenameSuffix = matchType + "-" + configuration.getMatchNumber();
         }
-        String filename = opMode.getClass().getSimpleName() + "-" + filenameSuffix;
+        String filename = opMode.getClass().getSimpleName() + "-" + filenameSuffix + ".csv";
         return new File(getLogRoot(opMode), filename);
     }
 

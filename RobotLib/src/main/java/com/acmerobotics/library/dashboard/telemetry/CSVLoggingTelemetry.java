@@ -26,7 +26,6 @@ public class CSVLoggingTelemetry implements Telemetry {
     public CSVLoggingTelemetry(File file) {
         map = new LinkedHashMap<>();
         autoClear = true;
-        file.mkdirs();
         try {
             printStream = new PrintStream(file);
         } catch (IOException e) {
