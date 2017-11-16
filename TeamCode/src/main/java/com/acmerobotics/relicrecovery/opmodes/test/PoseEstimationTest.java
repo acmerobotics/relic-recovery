@@ -7,6 +7,7 @@ import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -16,6 +17,7 @@ import java.util.Locale;
  * Created by ryanbrott on 10/28/17.
  */
 
+@Disabled
 @TeleOp(name = "Pose Estimation Test", group = "test")
 public class PoseEstimationTest extends LinearOpMode {
     private Looper looper;

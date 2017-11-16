@@ -3,6 +3,9 @@ package com.acmerobotics.library.dashboard.telemetry;
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,12 +21,17 @@ public class CSVLoggingTelemetry implements Telemetry {
     private Map<String, String> map;
     private boolean autoClear;
     private List<String> header;
-    private DataFile file;
+    private PrintStream printStream;
 
-    public CSVLoggingTelemetry(String filename) {
+    public CSVLoggingTelemetry(File file) {
         map = new LinkedHashMap<>();
         autoClear = true;
-        file = new DataFile(filename);
+        file.mkdirs();
+        try {
+            printStream = new PrintStream(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -83,19 +91,20 @@ public class CSVLoggingTelemetry implements Telemetry {
                 headerBuilder.append(entry.getValue());
                 headerBuilder.append(",");
             }
-            headerBuilder.setCharAt(headerBuilder.length() - 1, '\n');
-            file.write(headerBuilder.toString());
+            headerBuilder.deleteCharAt(headerBuilder.length() - 1);
+            printStream.println(headerBuilder);
         }
         StringBuilder valueBuilder = new StringBuilder();
         for (String key : header) {
             valueBuilder.append(map.get(key));
             valueBuilder.append(",");
         }
-        valueBuilder.setCharAt(valueBuilder.length() - 1, '\n');
-        file.write(valueBuilder.toString());
+        valueBuilder.deleteCharAt(valueBuilder.length() - 1);
+        printStream.println(valueBuilder.toString());
         if (autoClear) {
             clear();
         }
+        printStream.flush();
         return true;
     }
 
@@ -157,5 +166,12 @@ public class CSVLoggingTelemetry implements Telemetry {
     @Override
     public Log log() {
         return null;
+    }
+
+    public void close() {
+        if (printStream != null) {
+            printStream.close();
+            printStream = null;
+        }
     }
 }

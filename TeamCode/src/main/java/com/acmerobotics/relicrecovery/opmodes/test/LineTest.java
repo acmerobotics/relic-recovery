@@ -8,6 +8,7 @@ import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.Arrays;
  * Created by ryanbrott on 11/7/17.
  */
 
+@Disabled
 @Autonomous(name = "Line Test", group = "test")
 public class LineTest extends LinearOpMode {
     private RobotDashboard dashboard;

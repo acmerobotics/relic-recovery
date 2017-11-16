@@ -1,16 +1,20 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
+import com.acmerobotics.library.configuration.OpModeConfiguration;
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.mech.GlyphLift;
+import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import static java.lang.Thread.sleep;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Created by ryanbrott on 11/5/17.
@@ -19,7 +23,7 @@ import static java.lang.Thread.sleep;
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
     private MecanumDrive drive;
-    private boolean fieldCentric, halfSpeed;
+    private boolean halfSpeed;
     private StickyGamepad stickyGamepad1;
     private Looper looper;
     private GlyphLift frontLift;
@@ -27,19 +31,24 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void init() {
-        telemetry = new MultipleTelemetry(telemetry, RobotDashboard.getInstance().getTelemetry());
         stickyGamepad1 = new StickyGamepad(gamepad1);
 
-        frontLift = new GlyphLift(hardwareMap, telemetry, GlyphLift.Side.FRONT);
-        drive = new MecanumDrive(hardwareMap, telemetry, new Pose2d(0, 0, 0));
+        OpModeConfiguration configuration = new OpModeConfiguration(hardwareMap.appContext);
+
+        RobotDashboard dashboard = RobotDashboard.getInstance();
+
+        CSVLoggingTelemetry loggingTelemetry = new CSVLoggingTelemetry(LoggingUtil.getLogFile(this, configuration));
+        Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
+        Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
+        drive = new MecanumDrive(hardwareMap, subsystemTelemetry, new Pose2d(0, 0, 0));
 
         looper = new Looper(20);
-        looper.addLoop((timestamp, dt) -> {
-            telemetry.update();
-        });
-
         frontLift.registerLoops(looper);
         drive.registerLoops(looper);
+        looper.addLoop((timestamp, dt) -> allTelemetry.update());
         looper.start();
 
         frontLift.zeroLift();
@@ -47,19 +56,9 @@ public class MainTeleOp extends OpMode {
 
     @Override
     public void loop() {
-        try {
-            sleep(20);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         stickyGamepad1.update();
 
-        if (stickyGamepad1.a) {
-            fieldCentric = !fieldCentric;
-        }
-
-        if (stickyGamepad1.y) {
+        if (stickyGamepad1.b) {
             halfSpeed = !halfSpeed;
         }
 
@@ -94,13 +93,14 @@ public class MainTeleOp extends OpMode {
         double x = -gamepad1.left_stick_y;
         double y = -gamepad1.left_stick_x;
         double omega = gamepad1.right_stick_x / 4;
-        double heading = drive.getHeading();
 
         if (halfSpeed) {
             x *= 0.5;
             y *= 0.5;
             omega *= 0.5;
         }
+
+        drive.setVelocity(new Vector2d(x, y), omega);
     }
 
     @Override

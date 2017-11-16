@@ -2,7 +2,7 @@
     <string name="app_name">RobotLib</string>
     <string name="request_permission">This sample needs camera permission.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
-    <string name="files_directory">ACME</string>
+    <string name="log_root">ACME</string>
     <string name="opmode_configuration_title">OpMode Configuration</string>
     <string name="alliance_color_text">Alliance Color</string>
     <string name="delay_text">Delay</string>

@@ -44,6 +44,8 @@ public class MecanumDrive implements Loop {
         AUTO_BALANCE
     }
 
+    public static final String[] MOTOR_NAMES = {"frontLeft", "rearLeft", "rearRight", "frontRight"};
+
     public static final double WHEELBASE_WIDTH = 18;
     public static final double WHEELBASE_HEIGHT = 18;
 
@@ -88,27 +90,19 @@ public class MecanumDrive implements Loop {
     private Canvas fieldOverlay;
 
     public MecanumDrive(HardwareMap map) {
-        this(map, null, new Pose2d(0, 0, 0));
+        this(map, null);
     }
 
-    /**
-     * construct drive with default configuration names
-     * @param map hardware map
-     */
-    public MecanumDrive(HardwareMap map, Telemetry telemetry, Pose2d initialPose) {
-        this(map, telemetry, new String[]{"frontLeft", "rearLeft", "rearRight", "frontRight"}, initialPose);
+    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
+        this(map, telemetry, new Pose2d(0, 0, 0));
     }
 
     /**
      * construct drive with configuration names other than the default
      * @param map hardware map
-     * @param names names of the motors in the hardware mapping
+     * @param initialPose initial pose
      */
-    public MecanumDrive(HardwareMap map, Telemetry telemetry, String[] names, Pose2d initialPose) {
-        if (names.length != 4) {
-            throw new IllegalArgumentException("must be four for motors");
-        }
-
+    public MecanumDrive(HardwareMap map, Telemetry telemetry, Pose2d initialPose) {
         this.telemetry = telemetry;
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
@@ -122,7 +116,7 @@ public class MecanumDrive implements Loop {
         offsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
-            motors[i] = map.dcMotor.get(names[i]);
+            motors[i] = map.dcMotor.get(MOTOR_NAMES[i]);
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
@@ -368,16 +362,15 @@ public class MecanumDrive implements Loop {
         Pose2d estimatedPose = poseEstimator.getPose();
 
         if (telemetry != null) {
-            telemetry.addData("timestamp", timestamp);
-            telemetry.addData("mode", mode);
+            telemetry.addData("driveMode", mode);
 
             telemetry.addData("estimatedX", estimatedPose.x());
             telemetry.addData("estimatedY", estimatedPose.y());
             telemetry.addData("heading", estimatedPose.heading());
 
             for (int i = 0; i < 4; i++) {
-                telemetry.addData("power" + i, powers[i]);
-                telemetry.addData("pos" + i, getPosition(i));
+                telemetry.addData("drivePower" + i, powers[i]);
+                telemetry.addData("drivePosition" + i, getPosition(i));
             }
 
             telemetry.addData("pathHeadingError", pathFollower.getHeadingError());
@@ -411,7 +404,5 @@ public class MecanumDrive implements Loop {
             estimatedPose.x() + robotRadius * Math.cos(estimatedPose.heading()),
             estimatedPose.y() + robotRadius * Math.sin(estimatedPose.heading()));
         fieldOverlay.strokeCircle(estimatedPose.x(), estimatedPose.y(), robotRadius);
-
-        RobotDashboard.getInstance().drawOverlay();
     }
 }

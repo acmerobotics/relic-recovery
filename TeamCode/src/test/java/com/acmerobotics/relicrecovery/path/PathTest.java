@@ -1,10 +1,7 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.library.configuration.BalancingStone;
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 
-import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -50,10 +47,5 @@ public class PathTest {
         ));
 
         assertEquals(expectedSegments, path.getSegments());
-    }
-
-    @Test
-    public void testFarRedPath() {
-        System.out.println(AutoPaths.makePathToCryptobox(BalancingStone.FAR_RED, RelicRecoveryVuMark.CENTER));
     }
 }
