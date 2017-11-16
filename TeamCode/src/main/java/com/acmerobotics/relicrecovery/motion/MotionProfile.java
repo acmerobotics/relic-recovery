@@ -74,7 +74,7 @@ public class MotionProfile {
      */
     public MotionState get(double t) {
         for (MotionSegment segment: segments) {
-            if(segment.start().t <= t && t <= segment.end().t) {
+            if (t <= segment.end().t) {
                 return segment.get(t);
             }
         }

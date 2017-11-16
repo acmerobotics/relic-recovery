@@ -73,25 +73,30 @@ public class MecanumDrive implements Loop {
     /* inputs are pitch and roll, respectively */
     private PIDController balanceAxialController, balanceLateralController;
 
+    private PIDController maintainHeadingController;
+    private boolean maintainHeading;
+    private double targetHeading;
+
     private Mode mode = Mode.OPEN_LOOP;
     private Mode lastMode;
 
     private double[] powers, targetPowers;
-    private Vector2d lastVel = new Vector2d(0, 0);
+    private Vector2d targetVel = new Vector2d(0, 0);
+    private double targetOmega = 0;
 
     private Telemetry telemetry;
     private Canvas fieldOverlay;
 
     public MecanumDrive(HardwareMap map) {
-        this(map, null);
+        this(map, null, new Pose2d(0, 0, 0));
     }
 
     /**
      * construct drive with default configuration names
      * @param map hardware map
      */
-    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
-        this(map, telemetry, new String[]{"frontLeft", "rearLeft", "rearRight", "frontRight"});
+    public MecanumDrive(HardwareMap map, Telemetry telemetry, Pose2d initialPose) {
+        this(map, telemetry, new String[]{"frontLeft", "rearLeft", "rearRight", "frontRight"}, initialPose);
     }
 
     /**
@@ -99,7 +104,7 @@ public class MecanumDrive implements Loop {
      * @param map hardware map
      * @param names names of the motors in the hardware mapping
      */
-    public MecanumDrive(HardwareMap map, Telemetry telemetry, String[] names) {
+    public MecanumDrive(HardwareMap map, Telemetry telemetry, String[] names, Pose2d initialPose) {
         if (names.length != 4) {
             throw new IllegalArgumentException("must be four for motors");
         }
@@ -111,8 +116,6 @@ public class MecanumDrive implements Loop {
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
-
-        resetHeading();
 
         powers = new double[4];
         targetPowers = new double[4];
@@ -127,8 +130,8 @@ public class MecanumDrive implements Loop {
         motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        poseEstimator = new PoseEstimator(this, new Pose2d(0, 0));
-        pathFollower = new PathFollower(this, telemetry, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+        poseEstimator = new PoseEstimator(this, initialPose);
+        pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
         balanceAxialController.setOutputBounds(-1, 1);
@@ -138,7 +141,11 @@ public class MecanumDrive implements Loop {
         balanceLateralController.setOutputBounds(-1, 1);
         balanceLateralController.setSetpoint(0);
 
+        maintainHeadingController = new PIDController(DriveConstants.MAINTAIN_HEADING_COEFFS);
+
         resetEncoders();
+
+        setHeading(initialPose.heading());
     }
 
     private void setMode(Mode mode) {
@@ -158,6 +165,18 @@ public class MecanumDrive implements Loop {
         headingOffset = -getRawHeading() + heading;
     }
 
+    public void setVelocity(Vector2d vel, double omega, boolean ramp) {
+        if (vel.equals(targetVel) && Math.abs(omega - targetOmega) < Vector2d.EPSILON) {
+            return;
+        }
+        internalSetVelocity(vel, omega);
+        setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
+    }
+
+    public void setVelocity(Vector2d vel, double omega) {
+        setVelocity(vel, omega, false);
+    }
+
     /**
      * not as pretty but the exactly same result as the other version
      * [W] is wheel rotations
@@ -172,18 +191,6 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
-    public void setVelocity(Vector2d vel, double omega, boolean ramp) {
-        if (vel.equals(lastVel)) {
-            return;
-        }
-        internalSetVelocity(vel, omega);
-        setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
-    }
-
-    public void setVelocity(Vector2d vel, double omega) {
-        setVelocity(vel, omega, false);
-    }
-
     void internalSetVelocity(Vector2d vel, double omega) {
         targetPowers[0] = vel.x() - vel.y() - K * omega;
         targetPowers[1] = vel.x() + vel.y() - K * omega;
@@ -196,8 +203,6 @@ public class MecanumDrive implements Loop {
         for (int i = 0; i < 4; i++) {
             targetPowers[i] /= max;
         }
-
-        lastVel = vel;
     }
 
     /**
@@ -375,18 +380,40 @@ public class MecanumDrive implements Loop {
                 telemetry.addData("pos" + i, getPosition(i));
             }
 
+            telemetry.addData("pathHeadingError", pathFollower.getHeadingError());
+            telemetry.addData("pathHeadingUpdate", pathFollower.getHeadingUpdate());
+
+            telemetry.addData("pathAxialError", pathFollower.getAxialError());
+            telemetry.addData("pathAxialUpdate", pathFollower.getAxialUpdate());
+
+            telemetry.addData("pathLateralError", pathFollower.getLateralError());
+            telemetry.addData("pathLateralUpdate", pathFollower.getLateralUpdate());
+
             telemetry.update();
         }
 
         double robotRadius = 9;
-        fieldOverlay.setStroke("blue");
         fieldOverlay.setStrokeWidth(4);
+
+        Pose2d pathPose = pathFollower.getPose();
+        if (pathPose != null) {
+            fieldOverlay.setStroke("red");
+            fieldOverlay.strokeLine(
+                    pathPose.x() + 0.5 * robotRadius * Math.cos(pathPose.heading()),
+                    pathPose.y() + 0.5 * robotRadius * Math.sin(pathPose.heading()),
+                    pathPose.x() + robotRadius * Math.cos(pathPose.heading()),
+                    pathPose.y() + robotRadius * Math.sin(pathPose.heading()));
+            fieldOverlay.strokeCircle(pathPose.x(), pathPose.y(), robotRadius);
+        }
+
+        fieldOverlay.setStroke("blue");
         fieldOverlay.strokeLine(
             estimatedPose.x() + 0.5 * robotRadius * Math.cos(estimatedPose.heading()),
             estimatedPose.y() + 0.5 * robotRadius * Math.sin(estimatedPose.heading()),
             estimatedPose.x() + robotRadius * Math.cos(estimatedPose.heading()),
             estimatedPose.y() + robotRadius * Math.sin(estimatedPose.heading()));
         fieldOverlay.strokeCircle(estimatedPose.x(), estimatedPose.y(), robotRadius);
+
         RobotDashboard.getInstance().drawOverlay();
     }
 }

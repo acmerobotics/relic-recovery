@@ -21,6 +21,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 
 import java.util.Arrays;
 
@@ -50,7 +53,10 @@ public class Auto extends LinearOpMode {
 //                new CSVLoggingTelemetry(new File(DataFile.getStorageDir(),
 //                        opModeDir + File.separator + "MecanumDrive.csv").getPath())));
 
-        drive = new MecanumDrive(hardwareMap, new MultipleTelemetry(dashboard.getTelemetry()));
+        BalancingStone balancingStone = configuration.getBalancingStone();
+        Pose2d initialPose = balancingStone.getPose();
+
+        drive = new MecanumDrive(hardwareMap, new MultipleTelemetry(dashboard.getTelemetry()), initialPose);
 
 //        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
@@ -71,34 +77,42 @@ public class Auto extends LinearOpMode {
         camera.addTracker(new FpsTracker());
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
 
+        VuforiaLocalizer vuforia = camera.getVuforia();
+        VuforiaTrackables relicTrackables = vuforia.loadTrackablesFromAsset("RelicVuMark");
+        VuforiaTrackable relicVuMark = relicTrackables.get(0);
+        relicVuMark.setName("relicVuMark");
+
+        relicTrackables.activate();
+
         AllianceColor allianceColor = configuration.getAllianceColor();
-
-        BalancingStone balancingStone = configuration.getBalancingStone();
-        Pose2d balancingStonePose = balancingStone.getPose().copy();
-        drive.setEstimatedPose(balancingStonePose);
-        drive.setHeading(balancingStonePose.heading());
-
-        looper.start();
 
         String autoTransition = configuration.getAutoTransition();
         if (!autoTransition.equals(OpModeConfiguration.NO_AUTO_TRANSITION)) {
             AutoTransitioner.transitionOnStop(this, autoTransition);
         }
 
+        looper.start();
+
         waitForStart();
 
         sleep(configuration.getDelay() * 1000);
 
-        while (opModeIsActive() && jewelTracker.getLeftColor() == JewelColor.UNKNOWN) {
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
+        while (opModeIsActive() && (jewelTracker.getLeftColor() == JewelColor.UNKNOWN
+            || vuMark == RelicRecoveryVuMark.UNKNOWN)) {
+            vuMark = RelicRecoveryVuMark.from(relicVuMark);
+
             sleep(10);
         }
+
+
 
         boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
         double turnAngle = turnLeft ? Math.toRadians(30) : -Math.toRadians(30);
         Path jewelTurn = new Path(Arrays.asList(
-                new PointTurn(balancingStonePose, turnAngle),
-                new PointTurn(new Pose2d(balancingStonePose.pos(),
-                        Angle.norm(balancingStonePose.heading() + turnAngle)), -turnAngle)
+                new PointTurn(initialPose, turnAngle),
+                new PointTurn(new Pose2d(initialPose.pos(),
+                        Angle.norm(initialPose.heading() + turnAngle)), -turnAngle)
         ));
 
         drive.followPath(jewelTurn);
@@ -106,7 +120,7 @@ public class Auto extends LinearOpMode {
             sleep(10);
         }
 
-        drive.followPath(AutoPaths.makePathToCryptobox(balancingStone, RelicRecoveryVuMark.CENTER));
+        drive.followPath(AutoPaths.makePathToCryptobox(balancingStone, vuMark));
         while (opModeIsActive() && drive.isFollowingPath()) {
             sleep(10);
         }

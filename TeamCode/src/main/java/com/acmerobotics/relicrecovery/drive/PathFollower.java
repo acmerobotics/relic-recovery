@@ -1,7 +1,5 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -11,8 +9,6 @@ import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * @author Ryan
@@ -26,12 +22,15 @@ public class PathFollower {
     private PIDController lateralController;
     private Path path;
     private long pathStartTimestamp;
-    private Telemetry telemetry;
 
-    public PathFollower(MecanumDrive drive, Telemetry telemetry, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDCoefficients lateralCoeff) {
+    private double headingError, headingUpdate;
+    private double axialError, axialUpdate;
+    private double lateralError, lateralUpdate;
+
+    private Pose2d pose, poseVelocity, poseAcceleration;
+
+    public PathFollower(MecanumDrive drive, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDCoefficients lateralCoeff) {
         this.drive = drive;
-
-        this.telemetry = telemetry;
 
         headingController = new PIDFController(headingCoeff);
         headingController.setInputBounds(-Math.PI, Math.PI);
@@ -42,6 +41,42 @@ public class PathFollower {
 
         lateralController = new PIDController(lateralCoeff);
         lateralController.setOutputBounds(-1, 1);
+    }
+
+    public double getHeadingError() {
+        return headingError;
+    }
+
+    public double getHeadingUpdate() {
+        return headingUpdate;
+    }
+
+    public double getAxialError() {
+        return axialError;
+    }
+
+    public double getAxialUpdate() {
+        return axialUpdate;
+    }
+
+    public double getLateralError() {
+        return lateralError;
+    }
+
+    public double getLateralUpdate() {
+        return lateralUpdate;
+    }
+
+    public Pose2d getPose() {
+        return pose;
+    }
+
+    public Pose2d getPoseVelocity() {
+        return poseVelocity;
+    }
+
+    public Pose2d getPoseAcceleration() {
+        return poseAcceleration;
     }
 
     public void follow(Path path) {
@@ -70,55 +105,29 @@ public class PathFollower {
             return false;
         }
 
-        Pose2d pose = path.getPose(time);
-        Pose2d poseVelocity = path.getPoseVelocity(time);
-        Pose2d poseAcceleration = path.getPoseAcceleration(time);
+        pose = path.getPose(time);
+        poseVelocity = path.getPoseVelocity(time);
+        poseAcceleration = path.getPoseAcceleration(time);
 
         MotionState headingState = new MotionState(pose.heading(), poseVelocity.heading(), poseAcceleration.heading(), 0, 0);
         headingController.setSetpoint(headingState);
-        double headingError = headingController.getPositionError(robotPose.heading());
-        double headingUpdate = headingController.update(headingError, time);
+        headingError = headingController.getPositionError(robotPose.heading());
+        headingUpdate = headingController.update(headingError, time);
 
         Vector2d fieldError = robotPose.pos().added(pose.pos().negated());
         Vector2d robotError = fieldError.rotated(-robotPose.heading());
 
-        double axialError = robotError.x();
-        double lateralError = robotError.y();
+        axialError = robotError.x();
+        lateralError = robotError.y();
 
         MotionState axialState = new MotionState(pose.x(), poseVelocity.x(), poseAcceleration.x(), 0, 0);
         axialController.setSetpoint(axialState);
-        double axialUpdate = axialController.update(axialError, time);
+        axialUpdate = axialController.update(axialError, time);
 
         lateralController.setSetpoint(pose.y());
-        double lateralUpdate = lateralController.update(lateralError, time);
+        lateralUpdate = lateralController.update(lateralError, time);
 
         drive.internalSetVelocity(new Vector2d(axialUpdate, lateralUpdate), headingUpdate);
-
-        if (telemetry != null) {
-            telemetry.addData("headingError", headingError);
-            telemetry.addData("headingUpdate", headingUpdate);
-
-            telemetry.addData("fieldError", fieldError);
-            telemetry.addData("robotError", robotError);
-
-            telemetry.addData("axialError", axialError);
-            telemetry.addData("lateralError", lateralError);
-
-            telemetry.addData("axialUpdate", axialUpdate);
-            telemetry.addData("lateralUpdate", lateralUpdate);
-
-            RobotDashboard dashboard = RobotDashboard.getInstance();
-            Canvas fieldOverlay = dashboard.getFieldOverlay();
-            double robotRadius = 9;
-            fieldOverlay.setStroke("red");
-            fieldOverlay.setStrokeWidth(4);
-            fieldOverlay.strokeLine(
-                    pose.x() + 0.5 * robotRadius * Math.cos(pose.heading()),
-                    pose.y() + 0.5 * robotRadius * Math.sin(pose.heading()),
-                    pose.x() + robotRadius * Math.cos(pose.heading()),
-                    pose.y() + robotRadius * Math.sin(pose.heading()));
-            fieldOverlay.strokeCircle(pose.x(), pose.y(), robotRadius);
-        }
 
         return false;
     }

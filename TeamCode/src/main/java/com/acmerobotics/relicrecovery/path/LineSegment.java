@@ -1,6 +1,5 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
@@ -18,18 +17,18 @@ public class LineSegment implements PathSegment {
     private Pose2d start, end;
     private Vector2d seg;
     private MotionProfile profile;
+    private boolean negated;
 
     public LineSegment(Pose2d start, Pose2d end) {
+        this(start, end, false);
+    }
+
+    public LineSegment(Pose2d start, Pose2d end, boolean negated) {
         this.start = start;
         this.end = end;
         this.seg = end.pos().added(start.pos().negated());
-        double lineHeading = Math.atan2(seg.y(), seg.x());
-        MotionGoal goal;
-        if (Math.abs(Angle.norm(lineHeading - start.heading())) < Vector2d.EPSILON) {
-            goal = new MotionGoal(length(), 0);
-        } else {
-            goal = new MotionGoal(-length(), 0);
-        }
+        this.negated = negated;
+        MotionGoal goal = new MotionGoal(length(), 0);
         MotionState startState = new MotionState(0, 0, 0, 0, 0);
         this.profile = MotionProfileGenerator.generateProfile(startState, goal, DriveConstants.AXIAL_CONSTRAINTS);
     }
@@ -72,19 +71,18 @@ public class LineSegment implements PathSegment {
     @Override
     public Pose2d getPose(double time) {
         double distance = profile.get(time).x;
-        Pose2d relativePose = new Pose2d(distance * Math.cos(start.heading()), distance * Math.sin(start.heading()));
-        return relativePose.added(start);
+        return start.added(new Pose2d(seg.multiplied(distance / length()), 0));
     }
 
     @Override
     public Pose2d getPoseVelocity(double time) {
         double velocity = profile.get(time).v;
-        return new Pose2d(velocity * Math.cos(start.heading()), velocity * Math.sin(start.heading()));
+        return new Pose2d((negated ? -1 : 1) * velocity, 0, 0);
     }
 
     @Override
     public Pose2d getPoseAcceleration(double time) {
         double acceleration = profile.get(time).a;
-        return new Pose2d(acceleration * Math.cos(start.heading()), acceleration * Math.sin(start.heading()));
+        return new Pose2d((negated ? -1 : 1) * acceleration, 0, 0);
     }
 }

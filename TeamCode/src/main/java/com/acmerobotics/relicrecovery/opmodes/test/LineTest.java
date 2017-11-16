@@ -34,7 +34,7 @@ public class LineTest extends LinearOpMode {
         fieldOverlay = dashboard.getFieldOverlay();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
+        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(0, 0, 0));
 
         looper = new Looper(20);
         drive.registerLoops(looper);
