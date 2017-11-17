@@ -70,6 +70,37 @@ public class AutoPaths {
         return new Path(Collections.emptyList());
     }
 
+    public static Path makeCryptoboxRetreat(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+        int vuMarkInt = vuMarkMap.get(vuMark);
+        switch (stone) {
+            case NEAR_BLUE: {
+                double cryptoboxX = 12 - 7.5 * vuMarkInt;
+                return new Path(Arrays.asList(
+                        new LineSegment(new Pose2d(cryptoboxX, -60, Math.PI / 2), new Pose2d(cryptoboxX, -54, Math.PI / 2))
+                ));
+            }
+            case FAR_BLUE: {
+                double cryptoboxY = -36 + 7.5 * vuMarkInt;
+                return new Path(Arrays.asList(
+                        new LineSegment(new Pose2d(-60, cryptoboxY, 0), new Pose2d(-54, cryptoboxY, 0))
+                ));
+            }
+            case FAR_RED: {
+                double cryptoboxY = 36 + 7.5 * vuMarkInt;
+                return new Path(Arrays.asList(
+                        new LineSegment(new Pose2d(-60, cryptoboxY, 0), new Pose2d(-54, cryptoboxY, 0))
+                ));
+            }
+            case NEAR_RED: {
+                double cryptoboxX = 12 - 7.5 * vuMarkInt;
+                return new Path(Arrays.asList(
+                        new LineSegment(new Pose2d(cryptoboxX, 60, -Math.PI / 2), new Pose2d(cryptoboxX, 54, -Math.PI / 2))
+                ));
+            }
+        }
+        return new Path(Collections.emptyList());
+    }
+
     private static Path makePathToCryptoboxOld(BalancingStone stone, RelicRecoveryVuMark vuMark) {
         switch (stone) {
             case NEAR_BLUE:
