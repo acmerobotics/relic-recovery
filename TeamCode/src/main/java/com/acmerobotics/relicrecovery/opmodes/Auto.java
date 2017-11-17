@@ -15,6 +15,7 @@ import com.acmerobotics.relicrecovery.mech.JewelSlapper;
 import com.acmerobotics.relicrecovery.mech.Periscope;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;
+import com.acmerobotics.relicrecovery.path.WaitSegment;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
@@ -138,7 +139,9 @@ public class Auto extends LinearOpMode {
 
         sleep(500);
 
-        drive.followPath(AutoPaths.makePathToCryptobox(balancingStone, vuMark));
+        Path cryptoPath = AutoPaths.makePathToCryptobox(balancingStone, vuMark);
+        cryptoPath.addSegment(new WaitSegment(cryptoPath.getPose(cryptoPath.duration()), 1));
+        drive.followPath(cryptoPath);
         while (opModeIsActive() && drive.isFollowingPath()) {
             sleep(10);
         }

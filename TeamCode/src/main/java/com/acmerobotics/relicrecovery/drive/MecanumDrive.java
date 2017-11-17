@@ -195,7 +195,7 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
-    private void internalSetVelocity(Vector2d vel, double omega) {
+    void internalSetVelocity(Vector2d vel, double omega) {
         targetPowers[0] = vel.x() - vel.y() - K * omega;
         targetPowers[1] = vel.x() + vel.y() - K * omega;
         targetPowers[2] = vel.x() - vel.y() + K * omega;
