@@ -131,9 +131,7 @@ public class Auto extends LinearOpMode {
         ));
 
         drive.followPath(jewelTurn);
-        while (opModeIsActive() && drive.isFollowingPath()) {
-            sleep(10);
-        }
+        waitForPathFollower();
 
         jewelSlapper.jewelSlapperUp();
 
@@ -142,16 +140,26 @@ public class Auto extends LinearOpMode {
         Path cryptoPath = AutoPaths.makePathToCryptobox(balancingStone, vuMark);
         cryptoPath.addSegment(new WaitSegment(cryptoPath.getPose(cryptoPath.duration()), 1));
         drive.followPath(cryptoPath);
-        while (opModeIsActive() && drive.isFollowingPath()) {
-            sleep(10);
-        }
+        waitForPathFollower();
 
         glyphGripper.release();
+
+        sleep(500);
+
+        Path cryptoRetreat = AutoPaths.makeCryptoboxRetreat(balancingStone, vuMark);
+        drive.followPath(cryptoPath);
+        waitForPathFollower();
 
         looper.terminate();
         camera.close();
         loggingTelemetry.close();
 
         MainTeleOp.initialPose = drive.getEstimatedPose();
+    }
+
+    private void waitForPathFollower() {
+        while (opModeIsActive() && drive.isFollowingPath()) {
+            sleep(10);
+        }
     }
 }
