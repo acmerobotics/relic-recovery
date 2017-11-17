@@ -114,6 +114,14 @@ public class GlyphLift implements Loop {
         intakeMode = IntakeMode.OPEN_LOOP;
     }
 
+    public LiftMode getLiftMode() {
+        return liftMode;
+    }
+
+    public IntakeMode getIntakeMode() {
+        return intakeMode;
+    }
+
     private int getRawEncoderPosition() {
         return leadScrewMotor.getCurrentPosition();
     }
@@ -147,7 +155,7 @@ public class GlyphLift implements Loop {
         this.intakeMode = IntakeMode.OPEN_LOOP;
     }
 
-    public double getBallScrewHeight() {
+    public double getLeadScrewHeight() {
         double ticks = getEncoderPosition();
         double revs = ticks / leadScrewMotor.getMotorType().getTicksPerRev();
         return revs / REV_PER_IN;
@@ -165,7 +173,7 @@ public class GlyphLift implements Loop {
             extendRack = false;
         }
 
-        MotionState start = new MotionState(getBallScrewHeight(), 0, 0, 0, 0);
+        MotionState start = new MotionState(getLeadScrewHeight(), 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(height, 0);
         profile = MotionProfileGenerator.generateProfile(start, goal, GLYPH_MOTION_CONSTRAINTS);
         profileStartTimestamp = System.currentTimeMillis();
@@ -196,14 +204,14 @@ public class GlyphLift implements Loop {
                 pinionServo.setPower(pinionPower);
                 break;
             case FOLLOW_PROFILE:
-                // ball screw
+                // lead screw
                 double time = (timestamp - profileStartTimestamp) / 1000.0;
                 if (time > profile.end().t) {
                     setLiftPower(0, 0);
                 } else {
                     MotionState state = profile.get(time);
                     controller.setSetpoint(state);
-                    double actualHeight = getBallScrewHeight();
+                    double actualHeight = getLeadScrewHeight();
                     double heightError = controller.getPositionError(actualHeight);
                     double heightUpdate = controller.update(heightError);
                     leadScrewMotor.setPower(heightUpdate);
@@ -218,13 +226,13 @@ public class GlyphLift implements Loop {
                 }
                 break;
             case ZERO:
-                boolean ballScrewZeroed = leadScrewTouch.getState();
+                boolean leadScrewZeroed = leadScrewTouch.getState();
                 boolean rackZeroed = lowerRackTouch.getState();
-                if (ballScrewZeroed && rackZeroed) {
+                if (leadScrewZeroed && rackZeroed) {
                     resetEncoder();
                     liftMode = LiftMode.OPEN_LOOP;
                 }
-                leadScrewMotor.setPower(ballScrewZeroed ? 0 : -ZERO_LEAD_SCREW_POWER);
+                leadScrewMotor.setPower(leadScrewZeroed ? 0 : -ZERO_LEAD_SCREW_POWER);
                 pinionServo.setPower(rackZeroed ? 0 : -PINION_POWER);
                 break;
         }
@@ -257,5 +265,6 @@ public class GlyphLift implements Loop {
         telemetry.addData("rightIntakePower", rightIntakePower);
 
         telemetry.addData("leadScrewPosition", getEncoderPosition());
+        telemetry.addData("intakeDistance", distanceSensor.getDistance(DistanceUnit.CM));
     }
 }

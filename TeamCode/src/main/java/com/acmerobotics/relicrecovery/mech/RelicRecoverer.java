@@ -5,6 +5,8 @@ import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * @author kellyrm
  *
@@ -32,7 +34,9 @@ public class RelicRecoverer implements Loop{
     private PIDController extendController, offsetController;
     private DcMotor motorExtend, motorRetract;
 
-    public RelicRecoverer(HardwareMap map) {
+    private Telemetry telemetry;
+
+    public RelicRecoverer(HardwareMap map, Telemetry telemetry) {
         motorExtend = map.dcMotor.get("relicExtend");
         motorRetract = map.dcMotor.get("relicRetract");
         extension = 0;
@@ -87,5 +91,12 @@ public class RelicRecoverer implements Loop{
         double offsetCorrection = offsetController.update(getOffsetError());
         motorRetract.setPower(extendCorrection);
         motorExtend.setPower(extendCorrection + offsetCorrection);
+
+        if (telemetry != null) {
+            telemetry.addData("relicExtendError", getExtendError());
+            telemetry.addData("relicOffsetError", getOffsetError());
+            telemetry.addData("relicExtend", getExtension());
+            telemetry.addData("relicOffset", getOffset());
+        }
     }
 }

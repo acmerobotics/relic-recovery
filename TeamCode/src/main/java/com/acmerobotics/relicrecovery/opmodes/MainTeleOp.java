@@ -10,6 +10,7 @@ import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.mech.GlyphLift;
 import com.acmerobotics.relicrecovery.mech.Periscope;
+import com.acmerobotics.relicrecovery.mech.RelicRecoverer;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -23,16 +24,20 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
-    private MecanumDrive drive;
-    private boolean halfSpeed;
-    private StickyGamepad stickyGamepad1;
     private Looper looper;
+    private StickyGamepad stickyGamepad1, stickyGamepad2;
+
+    private MecanumDrive drive;
     private GlyphLift frontLift;
     private Periscope periscope;
+    private RelicRecoverer relicRecoverer;
+
+    private boolean halfSpeed, secondControllerGlyph = true;
 
     @Override
     public void init() {
         stickyGamepad1 = new StickyGamepad(gamepad1);
+        stickyGamepad2 = new StickyGamepad(gamepad2);
 
         OpModeConfiguration configuration = new OpModeConfiguration(hardwareMap.appContext);
 
@@ -46,58 +51,97 @@ public class MainTeleOp extends OpMode {
         drive = new MecanumDrive(hardwareMap, subsystemTelemetry, new Pose2d(0, 0, 0));
         frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
         periscope = new Periscope(hardwareMap, subsystemTelemetry);
+        relicRecoverer = new RelicRecoverer(hardwareMap, subsystemTelemetry);
 
         looper = new Looper(20);
         frontLift.registerLoops(looper);
         drive.registerLoops(looper);
         periscope.registerLoops(looper);
+        looper.addLoop(relicRecoverer); // TODO: fix this?
         looper.addLoop((timestamp, dt) -> allTelemetry.update());
         looper.start();
 
-        frontLift.zeroLift();
-
-        periscope.extend();
+//        frontLift.zeroLift();
+//
+//        periscope.extend();
     }
 
     @Override
     public void loop() {
         stickyGamepad1.update();
+        stickyGamepad2.update();
+
+        if (gamepad2.left_bumper && gamepad2.right_bumper) {
+            secondControllerGlyph = !secondControllerGlyph;
+        }
 
         if (stickyGamepad1.b) {
             halfSpeed = !halfSpeed;
         }
 
-        double leadScrewPower, pinionPower;
+        double x, y = 0, omega;
 
-        if (gamepad1.y) {
-            pinionPower = 1;
-        } else if (gamepad1.a) {
-            pinionPower = -1;
+        if (secondControllerGlyph) {
+            y = gamepad2.left_trigger - gamepad2.right_trigger;
+
+            if (gamepad2.dpad_up) {
+                frontLift.setLiftPower(1, 0);
+            } else if (gamepad2.dpad_down) {
+                frontLift.setLiftPower(-1, 0);
+            } else if (gamepad2.dpad_left) {
+                frontLift.setLiftPower(0, 1);
+            } else if (gamepad2.dpad_right) {
+                frontLift.setLiftPower(0, -1);
+            } else if (frontLift.getLiftMode() == GlyphLift.LiftMode.OPEN_LOOP) {
+                frontLift.setLiftPower(0, 0);
+            }
+
+//            if (stickyGamepad2.y) {
+//                frontLift.setHeight(0.5);
+//            } else if (stickyGamepad2.x) {
+//                frontLift.setHeight(6.5);
+//            } else if (stickyGamepad2.a) {
+//                frontLift.setHeight(12.5);
+//            } else if (stickyGamepad2.b) {
+//                frontLift.setHeight(18.5);
+//            }
+
+            if (gamepad2.left_bumper) {
+                frontLift.setIntakePower(-1, 1);
+            } else if (gamepad2.right_bumper) {
+                frontLift.intakeGlyph();
+            }
+
+            if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
+                frontLift.setIntakePower(-gamepad2.left_stick_y, -gamepad2.right_stick_y);
+            }
         } else {
-            pinionPower = 0;
-        }
+            if (gamepad2.dpad_up) {
+                relicRecoverer.setPosition(RelicRecoverer.Position.UP);
+            } else if (gamepad2.dpad_left || gamepad2.dpad_right) {
+                relicRecoverer.setPosition(RelicRecoverer.Position.CLOSED);
+            } else if (gamepad2.dpad_down) {
+                relicRecoverer.setPosition(RelicRecoverer.Position.OPEN);
+            }
 
-        if (gamepad1.dpad_up) {
-            leadScrewPower = 1;
-        } else if (gamepad1.dpad_down) {
-            leadScrewPower = -1;
-        } else {
-            leadScrewPower = 0;
+//            if (gamepad2.left_stick_x != 0 || gamepad2.right_stick_y) {
+//                relicRecoverer.setOffset(-game);
+//            }
         }
-
-        frontLift.setLiftPower(leadScrewPower, pinionPower);
 
         if (gamepad1.left_bumper) {
-            frontLift.setIntakePower(1, -0.5);
-        } else if (gamepad1.right_bumper) {
             frontLift.setIntakePower(-1, 1);
-        } else {
-            frontLift.setIntakePower(0, 0);
+        } else if (gamepad1.right_bumper) {
+            frontLift.intakeGlyph();
         }
 
-        double x = -gamepad1.left_stick_y;
-        double y = -gamepad1.left_stick_x;
-        double omega = gamepad1.right_stick_x / 4;
+        x = gamepad1.left_stick_y;
+
+        if (gamepad1.left_stick_x != 0) {
+            y = -gamepad1.left_stick_x;
+        }
+
+        omega = gamepad1.right_stick_x / 4;
 
         if (halfSpeed) {
             x *= 0.5;
@@ -105,7 +149,7 @@ public class MainTeleOp extends OpMode {
             omega *= 0.5;
         }
 
-        drive.setVelocity(new Vector2d(x, y), omega);
+        drive.setVelocity(new Vector2d(x, y), omega, true);
     }
 
     @Override

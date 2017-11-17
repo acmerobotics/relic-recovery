@@ -19,7 +19,7 @@ public class RelicRecovererTest extends OpMode{
 
     public void init() {
         telemetry = new MultipleTelemetry(RobotDashboard.getInstance().getTelemetry(), telemetry);
-        relicRecoverer = new RelicRecoverer(hardwareMap);
+        relicRecoverer = new RelicRecoverer(hardwareMap, telemetry);
         gamepad = new StickyGamepad(gamepad1);
     }
 

@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class JewelSlapper {
 
     public static final double JEWEL_SLAPPER_UP = 0;
-    public static final double JEWEL_SLAPPER_DOWN = .500;
+    public static final double JEWEL_SLAPPER_DOWN = 0.31;
 
     private Servo jewelSlapper;
     private boolean jewelSlapperActivated;

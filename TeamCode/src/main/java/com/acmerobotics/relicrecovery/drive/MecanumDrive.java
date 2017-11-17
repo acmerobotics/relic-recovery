@@ -160,9 +160,9 @@ public class MecanumDrive implements Loop {
     }
 
     public void setVelocity(Vector2d vel, double omega, boolean ramp) {
-        if (vel.equals(targetVel) && Math.abs(omega - targetOmega) < Vector2d.EPSILON) {
-            return;
-        }
+//        if (vel.equals(targetVel) && Math.abs(omega - targetOmega) < Vector2d.EPSILON) {
+//            return;
+//        }
         internalSetVelocity(vel, omega);
         setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
     }
