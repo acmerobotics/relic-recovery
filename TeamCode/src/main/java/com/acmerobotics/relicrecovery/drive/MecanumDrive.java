@@ -142,6 +142,18 @@ public class MecanumDrive implements Loop {
         setHeading(initialPose.heading());
     }
 
+    public void setMaintainHeading(boolean maintainHeading) {
+        this.maintainHeading = maintainHeading;
+        if (maintainHeading) {
+            this.targetHeading = getHeading();
+            this.maintainHeadingController.reset();
+        }
+    }
+
+    public boolean getMaintainHeading() {
+        return maintainHeading;
+    }
+
     private void setMode(Mode mode) {
         this.lastMode = this.mode;
         this.mode = mode;
@@ -160,10 +172,8 @@ public class MecanumDrive implements Loop {
     }
 
     public void setVelocity(Vector2d vel, double omega, boolean ramp) {
-//        if (vel.equals(targetVel) && Math.abs(omega - targetOmega) < Vector2d.EPSILON) {
-//            return;
-//        }
-        internalSetVelocity(vel, omega);
+        this.targetVel = vel;
+        this.targetOmega = omega;
         setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
     }
 
@@ -185,7 +195,7 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
-    void internalSetVelocity(Vector2d vel, double omega) {
+    private void internalSetVelocity(Vector2d vel, double omega) {
         targetPowers[0] = vel.x() - vel.y() - K * omega;
         targetPowers[1] = vel.x() + vel.y() - K * omega;
         targetPowers[2] = vel.x() - vel.y() + K * omega;
@@ -306,6 +316,31 @@ public class MecanumDrive implements Loop {
         // pose estimation
         poseEstimator.update(timestamp);
 
+        // maintain heading
+        double heading = getHeading();
+        double headingError = maintainHeadingController.getError(heading);
+        double headingUpdate = 0;
+        if (maintainHeading) {
+            if (Math.abs(targetOmega) > 0) {
+                targetHeading = heading;
+            } else {
+                headingUpdate = maintainHeadingController.update(headingError);
+                internalSetVelocity(targetVel, headingUpdate);
+            }
+        } else {
+            internalSetVelocity(targetVel, targetOmega);
+        }
+
+        // auto balance
+        Orientation angularOrientation = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
+        double pitch = angularOrientation.secondAngle;
+        double roll = angularOrientation.firstAngle;
+
+        double balanceAxialError = balanceAxialController.getError(pitch);
+        double balanceLateralError = balanceLateralController.getError(roll);
+
+        double balanceAxialUpdate = 0, balanceLateralUpdate = 0;
+
         switch (mode) {
             case OPEN_LOOP:
                 powers = targetPowers;
@@ -338,17 +373,10 @@ public class MecanumDrive implements Loop {
                 powers = targetPowers;
                 break;
             case AUTO_BALANCE:
-                Orientation angularOrientation = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
-                double pitch = angularOrientation.secondAngle;
-                double roll = angularOrientation.firstAngle;
+                balanceAxialUpdate = balanceAxialController.update(balanceAxialError);
+                balanceLateralUpdate = balanceLateralController.update(balanceLateralError);
 
-                double axialError = balanceAxialController.getError(pitch);
-                double lateralError = balanceLateralController.getError(roll);
-
-                double axialUpdate = balanceAxialController.update(axialError);
-                double lateralUpdate = balanceLateralController.update(lateralError);
-
-                internalSetVelocity(new Vector2d(axialUpdate, lateralUpdate), 0);
+                internalSetVelocity(new Vector2d(balanceAxialUpdate, balanceLateralUpdate), 0);
 
                 powers = targetPowers;
 
@@ -381,6 +409,15 @@ public class MecanumDrive implements Loop {
 
             telemetry.addData("pathLateralError", pathFollower.getLateralError());
             telemetry.addData("pathLateralUpdate", pathFollower.getLateralUpdate());
+
+            telemetry.addData("pitch", pitch);
+            telemetry.addData("roll", roll);
+
+            telemetry.addData("balanceAxialError", balanceAxialError);
+            telemetry.addData("balanceLateralError", balanceLateralError);
+
+            telemetry.addData("balanceAxialUpdate", balanceAxialUpdate);
+            telemetry.addData("balanceLateralUpdate", balanceLateralUpdate);
         }
 
         double robotRadius = 9;

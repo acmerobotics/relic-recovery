@@ -4,6 +4,7 @@ import com.acmerobotics.library.configuration.OpModeConfiguration;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
@@ -11,12 +12,16 @@ import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.mech.GlyphLift;
 import com.acmerobotics.relicrecovery.mech.Periscope;
 import com.acmerobotics.relicrecovery.mech.RelicRecoverer;
+import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.PointTurn;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.util.Arrays;
 
 /**
  * Created by ryanbrott on 11/5/17.
@@ -32,7 +37,7 @@ public class MainTeleOp extends OpMode {
     private Periscope periscope;
     private RelicRecoverer relicRecoverer;
 
-    private boolean halfSpeed, secondControllerGlyph = true;
+    private boolean halfSpeed, secondControllerGlyph = true, changingMode;
 
     @Override
     public void init() {
@@ -72,6 +77,15 @@ public class MainTeleOp extends OpMode {
         stickyGamepad2.update();
 
         if (gamepad2.left_bumper && gamepad2.right_bumper) {
+            if (!changingMode) {
+                secondControllerGlyph = !secondControllerGlyph;
+                changingMode = true;
+            }
+        } else {
+            changingMode = false;
+        }
+
+        if (gamepad2.left_bumper && gamepad2.right_bumper) {
             secondControllerGlyph = !secondControllerGlyph;
         }
 
@@ -82,7 +96,7 @@ public class MainTeleOp extends OpMode {
         double x, y = 0, omega;
 
         if (secondControllerGlyph) {
-            y = gamepad2.left_trigger - gamepad2.right_trigger;
+            y = (gamepad2.left_trigger - gamepad2.right_trigger) / 4;
 
             if (gamepad2.dpad_up) {
                 frontLift.setLiftPower(1, 0);
@@ -107,7 +121,7 @@ public class MainTeleOp extends OpMode {
 //            }
 
             if (gamepad2.left_bumper) {
-                frontLift.setIntakePower(-1, 1);
+                frontLift.setIntakePower(-1, -1);
             } else if (gamepad2.right_bumper) {
                 frontLift.intakeGlyph();
             }
@@ -123,14 +137,10 @@ public class MainTeleOp extends OpMode {
             } else if (gamepad2.dpad_down) {
                 relicRecoverer.setPosition(RelicRecoverer.Position.OPEN);
             }
-
-//            if (gamepad2.left_stick_x != 0 || gamepad2.right_stick_y) {
-//                relicRecoverer.setOffset(-game);
-//            }
         }
 
         if (gamepad1.left_bumper) {
-            frontLift.setIntakePower(-1, 1);
+            frontLift.setIntakePower(-1, -1);
         } else if (gamepad1.right_bumper) {
             frontLift.intakeGlyph();
         }
@@ -149,7 +159,31 @@ public class MainTeleOp extends OpMode {
             omega *= 0.5;
         }
 
-        drive.setVelocity(new Vector2d(x, y), omega, true);
+        double targetHeading = Double.NaN;
+        if (gamepad1.dpad_left) {
+            targetHeading = Math.PI / 2;
+        } else if (gamepad1.dpad_down) {
+            targetHeading = Math.PI;
+        } else if (gamepad1.dpad_right) {
+            targetHeading = -Math.PI / 2;
+        } else if (gamepad1.dpad_up) {
+            targetHeading = 0;
+        }
+
+        if (!Double.isNaN(targetHeading)) {
+            Pose2d robotPose = drive.getEstimatedPose();
+            double turnAngle = Angle.norm(targetHeading - robotPose.heading());
+            Path turn = new Path(Arrays.asList(
+                    new PointTurn(robotPose, turnAngle)
+            ));
+            drive.followPath(turn);
+        }
+
+        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
+            drive.setVelocity(new Vector2d(x, y), omega, true);
+        } else if (x != 0 && y != 0 && omega != 0){
+            drive.setVelocity(new Vector2d(x, y), omega, true);
+        }
     }
 
     @Override
