@@ -40,7 +40,6 @@ import java.util.Arrays;
 public class Auto extends LinearOpMode {
     public static final double JEWEL_TURN_ANGLE = Math.toRadians(30);
 
-    private RobotDashboard dashboard;
     private Looper looper;
 
     private MecanumDrive drive;
@@ -57,7 +56,7 @@ public class Auto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         configuration = new OpModeConfiguration(hardwareMap.appContext);
 
-        dashboard = RobotDashboard.getInstance();
+        RobotDashboard dashboard = RobotDashboard.getInstance();
 
         CSVLoggingTelemetry loggingTelemetry = new CSVLoggingTelemetry(LoggingUtil.getLogFile(this, configuration));
         Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
@@ -76,7 +75,10 @@ public class Auto extends LinearOpMode {
         drive.registerLoops(looper);
         periscope.registerLoops(looper);
 
-        looper.addLoop((timestamp, dt) -> allTelemetry.update());
+        looper.addLoop((timestamp, dt) -> {
+            allTelemetry.update();
+            dashboard.drawOverlay();
+        });
 
         glyphGripper.grip();
 
@@ -146,5 +148,7 @@ public class Auto extends LinearOpMode {
         looper.terminate();
         camera.close();
         loggingTelemetry.close();
+
+        MainTeleOp.initialPose = drive.getEstimatedPose();
     }
 }

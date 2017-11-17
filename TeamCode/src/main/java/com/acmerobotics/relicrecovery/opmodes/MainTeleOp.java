@@ -29,6 +29,8 @@ import java.util.Arrays;
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
+    public static Pose2d initialPose = new Pose2d(0, 0, 0);
+
     private Looper looper;
     private StickyGamepad stickyGamepad1, stickyGamepad2;
 
@@ -53,7 +55,7 @@ public class MainTeleOp extends OpMode {
         Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        drive = new MecanumDrive(hardwareMap, subsystemTelemetry, new Pose2d(0, 0, 0));
+        drive = new MecanumDrive(hardwareMap, subsystemTelemetry, initialPose);
         frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
         periscope = new Periscope(hardwareMap, subsystemTelemetry);
         relicRecoverer = new RelicRecoverer(hardwareMap, subsystemTelemetry);
@@ -63,7 +65,10 @@ public class MainTeleOp extends OpMode {
         drive.registerLoops(looper);
         periscope.registerLoops(looper);
         looper.addLoop(relicRecoverer); // TODO: fix this?
-        looper.addLoop((timestamp, dt) -> allTelemetry.update());
+        looper.addLoop((timestamp, dt) -> {
+            allTelemetry.update();
+            dashboard.drawOverlay();
+        });
         looper.start();
 
 //        frontLift.zeroLift();
