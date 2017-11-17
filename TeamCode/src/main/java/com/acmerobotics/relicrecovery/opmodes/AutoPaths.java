@@ -34,8 +34,8 @@ public class AutoPaths {
                 double cryptoboxX = 12 - 7.5 * vuMarkInt;
                 return new Path(Arrays.asList(
                         new LineSegment(new Pose2d(48, -48, Math.PI), new Pose2d(cryptoboxX, -48, Math.PI)),
-                        new PointTurn(new Pose2d(cryptoboxX, -48, Math.PI), Math.PI / 2),
-                        new LineSegment(new Pose2d(cryptoboxX, -48, -Math.PI / 2), new Pose2d(cryptoboxX, -60, -Math.PI / 2))
+                        new PointTurn(new Pose2d(cryptoboxX, -48, Math.PI), -Math.PI / 2),
+                        new LineSegment(new Pose2d(cryptoboxX, -48, Math.PI / 2), new Pose2d(cryptoboxX, -60, Math.PI / 2), true)
                 ));
             }
             case FAR_BLUE: {
@@ -44,8 +44,8 @@ public class AutoPaths {
                         new LineSegment(new Pose2d(-24, -48, Math.PI), new Pose2d(-50, -48, Math.PI)),
                         new PointTurn(new Pose2d(-50, -48, Math.PI), -Math.PI / 2),
                         new LineSegment(new Pose2d(-50, -48, Math.PI / 2), new Pose2d(-50, cryptoboxY, Math.PI / 2)),
-                        new PointTurn(new Pose2d(-50, cryptoboxY, Math.PI / 2), Math.PI / 2),
-                        new LineSegment(new Pose2d(-50, cryptoboxY, Math.PI), new Pose2d(-60, cryptoboxY, Math.PI))
+                        new PointTurn(new Pose2d(-50, cryptoboxY, -Math.PI / 2), -Math.PI / 2),
+                        new LineSegment(new Pose2d(-50, cryptoboxY, 0), new Pose2d(-60, cryptoboxY, 0), true)
                 ));
             }
             case FAR_RED: {
@@ -54,16 +54,16 @@ public class AutoPaths {
                         new LineSegment(new Pose2d(-24, 48, 0), new Pose2d(-50, -48, 0), true),
                         new PointTurn(new Pose2d(-50, 48, 0), -Math.PI / 2),
                         new LineSegment(new Pose2d(-50, 48, -Math.PI / 2), new Pose2d(-50, cryptoboxY, -Math.PI / 2)),
-                        new PointTurn(new Pose2d(-50, cryptoboxY, -Math.PI / 2), -Math.PI / 2),
-                        new LineSegment(new Pose2d(-50, cryptoboxY, Math.PI), new Pose2d(-60, cryptoboxY, Math.PI))
+                        new PointTurn(new Pose2d(-50, cryptoboxY, Math.PI / 2), Math.PI / 2),
+                        new LineSegment(new Pose2d(-50, cryptoboxY, 0), new Pose2d(-60, cryptoboxY, 0), true)
                 ));
             }
             case NEAR_RED: {
                 double cryptoboxX = 12 - 7.5 * vuMarkInt;
                 return new Path(Arrays.asList(
                         new LineSegment(new Pose2d(48, 48, 0), new Pose2d(cryptoboxX, 48, 0), true),
-                        new PointTurn(new Pose2d(cryptoboxX, 48, 0), Math.PI / 2),
-                        new LineSegment(new Pose2d(cryptoboxX, 48, Math.PI / 2), new Pose2d(cryptoboxX, 60, Math.PI / 2))
+                        new PointTurn(new Pose2d(cryptoboxX, 48, 0), -Math.PI / 2),
+                        new LineSegment(new Pose2d(cryptoboxX, 48, -Math.PI / 2), new Pose2d(cryptoboxX, 60, -Math.PI / 2), true)
                 ));
             }
         }
