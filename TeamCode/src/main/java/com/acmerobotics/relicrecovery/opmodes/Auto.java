@@ -10,6 +10,9 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.mech.GlyphGripper;
+import com.acmerobotics.relicrecovery.mech.JewelSlapper;
+import com.acmerobotics.relicrecovery.mech.Periscope;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
@@ -41,6 +44,9 @@ public class Auto extends LinearOpMode {
     private Looper looper;
 
     private MecanumDrive drive;
+    private JewelSlapper jewelSlapper;
+    private GlyphGripper glyphGripper;
+    private Periscope periscope;
 
     private VisionCamera camera;
     private DynamicJewelTracker jewelTracker;
@@ -62,11 +68,17 @@ public class Auto extends LinearOpMode {
         Pose2d initialPose = balancingStone.getPose();
 
         drive = new MecanumDrive(hardwareMap, subsystemTelemetry, initialPose);
+        jewelSlapper = new JewelSlapper(hardwareMap);
+        glyphGripper = new GlyphGripper(hardwareMap);
+        periscope = new Periscope(hardwareMap, subsystemTelemetry);
 
         looper = new Looper(20);
         drive.registerLoops(looper);
+        periscope.registerLoops(looper);
 
         looper.addLoop((timestamp, dt) -> allTelemetry.update());
+
+        glyphGripper.grip();
 
         camera = new VisionCamera(hardwareMap.appContext);
         jewelTracker = new DynamicJewelTracker();
@@ -94,6 +106,9 @@ public class Auto extends LinearOpMode {
 
         sleep(configuration.getDelay() * 1000);
 
+        jewelSlapper.jewelSlapperDown();
+        periscope.raise();
+
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
         while (opModeIsActive() && (jewelTracker.getLeftColor() == JewelColor.UNKNOWN
                 || vuMark == RelicRecoveryVuMark.UNKNOWN)) {
@@ -101,6 +116,8 @@ public class Auto extends LinearOpMode {
 
             sleep(10);
         }
+
+        periscope.stop();
 
         boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
         double turnAngle = (turnLeft ? 1 : -1) * JEWEL_TURN_ANGLE;
@@ -115,10 +132,16 @@ public class Auto extends LinearOpMode {
             sleep(10);
         }
 
+        jewelSlapper.jewelSlapperUp();
+
+        sleep(500);
+
         drive.followPath(AutoPaths.makePathToCryptobox(balancingStone, vuMark));
         while (opModeIsActive() && drive.isFollowingPath()) {
             sleep(10);
         }
+
+        glyphGripper.release();
 
         looper.terminate();
         camera.close();

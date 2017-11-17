@@ -18,7 +18,7 @@ public class Periscope implements Loop {
     private Servo cameraRotate;
     private DigitalChannel cameraTouch;
 
-    private boolean shouldExtend;
+    private boolean shouldRaise;
 
     private Telemetry telemetry;
 
@@ -41,11 +41,15 @@ public class Periscope implements Loop {
         return cameraRotate.getPosition();
     }
 
-    public void extend() {
-        shouldExtend = true;
+    public void raise() {
+        shouldRaise = true;
     }
 
-    public boolean isExtended() {
+    public void stop() {
+        shouldRaise = false;
+    }
+
+    public boolean isRaising() {
         return cameraTouch.getState();
     }
 
@@ -55,13 +59,15 @@ public class Periscope implements Loop {
 
     @Override
     public void onLoop(long timestamp, long dt) {
-        if (shouldExtend && !isExtended()) {
-            cameraLift.setPower(0.5);
+        if (shouldRaise && !isRaising()) {
+            cameraLift.setPower(0.05);
+        } else {
+            cameraLift.setPower(0);
         }
 
         telemetry.addData("cameraPosition", cameraRotate.getPosition());
-        telemetry.addData("cameraShouldExtend", shouldExtend);
-        telemetry.addData("cameraIsExtended", isExtended());
+        telemetry.addData("cameraShouldRaise", shouldRaise);
+        telemetry.addData("cameraIsRaised", isRaising());
     }
 
 }

@@ -13,6 +13,7 @@ import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -82,8 +83,10 @@ public class GlyphLift implements Loop {
 
         if (side == Side.FRONT) {
             leadScrewMotor = hardwareMap.dcMotor.get("frontLeadScrew");
+            leadScrewMotor.setDirection(DcMotorSimple.Direction.REVERSE);
             pinionServo = hardwareMap.crservo.get("frontPinion");
             leftIntake = hardwareMap.crservo.get("frontLeftIntake");
+            leftIntake.setDirection(DcMotorSimple.Direction.REVERSE);
             rightIntake = hardwareMap.crservo.get("frontRightIntake");
             distanceSensor = hardwareMap.get(DistanceSensor.class, "frontColorDistanceSensor");
             colorSensor = hardwareMap.get(ColorSensor.class, "frontColorDistanceSensor");

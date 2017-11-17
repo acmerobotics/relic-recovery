@@ -63,7 +63,7 @@ public class MainTeleOp extends OpMode {
 
 //        frontLift.zeroLift();
 //
-//        periscope.extend();
+//        periscope.raise();
     }
 
     @Override
