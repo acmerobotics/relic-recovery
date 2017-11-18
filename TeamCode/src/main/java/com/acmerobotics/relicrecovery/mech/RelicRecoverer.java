@@ -17,85 +17,81 @@ public class RelicRecoverer implements Loop{
     public enum Position {
         //todo find the actual values
         UP {
-            public double diff() {return RelicRecovererConstants.UP_OFFSET;}
+            public double getOffset() {return RelicRecovererConstants.UP_OFFSET;}
         },
         CLOSED {
-            public double diff() {return 0;}
+            public double getOffset() {return 0;}
         },
         OPEN {
-            public double diff() {return RelicRecovererConstants.OPEN_OFFSET;}
+            public double getOffset() {return RelicRecovererConstants.OPEN_OFFSET;}
         };
-        public abstract double diff();
+        public abstract double getOffset();
     }
-
-    private double extension;
-    private double offset;
-    private double extendOffset, retractOffset;
-    private PIDController extendController, offsetController;
-    private DcMotor motorExtend, motorRetract;
 
     private Telemetry telemetry;
+    private double extendSpeed;
+    private double offsetTarget;
+    private double offsetSpeed;
+    private double extendOffset, retractOffset;
+    private DcMotor motorExtend, motorRetract;
+    private PIDController offsetController;
 
-    public RelicRecoverer(HardwareMap map, Telemetry telemetry) {
+    public RelicRecoverer (HardwareMap map, Telemetry telemetry) {
+        this.telemetry = telemetry;
         motorExtend = map.dcMotor.get("relicExtend");
         motorRetract = map.dcMotor.get("relicRetract");
-        extension = 0;
         extendOffset = -motorExtend.getCurrentPosition();
         retractOffset = -motorRetract.getCurrentPosition();
-        extendController = new PIDController(RelicRecovererConstants.EXTENSION_COEFFICIENTS);
         offsetController = new PIDController(RelicRecovererConstants.OFFSET_COEFFICIENTS);
-        extendController.setInputBounds(-RelicRecovererConstants.MAX_EXTENSION_CORRECTION, RelicRecovererConstants.MAX_EXTENSION_CORRECTION);
-        offsetController.setInputBounds(-1.0 + RelicRecovererConstants.MAX_EXTENSION_CORRECTION, 1.0 - RelicRecovererConstants.MAX_EXTENSION_CORRECTION);
-    }
-
-    public void setPosition(Position position) {
-        this.offset = position.diff();
-    }
-
-    public void setExtension(double extension) {
-        this.extension = extension;
+        offsetTarget = 0;
+        extendSpeed = 0;
+        offsetSpeed = 0;
 
     }
 
-    public void setOffset(double offset) {
-        this.offset = Math.max(0, Math.min(offset, RelicRecovererConstants.MAX_EXTENSION));
+    public double getRetractPosition() {
+        return motorRetract.getCurrentPosition() + retractOffset;
     }
 
-    public double getExtension() {
-        return motorRetract.getCurrentPosition();
-    }
-
-    public double getExtensionTarget() {
-        return extension;
+    public double getExtendPosition() {
+        return motorExtend.getCurrentPosition() + extendOffset;
     }
 
     public double getOffset() {
-        return motorExtend.getCurrentPosition() - motorRetract.getCurrentPosition();
-    }
-
-    public double getOffsetTarget() {
-        return offset;
-    }
-
-    public double getExtendError() {
-        return getExtension() - extension;
+        return getExtendPosition() - getRetractPosition();
     }
 
     public double getOffsetError() {
-        return getOffset() - offset;
+        return getOffset() - offsetTarget;
+    }
+
+    public void setOffsetSpeed(double speed) {
+        offsetSpeed = speed;
+    }
+
+    public void setExtendSpeed(double speed) {
+        if (getExtendPosition() >= 0 && getExtendPosition() <= RelicRecovererConstants.MAX_EXTENSION)
+            extendSpeed = speed;
+        else
+            extendSpeed = 0;
+    }
+
+    public void setPosition(Position position) {
+        offsetTarget = position.getOffset();
     }
 
     @Override
     public void onLoop(long timestamp, long dt) {
-        double extendCorrection = extendController.update(getExtendError());
+
+        offsetTarget += offsetSpeed * dt * RelicRecovererConstants.OFFSET_SPEEDS;
         double offsetCorrection = offsetController.update(getOffsetError());
-        motorRetract.setPower(extendCorrection);
-        motorExtend.setPower(extendCorrection + offsetCorrection);
+        motorRetract.setPower(extendSpeed);
+        motorExtend.setPower(extendSpeed + offsetCorrection);
 
         if (telemetry != null) {
-            telemetry.addData("relicExtendError", getExtendError());
             telemetry.addData("relicOffsetError", getOffsetError());
-            telemetry.addData("relicExtend", getExtension());
+            telemetry.addData("relicExtend", getExtendPosition());
+            telemetry.addData("relicRetract", getRetractPosition());
             telemetry.addData("relicOffset", getOffset());
         }
     }
