@@ -22,6 +22,7 @@ import com.acmerobotics.relicrecovery.path.WaitSegment;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
+import com.acmerobotics.relicrecovery.vision.JewelColor;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -85,6 +86,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
         looper = new Looper(20);
         drive.registerLoops(looper);
         periscope.registerLoops(looper);
+        glyphLift.registerLoops(looper);
 
         looper.addLoop((timestamp, dt) -> {
             allTelemetry.update();
@@ -122,46 +124,62 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
         waitForStart();
 
-//        if (isStopRequested()) {
-//            looper.terminate();
-//            camera.close();
-//            loggingTelemetry.close();
-//        }
+        periscope.raise();
 
-        sleep(configuration.getDelay() * 1000);
+        glyphLift.zeroLift();
 
-//        jewelSlapper.jewelSlapperDown();
-//        periscope.raise();
-//
+        while (opModeIsActive() && glyphLift.isLifterZeroing()) {
+            sleep(10);
+        }
+
+        sleep(Math.max(configuration.getDelay() * 1000, 1000));
+
+        jewelSlapper.jewelSlapperDown();
+
+        long startTime = System.currentTimeMillis();
+
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
-//        while (opModeIsActive() && (jewelTracker.getLeftColor() == JewelColor.UNKNOWN
-//                || vuMark == RelicRecoveryVuMark.UNKNOWN)) {
-//            vuMark = RelicRecoveryVuMark.from(relicVuMark);
-//
-//            sleep(10);
-//        }
-//
-//        periscope.stop();
+        while (opModeIsActive() && (jewelTracker.getLeftColor() == JewelColor.UNKNOWN
+                || vuMark == RelicRecoveryVuMark.UNKNOWN) && (System.currentTimeMillis() - startTime) < 7000) {
+            vuMark = RelicRecoveryVuMark.from(relicVuMark);
 
-        vuMark = RelicRecoveryVuMark.CENTER;
+            sleep(10);
+        }
 
-//        boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
+        periscope.stop();
 
-        boolean turnLeft = true;
+        if ((System.currentTimeMillis() - startTime) < 7000) {
+            boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
 
-        double turnAngle = (turnLeft ? 1 : -1) * JEWEL_TURN_ANGLE;
-        Path jewelTurn = new Path(Arrays.asList(
-                new PointTurn(initialPose, turnAngle),
-                new PointTurn(new Pose2d(initialPose.pos(),
-                        Angle.norm(initialPose.heading() + turnAngle)), -turnAngle)
-        ));
+            double turnAngle = (turnLeft ? 1 : -1) * JEWEL_TURN_ANGLE;
+            Path jewelTurnOne = new Path(Arrays.asList(
+                    new PointTurn(initialPose, turnAngle)
+            ));
+            Path jewelTurnTwo = new Path(Arrays.asList(
+                    new PointTurn(new Pose2d(initialPose.pos(),
+                            Angle.norm(initialPose.heading() + turnAngle)), -turnAngle)
+            ));
 
-        drive.followPath(jewelTurn);
-        waitForPathFollower();
+            drive.followPath(jewelTurnOne);
+            waitForPathFollower();
 
-        jewelSlapper.jewelSlapperUp();
+            jewelSlapper.jewelSlapperUp();
 
-        sleep(500);
+            startTime = System.currentTimeMillis();
+            while (opModeIsActive() && (System.currentTimeMillis() - startTime) < 1500) {
+                Thread.yield();
+            }
+
+            drive.followPath(jewelTurnTwo);
+            waitForPathFollower();
+        } else {
+            jewelSlapper.jewelSlapperUp();
+
+            startTime = System.currentTimeMillis();
+            while (opModeIsActive() && (System.currentTimeMillis() - startTime) < 1500) {
+                Thread.yield();
+            }
+        }
 
         Path cryptoPath = AutoPaths.makePathToCryptobox(balancingStone, vuMark);
         cryptoPath.addSegment(new WaitSegment(cryptoPath.getPose(cryptoPath.duration()), 1));

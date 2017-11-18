@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class JewelSlapper {
 
     public static final double JEWEL_SLAPPER_UP = 0;
-    public static final double JEWEL_SLAPPER_DOWN = 0.31;
+    public static final double JEWEL_SLAPPER_DOWN = 0.35;
 
     private Servo jewelSlapper;
     private boolean jewelSlapperActivated;
@@ -21,31 +21,31 @@ public class JewelSlapper {
     }
 
     public void jewelSlapperUp() {
-        if (!jewelSlapperActivated) {
+//        if (!jewelSlapperActivated) {
             jewelSlapper.setPosition(JEWEL_SLAPPER_UP);
-            jewelSlapperActivated = false;
-        }
+//            jewelSlapperActivated = false;
+//        }
     }
 
     public void jewelSlapperDown() {
-        if (jewelSlapperActivated) {
+//        if (jewelSlapperActivated) {
             jewelSlapper.setPosition(JEWEL_SLAPPER_DOWN);
-            jewelSlapperActivated = true;
-        }
+//            jewelSlapperActivated = true;
+//        }
     }
 
-    public void slapperToggle() {
-        if (jewelSlapperActivated) {
-            jewelSlapperUp();
-        }
-        else {
-            jewelSlapperDown();
-        }
-    }
+//    public void slapperToggle() {
+//        if (jewelSlapperActivated) {
+//            jewelSlapperUp();
+//        }
+//        else {
+//            jewelSlapperDown();
+//        }
+//    }
 
-    public boolean isJewelSlapperActivated() {
-        return jewelSlapperActivated;
-    }
+//    public boolean isJewelSlapperActivated() {
+//        return jewelSlapperActivated;
+//    }
     
 }
 

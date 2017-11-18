@@ -5,14 +5,11 @@ import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -28,7 +25,7 @@ public class GlyphLift implements Loop {
     public static double LEFT_INTAKE_OFFSET = -0.05;
     public static double RIGHT_INTAKE_OFFSET = 0.1;
 
-    public static PIDCoefficients GLYPH_PID_COEFF = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients GLYPH_PID_COEFF = new PIDCoefficients(-1, 0, 0);
 
     public static double LEAD_SCREW_THROW = 12;
     public static double RACK_THROW = 7;
@@ -52,16 +49,24 @@ public class GlyphLift implements Loop {
         ZERO
     }
 
+    public enum RackMode {
+        EXTEND,
+        RETRACT,
+        NOTHING
+    }
+
     public enum IntakeMode {
         OPEN_LOOP,
-        INTAKE_GLYPH
+//        INTAKE_GLYPH
     }
 
     private DcMotor leadScrewMotor;
     private CRServo pinionServo, leftIntake, rightIntake;
-    private DistanceSensor distanceSensor;
-    private ColorSensor colorSensor;
+//    private DistanceSensor distanceSensor;
+//    private ColorSensor colorSensor;
     private DigitalChannel leadScrewTouch, lowerRackTouch, upperRackTouch;
+
+    private RackMode rackMode;
 
     private double leadScrewPower, pinionPower;
     private double leftIntakePower, rightIntakePower;
@@ -69,7 +74,6 @@ public class GlyphLift implements Loop {
     private LiftMode liftMode;
     private IntakeMode intakeMode;
 
-    private boolean extendRack;
     private PIDController controller;
     private double targetHeight;
 
@@ -86,8 +90,8 @@ public class GlyphLift implements Loop {
             leftIntake = hardwareMap.crservo.get("frontLeftIntake");
             rightIntake = hardwareMap.crservo.get("frontRightIntake");
             rightIntake.setDirection(DcMotorSimple.Direction.REVERSE);
-            distanceSensor = hardwareMap.get(DistanceSensor.class, "frontColorDistanceSensor");
-            colorSensor = hardwareMap.get(ColorSensor.class, "frontColorDistanceSensor");
+//            distanceSensor = hardwareMap.get(DistanceSensor.class, "frontColorDistanceSensor");
+//            colorSensor = hardwareMap.get(ColorSensor.class, "frontColorDistanceSensor");
             leadScrewTouch = hardwareMap.digitalChannel.get("frontLeadScrewTouch");
             lowerRackTouch = hardwareMap.digitalChannel.get("frontLowerRackTouch");
             upperRackTouch = hardwareMap.digitalChannel.get("frontUpperRackTouch");
@@ -96,8 +100,8 @@ public class GlyphLift implements Loop {
             pinionServo = hardwareMap.crservo.get("rearPinion");
             leftIntake = hardwareMap.crservo.get("rearLeftIntake");
             rightIntake = hardwareMap.crservo.get("rearRightIntake");
-            distanceSensor = hardwareMap.get(DistanceSensor.class, "rearColorDistanceSensor");
-            colorSensor = hardwareMap.get(ColorSensor.class, "rearColorDistanceSensor");
+//            distanceSensor = hardwareMap.get(DistanceSensor.class, "rearColorDistanceSensor");
+//            colorSensor = hardwareMap.get(ColorSensor.class, "rearColorDistanceSensor");
             leadScrewTouch = hardwareMap.digitalChannel.get("rearLeadScrewTouch");
             lowerRackTouch = hardwareMap.digitalChannel.get("rearLowerRackTouch");
             upperRackTouch = hardwareMap.digitalChannel.get("rearUpperRackTouch");
@@ -168,19 +172,22 @@ public class GlyphLift implements Loop {
         }
 
         if (height > LEAD_SCREW_THROW) {
-            targetHeight = height - RACK_THROW;
-            extendRack = true;
+            setLeadScrewHeight(height - RACK_THROW);
+            rackMode = RackMode.EXTEND;
         } else {
-            targetHeight = height;
-            extendRack = false;
+            setLeadScrewHeight(height);
+            rackMode = RackMode.RETRACT;
         }
+    }
 
+    public void setLeadScrewHeight(double height) {
+        targetHeight = height;
         liftMode = LiftMode.CLOSED_LOOP;
     }
 
-    public void intakeGlyph() {
-        intakeMode = IntakeMode.INTAKE_GLYPH;
-    }
+//    public void intakeGlyph() {
+//        intakeMode = IntakeMode.INTAKE_GLYPH;
+//    }
 
     public void zeroLift() {
         liftMode = LiftMode.ZERO;
@@ -190,14 +197,14 @@ public class GlyphLift implements Loop {
         return liftMode == LiftMode.ZERO;
     }
 
-    public double getIntakeDistanceIn() {
-        double distance = distanceSensor.getDistance(DistanceUnit.INCH);
-        if (Double.isNaN(distance)) {
-            return SENSOR_MAX_DISTANCE;
-        } else {
-            return Range.clip(distance, 0, SENSOR_MAX_DISTANCE);
-        }
-    }
+//    public double getIntakeDistanceIn() {
+//        double distance = distanceSensor.getDistance(DistanceUnit.INCH);
+//        if (Double.isNaN(distance)) {
+//            return SENSOR_MAX_DISTANCE;
+//        } else {
+//            return Range.clip(distance, 0, SENSOR_MAX_DISTANCE);
+//        }
+//    }
 
     public void registerLoops(Looper looper) {
         looper.addLoop(this);
@@ -220,9 +227,9 @@ public class GlyphLift implements Loop {
                 heightUpdate = controller.update(heightError);
                 leadScrewMotor.setPower(heightUpdate);
                 // rack and pinion
-                if (extendRack && upperRackTouch.getState()) {
+                if (rackMode == RackMode.EXTEND && upperRackTouch.getState()) {
                     pinionServo.setPower(PINION_POWER);
-                } else if (!extendRack && lowerRackTouch.getState()) {
+                } else if (rackMode == RackMode.RETRACT && lowerRackTouch.getState()) {
                     pinionServo.setPower(-PINION_POWER);
                 } else {
                     pinionServo.setPower(0);
@@ -230,14 +237,13 @@ public class GlyphLift implements Loop {
                 break;
             }
             case ZERO:
-                boolean leadScrewZeroed = !leadScrewTouch.getState();
-                boolean rackZeroed = !lowerRackTouch.getState();
-                if (leadScrewZeroed && rackZeroed) {
+                boolean zeroed = !leadScrewTouch.getState();
+                if (zeroed) {
                     resetEncoder();
-                    liftMode = LiftMode.OPEN_LOOP;
+                    setLeadScrewHeight(1);
+                    rackMode = RackMode.NOTHING;
                 }
-                leadScrewMotor.setPower(leadScrewZeroed ? 0 : -ZERO_LEAD_SCREW_POWER);
-                pinionServo.setPower(rackZeroed ? 0 : -PINION_POWER);
+                leadScrewMotor.setPower(zeroed ? 0 : -ZERO_LEAD_SCREW_POWER);
                 break;
         }
 
@@ -246,16 +252,16 @@ public class GlyphLift implements Loop {
                 leftIntake.setPower(leftIntakePower + LEFT_INTAKE_OFFSET);
                 rightIntake.setPower(rightIntakePower + RIGHT_INTAKE_OFFSET);
                 break;
-            case INTAKE_GLYPH:
-                if (getIntakeDistanceIn() <= 2.5) {
-                    leftIntake.setPower(LEFT_INTAKE_OFFSET);
-                    rightIntake.setPower(RIGHT_INTAKE_OFFSET);
-                    intakeMode = IntakeMode.OPEN_LOOP;
-                } else {
-                    leftIntake.setPower(SLOW_INTAKE_POWER + LEFT_INTAKE_OFFSET);
-                    rightIntake.setPower(FAST_INTAKE_POWER + RIGHT_INTAKE_OFFSET);
-                }
-                break;
+//            case INTAKE_GLYPH:
+//                if (getIntakeDistanceIn() <= 2.5) {
+//                    leftIntake.setPower(LEFT_INTAKE_OFFSET);
+//                    rightIntake.setPower(RIGHT_INTAKE_OFFSET);
+//                    intakeMode = IntakeMode.OPEN_LOOP;
+//                } else {
+//                    leftIntake.setPower(SLOW_INTAKE_POWER + LEFT_INTAKE_OFFSET);
+//                    rightIntake.setPower(FAST_INTAKE_POWER + RIGHT_INTAKE_OFFSET);
+//                }
+//                break;
         }
 
         telemetry.addData("liftMode", liftMode);
@@ -274,11 +280,11 @@ public class GlyphLift implements Loop {
         telemetry.addData("rightIntakePower", rightIntakePower);
 
         telemetry.addData("leadScrewPosition", getEncoderPosition());
-        telemetry.addData("intakeDistance", getIntakeDistanceIn());
-
-        telemetry.addData("colorSensorRed", colorSensor.red());
-        telemetry.addData("colorSensorGreen", colorSensor.green());
-        telemetry.addData("colorSensorBlue", colorSensor.blue());
-        telemetry.addData("colorSensorAlpha", colorSensor.alpha());
+//        telemetry.addData("intakeDistance", getIntakeDistanceIn());
+//
+//        telemetry.addData("colorSensorRed", colorSensor.red());
+//        telemetry.addData("colorSensorGreen", colorSensor.green());
+//        telemetry.addData("colorSensorBlue", colorSensor.blue());
+//        telemetry.addData("colorSensorAlpha", colorSensor.alpha());
     }
 }
