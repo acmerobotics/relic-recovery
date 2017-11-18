@@ -71,6 +71,8 @@ public class MainTeleOp extends OpMode {
         });
         looper.start();
 
+        drive.setMaintainHeading(true);
+
 //        frontLift.zeroLift();
 //
 //        periscope.raise();
@@ -115,15 +117,15 @@ public class MainTeleOp extends OpMode {
                 frontLift.setLiftPower(0, 0);
             }
 
-//            if (stickyGamepad2.y) {
-//                frontLift.setHeight(0.5);
-//            } else if (stickyGamepad2.x) {
-//                frontLift.setHeight(6.5);
-//            } else if (stickyGamepad2.a) {
-//                frontLift.setHeight(12.5);
-//            } else if (stickyGamepad2.b) {
-//                frontLift.setHeight(18.5);
-//            }
+            if (stickyGamepad2.y) {
+                frontLift.setHeight(0.5);
+            } else if (stickyGamepad2.x) {
+                frontLift.setHeight(6.5);
+            } else if (stickyGamepad2.a) {
+                frontLift.setHeight(12.5);
+            } else if (stickyGamepad2.b) {
+                frontLift.setHeight(18.5);
+            }
 
             if (gamepad2.left_bumper) {
                 frontLift.setIntakePower(-1, -1);

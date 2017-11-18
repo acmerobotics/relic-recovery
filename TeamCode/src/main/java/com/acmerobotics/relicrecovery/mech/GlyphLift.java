@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -27,6 +28,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class GlyphLift implements Loop {
+    public static final double SENSOR_MAX_DISTANCE = DistanceUnit.INCH.fromCm(25);
+
     public static MotionConstraints GLYPH_MOTION_CONSTRAINTS = new MotionConstraints(0, 0, 0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_A);
     public static PIDFCoefficients GLYPH_PIDF_COEFF = new PIDFCoefficients(0, 0, 0, 0, 0);
 
@@ -165,7 +168,7 @@ public class GlyphLift implements Loop {
     }
 
     public void setHeight(double height) {
-        if (0 < height || height > (LEAD_SCREW_THROW + RACK_THROW)) {
+        if (0 > height || height > (LEAD_SCREW_THROW + RACK_THROW)) {
             throw new IllegalArgumentException("height must be positive and smaller than the total throw");
         }
 
@@ -193,6 +196,15 @@ public class GlyphLift implements Loop {
 
     public boolean isLifterZeroing() {
         return liftMode == LiftMode.ZERO;
+    }
+
+    public double getIntakeDistanceIn() {
+        double distance = distanceSensor.getDistance(DistanceUnit.INCH);
+        if (Double.isNaN(distance)) {
+            return SENSOR_MAX_DISTANCE;
+        } else {
+            return Range.clip(distance, 0, SENSOR_MAX_DISTANCE);
+        }
     }
 
     public void registerLoops(Looper looper) {
@@ -246,7 +258,7 @@ public class GlyphLift implements Loop {
                 rightIntake.setPower(rightIntakePower);
                 break;
             case INTAKE_GLYPH:
-                if (distanceSensor.getDistance(DistanceUnit.INCH) <= 2) {
+                if (getIntakeDistanceIn() <= 2) {
                     leftIntake.setPower(0);
                     rightIntake.setPower(0);
                     intakeMode = IntakeMode.OPEN_LOOP;
@@ -268,6 +280,11 @@ public class GlyphLift implements Loop {
         telemetry.addData("rightIntakePower", rightIntakePower);
 
         telemetry.addData("leadScrewPosition", getEncoderPosition());
-        telemetry.addData("intakeDistance", distanceSensor.getDistance(DistanceUnit.CM));
+        telemetry.addData("intakeDistance", getIntakeDistanceIn());
+
+        telemetry.addData("colorSensorRed", colorSensor.red());
+        telemetry.addData("colorSensorGreen", colorSensor.green());
+        telemetry.addData("colorSensorBlue", colorSensor.blue());
+        telemetry.addData("colorSensorAlpha", colorSensor.alpha());
     }
 }

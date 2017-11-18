@@ -41,12 +41,12 @@ class Dashboard extends Component {
           <Tile row="1 / span 3" col={1} hidden>
             <FieldView />
           </Tile>
-          <Tile row="1 / span 3" col={2} hidden>
+          <Tile row="1 / span 1 " col={2} hidden>
             <GraphView />
           </Tile>
-          {/* <Tile row="2 / span 2" col={2} hidden>
+          <Tile row="2 / span 2" col={2} hidden>
             <GraphView />
-          </Tile> */}
+          </Tile>
           <Tile row="1 / span 2" col={3}>
             <ConfigView />
           </Tile>

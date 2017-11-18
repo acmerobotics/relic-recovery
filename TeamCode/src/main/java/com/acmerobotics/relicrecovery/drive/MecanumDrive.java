@@ -77,7 +77,6 @@ public class MecanumDrive implements Loop {
 
     private PIDController maintainHeadingController;
     private boolean maintainHeading;
-    private double targetHeading;
 
     private Mode mode = Mode.OPEN_LOOP;
     private Mode lastMode;
@@ -145,7 +144,7 @@ public class MecanumDrive implements Loop {
     public void setMaintainHeading(boolean maintainHeading) {
         this.maintainHeading = maintainHeading;
         if (maintainHeading) {
-            this.targetHeading = getHeading();
+            this.maintainHeadingController.setSetpoint(getHeading());
             this.maintainHeadingController.reset();
         }
     }
@@ -322,7 +321,7 @@ public class MecanumDrive implements Loop {
         double headingUpdate = 0;
         if (maintainHeading) {
             if (Math.abs(targetOmega) > 0) {
-                targetHeading = heading;
+                maintainHeadingController.setSetpoint(heading);
             } else {
                 headingUpdate = maintainHeadingController.update(headingError);
                 internalSetVelocity(targetVel, headingUpdate);
@@ -395,6 +394,9 @@ public class MecanumDrive implements Loop {
             telemetry.addData("estimatedX", estimatedPose.x());
             telemetry.addData("estimatedY", estimatedPose.y());
             telemetry.addData("heading", estimatedPose.heading());
+
+            telemetry.addData("headingError", headingError);
+            telemetry.addData("headingUpdate", headingUpdate);
 
             for (int i = 0; i < 4; i++) {
                 telemetry.addData("drivePower" + i, powers[i]);
