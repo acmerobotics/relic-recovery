@@ -1,14 +1,13 @@
 package com.acmerobotics.relicrecovery.path;
 
+import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
 import com.acmerobotics.relicrecovery.motion.MotionProfile;
 import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
-import com.qualcomm.hardware.motors.NeveRest20Gearmotor;
-import com.qualcomm.robotcore.hardware.configuration.MotorConfigurationType;
 
 import java.util.Locale;
 
@@ -17,12 +16,12 @@ import java.util.Locale;
  */
 
 public class PointTurn implements PathSegment {
-    private Vector2d center;
+    private Pose2d initialPose;
     private double angle;
     private MotionProfile profile;
 
-    public PointTurn(Vector2d center, double angle) {
-        this.center = center;
+    public PointTurn(Pose2d initialPose, double angle) {
+        this.initialPose = initialPose;
         this.angle = angle;
         MotionState start = new MotionState(0, 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(angle, 0);
@@ -40,7 +39,7 @@ public class PointTurn implements PathSegment {
 
     @Override
     public String toString() {
-        return String.format(Locale.ENGLISH, "%1.4f (%.2f deg)", angle, Math.toDegrees(angle));
+        return String.format(Locale.ENGLISH, "PointTurn[%s, %1.4f (%.2f deg)]", initialPose.toString(), angle, Math.toDegrees(angle));
     }
 
     @Override
@@ -50,7 +49,7 @@ public class PointTurn implements PathSegment {
 
     @Override
     public Pose2d getPose(double time) {
-        return new Pose2d(center, profile.get(time).x);
+        return new Pose2d(initialPose.pos(), Angle.norm(profile.get(time).x + initialPose.heading()));
     }
 
     @Override

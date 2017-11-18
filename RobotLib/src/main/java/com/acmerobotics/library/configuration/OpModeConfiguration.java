@@ -10,72 +10,14 @@ public class OpModeConfiguration {
 
     public static final String PREFS_NAME = "opmode";
     public static final String PREF_ALLIANCE_COLOR = "alliance_color";
-    public static final String PREF_PARK_DEST = "park_dest";
     public static final String PREF_DELAY = "delay";
-    public static final String PREF_NUM_BALLS = "num_balls";
+    public static final String PREF_BALANCING_STONE = "balancing_stone";
     public static final String PREF_MATCH_TYPE = "match_type";
     public static final String PREF_MATCH_NUMBER = "match_number";
-    public static final String PREF_LAST_HEADING = "last_heading";
+    public static final String PREF_AUTO_HEADING = "auto_heading";
+    public static final String PREF_AUTO_TRANSITION = "auto_transition";
 
-    public enum AllianceColor {
-        RED(0),
-        BLUE(1);
-        private int index;
-        AllianceColor(int i) {
-            index = i;
-        }
-        public int getIndex() {
-            return index;
-        }
-        public static AllianceColor fromIndex(int i) {
-            for (AllianceColor color : AllianceColor.values()) {
-                if (color.getIndex() == i) {
-                    return color;
-                }
-            }
-            return null;
-        }
-    }
-
-    public enum ParkDest {
-        NONE (0),
-        CENTER (1),
-        CORNER (2);
-        private int index;
-        ParkDest (int i) {
-            index = i;
-        }
-        public int getIndex () { return index; }
-        public static ParkDest fromIndex (int i) {
-            for (ParkDest destination : ParkDest.values()) {
-                if (destination.getIndex() == i )
-                    return destination;
-            }
-            return null;
-        }
-    }
-
-    public enum MatchType {
-        PRACTICE (0),
-        QUALIFYING (1),
-        SEMIFINAL (2),
-        FINAL (3);
-        private int index;
-        MatchType(int i) {
-            index = i;
-        }
-        public int getIndex() {
-            return index;
-        }
-        public static MatchType fromIndex(int i) {
-            for (MatchType type : MatchType.values()) {
-                if (type.getIndex() == i) {
-                    return type;
-                }
-            }
-            return null;
-        }
-    }
+    public static final String NO_AUTO_TRANSITION = "None";
 
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
@@ -93,14 +35,7 @@ public class OpModeConfiguration {
 
     public void setAllianceColor(AllianceColor color) {
         editor.putInt(PREF_ALLIANCE_COLOR, color.getIndex());
-    }
-
-    public ParkDest getParkDest() {
-        return ParkDest.fromIndex(preferences.getInt(PREF_PARK_DEST, 0));
-    }
-
-    public void setParkDest(ParkDest dest) {
-        editor.putInt(PREF_PARK_DEST, dest.getIndex());
+        editor.commit();
     }
 
     public int getDelay() {
@@ -108,18 +43,19 @@ public class OpModeConfiguration {
     }
 
     public void setDelay(int delay) {
-        if (delay >= 0 && delay <= 30) {
+        if (0 <= delay && delay <= 30) {
             editor.putInt(PREF_DELAY, delay);
+            editor.commit();
         }
     }
 
-    public int getNumberOfBalls() {
-        return preferences.getInt(PREF_NUM_BALLS, 0);
+    public BalancingStone getBalancingStone() {
+        return BalancingStone.fromIndex(preferences.getInt(PREF_BALANCING_STONE, 0));
     }
 
-    public void setNumberOfBalls(int numBalls) {
-        if (numBalls > 2) return;
-        editor.putInt(PREF_NUM_BALLS, numBalls);
+    public void setBalancingStone(BalancingStone balancingStone) {
+        editor.putInt(PREF_BALANCING_STONE, balancingStone.getIndex());
+        editor.commit();
     }
 
     public MatchType getMatchType() {
@@ -128,6 +64,7 @@ public class OpModeConfiguration {
 
     public void setMatchType(MatchType type) {
         editor.putInt(PREF_MATCH_TYPE, type.getIndex());
+        editor.commit();
     }
 
     public int getMatchNumber() {
@@ -136,23 +73,30 @@ public class OpModeConfiguration {
 
     public void setMatchNumber(int num) {
         editor.putInt(PREF_MATCH_NUMBER, num);
+        editor.commit();
     }
 
-    public double getLastHeading() {
-        return preferences.getFloat(PREF_LAST_HEADING, 0);
+    public double getAutoHeading() {
+        return preferences.getFloat(PREF_AUTO_HEADING, 0);
     }
 
-    public void setLastHeading(double heading) {
-        editor.putFloat(PREF_LAST_HEADING, (float) heading);
+    public void setAutoHeading(double heading) {
+        editor.putFloat(PREF_AUTO_HEADING, (float) heading);
+        editor.commit();
+    }
+
+    public String getAutoTransition() {
+        return preferences.getString(PREF_AUTO_TRANSITION, NO_AUTO_TRANSITION);
+    }
+
+    public void setAutoTransition(String autoTransition) {
+        editor.putString(PREF_AUTO_TRANSITION, autoTransition);
+        editor.commit();
     }
 
     public String getActiveConfigName() {
         RobotConfigFileManager manager = new RobotConfigFileManager((Activity) context);
         return manager.getActiveConfig().getName();
-    }
-
-    public boolean commit() {
-        return editor.commit();
     }
 
 }

@@ -4,14 +4,12 @@ import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
 import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.motion.PIDController;
-import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -39,10 +37,15 @@ public class PIDTuner extends OpMode {
     @Override
     public void init() {
         dashboard = RobotDashboard.getInstance();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         fieldOverlay = dashboard.getFieldOverlay();
 
+        String opModeDir = "PIDTuner-" + System.currentTimeMillis();
+//        drive = new MecanumDrive(hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(),
+//                new CSVLoggingTelemetry(new File(DataFile.getStorageDir(),
+//                        opModeDir + File.pathSeparator + "MecanumDrive.csv").getPath())));
         drive = new MecanumDrive(hardwareMap);
+
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         headingController = new PIDController(DriveConstants.HEADING_COEFFS);
         axialController = new PIDController(DriveConstants.AXIAL_COEFFS);
@@ -64,14 +67,6 @@ public class PIDTuner extends OpMode {
             headingController.setSetpoint(headingSetpoint);
             double headingError = headingController.getError(robotPose.heading());
             double headingUpdate = headingController.update(headingError, time);
-
-//            axialController.setSetpoint(xSetpoint);
-//            double axialError = axialController.getError(robotPose.x());
-//            double axialUpdate = axialController.update(axialError, time);
-//
-//            lateralController.setSetpoint(ySetpoint);
-//            double lateralError = lateralController.getError(robotPose.y());
-//            double lateralUpdate = lateralController.update(lateralError, time);
 
             Pose2d pose = new Pose2d(xSetpoint, ySetpoint, headingSetpoint);
             Vector2d fieldError = robotPose.pos().added(pose.pos().negated());

@@ -1,12 +1,13 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -16,7 +17,8 @@ import java.util.Locale;
  * Created by ryanbrott on 10/28/17.
  */
 
-@TeleOp(name = "Pose Estimation Test")
+@Disabled
+@TeleOp(name = "Pose Estimation Test", group = "test")
 public class PoseEstimationTest extends LinearOpMode {
     private Looper looper;
 

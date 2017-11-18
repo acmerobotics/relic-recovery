@@ -1,18 +1,22 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import com.acmerobotics.relicrecovery.localization.Angle;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.canvas.Canvas;
+import com.acmerobotics.library.localization.Angle;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,10 +40,12 @@ public class MecanumDrive implements Loop {
     public enum Mode {
         OPEN_LOOP,
         OPEN_LOOP_RAMP,
-        FOLLOW_PATH
+        FOLLOW_PATH,
+        AUTO_BALANCE
     }
 
-    // TODO: should these be extracted into some kind of configuration object?
+    public static final String[] MOTOR_NAMES = {"frontLeft", "rearLeft", "rearRight", "frontRight"};
+
     public static final double WHEELBASE_WIDTH = 18;
     public static final double WHEELBASE_HEIGHT = 18;
 
@@ -66,41 +72,51 @@ public class MecanumDrive implements Loop {
     private PoseEstimator poseEstimator;
     private PathFollower pathFollower;
 
+    /* inputs are pitch and roll, respectively */
+    private PIDController balanceAxialController, balanceLateralController;
+
+    private PIDController maintainHeadingController;
+    private boolean maintainHeading;
+    private double targetHeading;
+
     private Mode mode = Mode.OPEN_LOOP;
+    private Mode lastMode;
 
     private double[] powers, targetPowers;
+    private Vector2d targetVel = new Vector2d(0, 0);
+    private double targetOmega = 0;
 
-    /**
-     * construct drive with default configuration names
-     * @param map hardware map
-     */
+    private Telemetry telemetry;
+    private Canvas fieldOverlay;
+
     public MecanumDrive(HardwareMap map) {
-        this(map, new String[]{"frontLeft", "rearLeft", "rearRight", "frontRight"});
+        this(map, null);
+    }
+
+    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
+        this(map, telemetry, new Pose2d(0, 0, 0));
     }
 
     /**
      * construct drive with configuration names other than the default
      * @param map hardware map
-     * @param names names of the motors in the hardware mapping
+     * @param initialPose initial pose
      */
-    public MecanumDrive(HardwareMap map, String[] names) {
-        if (names.length != 4) {
-            throw new IllegalArgumentException("must be four for motors");
-        }
+    public MecanumDrive(HardwareMap map, Telemetry telemetry, Pose2d initialPose) {
+        this.telemetry = telemetry;
+        this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
         imu = map.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
-        resetHeading();
-
         powers = new double[4];
         targetPowers = new double[4];
         offsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
-            motors[i] = map.dcMotor.get(names[i]);
+            motors[i] = map.dcMotor.get(MOTOR_NAMES[i]);
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
@@ -108,18 +124,61 @@ public class MecanumDrive implements Loop {
         motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        poseEstimator = new PoseEstimator(this, new Pose2d(0, 0));
+        poseEstimator = new PoseEstimator(this, initialPose);
         pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
+        balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
+        balanceAxialController.setOutputBounds(-1, 1);
+        balanceAxialController.setSetpoint(0);
+
+        balanceLateralController = new PIDController(DriveConstants.BALANCE_LATERAL_COEFFS);
+        balanceLateralController.setOutputBounds(-1, 1);
+        balanceLateralController.setSetpoint(0);
+
+        maintainHeadingController = new PIDController(DriveConstants.MAINTAIN_HEADING_COEFFS);
+
         resetEncoders();
+
+        setHeading(initialPose.heading());
     }
 
-    public void setMode(Mode mode) {
+    public void setMaintainHeading(boolean maintainHeading) {
+        this.maintainHeading = maintainHeading;
+        if (maintainHeading) {
+            this.targetHeading = getHeading();
+            this.maintainHeadingController.reset();
+        }
+    }
+
+    public boolean getMaintainHeading() {
+        return maintainHeading;
+    }
+
+    private void setMode(Mode mode) {
+        this.lastMode = this.mode;
         this.mode = mode;
+    }
+
+    private void revertMode() {
+        this.mode = this.lastMode;
     }
 
     public Mode getMode() {
         return mode;
+    }
+
+    public void setHeading(double heading) {
+        headingOffset = -getRawHeading() + heading;
+    }
+
+    public void setVelocity(Vector2d vel, double omega, boolean ramp) {
+        this.targetVel = vel;
+        this.targetOmega = omega;
+        setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
+    }
+
+    public void setVelocity(Vector2d vel, double omega) {
+        setVelocity(vel, omega, false);
     }
 
     /**
@@ -136,14 +195,14 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
-    public void setVelocity(Vector2d vel, double omega) {
+    void internalSetVelocity(Vector2d vel, double omega) {
         targetPowers[0] = vel.x() - vel.y() - K * omega;
         targetPowers[1] = vel.x() + vel.y() - K * omega;
         targetPowers[2] = vel.x() - vel.y() + K * omega;
         targetPowers[3] = vel.x() + vel.y() + K * omega;
 
         double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
-			Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
+                Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
 
         for (int i = 0; i < 4; i++) {
             targetPowers[i] /= max;
@@ -222,7 +281,7 @@ public class MecanumDrive implements Loop {
     }
 
     public void resetHeading() {
-        headingOffset = -getRawHeading();
+        setHeading(0);
     }
 
     public void registerLoops(Looper looper) {
@@ -231,7 +290,7 @@ public class MecanumDrive implements Loop {
 
     public void followPath(Path path) {
         pathFollower.follow(path);
-        mode = Mode.FOLLOW_PATH;
+        setMode(Mode.FOLLOW_PATH);
     }
 
     public boolean isFollowingPath() {
@@ -246,17 +305,45 @@ public class MecanumDrive implements Loop {
         poseEstimator.setPose(pose);
     }
 
+    public void autoBalance() {
+        setMode(Mode.AUTO_BALANCE);
+        balanceAxialController.reset();
+        balanceLateralController.reset();
+    }
+
     @Override
     public void onLoop(long timestamp, long dt) {
         // pose estimation
         poseEstimator.update(timestamp);
 
+        // maintain heading
+        double heading = getHeading();
+        double headingError = maintainHeadingController.getError(heading);
+        double headingUpdate = 0;
+        if (maintainHeading) {
+            if (Math.abs(targetOmega) > 0) {
+                targetHeading = heading;
+            } else {
+                headingUpdate = maintainHeadingController.update(headingError);
+                internalSetVelocity(targetVel, headingUpdate);
+            }
+        } else {
+            internalSetVelocity(targetVel, targetOmega);
+        }
+
+        // auto balance
+        Orientation angularOrientation = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
+        double pitch = angularOrientation.secondAngle;
+        double roll = angularOrientation.firstAngle;
+
+        double balanceAxialError = balanceAxialController.getError(pitch);
+        double balanceLateralError = balanceLateralController.getError(roll);
+
+        double balanceAxialUpdate = 0, balanceLateralUpdate = 0;
+
         switch (mode) {
             case OPEN_LOOP:
                 powers = targetPowers;
-                for (int i = 0; i < 4; i++) {
-                    motors[i].setPower(powers[i]);
-                }
                 break;
             case OPEN_LOOP_RAMP:
                 double[] powerDeltas = new double[4];
@@ -277,14 +364,82 @@ public class MecanumDrive implements Loop {
                 }
                 for (int i = 0; i < 4; i++) {
                     powers[i] += powerDeltas[i] * multiplier;
-                    motors[i].setPower(powers[i]);
                 }
                 break;
             case FOLLOW_PATH:
                 if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
-                    mode = Mode.OPEN_LOOP;
+                    revertMode();
                 }
+                powers = targetPowers;
+                break;
+            case AUTO_BALANCE:
+                balanceAxialUpdate = balanceAxialController.update(balanceAxialError);
+                balanceLateralUpdate = balanceLateralController.update(balanceLateralError);
+
+                internalSetVelocity(new Vector2d(balanceAxialUpdate, balanceLateralUpdate), 0);
+
+                powers = targetPowers;
+
                 break;
         }
+
+        for (int i = 0; i < 4; i++) {
+            motors[i].setPower(powers[i]);
+        }
+
+        Pose2d estimatedPose = poseEstimator.getPose();
+
+        if (telemetry != null) {
+            telemetry.addData("driveMode", mode);
+
+            telemetry.addData("estimatedX", estimatedPose.x());
+            telemetry.addData("estimatedY", estimatedPose.y());
+            telemetry.addData("heading", estimatedPose.heading());
+
+            for (int i = 0; i < 4; i++) {
+                telemetry.addData("drivePower" + i, powers[i]);
+                telemetry.addData("drivePosition" + i, getPosition(i));
+            }
+
+            telemetry.addData("pathHeadingError", pathFollower.getHeadingError());
+            telemetry.addData("pathHeadingUpdate", pathFollower.getHeadingUpdate());
+
+            telemetry.addData("pathAxialError", pathFollower.getAxialError());
+            telemetry.addData("pathAxialUpdate", pathFollower.getAxialUpdate());
+
+            telemetry.addData("pathLateralError", pathFollower.getLateralError());
+            telemetry.addData("pathLateralUpdate", pathFollower.getLateralUpdate());
+
+            telemetry.addData("pitch", pitch);
+            telemetry.addData("roll", roll);
+
+            telemetry.addData("balanceAxialError", balanceAxialError);
+            telemetry.addData("balanceLateralError", balanceLateralError);
+
+            telemetry.addData("balanceAxialUpdate", balanceAxialUpdate);
+            telemetry.addData("balanceLateralUpdate", balanceLateralUpdate);
+        }
+
+        double robotRadius = 9;
+        fieldOverlay.setStrokeWidth(4);
+
+        Pose2d pathPose = pathFollower.getPose();
+        if (pathPose != null) {
+            fieldOverlay.setStroke("red");
+            fieldOverlay.strokeLine(
+                    pathPose.x() + 0.5 * robotRadius * Math.cos(pathPose.heading()),
+                    pathPose.y() + 0.5 * robotRadius * Math.sin(pathPose.heading()),
+                    pathPose.x() + robotRadius * Math.cos(pathPose.heading()),
+                    pathPose.y() + robotRadius * Math.sin(pathPose.heading()));
+            fieldOverlay.strokeCircle(pathPose.x(), pathPose.y(), robotRadius);
+        }
+
+        fieldOverlay.setStroke("blue");
+        fieldOverlay.strokeLine(
+            estimatedPose.x() + 0.5 * robotRadius * Math.cos(estimatedPose.heading()),
+            estimatedPose.y() + 0.5 * robotRadius * Math.sin(estimatedPose.heading()),
+            estimatedPose.x() + robotRadius * Math.cos(estimatedPose.heading()),
+            estimatedPose.y() + robotRadius * Math.sin(estimatedPose.heading()));
+        fieldOverlay.strokeCircle(estimatedPose.x(), estimatedPose.y(), robotRadius);
     }
 }

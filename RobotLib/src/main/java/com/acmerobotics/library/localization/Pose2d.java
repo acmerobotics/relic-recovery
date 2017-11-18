@@ -1,8 +1,6 @@
-package com.acmerobotics.relicrecovery.localization;
+package com.acmerobotics.library.localization;
 
 import java.util.Locale;
-
-import static com.acmerobotics.relicrecovery.localization.Vector2d.EPSILON;
 
 /**
  * Created by kelly on 9/28/2017.
@@ -11,8 +9,8 @@ import static com.acmerobotics.relicrecovery.localization.Vector2d.EPSILON;
 
 public class Pose2d {
 
-    private Vector2d pos;
-    private double heading;
+    private final Vector2d pos;
+    private final double heading;
 
     public Pose2d(Vector2d pos) {
         this(pos, 0);
@@ -51,16 +49,15 @@ public class Pose2d {
         return Math.hypot(pos.x() - other.pos.x(), pos.y() - other.pos.y());
     }
 
-    public void add(Pose2d other) {
-        pos.add(other.pos);
-        heading = Angle.norm(heading + other.heading);
+    public Pose2d added(Pose2d other) {
+        return new Pose2d(pos.added(other.pos), Angle.norm(heading + other.heading));
     }
 
     @Override
     public boolean equals(Object other) {
         if (other instanceof Pose2d) {
             Pose2d otherPose = (Pose2d) other;
-            return otherPose.pos().equals(pos) && Math.abs(heading - otherPose.heading()) < EPSILON;
+            return otherPose.pos().equals(pos) && Math.abs(heading - otherPose.heading()) < Vector2d.EPSILON;
         }
         return false;
     }

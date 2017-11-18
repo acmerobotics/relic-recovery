@@ -1,16 +1,16 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.acmerobotics.velocityvortex.drive.PIDController;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
@@ -21,8 +21,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
  * Created by ryanbrott on 10/26/17.
  */
 
-@Config
-@TeleOp(name = "Vision Alignment Test")
+//@Config
+@Disabled
+@TeleOp(name = "Vision Alignment Test", group = "test")
 public class VisionAlignmentTest extends LinearOpMode {
     public static final long LOOP_MS = 20;
 

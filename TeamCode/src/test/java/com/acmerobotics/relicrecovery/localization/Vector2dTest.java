@@ -1,6 +1,8 @@
 package com.acmerobotics.relicrecovery.localization;
 
 
+import com.acmerobotics.library.localization.Vector2d;
+
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -15,14 +17,14 @@ public class Vector2dTest {
     @Test
     public void testVectorAdd() {
         Vector2d v = new Vector2d(0, 1);
-        v.add(new Vector2d(2, 3));
+        v = v.added(new Vector2d(2, 3));
         assertTrue(v.equals(new Vector2d(2, 4)));
     }
 
     @Test
     public void testScalarMultiply() {
         Vector2d v = new Vector2d(0, 3);
-        v.multiply(4);
+        v = v.multiplied(4);
         assertTrue(v.equals(new Vector2d(0, 12)));
     }
 

@@ -47,6 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   <string name="blocks_menu_item">Blocks</string>
   <string name="settings_menu_item">Settings</string>
   <string name="restart_robot_menu_item">Restart Robot</string>
+  <string name="configure_opmode_menu_item">Configure OpMode</string>
   <string name="configure_robot_menu_item">Configure Robot</string>
   <string name="about_menu_item">About</string>
   <string name="exit_menu_item">Exit</string>

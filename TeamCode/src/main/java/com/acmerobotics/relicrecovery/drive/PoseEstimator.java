@@ -1,8 +1,6 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-
-import java.sql.Time;
+import com.acmerobotics.library.localization.Pose2d;
 
 /**
  * Created by ryanbrott on 10/28/17.
@@ -46,7 +44,7 @@ public class PoseEstimator {
 
             poseDeltaHistory.add(new TimestampedPose2d(fieldPoseDelta, timestamp));
 
-            pose.add(fieldPoseDelta);
+            pose = pose.added(fieldPoseDelta);
 
             lastRotations = rotations;
         }
@@ -61,17 +59,18 @@ public class PoseEstimator {
     }
 
     public synchronized void updatePose(Pose2d pose, long timestamp) {
-        Pose2d newPose = new Pose2d(0, 0);
         TimestampedPose2d timestampedPoseDelta;
         int i = 0;
+        double initialX = pose.x(), initialY = pose.y(), initialHeading = pose.heading();
         do {
             if (i >= poseDeltaHistory.size()) {
                 return;
             }
             timestampedPoseDelta = poseDeltaHistory.get(i);
-            newPose.add(timestampedPoseDelta.pose);
+            initialX += timestampedPoseDelta.pose.x();
+            initialY += timestampedPoseDelta.pose.y();
+            initialHeading += timestampedPoseDelta.pose.heading();
         } while (timestampedPoseDelta.timestamp > timestamp);
-        newPose.add(pose);
-        this.pose = newPose;
+        this.pose = new Pose2d(initialX, initialY, initialHeading);
     }
 }

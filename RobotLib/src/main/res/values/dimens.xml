@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="pref_item_margin">8dp</dimen>
+    <dimen name="graph_margin">8dp</dimen>
+    <dimen name="pref_text_size">18sp</dimen>
+    <dimen name="field_size">300dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+</resources>

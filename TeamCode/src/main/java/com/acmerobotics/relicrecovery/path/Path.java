@@ -1,8 +1,8 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.relicrecovery.localization.Angle;
-import com.acmerobotics.relicrecovery.localization.Pose2d;
-import com.acmerobotics.relicrecovery.localization.Vector2d;
+import com.acmerobotics.library.localization.Angle;
+import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,20 +32,25 @@ public class Path {
             double deltaY = pose.y() - lastPose.y();
             double newHeading = Angle.norm(Math.atan2(deltaY, deltaX));
             double turnAngle = Angle.norm(newHeading - heading);
+            boolean negated = false;
+            if (Math.abs(turnAngle) > Math.PI / 2) {
+                turnAngle = Math.PI - turnAngle;
+                negated = true;
+            }
             if ((Math.abs(deltaX) > Vector2d.EPSILON || Math.abs(deltaY) > Vector2d.EPSILON) &&
                 Math.abs(turnAngle) > Vector2d.EPSILON) {
-                segments.add(new PointTurn(lastPose.pos(), turnAngle));
+                segments.add(new PointTurn(new Pose2d(lastPose.pos(), heading), turnAngle));
                 heading = newHeading;
             }
-            double length = lastPose.pos().negated().add(pose.pos()).norm();
+            double length = lastPose.pos().negated().added(pose.pos()).norm();
             if (length > Vector2d.EPSILON) {
-                segments.add(new LinearSegment(lastPose.pos(), pose.pos()));
+                segments.add(new LineSegment(new Pose2d(lastPose.pos(), heading), new Pose2d(pose.pos(), heading), negated));
             }
         }
         Pose2d finalPose = poses.get(poses.size() - 1);
         double finalTurnAngle = Angle.norm(finalPose.heading() - heading);
         if (Math.abs(finalTurnAngle) > Vector2d.EPSILON) {
-            segments.add(new PointTurn(finalPose.pos(), finalTurnAngle));
+            segments.add(new PointTurn(finalPose, finalTurnAngle));
         }
         return new Path(segments);
     }

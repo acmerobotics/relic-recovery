@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.relicrecovery.localization.Pose2d;
+import com.acmerobotics.library.localization.Pose2d;
 
 /**
  * Class representing a segment of a {@link Path}

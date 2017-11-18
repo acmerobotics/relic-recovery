@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="alliance_colors">
+        <item>Blue</item>
+        <item>Red</item>
+    </string-array>
+    <string-array name="balancing_stones">
+        <item>Near</item>
+        <item>Far</item>
+    </string-array>
+    <string-array name="match_types">
+        <item>Practice</item>
+        <item>Qualifying</item>
+        <item>Semifinal</item>
+        <item>Final</item>
+    </string-array>
+</resources>

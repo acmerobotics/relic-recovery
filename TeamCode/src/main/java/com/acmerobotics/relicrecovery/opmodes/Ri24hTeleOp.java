@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,7 +12,8 @@ import com.qualcomm.robotcore.hardware.Servo;
  * @author Ryan
  */
 
-@TeleOp
+@Disabled
+@TeleOp(name = "RI24H TeleOp", group = "teleop")
 public class Ri24hTeleOp extends OpMode {
 
     public static final double LEFT_OPEN = 0.500;
