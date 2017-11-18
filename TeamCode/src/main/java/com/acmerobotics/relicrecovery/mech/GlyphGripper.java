@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
 public class GlyphGripper {
-    public static double GLYPH_GRIP = 0.4;
-    public static double GLYPH_RELEASE = 0.6;
+    public static double GLYPH_GRIP = 0.15;
+    public static double GLYPH_RELEASE = 0.4;
 
     private Servo glyphGripper;
 

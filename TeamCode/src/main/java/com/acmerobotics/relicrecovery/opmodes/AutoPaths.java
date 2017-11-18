@@ -5,6 +5,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;
+import com.acmerobotics.relicrecovery.path.WaitSegment;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
@@ -35,6 +36,7 @@ public class AutoPaths {
                 return new Path(Arrays.asList(
                         new LineSegment(new Pose2d(48, -48, Math.PI), new Pose2d(cryptoboxX, -48, Math.PI)),
                         new PointTurn(new Pose2d(cryptoboxX, -48, Math.PI), -Math.PI / 2),
+                        new WaitSegment(new Pose2d(cryptoboxX, -48, Math.PI / 2), 1),
                         new LineSegment(new Pose2d(cryptoboxX, -48, Math.PI / 2), new Pose2d(cryptoboxX, -60, Math.PI / 2), true)
                 ));
             }

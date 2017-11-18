@@ -91,7 +91,9 @@ public class CSVLoggingTelemetry implements Telemetry {
                 headerBuilder.append(",");
             }
             headerBuilder.deleteCharAt(headerBuilder.length() - 1);
-            printStream.println(headerBuilder);
+            if (printStream != null) {
+                printStream.println(headerBuilder);
+            }
         }
         StringBuilder valueBuilder = new StringBuilder();
         for (String key : header) {
@@ -99,11 +101,13 @@ public class CSVLoggingTelemetry implements Telemetry {
             valueBuilder.append(",");
         }
         valueBuilder.deleteCharAt(valueBuilder.length() - 1);
-        printStream.println(valueBuilder.toString());
         if (autoClear) {
             clear();
         }
-        printStream.flush();
+        if (printStream != null) {
+            printStream.println(valueBuilder.toString());
+            printStream.flush();
+        }
         return true;
     }
 

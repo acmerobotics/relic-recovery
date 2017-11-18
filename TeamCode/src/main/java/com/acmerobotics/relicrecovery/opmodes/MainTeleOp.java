@@ -71,10 +71,10 @@ public class MainTeleOp extends OpMode {
         });
         looper.start();
 
-        drive.setMaintainHeading(true);
+//        drive.setMaintainHeading(true);
 
-//        frontLift.zeroLift();
-//
+        frontLift.zeroLift();
+
 //        periscope.raise();
     }
 
@@ -92,10 +92,6 @@ public class MainTeleOp extends OpMode {
             changingMode = false;
         }
 
-        if (gamepad2.left_bumper && gamepad2.right_bumper) {
-            secondControllerGlyph = !secondControllerGlyph;
-        }
-
         if (stickyGamepad1.b) {
             halfSpeed = !halfSpeed;
         }
@@ -105,16 +101,29 @@ public class MainTeleOp extends OpMode {
         if (secondControllerGlyph) {
             y = (gamepad2.left_trigger - gamepad2.right_trigger) / 4;
 
+            double leadScrewPower = Double.NaN, pinionPower = Double.NaN;
             if (gamepad2.dpad_up) {
-                frontLift.setLiftPower(1, 0);
+                leadScrewPower = 1;
             } else if (gamepad2.dpad_down) {
-                frontLift.setLiftPower(-1, 0);
-            } else if (gamepad2.dpad_left) {
-                frontLift.setLiftPower(0, 1);
-            } else if (gamepad2.dpad_right) {
-                frontLift.setLiftPower(0, -1);
+                leadScrewPower = -1;
             } else if (frontLift.getLiftMode() == GlyphLift.LiftMode.OPEN_LOOP) {
-                frontLift.setLiftPower(0, 0);
+                leadScrewPower = 0;
+            }
+
+            if (gamepad2.dpad_left) {
+                pinionPower = 1;
+            } else if (gamepad2.dpad_right) {
+                pinionPower = -1;
+            } else if (frontLift.getLiftMode() == GlyphLift.LiftMode.OPEN_LOOP) {
+                pinionPower = 0;
+            }
+
+            if (!Double.isNaN(leadScrewPower)) {
+                frontLift.setLeadScrewPower(leadScrewPower);
+            }
+
+            if (!Double.isNaN(pinionPower)) {
+                frontLift.setPinionPower(pinionPower);
             }
 
             if (stickyGamepad2.y) {
@@ -131,6 +140,8 @@ public class MainTeleOp extends OpMode {
                 frontLift.setIntakePower(-1, -1);
             } else if (gamepad2.right_bumper) {
                 frontLift.intakeGlyph();
+            } else if (frontLift.getIntakeMode() == GlyphLift.IntakeMode.OPEN_LOOP) {
+                frontLift.setIntakePower(0, 0);
             }
 
             if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
@@ -152,13 +163,13 @@ public class MainTeleOp extends OpMode {
             frontLift.intakeGlyph();
         }
 
-        x = gamepad1.left_stick_y;
+        x = -gamepad1.left_stick_y;
 
         if (gamepad1.left_stick_x != 0) {
             y = -gamepad1.left_stick_x;
         }
 
-        omega = gamepad1.right_stick_x / 4;
+        omega = -gamepad1.right_stick_x / 32.0;
 
         if (halfSpeed) {
             x *= 0.5;
