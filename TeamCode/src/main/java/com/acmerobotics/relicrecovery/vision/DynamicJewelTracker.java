@@ -27,7 +27,7 @@ public class DynamicJewelTracker implements Tracker {
     public static int CLOSE_KERNEL_SIZE = 11;
 
     // red HSV range
-    public static int RED_LOWER_HUE = 175, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 80;
+    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 80;
     public static int RED_UPPER_HUE = 22, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
 
     // blue HSV range

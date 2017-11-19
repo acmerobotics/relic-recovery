@@ -37,7 +37,7 @@ public class AutoPaths {
                 return new Path(Arrays.asList(
                         new LineSegment(new Pose2d(48, -48, Math.PI), new Pose2d(cryptoboxX, -48, Math.PI)),
                         new PointTurn(new Pose2d(cryptoboxX, -48, Math.PI), -Math.PI / 2), // + Math.toRadians(10)),
-                        new WaitSegment(new Pose2d(cryptoboxX, -48, Math.PI / 2), 5),
+                        new WaitSegment(new Pose2d(cryptoboxX, -48, Math.PI / 2), 2.5),
                         new LineSegment(new Pose2d(cryptoboxX, -48, Math.PI / 2), new Pose2d(cryptoboxX, -62, Math.PI / 2), true)
                 ));
             }
@@ -62,11 +62,11 @@ public class AutoPaths {
                 ));
             }
             case NEAR_RED: {
-                double cryptoboxX = 12 - 7.5 * vuMarkInt;
+                double cryptoboxX = 12 + 7.5 * vuMarkInt;
                 return new Path(Arrays.asList(
                         new LineSegment(new Pose2d(48, 48, 0), new Pose2d(cryptoboxX, 48, 0), true),
                         new PointTurn(new Pose2d(cryptoboxX, 48, 0), -Math.PI / 2),
-                        new WaitSegment(new Pose2d(cryptoboxX, 48, -Math.PI / 2), 5),
+                        new WaitSegment(new Pose2d(cryptoboxX, 48, -Math.PI / 2), 2.5),
                         new LineSegment(new Pose2d(cryptoboxX, 48, -Math.PI / 2), new Pose2d(cryptoboxX, 62, -Math.PI / 2), true)
                 ));
             }
@@ -80,7 +80,9 @@ public class AutoPaths {
             case NEAR_BLUE: {
                 double cryptoboxX = 12 - 7.5 * vuMarkInt;
                 return new Path(Arrays.asList(
-                        new LineSegment(new Pose2d(cryptoboxX, -60, Math.PI / 2), new Pose2d(cryptoboxX, -54, Math.PI / 2))
+                        new LineSegment(new Pose2d(cryptoboxX, -60, Math.PI / 2), new Pose2d(cryptoboxX, -54, Math.PI / 2)),
+                        new LineSegment(new Pose2d(cryptoboxX, -54, Math.PI / 2), new Pose2d(cryptoboxX, -67, Math.PI / 2)),
+                        new LineSegment(new Pose2d(cryptoboxX, -67, Math.PI / 2), new Pose2d(cryptoboxX, -54, Math.PI / 2))
                 ));
             }
             case FAR_BLUE: {

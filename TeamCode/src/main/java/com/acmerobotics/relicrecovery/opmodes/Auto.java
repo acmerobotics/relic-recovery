@@ -96,6 +96,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
         glyphGripper.grip();
 
         camera = new VisionCamera(hardwareMap.appContext);
+        camera.setImageDir(LoggingUtil.getImageDir(this));
         jewelTracker = new DynamicJewelTracker();
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
@@ -132,7 +133,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
             sleep(10);
         }
 
-        sleep(Math.max(configuration.getDelay() * 1000, 1000));
+        sleep(configuration.getDelay() * 1000);
 
         jewelSlapper.jewelSlapperDown();
 
@@ -146,7 +147,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
             sleep(10);
         }
 
-        periscope.stop();
+//        periscope.stop();
 
         if ((System.currentTimeMillis() - startTime) < 7000) {
             boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
@@ -165,20 +166,18 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
             jewelSlapper.jewelSlapperUp();
 
-            startTime = System.currentTimeMillis();
-            while (opModeIsActive() && (System.currentTimeMillis() - startTime) < 1500) {
-                Thread.yield();
-            }
+//            startTime = System.currentTimeMillis();
+//            while (opModeIsActive() && (System.currentTimeMillis() - startTime) < 1500) {
+//                Thread.yield();
+//            }
+            sleep(1000);
 
             drive.followPath(jewelTurnTwo);
             waitForPathFollower();
         } else {
             jewelSlapper.jewelSlapperUp();
 
-            startTime = System.currentTimeMillis();
-            while (opModeIsActive() && (System.currentTimeMillis() - startTime) < 1500) {
-                Thread.yield();
-            }
+            sleep(1000);
         }
 
         Path cryptoPath = AutoPaths.makePathToCryptobox(balancingStone, vuMark);

@@ -12,6 +12,8 @@ import com.acmerobotics.relicrecovery.mech.GlyphLift;
 import com.acmerobotics.relicrecovery.mech.Periscope;
 import com.acmerobotics.relicrecovery.mech.RelicRecoverer;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
+import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.acmerobotics.velocityvortex.opmodes.StickyGamepad;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -36,6 +38,8 @@ public class MainTeleOp extends OpMode {
 
     private boolean halfSpeed, secondControllerGlyph = true, changingMode;
 
+    private VisionCamera camera;
+
     @Override
     public void init() {
         stickyGamepad1 = new StickyGamepad(gamepad1);
@@ -48,6 +52,10 @@ public class MainTeleOp extends OpMode {
         CSVLoggingTelemetry loggingTelemetry = new CSVLoggingTelemetry(LoggingUtil.getLogFile(this, configuration));
         Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
         Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
+
+        camera = new VisionCamera(hardwareMap.appContext);
+        camera.setImageDir(LoggingUtil.getImageDir(this));
+        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
 
         drive = new MecanumDrive(hardwareMap, subsystemTelemetry, initialPose);
         frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
@@ -69,7 +77,7 @@ public class MainTeleOp extends OpMode {
 
         frontLift.zeroLift();
 
-//        periscope.raise();
+        periscope.raise();
     }
 
     @Override
@@ -158,7 +166,7 @@ public class MainTeleOp extends OpMode {
             frontLift.setIntakePower(0, 0);
         }
 
-        x = -gamepad1.left_stick_y / 2.0;
+        x = 0.75 * -gamepad1.left_stick_y;
 
         if (Math.abs(gamepad1.left_stick_x) > 0.5) {
             y = -gamepad1.left_stick_x;
@@ -208,6 +216,7 @@ public class MainTeleOp extends OpMode {
     @Override
     public void stop() {
         looper.terminate();
+        camera.close();
     }
 }
 

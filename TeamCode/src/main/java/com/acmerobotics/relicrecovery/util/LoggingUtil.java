@@ -6,6 +6,8 @@ import com.acmerobotics.library.configuration.MatchType;
 import com.acmerobotics.library.configuration.OpModeConfiguration;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.R;
+
 import java.io.File;
 
 /**
@@ -14,9 +16,8 @@ import java.io.File;
 
 public class LoggingUtil {
     public static File getLogRoot(OpMode opMode) {
-//        String dirName = opMode.hardwareMap.appContext.getResources().getString(R.string.log_root);
-//        File dir = new File(Environment.getExternalStorageDirectory(), dirName);
-        File dir = new File("/sdcard/ACME");
+        String dirName = opMode.hardwareMap.appContext.getResources().getString(R.string.log_root);
+        File dir = new File(Environment.getExternalStorageDirectory(), dirName);
         dir.mkdirs();
         return dir;
     }
