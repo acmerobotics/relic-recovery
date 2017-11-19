@@ -60,7 +60,7 @@ public class Periscope implements Loop {
     @Override
     public void onLoop(long timestamp, long dt) {
         if (shouldRaise && !isRaising() && cameraTouch.getState()) {
-            cameraLift.setPower(0.2);
+            cameraLift.setPower(0.1);
         } else {
             cameraLift.setPower(0);
         }
