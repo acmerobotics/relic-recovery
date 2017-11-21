@@ -39,6 +39,10 @@ public class PIDTuner extends OpMode {
         dashboard = RobotDashboard.getInstance();
         fieldOverlay = dashboard.getFieldOverlay();
 
+        String opModeDir = "PIDTuner-" + System.currentTimeMillis();
+//        drive = new MecanumDrive(hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(),
+//                new CSVLoggingTelemetry(new File(DataFile.getStorageDir(),
+//                        opModeDir + File.pathSeparator + "MecanumDrive.csv").getPath())));
         drive = new MecanumDrive(hardwareMap);
 
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
