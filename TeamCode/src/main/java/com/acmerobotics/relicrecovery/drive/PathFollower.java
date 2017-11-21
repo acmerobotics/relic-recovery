@@ -109,6 +109,10 @@ public class PathFollower {
         poseVelocity = path.getPoseVelocity(time);
         poseAcceleration = path.getPoseAcceleration(time);
 
+        if (pose == null || poseVelocity == null || poseAcceleration == null) {
+            return false;
+        }
+
         MotionState headingState = new MotionState(pose.heading(), poseVelocity.heading(), poseAcceleration.heading(), 0, 0);
         headingController.setSetpoint(headingState);
         headingError = headingController.getPositionError(robotPose.heading());

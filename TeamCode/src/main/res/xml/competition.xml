@@ -12,18 +12,19 @@
             <Servo name="jewelSlapper" port="3" />
             <ContinuousRotationServo name="cameraLift" port="4" />
             <Servo name="cameraRotate" port="5" />
-            <DigitalDevice name="frontLeadScrewTouch" port="0" />
-            <DigitalDevice name="frontLowerRackTouch" port="2" />
-            <DigitalDevice name="frontUpperRackTouch" port="4" />
-            <DigitalDevice name="cameraTouch" port="6" />
+            <DigitalDevice name="frontLeadScrewTouch" port="1" />
+            <DigitalDevice name="frontLowerRackTouch" port="3" />
+            <DigitalDevice name="frontUpperRackTouch" port="5" />
+            <DigitalDevice name="cameraTouch" port="7" />
+            <!--<AdafruitBNO055IMU name="imu" port="1" bus="0" />-->
         </LynxModule>
         <LynxModule name="hub2" port="2">
-            <NeveRest60Gearmotor name="frontLeadScrew" port="0" />
+            <NeveRest20Gearmotor name="frontLeadScrew" port="0" />
             <NeveRest40Gearmotor name="relicRetract" port="2" />
             <NeveRest40Gearmotor name="relicExtend" port="3" />
             <Servo name="glyphGripper" port="0" />
+            <!--<LynxColorSensor name="frontColorDistanceSensor" port="1" bus="0" />-->
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
-            <LynxColorSensor name="frontColorDistanceSensor" port="1" bus="0" />
         </LynxModule>
     </LynxUsbDevice>
 </Robot>

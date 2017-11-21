@@ -77,7 +77,6 @@ public class MecanumDrive implements Loop {
 
     private PIDController maintainHeadingController;
     private boolean maintainHeading;
-    private double targetHeading;
 
     private Mode mode = Mode.OPEN_LOOP;
     private Mode lastMode;
@@ -121,8 +120,8 @@ public class MecanumDrive implements Loop {
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
-        motors[0].setDirection(DcMotorSimple.Direction.REVERSE);
-        motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
+        motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
+        motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
         poseEstimator = new PoseEstimator(this, initialPose);
         pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
@@ -145,7 +144,7 @@ public class MecanumDrive implements Loop {
     public void setMaintainHeading(boolean maintainHeading) {
         this.maintainHeading = maintainHeading;
         if (maintainHeading) {
-            this.targetHeading = getHeading();
+            this.maintainHeadingController.setSetpoint(getHeading());
             this.maintainHeadingController.reset();
         }
     }
@@ -322,7 +321,7 @@ public class MecanumDrive implements Loop {
         double headingUpdate = 0;
         if (maintainHeading) {
             if (Math.abs(targetOmega) > 0) {
-                targetHeading = heading;
+                maintainHeadingController.setSetpoint(heading);
             } else {
                 headingUpdate = maintainHeadingController.update(headingError);
                 internalSetVelocity(targetVel, headingUpdate);
@@ -395,6 +394,9 @@ public class MecanumDrive implements Loop {
             telemetry.addData("estimatedX", estimatedPose.x());
             telemetry.addData("estimatedY", estimatedPose.y());
             telemetry.addData("heading", estimatedPose.heading());
+
+            telemetry.addData("headingError", headingError);
+            telemetry.addData("headingUpdate", headingUpdate);
 
             for (int i = 0; i < 4; i++) {
                 telemetry.addData("drivePower" + i, powers[i]);

@@ -30,7 +30,7 @@ public class Periscope implements Loop {
 
         this.telemetry = telemetry;
 
-        setPosition(0.5);
+        setPosition(0.55);
     }
 
     public void setPosition(double position) {
@@ -50,7 +50,7 @@ public class Periscope implements Loop {
     }
 
     public boolean isRaising() {
-        return cameraTouch.getState();
+        return !cameraTouch.getState();
     }
 
     public void registerLoops(Looper looper) {
@@ -59,15 +59,16 @@ public class Periscope implements Loop {
 
     @Override
     public void onLoop(long timestamp, long dt) {
-        if (shouldRaise && !isRaising()) {
-            cameraLift.setPower(0.05);
+        if (shouldRaise && !isRaising() && cameraTouch.getState()) {
+            cameraLift.setPower(0.1);
         } else {
             cameraLift.setPower(0);
         }
 
         telemetry.addData("cameraPosition", cameraRotate.getPosition());
         telemetry.addData("cameraShouldRaise", shouldRaise);
-        telemetry.addData("cameraIsRaised", isRaising());
+        telemetry.addData("cameraIsRaising", isRaising());
+        telemetry.addData("cameraTouch", cameraTouch.getState());
     }
 
 }
