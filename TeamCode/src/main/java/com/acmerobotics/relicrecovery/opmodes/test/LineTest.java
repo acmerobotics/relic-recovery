@@ -59,7 +59,5 @@ public class LineTest extends LinearOpMode {
 
             sleep(20);
         }
-
-        looper.terminate();
     }
 }

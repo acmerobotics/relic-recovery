@@ -1,7 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -10,12 +9,15 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ToggleButton;
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.R;
 import org.opencv.android.BaseLoaderCallback;
@@ -38,12 +40,11 @@ import java.util.concurrent.CountDownLatch;
  * Created by ryanbrott on 9/23/17.
  */
 
-public class VisionCamera {
+public class VisionCamera implements OpModeManagerNotifier.Notifications {
     public static final String TAG = "VisionCamera";
 
     public static final String DEBUG_TOGGLE_TEXT = "DEBUG";
 
-    private Context context;
     private VuforiaLocalizer vuforia;
     private VuforiaLocalizer.Parameters vuforiaParams;
     private FrameLayout cameraLayout;
@@ -54,6 +55,10 @@ public class VisionCamera {
     private List<Tracker> trackers;
     private File imageDir;
     private int imageNum;
+
+    private AppUtil appUtil = AppUtil.getInstance();
+    private Activity activity;
+    private OpModeManagerImpl opModeManager;
 
     public class FrameConsumer extends Thread {
         public static final String TAG = "FrameConsumer";
@@ -132,9 +137,13 @@ public class VisionCamera {
         }
     }
 
-    public VisionCamera(Context context) {
-        this.context = context;
+    public VisionCamera() {
+        this.activity = appUtil.getActivity();
         this.trackers = new ArrayList<>();
+        opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(activity);
+        if (opModeManager != null) {
+            opModeManager.registerListener(this);
+        }
     }
 
     public synchronized void addTracker(Tracker tracker) {
@@ -148,7 +157,7 @@ public class VisionCamera {
     public void initialize(VuforiaLocalizer.Parameters vuforiaParams) {
         final CountDownLatch openCvInitialized = new CountDownLatch(1);
 
-        final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(context) {
+        final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(activity) {
             @Override
             public void onManagerConnected(int status) {
                 switch (status) {
@@ -168,7 +177,7 @@ public class VisionCamera {
         AppUtil.getInstance().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, context, loaderCallback);
+                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, activity, loaderCallback);
             }
         });
 
@@ -179,7 +188,7 @@ public class VisionCamera {
         vuforia.setFrameQueueCapacity(VisionConstants.FRAME_QUEUE_CAPACITY);
 
         if (vuforiaParams.cameraMonitorViewIdParent != 0) {
-            this.overlayView = new OverlayView(context);
+            this.overlayView = new OverlayView(activity);
 
             for (Tracker tracker : trackers) {
                 overlayView.addTracker(tracker);
@@ -194,7 +203,7 @@ public class VisionCamera {
                     cameraLayout.addView(overlayView);
 
                     mainLayout = (RelativeLayout) activity.findViewById(R.id.RelativeLayout);
-                    debugToggle = new ToggleButton(context);
+                    debugToggle = new ToggleButton(activity);
                     debugToggle.setText(DEBUG_TOGGLE_TEXT);
                     debugToggle.setTextOff(DEBUG_TOGGLE_TEXT);
                     debugToggle.setTextOn(DEBUG_TOGGLE_TEXT);
@@ -262,6 +271,24 @@ public class VisionCamera {
                 Log.w(TAG, e);
             }
             frameConsumer = null;
+        }
+    }
+
+    @Override
+    public void onOpModePreInit(OpMode opMode) {
+
+    }
+
+    @Override
+    public void onOpModePreStart(OpMode opMode) {
+
+    }
+
+    @Override
+    public void onOpModePostStop(OpMode opMode) {
+        close();
+        if (opModeManager != null) {
+            opModeManager.unregisterListener(this);
         }
     }
 }

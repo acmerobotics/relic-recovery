@@ -95,7 +95,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
         glyphGripper.grip();
 
-        camera = new VisionCamera(hardwareMap.appContext);
+        camera = new VisionCamera();
         camera.setImageDir(LoggingUtil.getImageDir(this));
         jewelTracker = new DynamicJewelTracker();
         camera.addTracker(jewelTracker);
@@ -212,10 +212,6 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
     @Override
     public void onOpModePostStop(OpMode opMode) {
-        looper.terminate();
-        camera.close();
-        loggingTelemetry.close();
-
         MainTeleOp.initialPose = drive.getEstimatedPose();
 
         if (opModeManager != null) {
