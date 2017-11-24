@@ -25,7 +25,8 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
-    this.props.dispatch(connect('192.168.49.1', 8000));
+    const host = window.prompt('Enter the RC host:', '192.168.49.1');
+    this.props.dispatch(connect(host, 8000));
   }
 
   componentWillUnmount() {
