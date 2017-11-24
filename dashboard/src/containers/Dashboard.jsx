@@ -17,16 +17,23 @@ class Dashboard extends Component {
   constructor(props) {
     super(props);
 
+    this.layouts = [
+      'Field + 2 Graph',
+      'Field + Graph',
+      'Graph'
+    ];
+
     this.state = {
+      layoutIndex: 0,
       graphing: false
     };
 
+    this.onLayoutChange = this.onLayoutChange.bind(this);
     this.handleGraphingChange = this.handleGraphingChange.bind(this);
   }
 
   componentDidMount() {
-    const host = window.prompt('Enter the RC host:', '192.168.49.1');
-    this.props.dispatch(connect(host, 8000));
+    this.props.dispatch(connect('192.168.49.1', 8000));
   }
 
   componentWillUnmount() {
@@ -39,12 +46,83 @@ class Dashboard extends Component {
     });
   }
 
+  onLayoutChange(evt) {
+    this.setState({
+      layoutIndex: evt.target.selectedIndex
+    });
+  }
+
+  renderGrid() {
+    if (this.state.layoutIndex === 0) {
+      return (
+        <TileGrid>
+          <Tile row="1 / span 3" col={1} hidden>
+            <FieldView />
+          </Tile>
+          <Tile row={1} col={2}>
+            <GraphView />
+          </Tile>
+          <Tile row="2 / span 2" col={2}>
+            <GraphView />
+          </Tile>
+          <Tile row="1 / span 2" col={3}>
+            <ConfigView />
+          </Tile>
+          <Tile row={3} col={3}>
+            <TelemetryView />
+          </Tile>
+        </TileGrid>
+      );
+    }
+
+    if (this.state.layoutIndex === 1) {
+      return (
+        <TileGrid>
+          <Tile row="1 / span 3" col={1} hidden>
+            <FieldView />
+          </Tile>
+          <Tile row="1 / span 3" col={2}>
+            <GraphView />
+          </Tile>
+          <Tile row="1 / span 2" col={3}>
+            <ConfigView />
+          </Tile>
+          <Tile row={3} col={3}>
+            <TelemetryView />
+          </Tile>
+        </TileGrid>
+      );
+    }
+
+    return (
+      <TileGrid>
+        <Tile row="1 / span 3" col="1 / span 2">
+          <GraphView />
+        </Tile>
+        <Tile row="1 / span 2" col={3}>
+          <ConfigView />
+        </Tile>
+        <Tile row={3} col={3}>
+          <TelemetryView />
+        </Tile>
+      </TileGrid>
+    );
+  }
+
   render() {
     return (
       <div>
         <Header>
           <Heading text="FTC Dashboard" level={1}>
             <IconGroup>
+              <select value={this.layouts[this.layoutIndex]} onChange={this.onLayoutChange}>
+                {
+                  this.layouts.map((layout) => (
+                    <option key={layout} name={layout}>{layout}</option>
+                  ))
+                }
+              </select>
+              <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
               {
                 this.props.isConnected ?
                   <p>{this.props.pingTime}ms&nbsp;&nbsp;&nbsp;&nbsp;</p>
@@ -54,23 +132,7 @@ class Dashboard extends Component {
             </IconGroup>
           </Heading>
         </Header>
-        <TileGrid>
-          <Tile row="1 / span 3" col={1} hidden>
-            <FieldView />
-          </Tile>
-          <Tile row="1 / span 3" col={2} hidden={this.state.graphing}>
-            <GraphView onChange={this.handleGraphingChange} />
-          </Tile>
-          {/* <Tile row="2 / span 2" col={2}>
-            <GraphView />
-          </Tile> */}
-          <Tile row="1 / span 2" col={3}>
-            <ConfigView />
-          </Tile>
-          <Tile row={3} col={3}>
-            <TelemetryView />
-          </Tile>
-        </TileGrid>
+        { this.renderGrid() }
       </div>
     );
   }
