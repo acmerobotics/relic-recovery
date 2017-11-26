@@ -44,7 +44,7 @@ public class DynamicJewelVision extends OpMode {
     @Override
     public void init() {
         jewelTracker = new DynamicJewelTracker();
-        camera = new VisionCamera(hardwareMap.appContext);
+        camera = new VisionCamera();
         camera.setImageDir(LoggingUtil.getImageDir(this));
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
@@ -54,10 +54,5 @@ public class DynamicJewelVision extends OpMode {
     @Override
     public void loop() {
         telemetry.addData("jewel", jewelTracker.toString());
-    }
-
-    @Override
-    public void stop() {
-        camera.close();
     }
 }

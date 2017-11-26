@@ -322,6 +322,7 @@ public class MecanumDrive implements Loop {
         if (maintainHeading) {
             if (Math.abs(targetOmega) > 0) {
                 maintainHeadingController.setSetpoint(heading);
+                internalSetVelocity(targetVel, targetOmega);
             } else {
                 headingUpdate = maintainHeadingController.update(headingError);
                 internalSetVelocity(targetVel, headingUpdate);

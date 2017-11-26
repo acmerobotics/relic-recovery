@@ -43,7 +43,7 @@ public class FixedJewelVision extends OpMode {
     @Override
     public void init() {
         jewelTracker = new FixedJewelTracker();
-        camera = new VisionCamera(hardwareMap.appContext);
+        camera = new VisionCamera();
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
@@ -53,10 +53,5 @@ public class FixedJewelVision extends OpMode {
     public void loop() {
         telemetry.addData("red", "%.2f / %.2f", jewelTracker.getLeftRed(), jewelTracker.getRightRed());
         telemetry.addData("blue", "%.2f / %.2f", jewelTracker.getLeftBlue(), jewelTracker.getRightBlue());
-    }
-
-    @Override
-    public void stop() {
-        camera.close();
     }
 }

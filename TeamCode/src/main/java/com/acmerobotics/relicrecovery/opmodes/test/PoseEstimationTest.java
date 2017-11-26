@@ -70,7 +70,5 @@ public class PoseEstimationTest extends LinearOpMode {
 
             sleep(20);
         }
-
-        looper.terminate();
     }
 }

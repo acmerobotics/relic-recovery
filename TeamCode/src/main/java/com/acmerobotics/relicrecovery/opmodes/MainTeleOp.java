@@ -53,7 +53,7 @@ public class MainTeleOp extends OpMode {
         Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
         Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
 
-        camera = new VisionCamera(hardwareMap.appContext);
+        camera = new VisionCamera();
         camera.setImageDir(LoggingUtil.getImageDir(this));
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
 
@@ -211,12 +211,6 @@ public class MainTeleOp extends OpMode {
         }
 
         telemetry.addData("secondControllerMode", secondControllerGlyph ? "GLYPH" : "RELIC");
-    }
-
-    @Override
-    public void stop() {
-        looper.terminate();
-        camera.close();
     }
 }
 

@@ -17,7 +17,7 @@ public class FpsVision extends OpMode {
 
     @Override
     public void init() {
-        camera = new VisionCamera(hardwareMap.appContext);
+        camera = new VisionCamera();
         fpsTracker = new FpsTracker();
         camera.addTracker(fpsTracker);
         camera.setImageDir(LoggingUtil.getImageDir(this));
@@ -27,10 +27,5 @@ public class FpsVision extends OpMode {
     @Override
     public void loop() {
 
-    }
-
-    @Override
-    public void stop() {
-        camera.close();
     }
 }

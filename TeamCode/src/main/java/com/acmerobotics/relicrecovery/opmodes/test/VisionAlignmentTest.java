@@ -53,7 +53,7 @@ public class VisionAlignmentTest extends LinearOpMode {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        camera = new VisionCamera(hardwareMap.appContext);
+        camera = new VisionCamera();
         cryptoboxTracker = new CryptoboxTracker(false);
         camera.addTracker(new FpsTracker());
         camera.addTracker(cryptoboxTracker);
@@ -118,7 +118,5 @@ public class VisionAlignmentTest extends LinearOpMode {
                 Thread.sleep(0, 250);
             }
         }
-
-        camera.close();
     }
 }

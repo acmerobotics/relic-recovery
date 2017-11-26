@@ -19,7 +19,7 @@ public class CryptoboxVision extends OpMode {
 
     @Override
     public void init() {
-        camera = new VisionCamera(hardwareMap.appContext);
+        camera = new VisionCamera();
         cryptoboxTracker = new CryptoboxTracker(false);
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
@@ -30,10 +30,5 @@ public class CryptoboxVision extends OpMode {
     @Override
     public void loop() {
 
-    }
-
-    @Override
-    public void stop() {
-        camera.close();
     }
 }
