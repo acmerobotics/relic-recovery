@@ -3,7 +3,6 @@ package com.acmerobotics.relicrecovery.vision;
 import android.app.Activity;
 import android.util.Log;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -64,7 +63,6 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
         public static final String TAG = "FrameConsumer";
 
         private BlockingQueue<VuforiaLocalizer.CloseableFrame> frameQueue;
-        private List<VuforiaLocalizer.CloseableFrame> activeFrames;
         private Mat frame;
         private byte[] frameBuffer;
         private boolean running;
@@ -72,7 +70,6 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
         public FrameConsumer(BlockingQueue<VuforiaLocalizer.CloseableFrame> frameQueue) {
             this.frameQueue = frameQueue;
             this.running = true;
-            this.activeFrames = new ArrayList<>();
         }
 
         @Override
@@ -80,17 +77,16 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
             while (running) {
                 // grab frames and process them
                 if (!frameQueue.isEmpty()) {
-                    // TODO handle the frame queue better
-                    activeFrames.clear();
-                    frameQueue.drainTo(activeFrames);
-                    Log.i(TAG, "Drained " + activeFrames.size() + " frames");
-                    for (int i = 0; i < activeFrames.size() - 1; i++) {
-                        VuforiaLocalizer.CloseableFrame frame = activeFrames.get(i);
-                        Log.i(TAG, "Closing " + frame.getTimeStamp());
-                        frame.close();
+                    VuforiaLocalizer.CloseableFrame vuforiaFrame = null;
+                    try {
+                        vuforiaFrame = frameQueue.take();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
                     }
-                    VuforiaLocalizer.CloseableFrame vuforiaFrame = activeFrames.get(activeFrames.size() - 1);
-                    Log.i(TAG, "Took " + vuforiaFrame.getTimeStamp());
+
+                    if (vuforiaFrame == null) {
+                        continue;
+                    }
 
                     long startTime = System.currentTimeMillis();
                     for (int i = 0; i < vuforiaFrame.getNumImages(); i++) {
@@ -128,6 +124,12 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
                     }
                     vuforiaFrame.close();
                     Log.i(TAG, "Processed image in " + (System.currentTimeMillis() - startTime) + "ms");
+                } else {
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
         }
@@ -174,7 +176,7 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
             }
         };
 
-        AppUtil.getInstance().runOnUiThread(new Runnable() {
+        appUtil.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, activity, loaderCallback);
@@ -185,7 +187,7 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
         this.vuforiaParams = vuforiaParams;
 
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true);
-        vuforia.setFrameQueueCapacity(VisionConstants.FRAME_QUEUE_CAPACITY);
+        vuforia.setFrameQueueCapacity(1);
 
         if (vuforiaParams.cameraMonitorViewIdParent != 0) {
             this.overlayView = new OverlayView(activity);
@@ -194,32 +196,24 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
                 overlayView.addTracker(tracker);
             }
 
-            final Activity activity = AppUtil.getInstance().getActivity();
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(R.id.cameraMonitorViewId);
-                    cameraLayout = (FrameLayout) cameraMonitorView.getParent();
-                    cameraLayout.addView(overlayView);
+            final Activity activity = appUtil.getActivity();
+            activity.runOnUiThread(() -> {
+                LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(R.id.cameraMonitorViewId);
+                cameraLayout = (FrameLayout) cameraMonitorView.getParent();
+                cameraLayout.addView(overlayView);
 
-                    mainLayout = (RelativeLayout) activity.findViewById(R.id.RelativeLayout);
-                    debugToggle = new ToggleButton(activity);
-                    debugToggle.setText(DEBUG_TOGGLE_TEXT);
-                    debugToggle.setTextOff(DEBUG_TOGGLE_TEXT);
-                    debugToggle.setTextOn(DEBUG_TOGGLE_TEXT);
-                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    layoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, R.id.textOpMode);
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
-                    debugToggle.setLayoutParams(layoutParams);
-                    debugToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                            overlayView.setDebug(b);
-                        }
-                    });
-                    mainLayout.addView(debugToggle);
-                }
+                mainLayout = (RelativeLayout) activity.findViewById(R.id.RelativeLayout);
+                debugToggle = new ToggleButton(activity);
+                debugToggle.setText(DEBUG_TOGGLE_TEXT);
+                debugToggle.setTextOff(DEBUG_TOGGLE_TEXT);
+                debugToggle.setTextOn(DEBUG_TOGGLE_TEXT);
+                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                layoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, R.id.textOpMode);
+                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                debugToggle.setLayoutParams(layoutParams);
+                debugToggle.setOnCheckedChangeListener((compoundButton, b) -> overlayView.setDebug(b));
+                mainLayout.addView(debugToggle);
             });
         }
 
@@ -253,13 +247,10 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
 
     public void close() {
         if (overlayView != null) {
-            AppUtil.getInstance().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    cameraLayout.removeView(overlayView);
-                    mainLayout.removeView(debugToggle);
-                    overlayView = null;
-                }
+            appUtil.runOnUiThread(() -> {
+                cameraLayout.removeView(overlayView);
+                mainLayout.removeView(debugToggle);
+                overlayView = null;
             });
         }
 
