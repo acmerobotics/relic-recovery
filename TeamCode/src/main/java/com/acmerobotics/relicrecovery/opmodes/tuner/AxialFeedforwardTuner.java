@@ -19,9 +19,9 @@ import java.util.Arrays;
 
 @TeleOp(name = "Axial FF Tuner")
 public class AxialFeedforwardTuner extends LinearOpMode {
-    public static final double LOWER_BOUND = 0;
-    public static final double UPPER_BOUND = 0.02;
-    public static final double DISTANCE = 36;
+    public static final double LOWER_BOUND = 0.015;
+    public static final double UPPER_BOUND = 0.025;
+    public static final double DISTANCE = 60;
 
     private RobotDashboard dashboard;
     private Looper looper;
@@ -49,7 +49,12 @@ public class AxialFeedforwardTuner extends LinearOpMode {
         while (opModeIsActive()) {
             value = (lower + upper) / 2;
 
-            double error = testFeedforwardCoefficient(value);
+            int numErrors = 3;
+            double errorSum = 0;
+            for (int i = 0; i < numErrors; i++) {
+                errorSum += testFeedforwardCoefficient(value);
+            }
+            double error = errorSum / numErrors;
             if (error > 0) {
                 upper = value;
             } else {
@@ -62,8 +67,7 @@ public class AxialFeedforwardTuner extends LinearOpMode {
         DriveConstants.AXIAL_COEFFS.v = coefficient;
 
         // reset heading + pose
-        drive.setEstimatedPose(new Pose2d(0, 0, 0));
-        drive.setHeading(0);
+        drive.setEstimatedPose(new Pose2d(0, 0, drive.getHeading()));
 
         Path forward = new Path(Arrays.asList(
                 new LineSegment(new Pose2d(0, 0, 0), new Pose2d(DISTANCE, 0, 0))

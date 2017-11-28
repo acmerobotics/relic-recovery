@@ -34,13 +34,10 @@ public class PathFollower {
 
         headingController = new PIDFController(headingCoeff);
         headingController.setInputBounds(-Math.PI, Math.PI);
-        headingController.setOutputBounds(-1, 1);
 
         axialController = new PIDFController(axialCoeff);
-        axialController.setOutputBounds(-1, 1);
 
         lateralController = new PIDController(lateralCoeff);
-        lateralController.setOutputBounds(-1, 1);
     }
 
     public double getHeadingError() {
@@ -94,11 +91,11 @@ public class PathFollower {
 
     /**
      * Update the drive controls
-     * @param robotPose current robot pose
+     * @param estimatedPose current robot pose
      * @param timestamp current time in ms
      * @return true if the path is finished
      */
-    public boolean update(Pose2d robotPose, long timestamp) {
+    public boolean update(Pose2d estimatedPose, long timestamp) {
         double time = (timestamp - pathStartTimestamp) / 1000.0;
         if (time > path.duration()) {
             drive.setVelocity(new Vector2d(0, 0), 0);
@@ -109,17 +106,13 @@ public class PathFollower {
         poseVelocity = path.getPoseVelocity(time);
         poseAcceleration = path.getPoseAcceleration(time);
 
-        if (pose == null || poseVelocity == null || poseAcceleration == null) {
-            return false;
-        }
-
         MotionState headingState = new MotionState(pose.heading(), poseVelocity.heading(), poseAcceleration.heading(), 0, 0);
         headingController.setSetpoint(headingState);
-        headingError = headingController.getPositionError(robotPose.heading());
+        headingError = headingController.getPositionError(estimatedPose.heading());
         headingUpdate = headingController.update(headingError, time);
 
-        Vector2d fieldError = robotPose.pos().added(pose.pos().negated());
-        Vector2d robotError = fieldError.rotated(-robotPose.heading());
+        Vector2d fieldError = estimatedPose.pos().added(pose.pos().negated());
+        Vector2d robotError = fieldError.rotated(-estimatedPose.heading());
 
         axialError = robotError.x();
         lateralError = robotError.y();

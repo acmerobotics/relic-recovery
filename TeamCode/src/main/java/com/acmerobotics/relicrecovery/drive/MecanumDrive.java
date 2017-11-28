@@ -315,6 +315,8 @@ public class MecanumDrive implements Loop {
         // pose estimation
         poseEstimator.update(timestamp);
 
+        Pose2d estimatedPose = poseEstimator.getPose();
+
         // maintain heading
         double heading = getHeading();
         double headingError = maintainHeadingController.getError(heading);
@@ -367,7 +369,7 @@ public class MecanumDrive implements Loop {
                 }
                 break;
             case FOLLOW_PATH:
-                if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
+                if (pathFollower.update(estimatedPose, timestamp)) {
                     revertMode();
                 }
                 powers = targetPowers;
@@ -386,8 +388,6 @@ public class MecanumDrive implements Loop {
         for (int i = 0; i < 4; i++) {
             motors[i].setPower(powers[i]);
         }
-
-        Pose2d estimatedPose = poseEstimator.getPose();
 
         if (telemetry != null) {
             telemetry.addData("driveMode", mode);

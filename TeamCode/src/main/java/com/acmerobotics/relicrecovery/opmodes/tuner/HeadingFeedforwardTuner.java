@@ -19,8 +19,8 @@ import java.util.Arrays;
 
 @TeleOp(name = "Heading FF Tuner")
 public class HeadingFeedforwardTuner extends LinearOpMode {
-    public static final double LOWER_BOUND = 0;
-    public static final double UPPER_BOUND = 0.05;
+    public static final double LOWER_BOUND = 0.02;
+    public static final double UPPER_BOUND = 0.035;
     public static final double TURN_ANGLE = Math.PI / 2;
 
     private RobotDashboard dashboard;
@@ -49,7 +49,12 @@ public class HeadingFeedforwardTuner extends LinearOpMode {
         while (opModeIsActive()) {
             value = (lower + upper) / 2;
 
-            double error = testFeedforwardCoefficient(value);
+            int numErrors = 3;
+            double errorSum = 0;
+            for (int i = 0; i < numErrors; i++) {
+                errorSum += testFeedforwardCoefficient(value);
+            }
+            double error = errorSum / numErrors;
             if (error > 0) {
                 upper = value;
             } else {
@@ -74,6 +79,8 @@ public class HeadingFeedforwardTuner extends LinearOpMode {
         while (opModeIsActive() && drive.isFollowingPath()) {
             sleep(10);
         }
+
+        sleep(1000);
 
         double headingError = drive.getHeading() - TURN_ANGLE;
 
