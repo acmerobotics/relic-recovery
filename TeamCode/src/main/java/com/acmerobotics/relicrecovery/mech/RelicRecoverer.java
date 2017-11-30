@@ -81,7 +81,7 @@ public class RelicRecoverer implements Loop{
     }
 
     @Override
-    public void onLoop(long timestamp, long dt) {
+    public void loop(long timestamp, long dt) {
 
         offsetTarget += offsetSpeed * dt * RelicRecovererConstants.OFFSET_SPEEDS;
         double offsetCorrection = offsetController.update(getOffsetError());

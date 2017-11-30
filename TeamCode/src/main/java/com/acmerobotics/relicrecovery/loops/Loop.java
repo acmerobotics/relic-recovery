@@ -5,5 +5,5 @@ package com.acmerobotics.relicrecovery.loops;
  */
 
 public interface Loop {
-    void onLoop(long timestamp, long dt);
+    void loop(long timestamp, long dt);
 }

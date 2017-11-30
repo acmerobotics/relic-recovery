@@ -37,7 +37,7 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
             long startTime = System.currentTimeMillis();
 
             for (Loop loop : loops) {
-                loop.onLoop(startTime, loopMs);
+                loop.loop(startTime, loopMs);
             }
 
             while (System.currentTimeMillis() - startTime < loopMs) {

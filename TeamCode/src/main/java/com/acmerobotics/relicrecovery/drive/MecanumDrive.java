@@ -310,8 +310,12 @@ public class MecanumDrive implements Loop {
         balanceLateralController.reset();
     }
 
+    public void stop() {
+        setVelocity(new Vector2d(0, 0), 0);
+    }
+
     @Override
-    public void onLoop(long timestamp, long dt) {
+    public void loop(long timestamp, long dt) {
         // pose estimation
         poseEstimator.update(timestamp);
 
