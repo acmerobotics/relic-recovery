@@ -1,14 +1,16 @@
 import numpy as np
 import cv2
-from math import sqrt
+from math import sqrt, log
 from os import listdir
 from util import smart_hsv_range
+from matplotlib import pyplot as plt
+from collections import defaultdict
 
 RED_LOWER_HSV, RED_UPPER_HSV = (170, 80, 0), (7, 255, 255)
 BLUE_LOWER_HSV, BLUE_UPPER_HSV = (100, 80, 0), (124, 255, 255)
 
-INPUT_DIR_NAME = "R:/Downloads/cryptoboxes/"
-OUTPUT_DIR_NAME = "R:/Downloads/output/"
+INPUT_DIR_NAME = "cryptobox-with-tape/images/"
+OUTPUT_DIR_NAME = "cryptobox-with-tape/output/"
 
 
 # see https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
@@ -18,7 +20,20 @@ def distance_between_point_and_line(point1, point2, point3):
                + point2[0] * point1[1] - point2[1] * point1[0]) / (euclidean_distance + 0.0001)
 
 
-def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV, debug=False):
+def find_grid(points):
+    point_scores = defaultdict(lambda : 0)
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            point1, point2 = points[i], points[j]
+            slope = (point2[1] - point1[1]) / (point2[0] - point1[0] + 0.0001)
+            inverse_slope = 1 / (slope + 0.0001)
+            score = min(abs(slope), abs(inverse_slope))
+            point_scores[point1] += score
+            point_scores[point2] += score
+    return point_scores
+
+
+def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
     height, width, _ = image.shape
     resize = cv2.resize(image, (640, int(height / width * 640)))
     # resize = cv2.GaussianBlur(resize, (5, 5), 0)
@@ -44,62 +59,55 @@ def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV, deb
         cy = int(M['m01'] / M['m00'])
         points.append((cx, cy))
 
-    # points_on_lines = []
-    # for i in range(len(points)):
-    #     for j in range(i + 1, len(points)):
-    #         point1, point2 = points[i], points[j]
-    #         min_dist, min_point = 1000, None
-    #         for k in range(j + 1, len(points)):
-    #             point3 = points[k]
-    #             dist = distance_between_point_and_line(point1, point2, point3)
-    #             if dist < min_dist:
-    #                 min_dist = dist
-    #                 min_point = point3
-    #         if min_point is None:  # TODO: fix
-    #             continue
-    #         if min_dist < 5:
-    #             slope = (point2[1] - point1[1]) / (point2[0] - point1[0] + 0.0001)
-    #             intercept = point1[1] - slope * point1[0]
-    #             cv2.line(output, (0, int(intercept)), (width, int(slope * width + intercept)), (0, 255, 255), 3)
-    #             if abs(slope) < 0.1:
-    #                 line_y = int((point1[1] + point2[1]) / 2)
-    #                 cv2.line(output, (0, line_y), (width, line_y), (0, 255, 255), 3)
-    #             if abs(slope) > 5:
-    #                 line_x = int((point1[0] + point2[0]) / 2)
-    #                 cv2.line(output, (line_x, 0), (line_x, height), (255, 255, 0), 3)
-    #             if abs(slope) < 0.1 or abs(slope) > 5:
-    #                 if point1 not in points_on_lines:
-    #                     points_on_lines.append(point1)
-    #                 if point2 not in points_on_lines:
-    #                     points_on_lines.append(point2)
+    slopes = []
+    inverse_slopes = []
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            point1, point2 = points[i], points[j]
+            slope = (point2[1] - point1[1]) / (point2[0] - point1[0] + 0.0001)
+            slopes.append(max(min(slope, 15), -15))
+            inverse_slopes.append(max(min(1.0 / (slope + 0.0001), 5), -5))
 
-    for point in points:
-        cv2.circle(output, point, 10, (255, 0, 255), cv2.FILLED)
+    # for point in points:
+    #     cv2.circle(output, point, 10, (255, 0, 255), cv2.FILLED)
 
-    if debug:
-        outputs = {}
-        outputs['0_resize'] = resize
-        outputs['1_hsv_mask'] = hsv_mask
-        outputs['2_morph_hsv_mask'] = morph_hsv_mask
-        outputs['3_gray'] = gray
-        outputs['4_mask'] = mask
-        outputs['5_morph_mask'] = morph_mask
-        outputs['6_output'] = output
-        return outputs
+    outputs = {}
+    outputs['0_resize'] = resize
+    outputs['1_hsv_mask'] = hsv_mask
+    outputs['2_morph_hsv_mask'] = morph_hsv_mask
+    outputs['3_gray'] = gray
+    outputs['4_mask'] = mask
+    outputs['5_morph_mask'] = morph_mask
+    outputs['6_output'] = output
+    outputs['7_slopes'] = slopes
+    outputs['8_inverse_slopes'] = inverse_slopes
 
-    return output
+    return points, outputs
 
 
 def main():
     for filename in listdir(INPUT_DIR_NAME):
         image = cv2.imread(INPUT_DIR_NAME + filename)
         if 'red' in filename:
-            outputs = process_image(image, RED_LOWER_HSV, RED_UPPER_HSV, True)
+            points, outputs = process_image(image, RED_LOWER_HSV, RED_UPPER_HSV)
         else:
-            outputs = process_image(image, BLUE_LOWER_HSV, BLUE_UPPER_HSV, True)
+            points, outputs = process_image(image, BLUE_LOWER_HSV, BLUE_UPPER_HSV)
         # cv2.imwrite(OUTPUT_DIR_NAME + filename, output)
         for key, value in outputs.items():
-            cv2.imwrite('{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], key), value)
+            if 'output' in key:
+                point_scores = find_grid(points)
+                max_score = max(point_scores.values())
+                multiplier = 15 / max_score
+                for point, score in point_scores.items():
+                    cv2.circle(value, point, int(score * multiplier), (255, 255, 0), cv2.FILLED)
+            output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], key)
+            if type(value) is list:
+                plt.figure()
+                plt.hist(value, 60, [-15, 15])
+                plt.title(key)
+                plt.savefig(output_filename)
+            else:
+                cv2.imwrite(output_filename, value)
         print('processed {}'.format(filename))
 
 
