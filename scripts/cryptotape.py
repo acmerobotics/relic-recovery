@@ -98,6 +98,10 @@ def rect_contains(rect, point):
     return True
 
 
+def dist(pt1, pt2):
+    return sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
+
+
 def main():
     for filename in listdir(INPUT_DIR_NAME):
         image = cv2.imread(INPUT_DIR_NAME + filename)
@@ -120,6 +124,7 @@ def main():
                     subdiv.insert(point)
                 triangleList = subdiv.getTriangleList()
 
+                edges = defaultdict(lambda : [])
                 for t in triangleList:
                     pt1 = (t[0], t[1])
                     pt2 = (t[2], t[3])
@@ -129,12 +134,41 @@ def main():
                         slope1 = (abs(pt1[1] - pt2[1]) + 0.0001) / (abs(pt1[0] - pt2[0]) + 0.0001)
                         slope2 = (abs(pt2[1] - pt3[1]) + 0.0001) / (abs(pt2[0] - pt3[0]) + 0.0001)
                         slope3 = (abs(pt3[1] - pt1[1]) + 0.0001) / (abs(pt3[0] - pt1[0]) + 0.0001)
-                        if abs(log(slope1)) > log(3):
+                        if not pt2 in edges[pt1]:
+                            edges[pt1].append(pt2)
+                        if not pt3 in edges[pt2]:
+                            edges[pt2].append(pt3)
+                        if not pt1 in edges[pt3]:
+                            edges[pt3].append(pt1)
+                        # if abs(log(slope1)) > log(3):
+                        #     if not pt2 in edges[pt1]:
+                        #         edges[pt1].append(pt2)
+                        #     # cv2.line(value, pt1, pt2, (255, 0, 255), 5)
+                        # if abs(log(slope2)) > log(3):
+                        #     if not pt3 in edges[pt2]:
+                        #         edges[pt2].append(pt3)
+                        #     # cv2.line(value, pt2, pt3, (255, 0, 255), 5)
+                        # if abs(log(slope3)) > log(3):
+                        #     if not pt1 in edges[pt3]:
+                        #         edges[pt3].append(pt1)
+                        #     # cv2.line(value, pt3, pt1, (255, 0, 255), 5)
+
+                lengths = []
+                for pt1, pts in edges.items():
+                    for pt2 in pts:
+                        lengths.append(dist(pt1, pt2))
+
+                plt.figure()
+                plt.hist(lengths)
+                plt.title("Lengths")
+                plt.savefig("{}{}_{}.jpg".format(OUTPUT_DIR_NAME, filename.split('.')[0], "6_lengths"))
+
+                mean_length = np.mean(lengths)
+                std_length = np.std(lengths)
+                for pt1, pts in edges.items():
+                    for pt2 in pts:
+                        if abs(dist(pt1, pt2) - mean_length) < 1.5 * std_length:
                             cv2.line(value, pt1, pt2, (255, 0, 255), 5)
-                        if abs(log(slope2)) > log(3):
-                            cv2.line(value, pt2, pt3, (255, 0, 255), 5)
-                        if abs(log(slope3)) > log(3):
-                            cv2.line(value, pt3, pt1, (255, 0, 255), 5)
 
                 for point in points:
                     cv2.circle(value, point, 10, (255, 255, 0), cv2.FILLED)
