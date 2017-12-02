@@ -102,6 +102,28 @@ def dist(pt1, pt2):
     return sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
 
 
+def get_delaunay_triangulation(image, points):
+    size = image.shape
+    r = (0, 0, size[1], size[0])
+    subdiv = cv2.Subdiv2D(r)
+    for point in points:
+        subdiv.insert(point)
+    return subdiv.getTriangleList()
+
+
+def draw_delaunay_triangulation(image, triangulation):
+    size = image.shape
+    r = (0, 0, size[1], size[0])
+    for t in triangulation:
+        pt1 = (t[0], t[1])
+        pt2 = (t[2], t[3])
+        pt3 = (t[4], t[5])
+        if rect_contains(r, pt1) and rect_contains(r, pt2) and rect_contains(r, pt3):
+            cv2.line(image, pt1, pt2, (255, 0, 255), 5)
+            cv2.line(image, pt2, pt3, (255, 0, 255), 5)
+            cv2.line(image, pt3, pt1, (255, 0, 255), 5)
+
+
 def main():
     for filename in listdir(INPUT_DIR_NAME):
         image = cv2.imread(INPUT_DIR_NAME + filename)
@@ -109,80 +131,19 @@ def main():
             points, outputs = process_image(image, RED_LOWER_HSV, RED_UPPER_HSV)
         else:
             points, outputs = process_image(image, BLUE_LOWER_HSV, BLUE_UPPER_HSV)
-        # cv2.imwrite(OUTPUT_DIR_NAME + filename, output)
-        for key, value in outputs.items():
-            if 'output' in key:
-                # point_scores = find_grid(points)
-                # max_score = max(point_scores.values())
-                # multiplier = 15 / max_score
-                # for point, score in point_scores.items():
-                #     cv2.circle(value, point, int(score * multiplier), (255, 255, 0), cv2.FILLED)
-                size = value.shape
-                r = (0, 0, size[1], size[0])
-                subdiv = cv2.Subdiv2D(r)
-                for point in points:
-                    subdiv.insert(point)
-                triangleList = subdiv.getTriangleList()
 
-                edges = defaultdict(lambda : [])
-                for t in triangleList:
-                    pt1 = (t[0], t[1])
-                    pt2 = (t[2], t[3])
-                    pt3 = (t[4], t[5])
-
-                    if rect_contains(r, pt1) and rect_contains(r, pt2) and rect_contains(r, pt3):
-                        slope1 = (abs(pt1[1] - pt2[1]) + 0.0001) / (abs(pt1[0] - pt2[0]) + 0.0001)
-                        slope2 = (abs(pt2[1] - pt3[1]) + 0.0001) / (abs(pt2[0] - pt3[0]) + 0.0001)
-                        slope3 = (abs(pt3[1] - pt1[1]) + 0.0001) / (abs(pt3[0] - pt1[0]) + 0.0001)
-                        if not pt2 in edges[pt1]:
-                            edges[pt1].append(pt2)
-                        if not pt3 in edges[pt2]:
-                            edges[pt2].append(pt3)
-                        if not pt1 in edges[pt3]:
-                            edges[pt3].append(pt1)
-                        # if abs(log(slope1)) > log(3):
-                        #     if not pt2 in edges[pt1]:
-                        #         edges[pt1].append(pt2)
-                        #     # cv2.line(value, pt1, pt2, (255, 0, 255), 5)
-                        # if abs(log(slope2)) > log(3):
-                        #     if not pt3 in edges[pt2]:
-                        #         edges[pt2].append(pt3)
-                        #     # cv2.line(value, pt2, pt3, (255, 0, 255), 5)
-                        # if abs(log(slope3)) > log(3):
-                        #     if not pt1 in edges[pt3]:
-                        #         edges[pt3].append(pt1)
-                        #     # cv2.line(value, pt3, pt1, (255, 0, 255), 5)
-
-                lengths = []
-                for pt1, pts in edges.items():
-                    for pt2 in pts:
-                        lengths.append(dist(pt1, pt2))
-
+        for name, image in outputs.items():
+            if 'output' in name:
+                triangulation = get_delaunay_triangulation(image, points)
+                draw_delaunay_triangulation(image, triangulation)
+            output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
+            if type(image) is list:
                 plt.figure()
-                plt.hist(lengths)
-                plt.title("Lengths")
-                plt.savefig("{}{}_{}.jpg".format(OUTPUT_DIR_NAME, filename.split('.')[0], "6_lengths"))
-
-                mean_length = np.mean(lengths)
-                std_length = np.std(lengths)
-                for pt1, pts in edges.items():
-                    for pt2 in pts:
-                        if abs(dist(pt1, pt2) - mean_length) < 1.5 * std_length:
-                            cv2.line(value, pt1, pt2, (255, 0, 255), 5)
-
-                for point in points:
-                    cv2.circle(value, point, 10, (255, 255, 0), cv2.FILLED)
-            else:
-                continue
-
-            output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], key)
-            if type(value) is list:
-                plt.figure()
-                plt.hist(value, 60, [-15, 15])
-                plt.title(key)
+                plt.hist(image, 60, [-15, 15])
+                plt.title(name)
                 plt.savefig(output_filename)
             else:
-                cv2.imwrite(output_filename, value)
+                cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))
 
 
