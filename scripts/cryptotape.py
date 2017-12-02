@@ -20,23 +20,9 @@ def distance_between_point_and_line(point1, point2, point3):
                + point2[0] * point1[1] - point2[1] * point1[0]) / (euclidean_distance + 0.0001)
 
 
-def find_grid(points):
-    point_scores = defaultdict(lambda : 0)
-    for i in range(len(points)):
-        for j in range(i + 1, len(points)):
-            point1, point2 = points[i], points[j]
-            slope = (point2[1] - point1[1]) / (point2[0] - point1[0] + 0.0001)
-            inverse_slope = 1 / (slope + 0.0001)
-            score = min(abs(slope), abs(inverse_slope))
-            point_scores[point1] += score
-            point_scores[point2] += score
-    return point_scores
-
-
 def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
     height, width, _ = image.shape
     resize = cv2.resize(image, (640, int(height / width * 640)))
-    # resize = cv2.GaussianBlur(resize, (5, 5), 0)
 
     hsv = cv2.cvtColor(resize, cv2.COLOR_BGR2HSV)
     hsv_mask = smart_hsv_range(hsv, lower_hsv, upper_hsv)
@@ -59,18 +45,6 @@ def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
         cy = int(M['m01'] / M['m00'])
         points.append((cx, cy))
 
-    slopes = []
-    inverse_slopes = []
-    for i in range(len(points)):
-        for j in range(i + 1, len(points)):
-            point1, point2 = points[i], points[j]
-            slope = (point2[1] - point1[1]) / (point2[0] - point1[0] + 0.0001)
-            slopes.append(max(min(slope, 15), -15))
-            inverse_slopes.append(max(min(1.0 / (slope + 0.0001), 5), -5))
-
-    # for point in points:
-    #     cv2.circle(output, point, 10, (255, 0, 255), cv2.FILLED)
-
     outputs = {}
     outputs['0_resize'] = resize
     outputs['1_hsv_mask'] = hsv_mask
@@ -79,8 +53,6 @@ def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
     outputs['4_mask'] = mask
     outputs['5_morph_mask'] = morph_mask
     outputs['6_output'] = output
-    outputs['7_slopes'] = slopes
-    outputs['8_inverse_slopes'] = inverse_slopes
 
     return points, outputs
 
@@ -137,13 +109,7 @@ def main():
                 triangulation = get_delaunay_triangulation(image, points)
                 draw_delaunay_triangulation(image, triangulation)
             output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
-            if type(image) is list:
-                plt.figure()
-                plt.hist(image, 60, [-15, 15])
-                plt.title(name)
-                plt.savefig(output_filename)
-            else:
-                cv2.imwrite(output_filename, image)
+            cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))
 
 
