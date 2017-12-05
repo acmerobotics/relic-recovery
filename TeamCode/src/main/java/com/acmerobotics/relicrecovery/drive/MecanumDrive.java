@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import android.util.Log;
+
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
@@ -59,6 +61,8 @@ public class MecanumDrive implements Loop {
      */
     public static final double RADIUS = 2;
 
+    public static final int ORIENTATION_CACHE_MS = 50;
+
     private DcMotor[] motors;
 
     /**
@@ -68,6 +72,8 @@ public class MecanumDrive implements Loop {
 
     private BNO055IMU imu;
     private double headingOffset;
+    private long lastOrientationReadTimestamp;
+    private Orientation cachedOrientation;
 
     private PoseEstimator poseEstimator;
     private PathFollower pathFollower;
@@ -271,8 +277,20 @@ public class MecanumDrive implements Loop {
         return 2 * Math.PI * ticks / ticksPerRev;
     }
 
+    private Orientation getAngularOrientation() {
+        long timestamp = System.currentTimeMillis();
+        if ((timestamp - lastOrientationReadTimestamp) > ORIENTATION_CACHE_MS) {
+            lastOrientationReadTimestamp = timestamp;
+            cachedOrientation = imu.getAngularOrientation();
+            Log.i("MecanumDrive", "getAngularOrientation(): actually read");
+        } else {
+            Log.i("MecanumDrive", "getAngularOrientation(): returned cached read");
+        }
+        return cachedOrientation;
+    }
+
     private double getRawHeading() {
-        return imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+        return getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
     }
 
     public double getHeading() {
@@ -334,7 +352,7 @@ public class MecanumDrive implements Loop {
         }
 
         // auto balance
-        Orientation angularOrientation = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
+        Orientation angularOrientation = getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
         double pitch = angularOrientation.secondAngle;
         double roll = angularOrientation.firstAngle;
 

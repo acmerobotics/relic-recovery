@@ -6,8 +6,8 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PointTurn;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -17,11 +17,11 @@ import java.util.Arrays;
  * @author Ryan
  */
 
-@TeleOp(name = "Heading FF Tuner")
-public class HeadingFeedforwardTuner extends LinearOpMode {
-    public static final double LOWER_BOUND = 0.02;
-    public static final double UPPER_BOUND = 0.035;
-    public static final double TURN_ANGLE = Math.PI / 2;
+@TeleOp(name = "Axial FF Tuner")
+public class AxialFFTuner extends LinearOpMode {
+    public static final double LOWER_BOUND = 0.015;
+    public static final double UPPER_BOUND = 0.025;
+    public static final double DISTANCE = 60;
 
     private RobotDashboard dashboard;
     private Looper looper;
@@ -64,26 +64,31 @@ public class HeadingFeedforwardTuner extends LinearOpMode {
     }
 
     private double testFeedforwardCoefficient(double coefficient) {
-        DriveConstants.HEADING_COEFFS.v = coefficient;
+        DriveConstants.AXIAL_COEFFS.v = coefficient;
 
         // reset heading + pose
-        drive.setEstimatedPose(new Pose2d(0, 0, 0));
-        drive.setHeading(0);
+        drive.setEstimatedPose(new Pose2d(0, 0, drive.getHeading()));
 
-        // turn
-        Path path = new Path(Arrays.asList(
-                new PointTurn(new Pose2d(0, 0, 0), TURN_ANGLE)
+        Path forward = new Path(Arrays.asList(
+                new LineSegment(new Pose2d(0, 0, 0), new Pose2d(DISTANCE, 0, 0))
         ));
-        drive.followPath(path);
+        Path reverse = new Path(Arrays.asList(
+                new LineSegment(new Pose2d(DISTANCE, 0, 0), new Pose2d(0, 0, 0), true)
+        ));
+        drive.followPath(forward);
 
         while (opModeIsActive() && drive.isFollowingPath()) {
             sleep(10);
         }
 
-        sleep(1000);
+        double axialError = drive.getEstimatedPose().x() - DISTANCE;
 
-        double headingError = drive.getHeading() - TURN_ANGLE;
+        drive.followPath(reverse);
 
-        return headingError;
+        while (opModeIsActive() && drive.isFollowingPath()) {
+            sleep(10);
+        }
+
+        return axialError;
     }
 }

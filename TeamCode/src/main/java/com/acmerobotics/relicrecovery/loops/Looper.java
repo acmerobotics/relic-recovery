@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.loops;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 
@@ -33,20 +35,27 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
     @Override
     public void run() {
         this.running = true;
+        long loopStartTime = System.currentTimeMillis();
         while (running) {
-            long startTime = System.currentTimeMillis();
+            Log.i("Looper", "start loop");
 
             for (Loop loop : loops) {
-                loop.onLoop(startTime, loopMs);
+                loop.onLoop(loopStartTime, loopMs);
             }
 
-            while (System.currentTimeMillis() - startTime < loopMs) {
-                try {
-                    Thread.sleep(0, 250);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            long loopEndTime = loopStartTime + loopMs;
+            while (System.currentTimeMillis() > loopEndTime) {
+                loopEndTime += loopMs;
+                Log.i("Looper", "skipped loop!!");
             }
+
+            try {
+                Thread.sleep(loopEndTime - System.currentTimeMillis());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            loopStartTime = loopEndTime;
         }
     }
 
