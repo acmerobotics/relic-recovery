@@ -19,8 +19,8 @@ import java.util.Arrays;
 
 @TeleOp(name = "Heading FF Tuner")
 public class HeadingFFTuner extends LinearOpMode {
-    public static final double LOWER_BOUND = 0.02;
-    public static final double UPPER_BOUND = 0.035;
+    public static final double LOWER_BOUND = 0;
+    public static final double UPPER_BOUND = 0.1;
     public static final double TURN_ANGLE = Math.PI / 2;
 
     private RobotDashboard dashboard;
@@ -64,7 +64,7 @@ public class HeadingFFTuner extends LinearOpMode {
     }
 
     private double testFeedforwardCoefficient(double coefficient) {
-        DriveConstants.HEADING_COEFFS.v = coefficient;
+        DriveConstants.HEADING_COEFFS.a = coefficient;
 
         // reset heading + pose
         drive.setEstimatedPose(new Pose2d(0, 0, 0));
