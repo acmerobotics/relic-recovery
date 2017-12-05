@@ -32,7 +32,7 @@ def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
     gray = cv2.cvtColor(resize, cv2.COLOR_BGR2GRAY)
     gray = cv2.bitwise_and(gray, morph_hsv_mask)
     _, mask = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
-    morph_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), dtype=np.uint8))
+    morph_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((9, 9), dtype=np.uint8))
     morph_mask = cv2.morphologyEx(morph_mask, cv2.MORPH_CLOSE, np.ones((9, 9), dtype=np.uint8))
 
     _, contours, _ = cv2.findContours(morph_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -96,6 +96,19 @@ def draw_delaunay_triangulation(image, triangulation):
             cv2.line(image, pt3, pt1, (255, 0, 255), 5)
 
 
+def get_eigenvectors(points):
+    if len(points) <= 1:
+        return []
+    points = np.array(points)
+    x = points[:,0]
+    y = points[:,1]
+    x = x - np.mean(x)
+    y = y - np.mean(y)
+    coords = np.vstack([x, y])
+    cov = np.cov(coords)
+    evals, evecs = np.linalg.eig(cov)
+    return evecs
+
 def main():
     for filename in listdir(INPUT_DIR_NAME):
         image = cv2.imread(INPUT_DIR_NAME + filename)
@@ -108,6 +121,17 @@ def main():
             if 'output' in name:
                 triangulation = get_delaunay_triangulation(image, points)
                 draw_delaunay_triangulation(image, triangulation)
+                for point in points:
+                    cv2.circle(image, point, 13, (0, 0, 0), cv2.FILLED)
+                    cv2.circle(image, point, 10, (0, 255, 255), cv2.FILLED)
+                evecs = get_eigenvectors(points)
+                points_arr = np.array(points)
+                cx = np.mean(points_arr[:, 0])
+                cy = np.mean(points_arr[:, 1])
+                for evec in evecs:
+                    cv2.line(image, (int(cx), int(cy)), (int(cx + 50 * evec[0]), int(cy + 50 * evec[1])), (0, 0, 0), 7)
+                for evec in evecs:
+                    cv2.line(image, (int(cx), int(cy)), (int(cx + 50 * evec[0]), int(cy + 50 * evec[1])), (0, 255, 0), 3)
             output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
             cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))
