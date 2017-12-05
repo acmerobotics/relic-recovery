@@ -109,6 +109,20 @@ def get_eigenvectors(points):
     evals, evecs = np.linalg.eig(cov)
     return evecs
 
+
+def find_lattice(points):
+    lines = []
+    for i in range(len(points)):
+        pt1 = points[i]
+        for j in range(i + 1, len(points)):
+            pt2 = points[j]
+            slope = (pt2[1] - pt1[1]) / (pt2[0] - pt1[0] + 0.0001)
+            intercept = pt1[1] - slope * pt1[0]
+            lines.append((slope, intercept))
+    lines.sort(key=lambda x: x[0])
+    print(lines)
+
+
 def main():
     for filename in listdir(INPUT_DIR_NAME):
         image = cv2.imread(INPUT_DIR_NAME + filename)
@@ -124,14 +138,7 @@ def main():
                 for point in points:
                     cv2.circle(image, point, 13, (0, 0, 0), cv2.FILLED)
                     cv2.circle(image, point, 10, (0, 255, 255), cv2.FILLED)
-                evecs = get_eigenvectors(points)
-                points_arr = np.array(points)
-                cx = np.mean(points_arr[:, 0])
-                cy = np.mean(points_arr[:, 1])
-                for evec in evecs:
-                    cv2.line(image, (int(cx), int(cy)), (int(cx + 50 * evec[0]), int(cy + 50 * evec[1])), (0, 0, 0), 7)
-                for evec in evecs:
-                    cv2.line(image, (int(cx), int(cy)), (int(cx + 50 * evec[0]), int(cy + 50 * evec[1])), (0, 255, 0), 3)
+                find_lattice(points)
             output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
             cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))
