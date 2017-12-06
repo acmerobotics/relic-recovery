@@ -74,6 +74,10 @@ def dist(pt1, pt2):
     return sqrt((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2)
 
 
+def cos_angle(v1, v2):
+    return (v1[0] * v2[0] + v1[1] * v2[1]) / (sqrt(v1[0] ** 2 + v1[1] ** 2) * sqrt(v2[0] ** 2 + v2[1] ** 2))
+
+
 def get_delaunay_triangulation(image, points):
     size = image.shape
     r = (0, 0, size[1], size[0])
@@ -111,16 +115,45 @@ def get_eigenvectors(points):
 
 
 def find_lattice(points):
-    lines = []
+    horizontal_points = []
+    vertical_points = []
     for i in range(len(points)):
         pt1 = points[i]
         for j in range(i + 1, len(points)):
             pt2 = points[j]
-            slope = (pt2[1] - pt1[1]) / (pt2[0] - pt1[0] + 0.0001)
-            intercept = pt1[1] - slope * pt1[0]
-            lines.append((slope, intercept))
-    lines.sort(key=lambda x: x[0])
-    print(lines)
+            for k in range(j + 1, len(points)):
+                pt3 = points[k]
+                v1 = (pt2[0] - pt1[0], pt2[1] - pt1[1])
+                v2 = (pt3[0] - pt1[0], pt3[1] - pt1[1])
+                det = v1[0] * v2[1] - v1[1] * v2[0]
+                sin_angle = det / (sqrt(v1[0] ** 2 + v1[1] ** 2) * sqrt(v2[0] ** 2 + v2[1] ** 2))
+                if abs(sin_angle) < 0.05:
+                    horiz_cos_angle = cos_angle(v1, (0, 1))
+                    vert_cos_angle = cos_angle(v1, (1, 0))
+                    if abs(horiz_cos_angle) < 0.05:
+                        horizontal_points.extend([pt1, pt2, pt3])
+                    elif abs(vert_cos_angle) < 0.05:
+                        vertical_points.extend([pt1, pt2, pt3])
+
+    return set(horizontal_points), set(vertical_points)
+
+
+def find_lattice2(points):
+    horizontal_points = []
+    vertical_points = []
+    for i in range(len(points)):
+        pt1 = points[i]
+        for j in range(i + 1, len(points)):
+            pt2 = points[j]
+            v = (pt2[0] - pt1[0], pt2[1] - pt1[1])
+            horiz_cos_angle = cos_angle(v, (0, 1))
+            vert_cos_angle = cos_angle(v, (1, 0))
+            if abs(horiz_cos_angle) < 0.075:
+                horizontal_points.extend([pt1, pt2])
+            elif abs(vert_cos_angle) < 0.075:
+                vertical_points.extend([pt1, pt2])
+
+    return set(horizontal_points), set(vertical_points)
 
 
 def main():
@@ -135,10 +168,9 @@ def main():
             if 'output' in name:
                 triangulation = get_delaunay_triangulation(image, points)
                 draw_delaunay_triangulation(image, triangulation)
-                for point in points:
+                for point in find_lattice2(points)[1]:
                     cv2.circle(image, point, 13, (0, 0, 0), cv2.FILLED)
                     cv2.circle(image, point, 10, (0, 255, 255), cv2.FILLED)
-                find_lattice(points)
             output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
             cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))
