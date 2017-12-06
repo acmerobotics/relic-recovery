@@ -20,8 +20,8 @@ import java.io.File;
 @Config
 @TeleOp(name = "Heading Ramp Test")
 public class HeadingRampTest extends LinearOpMode {
-    public static double MAX_POWER = 0.6; // power
-    public static double POWER_DERIVATIVE = 0.05; // power units/s
+    public static double MAX_POWER = 0.25; // power
+    public static double POWER_DERIVATIVE = 0.005; // power units/s
 
     private Looper looper;
     private MecanumDrive drive;
@@ -49,12 +49,16 @@ public class HeadingRampTest extends LinearOpMode {
                     running = false;
                 } else {
                     double headingDelta = estimatedPose.heading() - lastPose.heading();
+                    if (Math.abs(headingDelta) > Math.PI) {
+                        headingDelta -= Math.signum(headingDelta) * 2 * Math.PI;
+                    }
                     double omega = headingDelta / dt * 1000;
                     drive.setVelocity(new Vector2d(0, 0), power);
 
                     loggingTelemetry.addData("timestamp", timestamp);
                     loggingTelemetry.addData("power", power);
                     loggingTelemetry.addData("omega (rad/s)", omega);
+                    loggingTelemetry.addData("heading", estimatedPose.heading());
                     loggingTelemetry.update();
                 }
             }

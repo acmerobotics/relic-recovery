@@ -12,10 +12,10 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 @Config
 public class DriveConstants {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(32.0, 48.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 8.0, 16.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_COEFFS = new PIDFCoefficients(0, 0, 0, 0.0275, 0);
-    public static PIDFCoefficients AXIAL_COEFFS = new PIDFCoefficients(0, 0, 0, 0.0185, 0);
+    public static PIDFCoefficients HEADING_COEFFS = new PIDFCoefficients(0, 0, 0, 0.0252, 0);
+    public static PIDFCoefficients AXIAL_COEFFS = new PIDFCoefficients(0, 0, 0, 0.0189, 0);
     public static PIDCoefficients LATERAL_COEFFS = new PIDCoefficients(0, 0, 0);
 
     public static PIDCoefficients BALANCE_AXIAL_COEFFS = new PIDCoefficients(0, 0, 0);

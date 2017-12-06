@@ -20,7 +20,7 @@ import java.util.Arrays;
 @TeleOp(name = "Heading FF Tuner")
 public class HeadingFFTuner extends LinearOpMode {
     public static final double LOWER_BOUND = 0;
-    public static final double UPPER_BOUND = 0.1;
+    public static final double UPPER_BOUND = 0.025;
     public static final double TURN_ANGLE = Math.PI / 2;
 
     private RobotDashboard dashboard;
@@ -34,7 +34,7 @@ public class HeadingFFTuner extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
 
-        looper = new Looper(20);
+        looper = new Looper(100);
         drive.registerLoops(looper);
         looper.addLoop(((timestamp, dt) -> {
             telemetry.addData("value", value);
