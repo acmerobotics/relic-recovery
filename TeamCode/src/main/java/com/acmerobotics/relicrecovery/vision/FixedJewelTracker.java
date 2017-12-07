@@ -22,6 +22,11 @@ public class FixedJewelTracker implements Tracker {
     private double leftRed, leftBlue, rightRed, rightBlue;
 
     @Override
+    public void init(CameraProperties properties) {
+
+    }
+
+    @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
         if (jewelPlatformRect == null) {
             int imageWidth = frame.width(), imageHeight = frame.height();

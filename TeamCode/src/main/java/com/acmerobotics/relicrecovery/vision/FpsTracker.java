@@ -21,6 +21,11 @@ public class FpsTracker implements Tracker {
     }
 
     @Override
+    public void init(CameraProperties properties) {
+
+    }
+
+    @Override
     public void processFrame(Mat frame, double timestamp) {
         if (lastTimestamp != 0) {
             double timeDelta = timestamp - lastTimestamp;

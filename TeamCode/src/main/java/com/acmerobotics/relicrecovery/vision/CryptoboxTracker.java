@@ -1,8 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import com.acmerobotics.library.dashboard.config.Config;
-import com.vuforia.CameraCalibration;
-import com.vuforia.CameraDevice;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -67,6 +65,7 @@ public class CryptoboxTracker implements Tracker {
     private int openKernelSize, closeKernelSize;
     private boolean useExtendedTracking, initialized;
     private double focalLengthPx;
+    private CameraProperties properties;
 
     public enum CryptoboxColor {
         BLUE,
@@ -337,21 +336,18 @@ public class CryptoboxTracker implements Tracker {
     }
 
     @Override
+    public void init(CameraProperties properties) {
+        this.properties = properties;
+    }
+
+    @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
         actualWidth = frame.cols() / 4;
         actualHeight = frame.rows() / 4;
 
-        if (!initialized) {
-            // TODO: this is a bad hack!! find a better way to do this
-            if (isUnitTest) {
-                focalLengthPx = 270.451191280832; // Moto G4 Play
-            } else {
-                CameraCalibration cameraCalibration = CameraDevice.getInstance().getCameraCalibration();
-                double fov = cameraCalibration.getFieldOfViewRads().getData()[0];
-                focalLengthPx = (actualWidth * 0.5) / Math.tan(0.5 * fov);
-                System.out.println(focalLengthPx);
-            }
+        focalLengthPx = properties.getHorizontalFocalLengthPx(actualWidth);
 
+        if (!initialized) {
             resized = new Mat();
             hsv = new Mat();
             red = new Mat();

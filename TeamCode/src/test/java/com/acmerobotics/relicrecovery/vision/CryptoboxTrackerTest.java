@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by ryanbrott on 10/12/17.
@@ -32,12 +35,16 @@ public class CryptoboxTrackerTest {
     @Test
     @Ignore
     public void testSampleImages() {
-        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
-//        System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
+//        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
+        System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
 
         CryptoboxTracker.isUnitTest = true;
 
+        CameraProperties properties = mock(CameraProperties.class);
+        when(properties.getHorizontalFocalLengthPx(anyDouble())).thenReturn(270.451191280832);
+
         CryptoboxTracker tracker = new CryptoboxTracker(true);
+        tracker.init(properties);
 
         File imageSourceDir = new File("scripts/cryptobox/images");
 //        File imageSourceDir = new File("/Users/ryanbrott/Downloads/Cryptoboxes");
