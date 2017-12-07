@@ -33,7 +33,7 @@ def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
     gray = cv2.bitwise_and(gray, morph_hsv_mask)
     _, mask = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
     morph_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((9, 9), dtype=np.uint8))
-    morph_mask = cv2.morphologyEx(morph_mask, cv2.MORPH_CLOSE, np.ones((9, 9), dtype=np.uint8))
+    morph_mask = cv2.morphologyEx(morph_mask, cv2.MORPH_CLOSE, np.ones((9, 25), dtype=np.uint8))
 
     _, contours, _ = cv2.findContours(morph_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -166,11 +166,11 @@ def main():
 
         for name, image in outputs.items():
             if 'output' in name:
-                triangulation = get_delaunay_triangulation(image, points)
-                draw_delaunay_triangulation(image, triangulation)
                 for point in find_lattice2(points)[1]:
                     cv2.circle(image, point, 13, (0, 0, 0), cv2.FILLED)
                     cv2.circle(image, point, 10, (0, 255, 255), cv2.FILLED)
+            else:
+                continue
             output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
             cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))
