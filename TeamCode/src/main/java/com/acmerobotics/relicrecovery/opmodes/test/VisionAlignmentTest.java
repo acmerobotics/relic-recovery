@@ -5,7 +5,7 @@ import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.motion.PIDController;
-import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
+import com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
@@ -30,7 +30,7 @@ public class VisionAlignmentTest extends LinearOpMode {
     private RobotDashboard dashboard;
 
     private VisionCamera camera;
-    private CryptoboxTracker cryptoboxTracker;
+    private OldCryptoboxTracker cryptoboxTracker;
 
     private MecanumDrive drive;
 
@@ -54,7 +54,7 @@ public class VisionAlignmentTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         camera = new VisionCamera();
-        cryptoboxTracker = new CryptoboxTracker(false);
+        cryptoboxTracker = new OldCryptoboxTracker(false);
         camera.addTracker(new FpsTracker());
         camera.addTracker(cryptoboxTracker);
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
@@ -86,7 +86,7 @@ public class VisionAlignmentTest extends LinearOpMode {
             double headingUpdate = headingController.update(headingError);
 
             // update distance and offset
-            CryptoboxTracker.CryptoboxResult result = cryptoboxTracker.getLatestResult();
+            OldCryptoboxTracker.CryptoboxResult result = cryptoboxTracker.getLatestResult();
             if (result.rails.size() == 4) {
                 distance = result.distance;
                 offset = result.offsetX;

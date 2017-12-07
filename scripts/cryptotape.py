@@ -26,13 +26,13 @@ def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
 
     hsv = cv2.cvtColor(resize, cv2.COLOR_BGR2HSV)
     hsv_mask = smart_hsv_range(hsv, lower_hsv, upper_hsv)
-    morph_hsv_mask = cv2.morphologyEx(hsv_mask, cv2.MORPH_OPEN, np.ones((9, 9), dtype=np.uint8))
+    morph_hsv_mask = cv2.morphologyEx(hsv_mask, cv2.MORPH_OPEN, np.ones((7, 7), dtype=np.uint8))
     morph_hsv_mask = cv2.morphologyEx(morph_hsv_mask, cv2.MORPH_CLOSE, np.ones((41, 5), dtype=np.uint8))
 
     gray = cv2.cvtColor(resize, cv2.COLOR_BGR2GRAY)
     gray = cv2.bitwise_and(gray, morph_hsv_mask)
     _, mask = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
-    morph_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((9, 9), dtype=np.uint8))
+    morph_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((7, 7), dtype=np.uint8))
     morph_mask = cv2.morphologyEx(morph_mask, cv2.MORPH_CLOSE, np.ones((9, 25), dtype=np.uint8))
 
     _, contours, _ = cv2.findContours(morph_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -169,8 +169,6 @@ def main():
                 for point in find_lattice2(points)[1]:
                     cv2.circle(image, point, 13, (0, 0, 0), cv2.FILLED)
                     cv2.circle(image, point, 10, (0, 255, 255), cv2.FILLED)
-            else:
-                continue
             output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
             cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))

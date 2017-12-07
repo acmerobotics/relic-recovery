@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import com.acmerobotics.relicrecovery.util.VisionUtil;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opencv.core.Mat;
@@ -11,9 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by ryanbrott on 10/12/17.
@@ -23,7 +22,7 @@ public class CryptoboxTrackerTest {
     @Test
     public void testNonMaximumSuppression() {
         List<Double> values = new ArrayList<>(Arrays.asList(1.0, 1.01, 1.5, 2.0, 3.0, 3.15, 4.0));
-        List<Double> actualOutputValues = CryptoboxTracker.nonMaximumSuppression(values, 0.2);
+        List<Double> actualOutputValues = VisionUtil.nonMaximumSuppression(values, 0.2);
         List<Double> expectedOutputValues = Arrays.asList(1.005, 1.5, 2.0, 3.075, 4.0);
 
         assertEquals(expectedOutputValues.size(), actualOutputValues.size());
@@ -38,23 +37,35 @@ public class CryptoboxTrackerTest {
 //        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
         System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
 
-        CryptoboxTracker.isUnitTest = true;
+        CameraProperties properties = new CameraProperties() {
+            @Override
+            public double getHorizontalFocalLengthPx(double imageWidth) {
+                return 270.451191280832;
+            }
+        };
 
-        CameraProperties properties = mock(CameraProperties.class);
-        when(properties.getHorizontalFocalLengthPx(anyDouble())).thenReturn(270.451191280832);
+        CryptoboxTracker redTracker = new CryptoboxTracker(CryptoboxTracker.Color.RED);
+        CryptoboxTracker blueTracker = new CryptoboxTracker(CryptoboxTracker.Color.BLUE);
 
-        CryptoboxTracker tracker = new CryptoboxTracker(true);
-        tracker.init(properties);
+        redTracker.init(properties);
+        blueTracker.init(properties);
 
-        File imageSourceDir = new File("scripts/cryptobox/images");
-//        File imageSourceDir = new File("/Users/ryanbrott/Downloads/Cryptoboxes");
-        File imageOutputDir = new File("scripts/cryptobox/output");
+        File imageSourceDir = new File("scripts/cryptobox-with-tape/images");
+        File imageOutputDir = new File("scripts/cryptobox-with-tape/output");
         imageOutputDir.mkdirs();
 
         for (File imageFile : imageSourceDir.listFiles()) {
             if (imageFile.getName().startsWith(".")) {
                 continue;
             }
+
+            CryptoboxTracker tracker;
+            if (imageFile.getName().contains("red")) {
+                tracker = redTracker;
+            } else {
+                tracker = blueTracker;
+            }
+
             System.out.println("processing " + imageFile.getName());
 
             Mat image = Imgcodecs.imread(imageFile.getAbsolutePath());
