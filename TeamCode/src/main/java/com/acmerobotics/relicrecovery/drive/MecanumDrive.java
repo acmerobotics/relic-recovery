@@ -214,6 +214,10 @@ public class MecanumDrive implements Loop {
         }
     }
 
+    public void stop() {
+        setVelocity(new Vector2d(0, 0), 0);
+    }
+
     /**
      * get distance traveled from encoder values
      *
