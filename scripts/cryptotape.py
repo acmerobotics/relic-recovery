@@ -168,9 +168,15 @@ def main():
 
         for name, image in outputs.items():
             if 'output' in name:
-                for point in find_lattice2(points)[1]:
+                lattice_points = find_lattice2(points)[1]
+                for point in points:
                     cv2.circle(image, point, 13, (0, 0, 0), cv2.FILLED)
-                    cv2.circle(image, point, 10, (0, 255, 255), cv2.FILLED)
+                    if point in lattice_points:
+                        cv2.circle(image, point, 10, (0, 255, 255), cv2.FILLED)
+                    else:
+                        cv2.circle(image, point, 10, (255, 255, 0), cv2.FILLED)
+            else:
+                continue
             output_filename = '{}{}_{}.jpg'.format(OUTPUT_DIR_NAME, filename.split('.')[0], name)
             cv2.imwrite(output_filename, image)
         print('processed {}'.format(filename))

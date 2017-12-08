@@ -26,18 +26,18 @@ import java.util.Locale;
 @Config
 public class CryptoboxTracker implements Tracker {
     // red HSV range
-    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 80;
+    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
 
     // blue HSV range
-    public static int BLUE_LOWER_HUE = 100, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 80;
+    public static int BLUE_LOWER_HUE = 100, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 0;
     public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
 
     // binary morphology kernel sizes
     public static int OPEN_KERNEL_SIZE = 5;
     public static int HSV_CLOSE_KERNEL_WIDTH = 5;
     public static int HSV_CLOSE_KERNEL_HEIGHT = 41;
-    public static int TAPE_CLOSE_KERNEL_WIDTH = 9;
+    public static int TAPE_CLOSE_KERNEL_WIDTH = 25;
     public static int TAPE_CLOSE_KERNEL_HEIGHT = 9;
 
     public static double MAX_COS_ANGLE = 0.075;
