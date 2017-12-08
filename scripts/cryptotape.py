@@ -9,8 +9,8 @@ from collections import defaultdict
 RED_LOWER_HSV, RED_UPPER_HSV = (170, 80, 0), (7, 255, 255)
 BLUE_LOWER_HSV, BLUE_UPPER_HSV = (100, 80, 0), (124, 255, 255)
 
-INPUT_DIR_NAME = "cryptobox-with-tape/images/"
-OUTPUT_DIR_NAME = "cryptobox-with-tape/output/"
+INPUT_DIR_NAME = "new-cryptobox/images/"
+OUTPUT_DIR_NAME = "new-cryptobox/output/"
 
 
 # see https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
@@ -26,13 +26,13 @@ def process_image(image, lower_hsv=BLUE_LOWER_HSV, upper_hsv=BLUE_UPPER_HSV):
 
     hsv = cv2.cvtColor(resize, cv2.COLOR_BGR2HSV)
     hsv_mask = smart_hsv_range(hsv, lower_hsv, upper_hsv)
-    morph_hsv_mask = cv2.morphologyEx(hsv_mask, cv2.MORPH_OPEN, np.ones((7, 7), dtype=np.uint8))
+    morph_hsv_mask = cv2.morphologyEx(hsv_mask, cv2.MORPH_OPEN, np.ones((5, 5), dtype=np.uint8))
     morph_hsv_mask = cv2.morphologyEx(morph_hsv_mask, cv2.MORPH_CLOSE, np.ones((41, 5), dtype=np.uint8))
 
     gray = cv2.cvtColor(resize, cv2.COLOR_BGR2GRAY)
     gray = cv2.bitwise_and(gray, morph_hsv_mask)
     _, mask = cv2.threshold(gray, 120, 255, cv2.THRESH_BINARY)
-    morph_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((7, 7), dtype=np.uint8))
+    morph_mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, np.ones((5, 5), dtype=np.uint8))
     morph_mask = cv2.morphologyEx(morph_mask, cv2.MORPH_CLOSE, np.ones((9, 25), dtype=np.uint8))
 
     _, contours, _ = cv2.findContours(morph_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -158,6 +158,8 @@ def find_lattice2(points):
 
 def main():
     for filename in listdir(INPUT_DIR_NAME):
+        if filename.startswith("."):
+            continue
         image = cv2.imread(INPUT_DIR_NAME + filename)
         if 'red' in filename:
             points, outputs = process_image(image, RED_LOWER_HSV, RED_UPPER_HSV)

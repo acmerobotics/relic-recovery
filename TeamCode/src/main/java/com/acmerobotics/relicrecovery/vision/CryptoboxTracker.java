@@ -34,7 +34,7 @@ public class CryptoboxTracker implements Tracker {
     public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
 
     // binary morphology kernel sizes
-    public static int OPEN_KERNEL_SIZE = 7;
+    public static int OPEN_KERNEL_SIZE = 5;
     public static int HSV_CLOSE_KERNEL_WIDTH = 5;
     public static int HSV_CLOSE_KERNEL_HEIGHT = 41;
     public static int TAPE_CLOSE_KERNEL_WIDTH = 9;

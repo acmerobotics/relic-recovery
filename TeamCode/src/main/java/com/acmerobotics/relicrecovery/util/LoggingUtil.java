@@ -36,7 +36,7 @@ public class LoggingUtil {
 
     public static File getImageDir(OpMode opMode) {
         String dirName = opMode.getClass().getSimpleName() + "-images-" + System.currentTimeMillis();
-        File dir = new File(Environment.getExternalStorageDirectory(), new File(getLogRoot(opMode), dirName).getPath());
+        File dir = new File(getLogRoot(opMode), dirName);
         dir.mkdirs();
         return dir;
     }

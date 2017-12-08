@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.vision;
 
+import com.acmerobotics.relicrecovery.util.LoggingUtil;
+import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
@@ -14,16 +16,17 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @TeleOp(name = "Cryptobox Vision", group = "vision")
 public class CryptoboxVision extends OpMode {
     private VisionCamera camera;
-    private OldCryptoboxTracker cryptoboxTracker;
+    private CryptoboxTracker cryptoboxTracker;
     private FpsTracker fpsTracker;
 
     @Override
     public void init() {
         camera = new VisionCamera();
-        cryptoboxTracker = new OldCryptoboxTracker(false);
+        cryptoboxTracker = new CryptoboxTracker(CryptoboxTracker.Color.BLUE);
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
         camera.addTracker(fpsTracker);
+        camera.setImageDir(LoggingUtil.getImageDir(this));
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
     }
 

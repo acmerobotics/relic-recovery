@@ -47,14 +47,12 @@ public class RobotDashboard {
 	};
 
 	private DashboardTelemetry telemetry;
-	private SharedPreferences prefs;
 	private List<RobotWebSocket> sockets;
 	private RobotWebSocketServer server;
 	private Configuration configuration;
 	private Canvas fieldOverlay;
 	
 	private RobotDashboard(Context ctx) {
-		prefs = ctx.getSharedPreferences(CONFIG_PREFS, Context.MODE_PRIVATE);
 		sockets = new ArrayList<>();
 		fieldOverlay = new Canvas();
 		configuration = new Configuration();
