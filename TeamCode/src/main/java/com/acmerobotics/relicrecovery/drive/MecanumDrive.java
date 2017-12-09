@@ -200,11 +200,12 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
+    // removed K's to circumvent scaling issues
     void internalSetVelocity(Vector2d vel, double omega) {
-        targetPowers[0] = vel.x() - vel.y() - K * omega;
-        targetPowers[1] = vel.x() + vel.y() - K * omega;
-        targetPowers[2] = vel.x() - vel.y() + K * omega;
-        targetPowers[3] = vel.x() + vel.y() + K * omega;
+        targetPowers[0] = vel.x() - vel.y() - omega;
+        targetPowers[1] = vel.x() + vel.y() - omega;
+        targetPowers[2] = vel.x() - vel.y() + omega;
+        targetPowers[3] = vel.x() + vel.y() + omega;
 
         double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
                 Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
