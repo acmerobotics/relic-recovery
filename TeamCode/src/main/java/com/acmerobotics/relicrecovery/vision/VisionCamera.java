@@ -54,6 +54,7 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
     private List<Tracker> trackers;
     private File imageDir;
     private int imageNum;
+    private boolean initialized;
 
     private AppUtil appUtil = AppUtil.getInstance();
     private Activity activity;
@@ -151,80 +152,92 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
     public synchronized void addTracker(Tracker tracker) {
         this.trackers.add(tracker);
 
+        if (initialized) {
+            tracker.init(new VuforiaCameraProperties());
+        }
+
         if (overlayView != null) {
             this.overlayView.addTracker(tracker);
         }
     }
 
     public void initialize(VuforiaLocalizer.Parameters vuforiaParams) {
-        final CountDownLatch openCvInitialized = new CountDownLatch(1);
+        if (!initialized) {
+            final CountDownLatch openCvInitialized = new CountDownLatch(1);
 
-        final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(activity) {
-            @Override
-            public void onManagerConnected(int status) {
-                switch (status) {
-                    case LoaderCallbackInterface.SUCCESS: {
-                        Log.i(TAG, "OpenCV loaded successfully");
-                        openCvInitialized.countDown();
-                        break;
-                    }
-                    default: {
-                        super.onManagerConnected(status);
-                        break;
+            final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(activity) {
+                @Override
+                public void onManagerConnected(int status) {
+                    switch (status) {
+                        case LoaderCallbackInterface.SUCCESS: {
+                            Log.i(TAG, "OpenCV loaded successfully");
+                            openCvInitialized.countDown();
+                            break;
+                        }
+                        default: {
+                            super.onManagerConnected(status);
+                            break;
+                        }
                     }
                 }
+            };
+
+            appUtil.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, activity, loaderCallback);
+                }
+            });
+
+            vuforia = ClassFactory.createVuforiaLocalizer(vuforiaParams);
+            this.vuforiaParams = vuforiaParams;
+
+            Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true);
+            vuforia.setFrameQueueCapacity(1);
+
+            if (vuforiaParams.cameraMonitorViewIdParent != 0) {
+                this.overlayView = new OverlayView(activity);
+
+                for (Tracker tracker : trackers) {
+                    overlayView.addTracker(tracker);
+                }
+
+                final Activity activity = appUtil.getActivity();
+                activity.runOnUiThread(() -> {
+                    LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(R.id.cameraMonitorViewId);
+                    cameraLayout = (FrameLayout) cameraMonitorView.getParent();
+                    cameraLayout.addView(overlayView);
+
+                    mainLayout = (RelativeLayout) activity.findViewById(R.id.RelativeLayout);
+                    debugToggle = new ToggleButton(activity);
+                    debugToggle.setText(DEBUG_TOGGLE_TEXT);
+                    debugToggle.setTextOff(DEBUG_TOGGLE_TEXT);
+                    debugToggle.setTextOn(DEBUG_TOGGLE_TEXT);
+                    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    layoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, R.id.textOpMode);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+                    debugToggle.setLayoutParams(layoutParams);
+                    debugToggle.setOnCheckedChangeListener((compoundButton, b) -> overlayView.setDebug(b));
+                    mainLayout.addView(debugToggle);
+                });
             }
-        };
 
-        appUtil.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, activity, loaderCallback);
+            try {
+                openCvInitialized.await();
+            } catch (InterruptedException e) {
+                Log.w(TAG, e);
             }
-        });
-
-        vuforia = ClassFactory.createVuforiaLocalizer(vuforiaParams);
-        this.vuforiaParams = vuforiaParams;
-
-        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB888, true);
-        vuforia.setFrameQueueCapacity(1);
-
-        if (vuforiaParams.cameraMonitorViewIdParent != 0) {
-            this.overlayView = new OverlayView(activity);
 
             for (Tracker tracker : trackers) {
-                overlayView.addTracker(tracker);
+                tracker.init(new VuforiaCameraProperties());
             }
 
-            final Activity activity = appUtil.getActivity();
-            activity.runOnUiThread(() -> {
-                LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(R.id.cameraMonitorViewId);
-                cameraLayout = (FrameLayout) cameraMonitorView.getParent();
-                cameraLayout.addView(overlayView);
+            frameConsumer = new FrameConsumer(vuforia.getFrameQueue());
+            frameConsumer.start();
 
-                mainLayout = (RelativeLayout) activity.findViewById(R.id.RelativeLayout);
-                debugToggle = new ToggleButton(activity);
-                debugToggle.setText(DEBUG_TOGGLE_TEXT);
-                debugToggle.setTextOff(DEBUG_TOGGLE_TEXT);
-                debugToggle.setTextOn(DEBUG_TOGGLE_TEXT);
-                RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                layoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, R.id.textOpMode);
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_END);
-                debugToggle.setLayoutParams(layoutParams);
-                debugToggle.setOnCheckedChangeListener((compoundButton, b) -> overlayView.setDebug(b));
-                mainLayout.addView(debugToggle);
-            });
+            initialized = true;
         }
-
-        try {
-            openCvInitialized.await();
-        } catch (InterruptedException e) {
-            Log.w(TAG, e);
-        }
-
-        frameConsumer = new FrameConsumer(vuforia.getFrameQueue());
-        frameConsumer.start();
     }
 
     public void setImageDir(File imageDir) {

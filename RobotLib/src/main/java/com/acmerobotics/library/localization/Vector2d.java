@@ -71,4 +71,9 @@ public class Vector2d {
     public String toString() {
         return "<" + x + ", " + y + ">";
     }
+
+    public static double getCosAngle(Vector2d v1, Vector2d v2) {
+        double dot = v1.x * v2.x + v1.y * v2.y;
+        return dot / (v1.norm() * v2.norm());
+    }
 }

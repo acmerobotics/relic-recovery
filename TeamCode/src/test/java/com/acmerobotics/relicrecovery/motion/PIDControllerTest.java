@@ -1,7 +1,5 @@
 package com.acmerobotics.relicrecovery.motion;
 
-import com.acmerobotics.velocityvortex.drive.PIDController;
-
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -48,7 +46,8 @@ public class PIDControllerTest {
     public void testBoundedError() {
         PIDController controller = new PIDController(1, 0, 0);
         controller.setInputBounds(0, 360);
-        double error = controller.getError(340, 60);
+        controller.setSetpoint(60);
+        double error = controller.getError(340);
         assertEquals(-80, error, 0.0001);
     }
 

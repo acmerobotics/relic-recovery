@@ -96,6 +96,11 @@ public class DynamicJewelTracker implements Tracker {
     }
 
     @Override
+    public void init(CameraProperties properties) {
+
+    }
+
+    @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
         if (resized == null) {
             resized = new Mat();

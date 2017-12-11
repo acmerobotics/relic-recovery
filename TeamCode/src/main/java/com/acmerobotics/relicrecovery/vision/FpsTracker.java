@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import com.acmerobotics.velocityvortex.sensors.ExponentialSmoother;
+import com.acmerobotics.relicrecovery.util.ExponentialSmoother;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -18,6 +18,11 @@ public class FpsTracker implements Tracker {
 
     public FpsTracker() {
         smoother = new ExponentialSmoother(0.2);
+    }
+
+    @Override
+    public void init(CameraProperties properties) {
+
     }
 
     @Override

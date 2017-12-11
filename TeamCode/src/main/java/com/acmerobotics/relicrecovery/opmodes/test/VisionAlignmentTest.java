@@ -4,11 +4,11 @@ import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
+import com.acmerobotics.relicrecovery.motion.PIDController;
+import com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
-import com.acmerobotics.velocityvortex.drive.PIDController;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -30,7 +30,7 @@ public class VisionAlignmentTest extends LinearOpMode {
     private RobotDashboard dashboard;
 
     private VisionCamera camera;
-    private CryptoboxTracker cryptoboxTracker;
+    private OldCryptoboxTracker cryptoboxTracker;
 
     private MecanumDrive drive;
 
@@ -54,7 +54,7 @@ public class VisionAlignmentTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         camera = new VisionCamera();
-        cryptoboxTracker = new CryptoboxTracker(false);
+        cryptoboxTracker = new OldCryptoboxTracker(false);
         camera.addTracker(new FpsTracker());
         camera.addTracker(cryptoboxTracker);
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
@@ -81,17 +81,20 @@ public class VisionAlignmentTest extends LinearOpMode {
 
             // update heading
             double heading = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
-            double headingError = headingController.getError(heading, targetHeading);
+            headingController.setSetpoint(targetHeading);
+            double headingError = headingController.getError(heading);
             double headingUpdate = headingController.update(headingError);
 
             // update distance and offset
-            CryptoboxTracker.CryptoboxResult result = cryptoboxTracker.getLatestResult();
+            OldCryptoboxTracker.CryptoboxResult result = cryptoboxTracker.getLatestResult();
             if (result.rails.size() == 4) {
                 distance = result.distance;
                 offset = result.offsetX;
             }
-            double distanceError = distanceController.getError(distance, targetDistance);
-            double offsetError = offsetController.getError(offset, targetOffset);
+            distanceController.setSetpoint(targetDistance);
+            double distanceError = distanceController.getError(distance);
+            offsetController.setSetpoint(targetOffset);
+            double offsetError = offsetController.getError(offset);
             double distanceUpdate = distanceController.update(distanceError);
             double offsetUpdate = offsetController.update(offsetError);
 

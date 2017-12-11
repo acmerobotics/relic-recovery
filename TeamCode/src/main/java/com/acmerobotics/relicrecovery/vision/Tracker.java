@@ -7,6 +7,7 @@ import org.opencv.core.Mat;
  */
 
 public interface Tracker {
+    void init(CameraProperties properties);
     void processFrame(Mat frame, double timestamp);
     void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug);
 }
