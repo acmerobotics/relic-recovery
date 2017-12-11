@@ -11,23 +11,17 @@ import com.acmerobotics.relicrecovery.motion.MotionState;
 import java.util.Locale;
 
 /**
- * Class representing a linear path segment
+ * Class representing a linear path segment. Only supports purely translational movement.
  */
 public class LineSegment implements PathSegment {
     private Pose2d start, end;
     private Vector2d seg;
     private MotionProfile profile;
-    private boolean negated;
 
     public LineSegment(Pose2d start, Pose2d end) {
-        this(start, end, false);
-    }
-
-    public LineSegment(Pose2d start, Pose2d end, boolean negated) {
         this.start = start;
         this.end = end;
         this.seg = end.pos().added(start.pos().negated());
-        this.negated = negated;
         MotionGoal goal = new MotionGoal(length(), 0);
         MotionState startState = new MotionState(0, 0, 0, 0, 0);
         this.profile = MotionProfileGenerator.generateProfile(startState, goal, DriveConstants.AXIAL_CONSTRAINTS);
@@ -77,12 +71,12 @@ public class LineSegment implements PathSegment {
     @Override
     public Pose2d getPoseVelocity(double time) {
         double velocity = profile.get(time).v;
-        return new Pose2d((negated ? -1 : 1) * velocity, 0, 0);
+        return new Pose2d(seg.multiplied(velocity / length()), 0);
     }
 
     @Override
     public Pose2d getPoseAcceleration(double time) {
         double acceleration = profile.get(time).a;
-        return new Pose2d((negated ? -1 : 1) * acceleration, 0, 0);
+        return new Pose2d(seg.multiplied(acceleration / length()), 0);
     }
 }

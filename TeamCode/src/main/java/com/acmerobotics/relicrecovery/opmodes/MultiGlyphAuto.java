@@ -26,7 +26,7 @@ public class MultiGlyphAuto extends LinearOpMode {
     ));
 
     private Path pitToCrypto = new Path(Arrays.asList(
-            new LineSegment(new Pose2d(12, -12, Math.PI / 2), new Pose2d(12, -60, Math.PI / 2), true)
+            new LineSegment(new Pose2d(12, -12, Math.PI / 2), new Pose2d(12, -60, Math.PI / 2))
     ));
 
     private Path cryptoToPit = new Path(Arrays.asList(

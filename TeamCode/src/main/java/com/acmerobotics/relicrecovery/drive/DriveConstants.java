@@ -16,7 +16,7 @@ public class DriveConstants {
 
     public static PIDFCoefficients HEADING_COEFFS = new PIDFCoefficients(0, 0, 0, 0.0252, 0);
     public static PIDFCoefficients AXIAL_COEFFS = new PIDFCoefficients(0, 0, 0, 0.0189, 0);
-    public static PIDCoefficients LATERAL_COEFFS = new PIDCoefficients(0, 0, 0);
+    public static PIDFCoefficients LATERAL_COEFFS = new PIDFCoefficients(0, 0, 0, 0, 0);
 
     public static PIDCoefficients BALANCE_AXIAL_COEFFS = new PIDCoefficients(0, 0, 0);
     public static PIDCoefficients BALANCE_LATERAL_COEFFS = new PIDCoefficients(0, 0, 0);

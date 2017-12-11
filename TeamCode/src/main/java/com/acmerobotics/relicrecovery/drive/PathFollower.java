@@ -10,6 +10,8 @@ import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+import java.util.Vector;
+
 /**
  * @author Ryan
  */
@@ -19,7 +21,7 @@ public class PathFollower {
 
     private MecanumDrive drive;
     private PIDFController headingController, axialController;
-    private PIDController lateralController;
+    private PIDFController lateralController;
     private Path path;
     private long pathStartTimestamp;
 
@@ -29,7 +31,7 @@ public class PathFollower {
 
     private Pose2d pose, poseVelocity, poseAcceleration;
 
-    public PathFollower(MecanumDrive drive, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDCoefficients lateralCoeff) {
+    public PathFollower(MecanumDrive drive, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDFCoefficients lateralCoeff) {
         this.drive = drive;
 
         headingController = new PIDFController(headingCoeff);
@@ -37,7 +39,7 @@ public class PathFollower {
 
         axialController = new PIDFController(axialCoeff);
 
-        lateralController = new PIDController(lateralCoeff);
+        lateralController = new PIDFController(lateralCoeff);
     }
 
     public double getHeadingError() {
@@ -102,6 +104,7 @@ public class PathFollower {
             return false;
         }
 
+        // all field coordinates
         pose = path.getPose(time);
         poseVelocity = path.getPoseVelocity(time);
         poseAcceleration = path.getPoseAcceleration(time);
@@ -117,11 +120,18 @@ public class PathFollower {
         axialError = robotError.x();
         lateralError = robotError.y();
 
-        MotionState axialState = new MotionState(pose.x(), poseVelocity.x(), poseAcceleration.x(), 0, 0);
+        Vector2d fieldVelocity = new Vector2d(poseVelocity.x(), poseVelocity.y());
+        Vector2d robotVelocity = fieldVelocity.rotated(-estimatedPose.heading());
+
+        Vector2d fieldAcceleration = new Vector2d(poseAcceleration.x(), poseAcceleration.y());
+        Vector2d robotAcceleration = fieldAcceleration.rotated(-estimatedPose.heading());
+
+        MotionState axialState = new MotionState(pose.x(), robotVelocity.x(), robotAcceleration.x(), 0, 0);
         axialController.setSetpoint(axialState);
         axialUpdate = axialController.update(axialError, time);
 
-        lateralController.setSetpoint(pose.y());
+        MotionState lateralState = new MotionState(pose.y(), robotVelocity.y(), robotAcceleration.y(), 0, 0);
+        lateralController.setSetpoint(lateralState);
         lateralUpdate = lateralController.update(lateralError, time);
 
         drive.internalSetVelocity(new Vector2d(axialUpdate, lateralUpdate), headingUpdate);

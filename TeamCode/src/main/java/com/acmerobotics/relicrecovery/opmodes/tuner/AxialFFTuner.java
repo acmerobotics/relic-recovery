@@ -73,7 +73,7 @@ public class AxialFFTuner extends LinearOpMode {
                 new LineSegment(new Pose2d(0, 0, 0), new Pose2d(DISTANCE, 0, 0))
         ));
         Path reverse = new Path(Arrays.asList(
-                new LineSegment(new Pose2d(DISTANCE, 0, 0), new Pose2d(0, 0, 0), true)
+                new LineSegment(new Pose2d(DISTANCE, 0, 0), new Pose2d(0, 0, 0))
         ));
         drive.followPath(forward);
 
