@@ -130,7 +130,7 @@ public class MecanumDrive implements Loop {
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
         poseEstimator = new PoseEstimator(this, initialPose);
-        pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+        pathFollower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
         balanceAxialController.setOutputBounds(-1, 1);
@@ -392,7 +392,11 @@ public class MecanumDrive implements Loop {
                 }
                 break;
             case FOLLOW_PATH:
-                if (pathFollower.update(estimatedPose, timestamp)) {
+                if (pathFollower.isFollowingPath()) {
+                    Pose2d update = pathFollower.update(estimatedPose, timestamp);
+                    internalSetVelocity(update.pos(), update.heading());
+                } else {
+                    stop();
                     revertMode();
                 }
                 powers = targetPowers;

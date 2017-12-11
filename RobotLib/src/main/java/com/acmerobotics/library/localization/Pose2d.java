@@ -53,6 +53,10 @@ public class Pose2d {
         return new Pose2d(pos.added(other.pos), Angle.norm(heading + other.heading));
     }
 
+    public Pose2d multiplied(double scalar) {
+        return new Pose2d(scalar * x(), scalar * y(), scalar * heading());
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof Pose2d) {

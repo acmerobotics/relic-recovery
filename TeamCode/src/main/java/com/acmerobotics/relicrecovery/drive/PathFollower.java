@@ -19,7 +19,6 @@ import java.util.Vector;
 @Config
 public class PathFollower {
 
-    private MecanumDrive drive;
     private PIDFController headingController, axialController;
     private PIDFController lateralController;
     private Path path;
@@ -31,9 +30,7 @@ public class PathFollower {
 
     private Pose2d pose, poseVelocity, poseAcceleration;
 
-    public PathFollower(MecanumDrive drive, PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDFCoefficients lateralCoeff) {
-        this.drive = drive;
-
+    public PathFollower(PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDFCoefficients lateralCoeff) {
         headingController = new PIDFController(headingCoeff);
         headingController.setInputBounds(-Math.PI, Math.PI);
 
@@ -88,7 +85,11 @@ public class PathFollower {
     }
 
     public boolean isFollowingPath() {
-        return path != null && (System.currentTimeMillis() - pathStartTimestamp) / 1000.0 < path.duration();
+        return isFollowingPath(System.currentTimeMillis());
+    }
+
+    public boolean isFollowingPath(long timestamp) {
+        return path != null && (timestamp - pathStartTimestamp) / 1000.0 < path.duration();
     }
 
     /**
@@ -97,11 +98,10 @@ public class PathFollower {
      * @param timestamp current time in ms
      * @return true if the path is finished
      */
-    public boolean update(Pose2d estimatedPose, long timestamp) {
+    public Pose2d update(Pose2d estimatedPose, long timestamp) {
         double time = (timestamp - pathStartTimestamp) / 1000.0;
         if (time > path.duration()) {
-            drive.setVelocity(new Vector2d(0, 0), 0);
-            return false;
+            return new Pose2d(0, 0, 0);
         }
 
         // all field coordinates
@@ -134,8 +134,6 @@ public class PathFollower {
         lateralController.setSetpoint(lateralState);
         lateralUpdate = lateralController.update(lateralError, time);
 
-        drive.internalSetVelocity(new Vector2d(axialUpdate, lateralUpdate), headingUpdate);
-
-        return false;
+        return new Pose2d(axialUpdate, lateralUpdate, headingUpdate);
     }
 }
