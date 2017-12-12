@@ -1,11 +1,9 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.drive.DriveConstants;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.PathFollower;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -62,22 +60,28 @@ public class PathTest {
     @Test
     public void simulatePathFollowing() throws IOException {
         Path path = new PathBuilder(new Pose2d(0, 0, 0))
-                .lineTo(new Pose2d(1, 1, 0))
-                .lineTo(new Pose2d(2, 1, 0))
-                .turn(Math.PI / 2)
+                .turn(3 * Math.PI / 8)
+                .lineTo(new Vector2d(1, 1))
+                .turn(-Math.PI / 2)
+                .lineTo(new Vector2d(2, 3))
+                .lineTo(new Vector2d(2, 5))
                 .build();
-        PathFollower follower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+        PathFollower follower = new PathFollower(
+                new PIDFCoefficients(-0.01, 0, 0, 1, 0),
+                new PIDFCoefficients(-0.1, 0, 0, 1, 0),
+                new PIDFCoefficients(-0.1, 0, 0, 1, 0));
         follower.follow(path);
         long timestamp = System.currentTimeMillis();
-        Pose2d estimatedPose = new Pose2d(0, 0, 0);
-        File dataFile = new File("/Users/ryanbrott/Desktop/test.csv");
+        Pose2d estimatedPose = path.getPose(0);
+        File dataFile = new File("path.csv");
         FileWriter writer = new FileWriter(dataFile);
         writer.write("x,y,heading\n");
         while (follower.isFollowingPath(timestamp)) {
             Pose2d update = follower.update(estimatedPose, timestamp);
-            Pose2d distances = new Pose2d(0.01 * update.x() / DriveConstants.AXIAL_COEFFS.v,
-                    0.01 * update.y() / DriveConstants.LATERAL_COEFFS.v,
-                    0.01 * update.heading() / DriveConstants.HEADING_COEFFS.v);
+            Vector2d vector = new Vector2d(0.01 * update.x() + 0.01 * (Math.random() - 0.5),
+                    0.01 * update.y() + 0.01 * (Math.random() - 0.5));
+            Pose2d distances = new Pose2d(vector.rotated(estimatedPose.heading()),
+                    0.01 * update.heading() + 0.01 * (Math.random() - 0.5));
             estimatedPose = estimatedPose.added(distances);
             System.out.println(estimatedPose);
             writer.write(String.format("%f,%f,%f\n", estimatedPose.x(), estimatedPose.y(), estimatedPose.heading()));
@@ -85,5 +89,10 @@ public class PathTest {
             timestamp += 10;
         }
         writer.close();
+
+        Pose2d endPose = path.getPose(path.duration() - 0.0001);
+        assertEquals(endPose.x(), estimatedPose.x(), 0.1);
+        assertEquals(endPose.y(), estimatedPose.y(), 0.1);
+        assertEquals(endPose.heading(), estimatedPose.heading(), 0.1);
     }
 }

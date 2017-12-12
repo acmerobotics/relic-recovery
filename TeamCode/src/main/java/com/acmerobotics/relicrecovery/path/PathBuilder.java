@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,8 @@ public class PathBuilder {
         segments = new ArrayList<>();
     }
 
-    public PathBuilder lineTo(Pose2d pose) {
+    public PathBuilder lineTo(Vector2d pos) {
+        Pose2d pose = new Pose2d(pos, currentPose.heading());
         segments.add(new LineSegment(currentPose, pose));
         currentPose = pose;
         return this;
