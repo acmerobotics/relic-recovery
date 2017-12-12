@@ -61,7 +61,7 @@ public class MainTeleOp extends OpMode {
         periscope = new Periscope(hardwareMap, subsystemTelemetry);
         relicRecoverer = new RelicRecoverer(hardwareMap, subsystemTelemetry);
 
-        looper = new Looper(20);
+        looper = new Looper();
         frontLift.registerLoops(looper);
         drive.registerLoops(looper);
         periscope.registerLoops(looper);

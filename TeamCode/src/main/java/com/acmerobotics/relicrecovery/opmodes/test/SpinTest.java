@@ -28,7 +28,7 @@ public class SpinTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
 
-        looper = new Looper(100);
+        looper = new Looper();
         drive.registerLoops(looper);
         looper.addLoop(((timestamp, dt) -> telemetry.update()));
         looper.start();

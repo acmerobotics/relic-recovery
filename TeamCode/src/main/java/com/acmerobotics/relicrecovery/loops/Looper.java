@@ -16,12 +16,18 @@ import java.util.List;
  */
 
 public class Looper extends Thread implements OpModeManagerNotifier.Notifications {
+    public static int DEFAULT_LOOP_MS = 100;
+
     private List<Loop> loops;
     private long loopMs;
     private boolean running;
 
     private AppUtil appUtil = AppUtil.getInstance();
     private OpModeManagerImpl opModeManager;
+
+    public Looper() {
+        this(DEFAULT_LOOP_MS);
+    }
 
     public Looper(long loopMs) {
         this.loopMs = loopMs;

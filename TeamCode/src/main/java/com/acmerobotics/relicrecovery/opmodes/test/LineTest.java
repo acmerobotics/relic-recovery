@@ -38,7 +38,7 @@ public class LineTest extends LinearOpMode {
 
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(0, 0, 0));
 
-        looper = new Looper(20);
+        looper = new Looper();
         drive.registerLoops(looper);
         looper.start();
 

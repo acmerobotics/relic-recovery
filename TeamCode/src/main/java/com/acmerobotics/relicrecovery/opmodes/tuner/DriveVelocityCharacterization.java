@@ -58,7 +58,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
 
         lastPose = new Pose2d(0, 0, 0);
 
-        looper = new Looper(100);
+        looper = new Looper();
         drive.registerLoops(looper);
         looper.addLoop(((timestamp, dt) -> {
             telemetry.addData("state", state);
