@@ -76,4 +76,8 @@ public class Vector2d {
         double dot = v1.x * v2.x + v1.y * v2.y;
         return dot / (v1.norm() * v2.norm());
     }
+
+    public static double distance(Vector2d v1, Vector2d v2) {
+        return v1.added(v2.negated()).norm();
+    }
 }

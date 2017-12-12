@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.vision;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.drive.PoseEstimator;
 import com.acmerobotics.relicrecovery.util.VisionUtil;
 
 import org.opencv.core.Core;
@@ -19,12 +20,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanRailGap;
+
 /**
  * Created by ryanbrott on 9/23/17.
  */
 
 @Config
 public class CryptoboxTracker implements Tracker {
+    public static int HORIZONTAL_OFFSET = 0;
+    public static int DISTANCE_OFFSET = 0;
+
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
@@ -57,6 +63,7 @@ public class CryptoboxTracker implements Tracker {
     private CameraProperties properties;
     private Color color;
     private Result latestResult;
+    private PoseEstimator poseEstimator;
 
     public enum Color {
         BLUE,
@@ -81,10 +88,15 @@ public class CryptoboxTracker implements Tracker {
     }
 
     public CryptoboxTracker(Color color) {
+        this(color, null);
+    }
+
+    public CryptoboxTracker(Color color, PoseEstimator poseEstimator) {
         if (color == Color.UNKNOWN) {
             throw new IllegalArgumentException("Color given to CryptoboxTracker must be RED or BLUE");
         }
         this.color = color;
+        this.poseEstimator = poseEstimator;
     }
 
     @Override
@@ -205,13 +217,39 @@ public class CryptoboxTracker implements Tracker {
         }
 
         if (rails.size() > 2) {
-            rails = VisionUtil.nonMaximumSuppression(rails, 0.5 * OldCryptoboxTracker.getMeanRailGap(rails));
+            rails = VisionUtil.nonMaximumSuppression(rails, 0.5 * getMeanRailGap(rails));
+        }
+
+//        // pose-based rail hallucination
+//        if (poseEstimator != null && ) {
+//            // TODO: not fully implemented yet
+//            Vector2d nearBlueCryptobox = new Vector2d(12, -72);
+//            Vector2d estimatedPos = poseEstimator.getPose().pos();
+//            if (Vector2d.distance(nearBlueCryptobox, estimatedPos) < 24) {
+//                //
+//            }
+//        }
+
+        // fancy heuristic stuff
+        if (rails.size() == 2 || rails.size() == 3) {
+            double meanRailGap = getMeanRailGap(rails);
+            if (rails.get(0) < meanRailGap) {
+                while (actualWidth - rails.get(rails.size() - 1) > meanRailGap && rails.size() < 4) {
+                    // add extra rail on the left
+                    rails.add(0, rails.get(0) - meanRailGap);
+                }
+            } else if (actualWidth - rails.get(rails.size() - 1) < meanRailGap) {
+                while (rails.get(0) > meanRailGap && rails.size() < 4) {
+                    // add extra rail on the right
+                    rails.add(rails.get(rails.size() - 1) + meanRailGap);
+                }
+            }
         }
 
         // calculate the distance and horizontal offset of the cryptobox
         double distance = Double.NaN, offsetX = Double.NaN;
         if (rails.size() > 1) {
-            double meanRailGap = OldCryptoboxTracker.getMeanRailGap(rails);
+            double meanRailGap = getMeanRailGap(rails);
             distance = (ACTUAL_RAIL_GAP * focalLengthPx) / meanRailGap;
             if (rails.size() == 4) {
                 double center = (Collections.max(rails) + Collections.min(rails)) / 2.0;
@@ -219,9 +257,7 @@ public class CryptoboxTracker implements Tracker {
             }
         }
 
-        System.out.println(rails);
-
-        latestResult = new Result(rails, points, rejectedPoints, distance, offsetX, timestamp);
+        latestResult = new Result(rails, points, rejectedPoints, distance - DISTANCE_OFFSET, offsetX - HORIZONTAL_OFFSET, timestamp);
     }
 
     @Override
