@@ -83,7 +83,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
         periscope = new Periscope(hardwareMap, subsystemTelemetry);
         glyphLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
 
-        looper = new Looper(20);
+        looper = new Looper();
         drive.registerLoops(looper);
         periscope.registerLoops(looper);
         glyphLift.registerLoops(looper);

@@ -33,7 +33,7 @@ public class PoseEstimationTest extends LinearOpMode {
         fieldOverlay = dashboard.getFieldOverlay();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        looper = new Looper(20);
+        looper = new Looper();
 
         drive = new MecanumDrive(hardwareMap);
         drive.registerLoops(looper);

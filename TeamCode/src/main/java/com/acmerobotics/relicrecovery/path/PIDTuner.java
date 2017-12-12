@@ -58,7 +58,7 @@ public class PIDTuner extends OpMode {
 
         lateralController.setOutputBounds(-1, 1);
 
-        looper = new Looper(20);
+        looper = new Looper();
         looper.addLoop((timestamp, dt) -> {
             double time = getRuntime();
 

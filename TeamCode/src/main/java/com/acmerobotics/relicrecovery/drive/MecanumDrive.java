@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import android.util.Log;
+
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
@@ -59,6 +61,8 @@ public class MecanumDrive implements Loop {
      */
     public static final double RADIUS = 2;
 
+    public static final int ORIENTATION_CACHE_MS = 50;
+
     private DcMotor[] motors;
 
     /**
@@ -68,6 +72,8 @@ public class MecanumDrive implements Loop {
 
     private BNO055IMU imu;
     private double headingOffset;
+    private long lastOrientationReadTimestamp;
+    private Orientation cachedOrientation;
 
     private PoseEstimator poseEstimator;
     private PathFollower pathFollower;
@@ -124,7 +130,7 @@ public class MecanumDrive implements Loop {
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
         poseEstimator = new PoseEstimator(this, initialPose);
-        pathFollower = new PathFollower(this, DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+        pathFollower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
         balanceAxialController.setOutputBounds(-1, 1);
@@ -194,11 +200,12 @@ public class MecanumDrive implements Loop {
      * @param vel
      * @param omega
      */
+    // removed K's to circumvent scaling issues
     void internalSetVelocity(Vector2d vel, double omega) {
-        targetPowers[0] = vel.x() - vel.y() - K * omega;
-        targetPowers[1] = vel.x() + vel.y() - K * omega;
-        targetPowers[2] = vel.x() - vel.y() + K * omega;
-        targetPowers[3] = vel.x() + vel.y() + K * omega;
+        targetPowers[0] = vel.x() - vel.y() - omega;
+        targetPowers[1] = vel.x() + vel.y() - omega;
+        targetPowers[2] = vel.x() - vel.y() + omega;
+        targetPowers[3] = vel.x() + vel.y() + omega;
 
         double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
                 Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
@@ -206,6 +213,10 @@ public class MecanumDrive implements Loop {
         for (int i = 0; i < 4; i++) {
             targetPowers[i] /= max;
         }
+    }
+
+    public void stop() {
+        setVelocity(new Vector2d(0, 0), 0);
     }
 
     /**
@@ -271,8 +282,20 @@ public class MecanumDrive implements Loop {
         return 2 * Math.PI * ticks / ticksPerRev;
     }
 
+    private Orientation getAngularOrientation() {
+        long timestamp = System.currentTimeMillis();
+        if ((timestamp - lastOrientationReadTimestamp) > ORIENTATION_CACHE_MS) {
+            lastOrientationReadTimestamp = timestamp;
+            cachedOrientation = imu.getAngularOrientation();
+            Log.i("MecanumDrive", "getAngularOrientation(): actually read");
+        } else {
+            Log.i("MecanumDrive", "getAngularOrientation(): returned cached read");
+        }
+        return cachedOrientation;
+    }
+
     private double getRawHeading() {
-        return imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+        return getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
     }
 
     public double getHeading() {
@@ -315,6 +338,8 @@ public class MecanumDrive implements Loop {
         // pose estimation
         poseEstimator.update(timestamp);
 
+        Pose2d estimatedPose = poseEstimator.getPose();
+
         // maintain heading
         double heading = getHeading();
         double headingError = maintainHeadingController.getError(heading);
@@ -332,7 +357,7 @@ public class MecanumDrive implements Loop {
         }
 
         // auto balance
-        Orientation angularOrientation = imu.getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
+        Orientation angularOrientation = getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
         double pitch = angularOrientation.secondAngle;
         double roll = angularOrientation.firstAngle;
 
@@ -367,7 +392,11 @@ public class MecanumDrive implements Loop {
                 }
                 break;
             case FOLLOW_PATH:
-                if (pathFollower.update(poseEstimator.getPose(), timestamp)) {
+                if (pathFollower.isFollowingPath()) {
+                    Pose2d update = pathFollower.update(estimatedPose, timestamp);
+                    internalSetVelocity(update.pos(), update.heading());
+                } else {
+                    stop();
                     revertMode();
                 }
                 powers = targetPowers;
@@ -386,8 +415,6 @@ public class MecanumDrive implements Loop {
         for (int i = 0; i < 4; i++) {
             motors[i].setPower(powers[i]);
         }
-
-        Pose2d estimatedPose = poseEstimator.getPose();
 
         if (telemetry != null) {
             telemetry.addData("driveMode", mode);

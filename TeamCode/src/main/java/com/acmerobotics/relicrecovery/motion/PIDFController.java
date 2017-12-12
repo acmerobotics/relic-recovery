@@ -39,7 +39,11 @@ public class PIDFController {
     public double update(double positionError, double time) {
         double update = controller.update(positionError, time);
         double feedforward = coeff.v * setpoint.v + coeff.a * setpoint.a;
-        return Range.clip(update + feedforward, getMinOutput(), getMaxOutput());
+        double output = update + feedforward;
+        if (controller.isOutputBounded()) {
+            return Range.clip(output, getMinOutput(), getMaxOutput());
+        }
+        return output;
     }
 
     public void setOutputBounds(double min, double max) {

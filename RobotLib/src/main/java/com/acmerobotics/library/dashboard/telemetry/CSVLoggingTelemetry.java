@@ -99,7 +99,7 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
             StringBuilder headerBuilder = new StringBuilder();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 header.add(entry.getKey());
-                headerBuilder.append(entry.getValue());
+                headerBuilder.append(entry.getKey());
                 headerBuilder.append(",");
             }
             headerBuilder.deleteCharAt(headerBuilder.length() - 1);
