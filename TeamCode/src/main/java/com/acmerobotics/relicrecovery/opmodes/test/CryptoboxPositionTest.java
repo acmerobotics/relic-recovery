@@ -41,9 +41,13 @@ public class CryptoboxPositionTest extends OpMode {
         CryptoboxTracker.Result result = cryptoboxTracker.getLatestResult();
         Pose2d cryptobox = new Pose2d(12, 48);
         Pose2d robot = cryptobox.added(new Pose2d(result.offsetX, -result.distance, 0));
-        fieldOverlay.setFill("blue");
-        fieldOverlay.fillCircle(robot.x(), robot.y(), 5);
-        dashboard.drawOverlay();
+        if (!Double.isNaN(robot.x()) && !Double.isNaN(robot.y())) {
+            fieldOverlay.setFill("blue");
+            fieldOverlay.fillCircle(robot.x(), robot.y(), 5);
+            dashboard.drawOverlay();
+        }
+        telemetry.addData("x", robot.x());
+        telemetry.addData("y", robot.y());
         try {
             Thread.sleep(25);
         } catch (InterruptedException e) {

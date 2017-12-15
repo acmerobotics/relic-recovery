@@ -28,8 +28,8 @@ import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanR
 
 @Config
 public class CryptoboxTracker implements Tracker {
-    public static int HORIZONTAL_OFFSET = 0;
-    public static int DISTANCE_OFFSET = 0;
+    public static int HORIZONTAL_OFFSET = -1;
+    public static int DISTANCE_OFFSET = 22;
 
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
