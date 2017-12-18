@@ -4,13 +4,9 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionState;
-import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.acmerobotics.relicrecovery.path.Path;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
-
-import java.util.Vector;
 
 /**
  * @author Ryan
@@ -22,7 +18,7 @@ public class PathFollower {
     private PIDFController headingController, axialController;
     private PIDFController lateralController;
     private Path path;
-    private long pathStartTimestamp;
+    private double pathStartTimestamp;
 
     private double headingError, headingUpdate;
     private double axialError, axialUpdate;
@@ -77,7 +73,7 @@ public class PathFollower {
 
     public void follow(Path path) {
         this.path = path;
-        this.pathStartTimestamp = System.currentTimeMillis();
+        this.pathStartTimestamp = TimestampedData.getCurrentTime();
 
         headingController.reset();
         axialController.reset();
@@ -88,18 +84,18 @@ public class PathFollower {
         return isFollowingPath(System.currentTimeMillis());
     }
 
-    public boolean isFollowingPath(long timestamp) {
-        return path != null && (timestamp - pathStartTimestamp) / 1000.0 < path.duration();
+    public boolean isFollowingPath(double timestamp) {
+        return path != null && (timestamp - pathStartTimestamp) < path.duration();
     }
 
     /**
      * Update the drive controls
      * @param estimatedPose current robot pose
-     * @param timestamp current time in ms
+     * @param timestamp current time in seconds
      * @return true if the path is finished
      */
-    public Pose2d update(Pose2d estimatedPose, long timestamp) {
-        double time = (timestamp - pathStartTimestamp) / 1000.0;
+    public Pose2d update(Pose2d estimatedPose, double timestamp) {
+        double time = timestamp - pathStartTimestamp;
         if (time > path.duration()) {
             return new Pose2d(0, 0, 0);
         }

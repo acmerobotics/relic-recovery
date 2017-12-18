@@ -73,6 +73,12 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
             this.running = true;
         }
 
+        /** Rescale Vuforia timestamp to the one described in {@link com.acmerobotics.relicrecovery.drive.TimestampedData} */
+        private double rescaleVuforiaTimestamp(double timestamp) {
+            // TODO: figure this out!
+            return timestamp;
+        }
+
         @Override
         public void run() {
             while (running) {
@@ -114,7 +120,7 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
                                 Core.flip(this.frame, this.frame, 1);
                             }
 
-                            onFrame(this.frame, vuforiaFrame.getTimeStamp());
+                            onFrame(this.frame, rescaleVuforiaTimestamp(vuforiaFrame.getTimeStamp()));
 
                             if (imageDir != null) {
                                 String filename = imageNum + ".jpg";

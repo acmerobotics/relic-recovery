@@ -61,7 +61,7 @@ public class MecanumDrive implements Loop {
      */
     public static final double RADIUS = 2;
 
-    public static final int ORIENTATION_CACHE_MS = 50;
+    public static final double ORIENTATION_CACHE_TIME = 0.05;
 
     private DcMotor[] motors;
 
@@ -72,7 +72,7 @@ public class MecanumDrive implements Loop {
 
     private BNO055IMU imu;
     private double headingOffset;
-    private long lastOrientationReadTimestamp;
+    private double lastOrientationReadTimestamp;
     private Orientation cachedOrientation;
 
     private PoseEstimator poseEstimator;
@@ -283,8 +283,8 @@ public class MecanumDrive implements Loop {
     }
 
     private Orientation getAngularOrientation() {
-        long timestamp = System.currentTimeMillis();
-        if ((timestamp - lastOrientationReadTimestamp) > ORIENTATION_CACHE_MS) {
+        double timestamp = TimestampedData.getCurrentTime();
+        if ((timestamp - lastOrientationReadTimestamp) > ORIENTATION_CACHE_TIME) {
             lastOrientationReadTimestamp = timestamp;
             cachedOrientation = imu.getAngularOrientation();
             Log.i("MecanumDrive", "getAngularOrientation(): actually read");
@@ -334,7 +334,7 @@ public class MecanumDrive implements Loop {
     }
 
     @Override
-    public void onLoop(long timestamp, long dt) {
+    public void onLoop(double timestamp, double dt) {
         // pose estimation
         poseEstimator.update(timestamp);
 

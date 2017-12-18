@@ -1,8 +1,9 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import com.acmerobotics.library.configuration.AllianceColor;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.drive.PoseEstimator;
+import com.acmerobotics.relicrecovery.drive.TimestampedData;
 import com.acmerobotics.relicrecovery.util.VisionUtil;
 
 import org.opencv.core.Core;
@@ -16,9 +17,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanRailGap;
 
@@ -28,9 +27,6 @@ import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanR
 
 @Config
 public class CryptoboxTracker implements Tracker {
-    public static int HORIZONTAL_OFFSET = -1;
-    public static int DISTANCE_OFFSET = 22;
-
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
@@ -61,42 +57,15 @@ public class CryptoboxTracker implements Tracker {
     private boolean initialized;
     private double focalLengthPx;
     private CameraProperties properties;
-    private Color color;
-    private Result latestResult;
-    private PoseEstimator poseEstimator;
+    private AllianceColor color;
 
-    public enum Color {
-        BLUE,
-        RED,
-        UNKNOWN
-    }
+    private double latestTimestamp;
+    private List<Double> latestRails;
+    private List<Point> latestAcceptedPoints;
+    private List<Point> latestRejectedPoints;
 
-    public static class Result {
-        public final List<Double> rails;
-        public final List<Point> points;
-        public final List<Point> rejectedPoints;
-        public final double distance, offsetX, timestamp;
-
-        public Result(List<Double> rails, List<Point> points, List<Point> rejectedPoints, double distance, double offsetX, double timestamp) {
-            this.rails = rails;
-            this.points = points;
-            this.rejectedPoints = rejectedPoints;
-            this.distance = distance;
-            this.offsetX = offsetX;
-            this.timestamp = timestamp;
-        }
-    }
-
-    public CryptoboxTracker(Color color) {
-        this(color, null);
-    }
-
-    public CryptoboxTracker(Color color, PoseEstimator poseEstimator) {
-        if (color == Color.UNKNOWN) {
-            throw new IllegalArgumentException("Color given to CryptoboxTracker must be RED or BLUE");
-        }
+    public CryptoboxTracker(AllianceColor color) {
         this.color = color;
-        this.poseEstimator = poseEstimator;
     }
 
     @Override
@@ -153,10 +122,10 @@ public class CryptoboxTracker implements Tracker {
         Imgproc.cvtColor(resized, hsv, Imgproc.COLOR_BGR2HSV);
 
         Scalar lowerHsv, upperHsv;
-        if (color == Color.RED) {
+        if (color == AllianceColor.RED) {
             lowerHsv = new Scalar(RED_LOWER_HUE, RED_LOWER_SAT, RED_LOWER_VALUE);
             upperHsv = new Scalar(RED_UPPER_HUE, RED_UPPER_SAT, RED_UPPER_VALUE);
-        } else if (color == Color.BLUE) {
+        } else if (color == AllianceColor.BLUE) {
             lowerHsv = new Scalar(BLUE_LOWER_HUE, BLUE_LOWER_SAT, BLUE_LOWER_VALUE);
             upperHsv = new Scalar(BLUE_UPPER_HUE, BLUE_UPPER_SAT, BLUE_UPPER_VALUE);
         } else {
@@ -220,74 +189,37 @@ public class CryptoboxTracker implements Tracker {
             rails = VisionUtil.nonMaximumSuppression(rails, 0.5 * getMeanRailGap(rails));
         }
 
-//        // pose-based rail hallucination
-//        if (poseEstimator != null && ) {
-//            // TODO: not fully implemented yet
-//            Vector2d nearBlueCryptobox = new Vector2d(12, -72);
-//            Vector2d estimatedPos = poseEstimator.getPose().pos();
-//            if (Vector2d.distance(nearBlueCryptobox, estimatedPos) < 24) {
-//                //
-//            }
-//        }
-
-        // fancy heuristic stuff
-        if (rails.size() == 2 || rails.size() == 3) {
-            double meanRailGap = getMeanRailGap(rails);
-            if (rails.get(0) < meanRailGap) {
-                while (actualWidth - rails.get(rails.size() - 1) > meanRailGap && rails.size() < 4) {
-                    // add extra rail on the left
-                    rails.add(0, rails.get(0) - meanRailGap);
-                }
-            } else if (actualWidth - rails.get(rails.size() - 1) < meanRailGap) {
-                while (rails.get(0) > meanRailGap && rails.size() < 4) {
-                    // add extra rail on the right
-                    rails.add(rails.get(rails.size() - 1) + meanRailGap);
-                }
-            }
+        synchronized (this) {
+            latestTimestamp = timestamp;
+            latestRails = rails;
+            latestAcceptedPoints = points;
+            latestRejectedPoints = rejectedPoints;
         }
 
-        // calculate the distance and horizontal offset of the cryptobox
-        double distance = Double.NaN, offsetX = Double.NaN;
-        if (rails.size() > 1) {
-            double meanRailGap = getMeanRailGap(rails);
-            distance = (ACTUAL_RAIL_GAP * focalLengthPx) / meanRailGap;
-            if (rails.size() == 4) {
-                double center = (Collections.max(rails) + Collections.min(rails)) / 2.0;
-                offsetX = ((0.5 * actualWidth - center) * distance) / focalLengthPx;
-            }
-        }
-
-        latestResult = new Result(rails, points, rejectedPoints, distance - DISTANCE_OFFSET, offsetX - HORIZONTAL_OFFSET, timestamp);
     }
 
     @Override
     public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
-        if (latestResult != null) {
+        if (latestRails != null) {
             overlay.setScalingFactor(imageWidth / actualWidth);
 
-            for (Point point : latestResult.points) {
-                overlay.fillCircle(point, 13, new Scalar(0, 0, 0));
-                overlay.fillCircle(point, 10, new Scalar(0, 255, 255));
+            for (double rail : latestRails) {
+                overlay.strokeLine(new Point(rail, 0), new Point(rail, actualHeight), new Scalar(255, 255, 255), 3);
             }
 
-            for (Point point : latestResult.rejectedPoints) {
+            for (Point point : latestRejectedPoints) {
                 overlay.fillCircle(point, 13, new Scalar(0, 0, 0));
                 overlay.fillCircle(point, 10, new Scalar(255, 255, 0));
             }
 
-            overlay.setScalingFactor(1);
-
-            overlay.putText(
-                    String.format(Locale.ENGLISH, "%.2f, %.2f", latestResult.distance, latestResult.offsetX),
-                    Overlay.TextAlign.LEFT,
-                    new Point(5, 50),
-                    new Scalar(0, 0, 255),
-                    45
-            );
+            for (Point point : latestAcceptedPoints) {
+                overlay.fillCircle(point, 13, new Scalar(0, 0, 0));
+                overlay.fillCircle(point, 10, new Scalar(0, 255, 255));
+            }
         }
     }
 
-    public synchronized Result getLatestResult() {
-        return latestResult;
+    public synchronized TimestampedData<List<Double>> getLatestRails() {
+        return new TimestampedData<List<Double>>(latestRails, latestTimestamp);
     }
 }

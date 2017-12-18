@@ -5,5 +5,6 @@ package com.acmerobotics.relicrecovery.loops;
  */
 
 public interface Loop {
-    void onLoop(long timestamp, long dt);
+    /** Uses the timescale described in {@link com.acmerobotics.relicrecovery.drive.TimestampedData} */
+    void onLoop(double timestamp, double dt);
 }

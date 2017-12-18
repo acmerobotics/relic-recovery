@@ -76,7 +76,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
                     } else {
                         double power = AXIAL_POWER_INCREMENT * elapsedTime;
                         double axialDelta = estimatedPose.x() - lastPose.x();
-                        double axialSpeed = axialDelta / dt * 1000;
+                        double axialSpeed = axialDelta / dt;
                         drive.setVelocity(new Vector2d(power, 0), 0);
 
                         axialLog.addData("timestamp", timestamp);
@@ -94,7 +94,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
                     } else {
                         double power = LATERAL_POWER_INCREMENT * elapsedTime;
                         double lateralDelta = estimatedPose.y() - lastPose.y();
-                        double lateralSpeed = lateralDelta / dt * 1000;
+                        double lateralSpeed = lateralDelta / dt;
                         drive.setVelocity(new Vector2d(0, power), 0);
 
                         lateralLog.addData("timestamp", timestamp);
@@ -115,7 +115,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
                         if (Math.abs(headingDelta) > Math.PI / 2) {
                             headingDelta -= Math.signum(headingDelta) * 2 * Math.PI;
                         }
-                        double omega = headingDelta / dt * 1000;
+                        double omega = headingDelta / dt;
                         drive.setVelocity(new Vector2d(0, 0), power);
 
                         headingLog.addData("timestamp", timestamp);

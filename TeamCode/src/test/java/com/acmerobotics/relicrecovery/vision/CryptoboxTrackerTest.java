@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import com.acmerobotics.library.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.util.VisionUtil;
 
 import org.junit.Ignore;
@@ -44,8 +45,8 @@ public class CryptoboxTrackerTest {
             }
         };
 
-        CryptoboxTracker redTracker = new CryptoboxTracker(CryptoboxTracker.Color.RED);
-        CryptoboxTracker blueTracker = new CryptoboxTracker(CryptoboxTracker.Color.BLUE);
+        CryptoboxTracker redTracker = new CryptoboxTracker(AllianceColor.RED);
+        CryptoboxTracker blueTracker = new CryptoboxTracker(AllianceColor.BLUE);
 
         redTracker.init(properties);
         blueTracker.init(properties);

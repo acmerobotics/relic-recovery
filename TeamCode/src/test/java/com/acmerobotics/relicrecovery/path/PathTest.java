@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.path;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.PathFollower;
+import com.acmerobotics.relicrecovery.drive.TimestampedData;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 
 import org.junit.Ignore;
@@ -71,7 +72,7 @@ public class PathTest {
                 new PIDFCoefficients(-0.1, 0, 0, 1, 0),
                 new PIDFCoefficients(-0.1, 0, 0, 1, 0));
         follower.follow(path);
-        long timestamp = System.currentTimeMillis();
+        double timestamp = TimestampedData.getCurrentTime();
         Pose2d estimatedPose = path.getPose(0);
         File dataFile = new File("path.csv");
         FileWriter writer = new FileWriter(dataFile);
@@ -86,7 +87,7 @@ public class PathTest {
             System.out.println(estimatedPose);
             writer.write(String.format("%f,%f,%f\n", estimatedPose.x(), estimatedPose.y(), estimatedPose.heading()));
             writer.flush();
-            timestamp += 10;
+            timestamp += 0.01;
         }
         writer.close();
 

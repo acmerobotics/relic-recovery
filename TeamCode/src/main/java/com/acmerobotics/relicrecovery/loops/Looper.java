@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.loops;
 
 import android.util.Log;
 
+import com.acmerobotics.relicrecovery.drive.TimestampedData;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 
@@ -16,21 +17,21 @@ import java.util.List;
  */
 
 public class Looper extends Thread implements OpModeManagerNotifier.Notifications {
-    public static int DEFAULT_LOOP_MS = 100;
+    public static double DEFAULT_LOOP_TIME = 0.1;
 
     private List<Loop> loops;
-    private long loopMs;
+    private double loopTime;
     private boolean running;
 
     private AppUtil appUtil = AppUtil.getInstance();
     private OpModeManagerImpl opModeManager;
 
     public Looper() {
-        this(DEFAULT_LOOP_MS);
+        this(DEFAULT_LOOP_TIME);
     }
 
-    public Looper(long loopMs) {
-        this.loopMs = loopMs;
+    public Looper(double loopTime) {
+        this.loopTime = loopTime;
         loops = new ArrayList<>();
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(appUtil.getActivity());
         if (opModeManager != null) {
@@ -41,22 +42,23 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
     @Override
     public void run() {
         this.running = true;
-        long loopStartTime = System.currentTimeMillis();
+        double loopStartTime = TimestampedData.getCurrentTime();
         while (running) {
             Log.i("Looper", "start loop");
 
             for (Loop loop : loops) {
-                loop.onLoop(loopStartTime, loopMs);
+                loop.onLoop(loopStartTime, loopTime);
             }
 
-            long loopEndTime = loopStartTime + loopMs;
+            double loopEndTime = loopStartTime + loopTime;
             while (System.currentTimeMillis() > loopEndTime) {
-                loopEndTime += loopMs;
+                loopEndTime += loopTime;
                 Log.i("Looper", "skipped loop!!");
             }
 
             try {
-                Thread.sleep(loopEndTime - System.currentTimeMillis());
+                double waitTime = loopEndTime - TimestampedData.getCurrentTime();
+                Thread.sleep((int) Math.round(waitTime * 1000));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

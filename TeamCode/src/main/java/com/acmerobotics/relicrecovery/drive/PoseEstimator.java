@@ -7,21 +7,10 @@ import com.acmerobotics.library.localization.Pose2d;
  */
 
 public class PoseEstimator {
-
-    public static class TimestampedPose2d {
-        public final Pose2d pose;
-        public final long timestamp;
-
-        public TimestampedPose2d(Pose2d pose, long timestamp) {
-            this.pose = pose;
-            this.timestamp = timestamp;
-        }
-    }
-
     private MecanumDrive drive;
     private double[] lastRotations;
     private volatile Pose2d pose;
-    private RingBuffer<TimestampedPose2d> poseDeltaHistory;
+    private RingBuffer<TimestampedData<Pose2d>> poseDeltaHistory;
 
     public PoseEstimator(MecanumDrive drive, Pose2d initialPose) {
         this.drive = drive;
@@ -29,7 +18,7 @@ public class PoseEstimator {
         this.poseDeltaHistory = new RingBuffer<>(100); // 2 seconds (2000 / 20)
     }
 
-    public synchronized void update(long timestamp) {
+    public synchronized void update(double timestamp) {
         if (lastRotations == null) {
             lastRotations = drive.getRotations();
         } else {
@@ -42,7 +31,7 @@ public class PoseEstimator {
             Pose2d robotPoseDelta = MecanumDrive.getPoseDelta(rotationDeltas);
             Pose2d fieldPoseDelta = new Pose2d(robotPoseDelta.pos().rotated(drive.getHeading()), drive.getHeading() - pose.heading());
 
-            poseDeltaHistory.add(new TimestampedPose2d(fieldPoseDelta, timestamp));
+            poseDeltaHistory.add(new TimestampedData<>(fieldPoseDelta, timestamp));
 
             pose = pose.added(fieldPoseDelta);
 
@@ -58,18 +47,18 @@ public class PoseEstimator {
         this.pose = pose;
     }
 
-    public synchronized void updatePose(Pose2d pose, long timestamp) {
-        TimestampedPose2d timestampedPoseDelta;
+    public synchronized void updatePose(Pose2d newPose, double timestamp) {
+        TimestampedData<Pose2d> timestampedPoseDelta;
         int i = 0;
-        double initialX = pose.x(), initialY = pose.y(), initialHeading = pose.heading();
+        double initialX = newPose.x(), initialY = newPose.y(), initialHeading = newPose.heading();
         do {
             if (i >= poseDeltaHistory.size()) {
                 return;
             }
             timestampedPoseDelta = poseDeltaHistory.get(i);
-            initialX += timestampedPoseDelta.pose.x();
-            initialY += timestampedPoseDelta.pose.y();
-            initialHeading += timestampedPoseDelta.pose.heading();
+            initialX += timestampedPoseDelta.data.x();
+            initialY += timestampedPoseDelta.data.y();
+            initialHeading += timestampedPoseDelta.data.heading();
         } while (timestampedPoseDelta.timestamp > timestamp);
         this.pose = new Pose2d(initialX, initialY, initialHeading);
     }
