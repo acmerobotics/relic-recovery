@@ -1,21 +1,28 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
+import android.util.Log;
+
+import com.acmerobotics.library.configuration.AllianceColor;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
+import com.acmerobotics.relicrecovery.drive.PoseEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
-import com.acmerobotics.relicrecovery.path.PointTurn;
+import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
+import com.acmerobotics.relicrecovery.vision.FpsTracker;
+import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.util.Arrays;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Created by ryanbrott on 12/4/17.
@@ -35,11 +42,35 @@ public class MultiGlyphAuto extends LinearOpMode {
     private Looper looper;
     private MecanumDrive drive;
 
+    private VisionCamera camera;
+    private CryptoboxTracker cryptoboxTracker;
+    private FpsTracker fpsTracker;
+
     @Override
     public void runOpMode() throws InterruptedException {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(48, -48, Math.PI));
+
+        camera = new VisionCamera();
+        cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
+        fpsTracker = new FpsTracker();
+        camera.addTracker(cryptoboxTracker);
+        camera.addTracker(fpsTracker);
+        camera.setImageDir(LoggingUtil.getImageDir(this));
+        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+
+        cryptoboxTracker.addListener(new CryptoboxTracker.CryptoboxTrackerListener() {
+            @Override
+            public void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp) {
+                PoseEstimator poseEstimator = drive.getPoseEstimator();
+                Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
+                Log.i("CryptoTrackerListener", "old pose: " + poseEstimator.getPose());
+                poseEstimator.updatePose(new Pose2d(estimatedPos, 0), timestamp);
+                poseEstimator.setPose(new Pose2d(poseEstimator.getPose().pos(), drive.getHeading()));
+                Log.i("CryptoTrackerListener", "new pose: " + poseEstimator.getPose());
+            }
+        });
 
         looper = new Looper();
         drive.registerLoops(looper);

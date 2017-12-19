@@ -159,6 +159,10 @@ public class MecanumDrive implements Loop {
         return maintainHeading;
     }
 
+    public PoseEstimator getPoseEstimator() {
+        return poseEstimator;
+    }
+
     private void setMode(Mode mode) {
         this.lastMode = this.mode;
         this.mode = mode;
