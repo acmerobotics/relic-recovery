@@ -22,7 +22,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -275,7 +274,7 @@ public class CryptoboxTracker implements Tracker {
         return new Vector2d(distance - DISTANCE_OFFSET, offset - HORIZONTAL_OFFSET);
     }
 
-    private Vector2d getFieldPositionFromCryptoRelativePosition(Cryptobox cryptobox, Vector2d cryptoRelPos) {
+    public static Vector2d getFieldPositionFromCryptoRelativePosition(Cryptobox cryptobox, Vector2d cryptoRelPos) {
         Vector2d cryptoPos = cryptobox.getPose().pos();
         switch (cryptobox) {
             case NEAR_BLUE:

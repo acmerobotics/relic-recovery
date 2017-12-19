@@ -1,8 +1,10 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.configuration.AllianceColor;
+import com.acmerobotics.library.configuration.Cryptobox;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
@@ -38,21 +40,20 @@ public class CryptoboxPositionTest extends OpMode {
 
     @Override
     public void loop() {
-//        CryptoboxTracker.Result result = cryptoboxTracker.getLatestResult();
-//        Pose2d cryptobox = new Pose2d(12, 48);
-//        Pose2d robot = cryptobox.added(new Pose2d(result.offsetX, -result.distance, 0));
-//        if (!Double.isNaN(robot.x()) && !Double.isNaN(robot.y())) {
-//            fieldOverlay.setFill("blue");
-//            fieldOverlay.fillCircle(robot.x(), robot.y(), 5);
-//            dashboard.drawOverlay();
-//        }
-//        telemetry.addData("x", robot.x());
-//        telemetry.addData("y", robot.y());
-//        try {
-//            Thread.sleep(25);
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//        }
+        Vector2d pos = CryptoboxTracker.getFieldPositionFromCryptoRelativePosition(
+                Cryptobox.NEAR_BLUE, cryptoboxTracker.getLatestPositionEstimate().data);
+        if (!Double.isNaN(pos.x()) && !Double.isNaN(pos.y())) {
+            fieldOverlay.setFill("blue");
+            fieldOverlay.fillCircle(pos.x(), pos.y(), 2);
+            dashboard.drawOverlay();
+        }
+        telemetry.addData("x", pos.x());
+        telemetry.addData("y", pos.y());
+        try {
+            Thread.sleep(25);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
 }
