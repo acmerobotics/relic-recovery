@@ -25,7 +25,7 @@ import static com.acmerobotics.relicrecovery.util.VisionUtil.smartHsvRange;
  */
 
 @Config
-public class OldCryptoboxTracker implements Tracker {
+public class OldCryptoboxTracker extends Tracker {
     public static final String TAG = "OldCryptoboxTracker";
 
     // red HSV range

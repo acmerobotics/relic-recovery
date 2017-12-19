@@ -13,7 +13,6 @@ import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
@@ -57,18 +56,21 @@ public class MultiGlyphAuto extends LinearOpMode {
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
         camera.addTracker(fpsTracker);
-        camera.setImageDir(LoggingUtil.getImageDir(this));
         camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
 
         cryptoboxTracker.addListener(new CryptoboxTracker.CryptoboxTrackerListener() {
             @Override
             public void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp) {
-                PoseEstimator poseEstimator = drive.getPoseEstimator();
-                Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
-                Log.i("CryptoTrackerListener", "old pose: " + poseEstimator.getPose());
-                poseEstimator.updatePose(new Pose2d(estimatedPos, 0), timestamp);
-                poseEstimator.setPose(new Pose2d(poseEstimator.getPose().pos(), drive.getHeading()));
-                Log.i("CryptoTrackerListener", "new pose: " + poseEstimator.getPose());
+                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y())) {
+                    PoseEstimator poseEstimator = drive.getPoseEstimator();
+                    Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
+                    Log.i("CryptoTrackerListener", "old pose: " + poseEstimator.getPose());
+                    poseEstimator.updatePose(new Pose2d(estimatedPos, 0), timestamp);
+                    poseEstimator.setPose(new Pose2d(poseEstimator.getPose().pos(), drive.getHeading()));
+                    Log.i("CryptoTrackerListener", "new pose: " + poseEstimator.getPose());
+                } else {
+                    Log.i("CryptoTrackerListener", "ignored vision update");
+                }
             }
         });
 
@@ -82,12 +84,16 @@ public class MultiGlyphAuto extends LinearOpMode {
 
         waitForStart();
 
+        cryptoboxTracker.disable();
+
         drive.followPath(new PathBuilder(new Pose2d(48, -48, Math.PI))
                 .lineTo(new Vector2d(12, -48))
                 .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(12, -12))
                 .build());
         waitForPathFollower();
+
+        cryptoboxTracker.enable();
 
         for (int i = 0; i < 10 && opModeIsActive(); i++) {
             int choice = (int) (3 * Math.random());

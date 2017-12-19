@@ -21,7 +21,7 @@ import java.util.List;
  */
 
 @Config
-public class DynamicJewelTracker implements Tracker {
+public class DynamicJewelTracker extends Tracker {
 
     public static int OPEN_KERNEL_SIZE = 5;
     public static int CLOSE_KERNEL_SIZE = 11;

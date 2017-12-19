@@ -33,7 +33,7 @@ import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanR
  */
 
 @Config
-public class CryptoboxTracker implements Tracker {
+public class CryptoboxTracker extends Tracker {
     public interface CryptoboxTrackerListener {
         void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp);
     }

@@ -252,7 +252,7 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
 
     private synchronized void onFrame(Mat frame, double timestamp) {
         for (Tracker tracker : trackers) {
-            tracker.processFrame(frame, timestamp);
+            tracker.internalProcessFrame(frame, timestamp);
         }
 
         if (overlayView != null) {

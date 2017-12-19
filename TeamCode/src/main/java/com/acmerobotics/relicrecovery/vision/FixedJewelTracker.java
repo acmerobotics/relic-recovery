@@ -12,7 +12,7 @@ import org.opencv.core.Scalar;
  */
 
 @Config
-public class FixedJewelTracker implements Tracker {
+public class FixedJewelTracker extends Tracker {
     public static final String TAG = "FixedJewelTracker";
 
     public static final float JEWEL_PLATFORM_ASPECT_RATIO = 2.6f; // width/height
