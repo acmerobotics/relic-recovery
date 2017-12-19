@@ -7,9 +7,6 @@ package com.acmerobotics.relicrecovery.vision;
 public class CryptoboxVisionLocalizer {
 
 
-    public static int HORIZONTAL_OFFSET = -1;
-    public static int DISTANCE_OFFSET = 22;
-
 //    public Pose2d getPose() {
 //
 //        // pose-based rail hallucination
