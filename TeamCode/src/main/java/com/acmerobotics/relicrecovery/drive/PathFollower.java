@@ -81,7 +81,7 @@ public class PathFollower {
     }
 
     public boolean isFollowingPath() {
-        return isFollowingPath(System.currentTimeMillis());
+        return isFollowingPath(TimestampedData.getCurrentTime());
     }
 
     public boolean isFollowingPath(double timestamp) {

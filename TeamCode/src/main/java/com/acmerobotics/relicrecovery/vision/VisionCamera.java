@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import android.app.Activity;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -8,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ToggleButton;
 
+import com.acmerobotics.relicrecovery.drive.TimestampedData;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.vuforia.Image;
@@ -75,7 +77,6 @@ public class VisionCamera implements OpModeManagerNotifier.Notifications {
 
         /** Rescale Vuforia timestamp to the one described in {@link com.acmerobotics.relicrecovery.drive.TimestampedData} */
         private double rescaleVuforiaTimestamp(double timestamp) {
-            // TODO: figure this out!
             return timestamp;
         }
 

@@ -75,7 +75,7 @@ public class MecanumDrive implements Loop {
     private double lastOrientationReadTimestamp;
     private Orientation cachedOrientation;
 
-    private PoseEstimator poseEstimator;
+    private PositionEstimator positionEstimator;
     private PathFollower pathFollower;
 
     /* inputs are pitch and roll, respectively */
@@ -129,7 +129,7 @@ public class MecanumDrive implements Loop {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        poseEstimator = new PoseEstimator(this, initialPose);
+        positionEstimator = new PositionEstimator(this, initialPose.pos());
         pathFollower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
@@ -147,6 +147,10 @@ public class MecanumDrive implements Loop {
         setHeading(initialPose.heading());
     }
 
+    public DcMotor[] getMotors() {
+        return motors;
+    }
+
     public void setMaintainHeading(boolean maintainHeading) {
         this.maintainHeading = maintainHeading;
         if (maintainHeading) {
@@ -159,8 +163,8 @@ public class MecanumDrive implements Loop {
         return maintainHeading;
     }
 
-    public PoseEstimator getPoseEstimator() {
-        return poseEstimator;
+    public PositionEstimator getPositionEstimator() {
+        return positionEstimator;
     }
 
     private void setMode(Mode mode) {
@@ -324,11 +328,12 @@ public class MecanumDrive implements Loop {
     }
 
     public Pose2d getEstimatedPose() {
-        return poseEstimator.getPose();
+        return new Pose2d(positionEstimator.getPosition(), getHeading());
     }
 
     public void setEstimatedPose(Pose2d pose) {
-        poseEstimator.setPose(pose);
+        positionEstimator.setPosition(pose.pos());
+        setHeading(pose.heading());
     }
 
     public void autoBalance() {
@@ -340,9 +345,9 @@ public class MecanumDrive implements Loop {
     @Override
     public void onLoop(double timestamp, double dt) {
         // pose estimation
-        poseEstimator.update(timestamp);
+        positionEstimator.update(timestamp);
 
-        Pose2d estimatedPose = poseEstimator.getPose();
+        Pose2d estimatedPose = getEstimatedPose();
 
         // maintain heading
         double heading = getHeading();

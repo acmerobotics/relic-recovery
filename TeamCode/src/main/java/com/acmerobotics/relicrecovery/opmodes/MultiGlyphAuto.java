@@ -8,7 +8,7 @@ import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.drive.PoseEstimator;
+import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
@@ -61,13 +61,13 @@ public class MultiGlyphAuto extends LinearOpMode {
         cryptoboxTracker.addListener(new CryptoboxTracker.CryptoboxTrackerListener() {
             @Override
             public void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp) {
-                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y())) {
-                    PoseEstimator poseEstimator = drive.getPoseEstimator();
+                PositionEstimator positionEstimator = drive.getPositionEstimator();
+                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) ||
+                        Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < 6) {
                     Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
-                    Log.i("CryptoTrackerListener", "old pose: " + poseEstimator.getPose());
-                    poseEstimator.updatePose(new Pose2d(estimatedPos, 0), timestamp);
-                    poseEstimator.setPose(new Pose2d(poseEstimator.getPose().pos(), drive.getHeading()));
-                    Log.i("CryptoTrackerListener", "new pose: " + poseEstimator.getPose());
+                    Log.i("CryptoTrackerListener", "old pose: " + positionEstimator.getPosition());
+                    positionEstimator.setPosition(estimatedPos);
+                    Log.i("CryptoTrackerListener", "new pose: " + positionEstimator.getPosition());
                 } else {
                     Log.i("CryptoTrackerListener", "ignored vision update");
                 }

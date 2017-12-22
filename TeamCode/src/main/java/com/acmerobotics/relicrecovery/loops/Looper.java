@@ -51,7 +51,7 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
             }
 
             double loopEndTime = loopStartTime + loopTime;
-            while (System.currentTimeMillis() > loopEndTime) {
+            while (TimestampedData.getCurrentTime() > loopEndTime) {
                 loopEndTime += loopTime;
                 Log.i("Looper", "skipped loop!!");
             }
