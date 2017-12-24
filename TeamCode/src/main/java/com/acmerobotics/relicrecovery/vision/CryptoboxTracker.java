@@ -6,11 +6,9 @@ import android.util.Log;
 import com.acmerobotics.library.configuration.AllianceColor;
 import com.acmerobotics.library.configuration.Cryptobox;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.drive.TimestampedData;
 import com.acmerobotics.relicrecovery.util.VisionUtil;
 
@@ -291,6 +289,15 @@ public class CryptoboxTracker extends Tracker {
         throw new RuntimeException("Invalid cryptobox!");
     }
 
+    public Cryptobox getClosestCryptobox() {
+        boolean facingFarWall = Math.abs(drive.getHeading()) < Math.PI / 4;
+        if (color == AllianceColor.RED) {
+            return facingFarWall ? Cryptobox.FAR_RED : Cryptobox.NEAR_RED;
+        } else {
+            return facingFarWall ? Cryptobox.FAR_BLUE : Cryptobox.NEAR_BLUE;
+        }
+    }
+
     private void updateEstimatedPose() {
         if (drive == null) {
             // simple, heuristic-based pose estimation
@@ -320,14 +327,7 @@ public class CryptoboxTracker extends Tracker {
                 latestEstimatedPos = new Vector2d(Double.NaN, Double.NaN);
             } else {
                 Pose2d robotPose = drive.getEstimatedPose();
-                Cryptobox cryptobox;
-                if (color == AllianceColor.RED) {
-                    cryptobox = Math.abs(Angle.norm(robotPose.heading() - Math.PI)) < Math.PI / 4 ?
-                            Cryptobox.FAR_RED : Cryptobox.NEAR_RED;
-                } else {
-                    cryptobox = Math.abs(Angle.norm(robotPose.heading() - Math.PI)) < Math.PI / 4 ?
-                            Cryptobox.FAR_BLUE : Cryptobox.NEAR_BLUE;
-                }
+                Cryptobox cryptobox = getClosestCryptobox();
                 if (latestRails.size() == 4) {
                     // we're good
                     latestEstimatedPos = getFieldPositionFromCryptoRelativePosition(

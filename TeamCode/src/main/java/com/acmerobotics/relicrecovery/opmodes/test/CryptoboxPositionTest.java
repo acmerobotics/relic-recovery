@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 import android.util.Log;
 
 import com.acmerobotics.library.configuration.AllianceColor;
+import com.acmerobotics.library.configuration.Cryptobox;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
@@ -11,15 +12,12 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import java.util.List;
 
@@ -70,13 +68,11 @@ public class CryptoboxPositionTest extends OpMode {
         looper = new Looper();
         drive.registerLoops(looper);
         looper.addLoop(((timestamp, dt) -> {
-            Pose2d robotPose = drive.getEstimatedPose();
-            fieldOverlay.setFill("blue");
-            fieldOverlay.fillCircle(robotPose.x(), robotPose.y(), 2);
+            Cryptobox closestCryptobox = cryptoboxTracker.getClosestCryptobox();
+            Vector2d cryptoboxPos = closestCryptobox.getPose().pos();
+            fieldOverlay.setFill("goldenrod");
+            fieldOverlay.fillCircle(cryptoboxPos.x(), cryptoboxPos.y(), 1);
             dashboard.drawOverlay();
-            telemetry.addData("x", robotPose.x());
-            telemetry.addData("y", robotPose.y());
-            telemetry.update();
         }));
         looper.start();
     }
