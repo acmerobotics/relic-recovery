@@ -23,7 +23,7 @@ import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.JewelColor;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -54,7 +54,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
     private Periscope periscope;
     private GlyphLift glyphLift;
 
-    private VisionCamera camera;
+    private VuforiaCamera camera;
     private DynamicJewelTracker jewelTracker;
 
     private OpModeConfiguration configuration;
@@ -95,12 +95,11 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
         glyphGripper.grip();
 
-        camera = new VisionCamera();
-        camera.setImageDir(LoggingUtil.getImageDir(this));
+        camera = new VuforiaCamera(VisionConstants.VUFORIA_PARAMETERS);
         jewelTracker = new DynamicJewelTracker();
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera.initialize();
 
         VuforiaLocalizer vuforia = camera.getVuforia();
         VuforiaTrackables relicTrackables = vuforia.loadTrackablesFromAsset("RelicVuMark");

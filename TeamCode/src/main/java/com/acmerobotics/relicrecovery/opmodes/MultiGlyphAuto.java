@@ -15,7 +15,7 @@ import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -41,7 +41,7 @@ public class MultiGlyphAuto extends LinearOpMode {
     private Looper looper;
     private MecanumDrive drive;
 
-    private VisionCamera camera;
+    private VuforiaCamera camera;
     private CryptoboxTracker cryptoboxTracker;
     private FpsTracker fpsTracker;
 
@@ -51,12 +51,12 @@ public class MultiGlyphAuto extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(48, -48, Math.PI));
 
-        camera = new VisionCamera();
+        camera = new VuforiaCamera(VisionConstants.VUFORIA_PARAMETERS);
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
         camera.addTracker(fpsTracker);
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera.initialize();
 
         cryptoboxTracker.addListener(new CryptoboxTracker.CryptoboxTrackerListener() {
             @Override

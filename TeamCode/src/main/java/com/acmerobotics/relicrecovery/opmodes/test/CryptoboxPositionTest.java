@@ -14,7 +14,7 @@ import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -27,7 +27,7 @@ import java.util.List;
 
 @TeleOp
 public class CryptoboxPositionTest extends OpMode {
-    private VisionCamera camera;
+    private VuforiaCamera camera;
     private CryptoboxTracker cryptoboxTracker;
     private FpsTracker fpsTracker;
     private RobotDashboard dashboard;
@@ -43,7 +43,7 @@ public class CryptoboxPositionTest extends OpMode {
 
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(0, 0, Math.PI / 2));
 
-        camera = new VisionCamera();
+        camera = new VuforiaCamera(VisionConstants.VUFORIA_PARAMETERS);
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE, drive);
         cryptoboxTracker.addListener(new CryptoboxTracker.CryptoboxTrackerListener() {
             @Override
@@ -63,7 +63,7 @@ public class CryptoboxPositionTest extends OpMode {
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
         camera.addTracker(fpsTracker);
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera.initialize();
 
         looper = new Looper();
         drive.registerLoops(looper);

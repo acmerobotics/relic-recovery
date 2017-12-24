@@ -30,23 +30,23 @@ package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "FixedJewelVision", group = "vision")
 public class FixedJewelVision extends OpMode {
-    private VisionCamera camera;
+    private VuforiaCamera camera;
     private FixedJewelTracker jewelTracker;
 
     @Override
     public void init() {
         jewelTracker = new FixedJewelTracker();
-        camera = new VisionCamera();
+        camera = new VuforiaCamera(VisionConstants.VUFORIA_PARAMETERS);
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera.initialize();
     }
 
     @Override
