@@ -8,7 +8,6 @@ import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
-import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -53,7 +52,7 @@ public class VisionAlignmentTest extends LinearOpMode {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        camera = new VuforiaCamera(VisionConstants.VUFORIA_PARAMETERS);
+        camera = new VuforiaCamera();
         cryptoboxTracker = new OldCryptoboxTracker(false);
         camera.addTracker(new FpsTracker());
         camera.addTracker(cryptoboxTracker);

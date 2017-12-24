@@ -23,8 +23,8 @@ import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.JewelColor;
+import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
-import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -95,7 +95,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
         glyphGripper.grip();
 
-        camera = new VuforiaCamera(VisionConstants.VUFORIA_PARAMETERS);
+        camera = new VuforiaCamera();
         jewelTracker = new DynamicJewelTracker();
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());

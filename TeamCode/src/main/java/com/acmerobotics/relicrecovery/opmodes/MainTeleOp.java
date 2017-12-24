@@ -13,7 +13,6 @@ import com.acmerobotics.relicrecovery.mech.Periscope;
 import com.acmerobotics.relicrecovery.mech.RelicRecoverer;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
-import com.acmerobotics.relicrecovery.vision.VisionConstants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -52,7 +51,7 @@ public class MainTeleOp extends OpMode {
         Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
         Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
 
-        camera = new VuforiaCamera(VisionConstants.VUFORIA_PARAMETERS);
+        camera = new VuforiaCamera();
         camera.initialize();
 
         drive = new MecanumDrive(hardwareMap, subsystemTelemetry, initialPose);

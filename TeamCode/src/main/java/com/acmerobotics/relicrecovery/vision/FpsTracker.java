@@ -21,7 +21,7 @@ public class FpsTracker extends Tracker {
     }
 
     @Override
-    public void init(CameraProperties properties) {
+    public void init(VisionCamera camera) {
 
     }
 
@@ -36,7 +36,6 @@ public class FpsTracker extends Tracker {
 
     @Override
     public void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
-        if (!debug) return;
         overlay.putText(String.format(Locale.ENGLISH, "%.2f FPS", 1 / avgTimeDelta), Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, 45), new Scalar(0, 0, 255), 45);
     }
 }

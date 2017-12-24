@@ -69,7 +69,7 @@ public class CryptoboxTracker extends Tracker {
     private Mat hierarchy, openKernel, hsvCloseKernel, tapeCloseKernel;
     private int openKernelSize, hsvCloseKernelWidth, hsvCloseKernelHeight, tapeCloseKernelWidth, tapeCloseKernelHeight;
     private boolean initialized;
-    private CameraProperties properties;
+    private VisionCamera.Properties properties;
     private AllianceColor color;
 
     private double latestTimestamp;
@@ -93,8 +93,8 @@ public class CryptoboxTracker extends Tracker {
     }
 
     @Override
-    public void init(CameraProperties properties) {
-        this.properties = properties;
+    public void init(VisionCamera camera) {
+        this.properties = camera.getProperties();
     }
 
     @Override

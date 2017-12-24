@@ -16,6 +16,7 @@ import java.util.List;
  * Created by ryanbrott on 10/28/17.
  */
 
+// TODO: transition away from Thread, maybe Timer or ScheduledExecutorService
 public class Looper extends Thread implements OpModeManagerNotifier.Notifications {
     public static double DEFAULT_LOOP_TIME = 0.1;
 

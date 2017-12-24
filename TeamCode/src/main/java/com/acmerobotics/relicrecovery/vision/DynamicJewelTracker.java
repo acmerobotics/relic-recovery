@@ -96,7 +96,7 @@ public class DynamicJewelTracker extends Tracker {
     }
 
     @Override
-    public void init(CameraProperties properties) {
+    public void init(VisionCamera camera) {
 
     }
 

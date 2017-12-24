@@ -22,7 +22,7 @@ public class FixedJewelTracker extends Tracker {
     private double leftRed, leftBlue, rightRed, rightBlue;
 
     @Override
-    public void init(CameraProperties properties) {
+    public void init(VisionCamera camera) {
 
     }
 

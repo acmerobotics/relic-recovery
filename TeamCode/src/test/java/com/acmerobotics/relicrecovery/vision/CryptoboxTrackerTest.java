@@ -38,7 +38,7 @@ public class CryptoboxTrackerTest {
 //        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
         System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
 
-        CameraProperties properties = new CameraProperties() {
+        VisionCamera.Properties properties = new VisionCamera.Properties() {
             @Override
             public double getHorizontalFocalLengthPx(double imageWidth) {
                 return 270.451191280832;

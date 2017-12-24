@@ -27,7 +27,7 @@ public abstract class Tracker {
         return enabled;
     }
 
-    public abstract void init(CameraProperties properties);
+    public abstract void init(VisionCamera camera);
     public abstract void processFrame(Mat frame, double timestamp);
     public abstract void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug);
 }

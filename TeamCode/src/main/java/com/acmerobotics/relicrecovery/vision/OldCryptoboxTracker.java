@@ -65,7 +65,7 @@ public class OldCryptoboxTracker extends Tracker {
     private int openKernelSize, closeKernelSize;
     private boolean useExtendedTracking, initialized;
     private double focalLengthPx;
-    private CameraProperties properties;
+    private VisionCamera.Properties properties;
 
     public enum CryptoboxColor {
         BLUE,
@@ -289,8 +289,8 @@ public class OldCryptoboxTracker extends Tracker {
     }
 
     @Override
-    public void init(CameraProperties properties) {
-        this.properties = properties;
+    public void init(VisionCamera camera) {
+        this.properties = camera.getProperties();
     }
 
     @Override

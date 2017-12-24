@@ -1,13 +1,16 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import android.app.Activity;
+import android.support.annotation.IdRes;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.R;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -24,15 +27,23 @@ import java.util.concurrent.CountDownLatch;
 public abstract class VisionCamera implements OpModeManagerNotifier.Notifications {
     public static final String TAG = "VisionCamera";
 
-    protected List<Tracker> trackers;
+    public static class Parameters {
+        @IdRes public int cameraMonitorViewId = R.id.cameraMonitorViewId;
+        public VuforiaLocalizer.CameraDirection cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+    }
+
+    protected final List<Tracker> trackers;
 
     protected AppUtil appUtil = AppUtil.getInstance();
     protected Activity activity;
     protected OpModeManagerImpl opModeManager;
 
+    protected Parameters parameters;
+
     private boolean initialized;
 
-    public VisionCamera() {
+    public VisionCamera(Parameters parameters) {
+        this.parameters = parameters;
         this.activity = appUtil.getActivity();
         this.trackers = new ArrayList<>();
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(activity);
@@ -70,27 +81,33 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
                 Log.w(TAG, e);
             }
 
-            for (Tracker tracker : trackers) {
-                tracker.init(new VuforiaCameraProperties());
-            }
-
             doInitialize();
 
-            initialized = true;
+            synchronized (trackers) {
+                for (Tracker tracker : trackers) {
+                    tracker.init(this);
+                }
+
+                initialized = true;
+            }
         }
     }
 
-    public synchronized void addTracker(Tracker tracker) {
-        this.trackers.add(tracker);
+    public void addTracker(Tracker tracker) {
+        synchronized (trackers) {
+            this.trackers.add(tracker);
+        }
 
         if (initialized) {
-            tracker.init(new VuforiaCameraProperties());
+            tracker.init(this);
         }
     }
 
     protected void onFrame(Mat frame, double timestamp) {
-        for (Tracker tracker : trackers) {
-            tracker.internalProcessFrame(frame, timestamp);
+        synchronized (trackers) {
+            for (Tracker tracker : trackers) {
+                tracker.internalProcessFrame(frame, timestamp);
+            }
         }
     }
 
@@ -114,4 +131,14 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
 
     protected abstract void doInitialize();
     public abstract void close();
+    public abstract Properties getProperties();
+
+    /**
+     * @author Ryan
+     */
+
+    public static interface Properties {
+        /** @return camera's horizontal (along x-axis) focal length in pixels */
+        double getHorizontalFocalLengthPx(double imageWidth);
+    }
 }
