@@ -35,6 +35,8 @@ public class OpenCVCamera extends VisionCamera implements CameraBridgeViewBase.C
         MatOverlay overlay = new MatOverlay(frame);
         synchronized (trackers) {
             for (Tracker tracker : trackers) {
+                overlay.setScalingFactor(1);
+
                 tracker.drawOverlay(overlay, frame.cols(), frame.rows(), true);
             }
         }

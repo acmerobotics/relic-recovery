@@ -66,10 +66,13 @@ public class OverlayView extends View {
         canvas.translate(-imageWidth / 2.0f, -imageHeight / 2.0f);
 
         // draw
+        CanvasOverlay overlay = new CanvasOverlay(canvas);
         for (Tracker tracker : trackers) {
             canvas.save();
 
-            tracker.drawOverlay(new CanvasOverlay(canvas), imageWidth, imageHeight, debug);
+            overlay.setScalingFactor(1);
+
+            tracker.drawOverlay(overlay, imageWidth, imageHeight, debug);
 
             canvas.restore();
         }
