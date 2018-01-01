@@ -38,8 +38,8 @@ public class CryptoboxTracker extends Tracker {
         void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp);
     }
 
-    public static int HORIZONTAL_OFFSET = -1;
-    public static int DISTANCE_OFFSET = -2;
+    public static int HORIZONTAL_OFFSET = -3;
+    public static int DISTANCE_OFFSET = -3;
 
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
@@ -208,7 +208,7 @@ public class CryptoboxTracker extends Tracker {
         }
 
         if (rails.size() > 2) {
-            rails = VisionUtil.nonMaximumSuppression(rails, 0.5 * getMeanRailGap(rails));
+            rails = VisionUtil.nonMaximumSuppression(rails, 0.75 * getMeanRailGap(rails));
         }
 
         synchronized (this) {
@@ -323,15 +323,19 @@ public class CryptoboxTracker extends Tracker {
             latestEstimatedPos = getPosFromRails(rails);
         } else {
             // advanced pose estimation
-            if (getMeanRailGap(latestRails) < 25) {
+            if (latestRails.size() < 2 || getMeanRailGap(latestRails) < 25) {
                 latestEstimatedPos = new Vector2d(Double.NaN, Double.NaN);
             } else {
                 Pose2d robotPose = drive.getEstimatedPose();
                 Cryptobox cryptobox = getClosestCryptobox();
                 if (latestRails.size() == 4) {
                     // we're good
+                    Log.i("CryptoboxTracker", "rails: " + latestRails);
+                    Log.i("CryptoboxTracker", "relative position: " + getPosFromRails(latestRails));
                     latestEstimatedPos = getFieldPositionFromCryptoRelativePosition(
                             cryptobox, getPosFromRails(latestRails));
+                    Log.i("CryptoboxTracker", "cryptobox: " + cryptobox);
+                    Log.i("CryptoboxTracker", "final position: " + latestEstimatedPos);
                 } else if (latestRails.size() < 2 || latestRails.size() > 4) {
                     // uh-oh
                     latestEstimatedPos = new Vector2d(Double.NaN, Double.NaN);

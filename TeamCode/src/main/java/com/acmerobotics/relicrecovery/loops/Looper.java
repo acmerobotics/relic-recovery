@@ -5,20 +5,21 @@ import android.util.Log;
 import com.acmerobotics.relicrecovery.drive.TimestampedData;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
+import com.qualcomm.robotcore.util.ThreadPool;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by ryanbrott on 10/28/17.
  */
 
-// TODO: transition away from Thread, maybe Timer or ScheduledExecutorService
-public class Looper extends Thread implements OpModeManagerNotifier.Notifications {
-    public static double DEFAULT_LOOP_TIME = 0.1;
+public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
+    public static double DEFAULT_LOOP_TIME = 0.05;
 
     private List<Loop> loops;
     private double loopTime;
@@ -26,6 +27,7 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
 
     private AppUtil appUtil = AppUtil.getInstance();
     private OpModeManagerImpl opModeManager;
+    private ExecutorService executorService;
 
     public Looper() {
         this(DEFAULT_LOOP_TIME);
@@ -38,13 +40,24 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
         if (opModeManager != null) {
             opModeManager.registerListener(this);
         }
+        executorService = ThreadPool.newSingleThreadExecutor("looper - " + loopTime + "s");
+    }
+
+    public void start() {
+        executorService.execute(this);
+    }
+
+    public void stop() {
+        if (executorService != null) {
+            executorService.shutdownNow();
+            executorService = null;
+        }
     }
 
     @Override
     public void run() {
-        this.running = true;
         double loopStartTime = TimestampedData.getCurrentTime();
-        while (running) {
+        while (!Thread.currentThread().isInterrupted()) {
             Log.i("Looper", "start loop");
 
             for (Loop loop : loops) {
@@ -52,24 +65,20 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
             }
 
             double loopEndTime = loopStartTime + loopTime;
-            while (TimestampedData.getCurrentTime() > loopEndTime) {
-                loopEndTime += loopTime;
-                Log.i("Looper", "skipped loop!!");
-            }
-
-            try {
-                double waitTime = loopEndTime - TimestampedData.getCurrentTime();
-                Thread.sleep((int) Math.round(waitTime * 1000));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            if (TimestampedData.getCurrentTime() > loopEndTime) {
+                loopEndTime = TimestampedData.getCurrentTime();
+                Log.i("Looper", "cut loop short!!");
+            } else {
+                try {
+                    double waitTime = loopEndTime - TimestampedData.getCurrentTime();
+                    Thread.sleep((int) Math.round(waitTime * 1000));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
 
             loopStartTime = loopEndTime;
         }
-    }
-
-    public void terminate() {
-        this.running = false;
     }
 
     public void addLoop(Loop loop) {
@@ -88,14 +97,9 @@ public class Looper extends Thread implements OpModeManagerNotifier.Notification
 
     @Override
     public void onOpModePostStop(OpMode opMode) {
-        terminate();
+        stop();
         if (opModeManager != null) {
             opModeManager.unregisterListener(this);
-        }
-        try {
-            join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 }

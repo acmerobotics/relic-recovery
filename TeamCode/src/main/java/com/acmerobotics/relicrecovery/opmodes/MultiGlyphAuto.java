@@ -51,7 +51,8 @@ public class MultiGlyphAuto extends LinearOpMode {
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(48, -48, Math.PI));
 
         camera = new VuforiaCamera();
-        cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
+        cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE, drive);
+        cryptoboxTracker.disable();
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
         camera.addTracker(fpsTracker);
@@ -61,12 +62,12 @@ public class MultiGlyphAuto extends LinearOpMode {
             @Override
             public void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp) {
                 PositionEstimator positionEstimator = drive.getPositionEstimator();
-                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) ||
-                        Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < 6) {
+                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y())) { // &&
+//                        Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < 18) {
                     Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
-                    Log.i("CryptoTrackerListener", "old pose: " + positionEstimator.getPosition());
+                    Log.i("CryptoTrackerListener", "old position: " + positionEstimator.getPosition());
                     positionEstimator.setPosition(estimatedPos);
-                    Log.i("CryptoTrackerListener", "new pose: " + positionEstimator.getPosition());
+                    Log.i("CryptoTrackerListener", "new position: " + positionEstimator.getPosition());
                 } else {
                     Log.i("CryptoTrackerListener", "ignored vision update");
                 }
@@ -83,8 +84,6 @@ public class MultiGlyphAuto extends LinearOpMode {
 
         waitForStart();
 
-        cryptoboxTracker.disable();
-
         drive.followPath(new PathBuilder(new Pose2d(48, -48, Math.PI))
                 .lineTo(new Vector2d(12, -48))
                 .turn(-Math.PI / 2)
@@ -92,14 +91,17 @@ public class MultiGlyphAuto extends LinearOpMode {
                 .build());
         waitForPathFollower();
 
-        cryptoboxTracker.enable();
-
-        for (int i = 0; i < 10 && opModeIsActive(); i++) {
+        while (opModeIsActive()) {
             int choice = (int) (3 * Math.random());
             choice--;
             Vector2d v = new Vector2d(12 + choice * CryptoboxTracker.ACTUAL_RAIL_GAP, -60);
 
+//            cryptoboxTracker.enable();
+
             sleep(1500);
+
+//            cryptoboxTracker.disable();
+
             drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
             waitForPathFollower();
 
