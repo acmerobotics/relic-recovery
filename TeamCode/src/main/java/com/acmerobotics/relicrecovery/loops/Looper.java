@@ -65,12 +65,13 @@ public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
             }
 
             double loopEndTime = loopStartTime + loopTime;
-            if (TimestampedData.getCurrentTime() > loopEndTime) {
-                loopEndTime = TimestampedData.getCurrentTime();
+            double currentTime = TimestampedData.getCurrentTime();
+            if (currentTime > loopEndTime) {
+                loopEndTime = currentTime;
                 Log.i("Looper", "cut loop short!!");
             } else {
                 try {
-                    double waitTime = loopEndTime - TimestampedData.getCurrentTime();
+                    double waitTime = loopEndTime - currentTime;
                     Thread.sleep((int) Math.round(waitTime * 1000));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

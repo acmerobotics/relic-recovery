@@ -10,8 +10,6 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.path.LineSegment;
-import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
@@ -19,23 +17,14 @@ import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by ryanbrott on 12/4/17.
  */
 
-@Autonomous(name = "MultiGlyph Auto")
+@Autonomous(name = "Multi Glyph Auto")
 public class MultiGlyphAuto extends LinearOpMode {
-    private Path pitToCrypto = new Path(Arrays.asList(
-            new LineSegment(new Pose2d(12, -12, Math.PI / 2), new Pose2d(12, -60, Math.PI / 2))
-    ));
-
-    private Path cryptoToPit = new Path(Arrays.asList(
-            new LineSegment(new Pose2d(12, -60, Math.PI / 2), new Pose2d(12, -12, Math.PI / 2))
-    ));
-
     private RobotDashboard dashboard;
     private Looper looper;
     private MecanumDrive drive;
