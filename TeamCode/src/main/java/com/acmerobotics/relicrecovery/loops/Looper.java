@@ -68,6 +68,7 @@ public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
             if (currentTime > loopEndTime) {
                 loopEndTime = currentTime;
                 Log.i("Looper", "cut loop short!!");
+                Log.i("Looper", "actually took " + 1000 * (currentTime - loopStartTime) + "ms");
             } else {
                 try {
                     double waitTime = loopEndTime - currentTime;

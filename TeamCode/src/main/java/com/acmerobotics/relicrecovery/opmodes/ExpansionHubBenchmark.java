@@ -21,6 +21,8 @@ public class ExpansionHubBenchmark extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        waitForStart();
+
         // I2C read test
         // internal IMU will be used for I2C
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");

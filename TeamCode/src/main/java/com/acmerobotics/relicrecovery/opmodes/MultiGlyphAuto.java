@@ -4,18 +4,21 @@ import android.util.Log;
 
 import com.acmerobotics.library.configuration.AllianceColor;
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import java.util.List;
 
@@ -23,8 +26,16 @@ import java.util.List;
  * Created by ryanbrott on 12/4/17.
  */
 
+@Config
 @Autonomous(name = "Multi Glyph Auto")
 public class MultiGlyphAuto extends LinearOpMode {
+    public static boolean USE_VISION = true;
+    public static boolean STRAFE_ALIGN = false;
+    public static int VISION_UPDATE_MAX_DIST = -1;
+    public static PIDCoefficients STRAFE_ALIGN_PID = new PIDCoefficients(-0.1, 0, 0);
+
+    private PIDController strafeAlignController;
+
     private RobotDashboard dashboard;
     private Looper looper;
     private MecanumDrive drive;
@@ -35,6 +46,8 @@ public class MultiGlyphAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        strafeAlignController = new PIDController(STRAFE_ALIGN_PID);
+
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(48, -48, Math.PI));
@@ -51,8 +64,9 @@ public class MultiGlyphAuto extends LinearOpMode {
             @Override
             public void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp) {
                 PositionEstimator positionEstimator = drive.getPositionEstimator();
-                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y())) { // &&
-//                        Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < 18) {
+                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) &&
+                        (VISION_UPDATE_MAX_DIST == -1 ||
+                                Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < VISION_UPDATE_MAX_DIST)) {
                     Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
                     Log.i("CryptoTrackerListener", "old position: " + positionEstimator.getPosition());
                     positionEstimator.setPosition(estimatedPos);
@@ -85,16 +99,40 @@ public class MultiGlyphAuto extends LinearOpMode {
             choice--;
             Vector2d v = new Vector2d(12 + choice * CryptoboxTracker.ACTUAL_RAIL_GAP, -60);
 
-//            cryptoboxTracker.enable();
+            if (USE_VISION) {
+                cryptoboxTracker.enable();
+            }
 
             sleep(1500);
 
-//            cryptoboxTracker.disable();
+            if (USE_VISION) {
+                cryptoboxTracker.disable();
+            }
 
-            drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
-            waitForPathFollower();
+            if (STRAFE_ALIGN) {
+                drive.setMaintainHeading(true);
+                strafeAlignController.reset();
+                strafeAlignController.setSetpoint(v.x());
+                while (opModeIsActive()) {
+                    double error = strafeAlignController.getError(drive.getEstimatedPose().x());
+                    if (Math.abs(error) < 1.5) {
+                        drive.stop();
+                        break;
+                    }
+                    drive.setVelocity(new Vector2d(0, strafeAlignController.update(error)), 0);
+                    sleep(10);
+                }
+                drive.setMaintainHeading(false);
+
+                drive.followPath(new PathBuilder(new Pose2d(v.x(), -12, Math.PI / 2)).lineTo(v).build());
+                waitForPathFollower();
+            } else {
+                drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
+                waitForPathFollower();
+            }
 
             sleep(1500);
+
             drive.followPath(new PathBuilder(new Pose2d(v, Math.PI / 2)).lineTo(new Vector2d(12, -12)).build());
             waitForPathFollower();
         }
