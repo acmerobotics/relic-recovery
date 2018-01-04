@@ -2,6 +2,9 @@ package com.acmerobotics.relicrecovery.vision;
 
 import org.opencv.core.Mat;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Created by ryanbrott on 9/23/17.
  */
@@ -25,6 +28,10 @@ public abstract class Tracker {
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public List<LabeledMat> getIntermediates() {
+        return Collections.emptyList();
     }
 
     public abstract void init(VisionCamera camera);
