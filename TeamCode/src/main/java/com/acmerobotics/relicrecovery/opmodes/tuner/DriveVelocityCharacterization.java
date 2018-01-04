@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
@@ -18,6 +19,7 @@ import java.io.File;
  * @author Ryan
  */
 
+@Config
 @TeleOp(name = "Drive Velocity Characterization")
 public class DriveVelocityCharacterization extends LinearOpMode {
     public static double AXIAL_POWER_INCREMENT = 0.05;

@@ -151,12 +151,17 @@ public class MecanumDrive implements Loop {
         return motors;
     }
 
-    public void setMaintainHeading(boolean maintainHeading) {
-        this.maintainHeading = maintainHeading;
-        if (maintainHeading) {
-            this.maintainHeadingController.setSetpoint(getHeading());
-            this.maintainHeadingController.reset();
-        }
+    public void enableHeadingCorrection() {
+        maintainHeading = true;
+        this.maintainHeadingController.reset();
+    }
+
+    public void disableHeadingCorrection() {
+        maintainHeading = false;
+    }
+
+    public void setTargetHeading(double heading) {
+        this.maintainHeadingController.setSetpoint(heading);
     }
 
     public boolean getMaintainHeading() {

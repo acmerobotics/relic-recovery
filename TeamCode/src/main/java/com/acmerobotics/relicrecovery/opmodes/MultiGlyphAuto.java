@@ -110,7 +110,9 @@ public class MultiGlyphAuto extends LinearOpMode {
             }
 
             if (STRAFE_ALIGN) {
-                drive.setMaintainHeading(true);
+                drive.enableHeadingCorrection();
+                drive.setTargetHeading(Math.PI / 2);
+
                 strafeAlignController.reset();
                 strafeAlignController.setSetpoint(v.x());
                 while (opModeIsActive()) {
@@ -122,7 +124,8 @@ public class MultiGlyphAuto extends LinearOpMode {
                     drive.setVelocity(new Vector2d(0, strafeAlignController.update(error)), 0);
                     sleep(10);
                 }
-                drive.setMaintainHeading(false);
+
+                drive.disableHeadingCorrection();
 
                 drive.followPath(new PathBuilder(new Pose2d(v.x(), -12, Math.PI / 2)).lineTo(v).build());
                 waitForPathFollower();
