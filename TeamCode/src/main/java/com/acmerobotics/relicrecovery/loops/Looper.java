@@ -23,7 +23,6 @@ public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
 
     private List<Loop> loops;
     private double loopTime;
-    private boolean running;
 
     private AppUtil appUtil = AppUtil.getInstance();
     private OpModeManagerImpl opModeManager;
