@@ -12,13 +12,12 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import java.util.List;
 
 /**
  * @author Ryan
@@ -28,6 +27,7 @@ import java.util.List;
 public class CryptoboxPositionTest extends OpMode {
     private VuforiaCamera camera;
     private CryptoboxTracker cryptoboxTracker;
+    private CryptoboxLocalizer cryptoboxLocalizer;
     private FpsTracker fpsTracker;
     private RobotDashboard dashboard;
     private Canvas fieldOverlay;
@@ -43,10 +43,9 @@ public class CryptoboxPositionTest extends OpMode {
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(0, 0, Math.PI / 2));
 
         camera = new VuforiaCamera();
-        cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE, drive);
-        cryptoboxTracker.addListener(new CryptoboxTracker.CryptoboxTrackerListener() {
-            @Override
-            public void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp) {
+        cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
+        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, drive);
+        cryptoboxLocalizer.addListener((estimatedPos, timestamp) -> {
                 PositionEstimator positionEstimator = drive.getPositionEstimator();
                 if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) ||
                         Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < 6) {
@@ -57,7 +56,6 @@ public class CryptoboxPositionTest extends OpMode {
                 } else {
                     Log.i("CryptoTrackerListener", "ignored vision update");
                 }
-            }
         });
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
@@ -67,7 +65,7 @@ public class CryptoboxPositionTest extends OpMode {
         looper = new Looper();
         drive.registerLoops(looper);
         looper.addLoop(((timestamp, dt) -> {
-            Cryptobox closestCryptobox = cryptoboxTracker.getClosestCryptobox();
+            Cryptobox closestCryptobox = cryptoboxLocalizer.getClosestCryptobox();
             Vector2d cryptoboxPos = closestCryptobox.getPose().pos();
             fieldOverlay.setFill("goldenrod");
             fieldOverlay.fillCircle(cryptoboxPos.x(), cryptoboxPos.y(), 1);

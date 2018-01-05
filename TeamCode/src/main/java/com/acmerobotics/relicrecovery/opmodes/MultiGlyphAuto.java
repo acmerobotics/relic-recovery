@@ -13,14 +13,13 @@ import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
-
-import java.util.List;
 
 /**
  * Created by ryanbrott on 12/4/17.
@@ -42,6 +41,7 @@ public class MultiGlyphAuto extends LinearOpMode {
 
     private VuforiaCamera camera;
     private CryptoboxTracker cryptoboxTracker;
+    private CryptoboxLocalizer cryptoboxLocalizer;
     private FpsTracker fpsTracker;
 
     @Override
@@ -53,16 +53,15 @@ public class MultiGlyphAuto extends LinearOpMode {
         drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(48, -48, Math.PI));
 
         camera = new VuforiaCamera();
-        cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE, drive);
+        cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
+        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, drive);
         cryptoboxTracker.disable();
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
         camera.addTracker(fpsTracker);
         camera.initialize();
 
-        cryptoboxTracker.addListener(new CryptoboxTracker.CryptoboxTrackerListener() {
-            @Override
-            public void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp) {
+        cryptoboxLocalizer.addListener((estimatedPos, timestamp) -> {
                 PositionEstimator positionEstimator = drive.getPositionEstimator();
                 if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) &&
                         (VISION_UPDATE_MAX_DIST == -1 ||
@@ -74,7 +73,6 @@ public class MultiGlyphAuto extends LinearOpMode {
                 } else {
                     Log.i("CryptoTrackerListener", "ignored vision update");
                 }
-            }
         });
 
         looper = new Looper();

@@ -1,14 +1,8 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import android.support.annotation.Nullable;
-import android.util.Log;
-
 import com.acmerobotics.library.configuration.AllianceColor;
-import com.acmerobotics.library.configuration.Cryptobox;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.TimestampedData;
 import com.acmerobotics.relicrecovery.util.VisionUtil;
 
@@ -23,7 +17,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanRailGap;
@@ -34,12 +27,9 @@ import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanR
 
 @Config
 public class CryptoboxTracker extends Tracker {
-    public interface CryptoboxTrackerListener {
-        void onCryptoboxDetection(List<Double> rails, Vector2d estimatedPos, double timestamp);
+    public interface Listener {
+        void onCryptoboxDetection(List<Double> rails, double timestamp);
     }
-
-    public static int HORIZONTAL_OFFSET = -3;
-    public static int DISTANCE_OFFSET = -3;
 
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
@@ -64,7 +54,7 @@ public class CryptoboxTracker extends Tracker {
 
     public static final double ACTUAL_RAIL_GAP = 7.5; // in
 
-    private double actualWidth, actualHeight;
+    private double resizedWidth, resizedHeight;
     private Mat resized, hsv, hsvMask, hsvMaskOpen, hsvMaskClose, gray, grayMask, grayCombined, grayMaskOpen, grayMaskClose;
     private Mat hierarchy, openKernel, hsvCloseKernel, tapeCloseKernel;
     private int openKernelSize, hsvCloseKernelWidth, hsvCloseKernelHeight, tapeCloseKernelWidth, tapeCloseKernelHeight;
@@ -78,18 +68,10 @@ public class CryptoboxTracker extends Tracker {
     private List<Point> latestAcceptedPoints;
     private List<Point> latestRejectedPoints;
 
-    @Nullable private MecanumDrive drive;
-    private Vector2d latestEstimatedPos;
-
-    private final List<CryptoboxTrackerListener> listeners;
+    private final List<Listener> listeners;
 
     public CryptoboxTracker(AllianceColor color) {
-        this(color, null);
-    }
-
-    public CryptoboxTracker(AllianceColor color, MecanumDrive drive) {
         this.color = color;
-        this.drive = drive;
         listeners = new ArrayList<>();
         intermediates = new ArrayList<>();
     }
@@ -120,8 +102,8 @@ public class CryptoboxTracker extends Tracker {
     public void processFrame(Mat frame, double timestamp) {
         intermediates.clear();
 
-        actualWidth = RESIZE_WIDTH;
-        actualHeight = (int) (frame.rows() * (actualWidth / frame.cols()));
+        resizedWidth = RESIZE_WIDTH;
+        resizedHeight = (int) (frame.rows() * (resizedWidth / frame.cols()));
 
         if (openKernel == null || openKernelSize != OPEN_KERNEL_SIZE) {
             if (openKernel != null) {
@@ -149,7 +131,7 @@ public class CryptoboxTracker extends Tracker {
             tapeCloseKernelHeight = TAPE_CLOSE_KERNEL_HEIGHT;
         }
 
-        Imgproc.resize(frame, resized, new Size(actualWidth, actualHeight));
+        Imgproc.resize(frame, resized, new Size(resizedWidth, resizedHeight));
 
         Imgproc.GaussianBlur(resized, resized, new Size(5, 5), 0);
 
@@ -251,11 +233,9 @@ public class CryptoboxTracker extends Tracker {
             latestAcceptedPoints = points;
             latestRejectedPoints = rejectedPoints;
 
-            updateEstimatedPose();
-
             synchronized (listeners) {
-                for (CryptoboxTrackerListener listener : listeners) {
-                    listener.onCryptoboxDetection(latestRails, latestEstimatedPos, latestTimestamp);
+                for (Listener listener : listeners) {
+                    listener.onCryptoboxDetection(latestRails, latestTimestamp);
                 }
             }
         }
@@ -265,10 +245,10 @@ public class CryptoboxTracker extends Tracker {
     @Override
     public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
         if (latestRails != null) {
-            overlay.setScalingFactor(imageWidth / actualWidth);
+            overlay.setScalingFactor(imageWidth / resizedWidth);
 
             for (double rail : latestRails) {
-                overlay.strokeLine(new Point(rail, 0), new Point(rail, actualHeight), new Scalar(255, 255, 255), 3);
+                overlay.strokeLine(new Point(rail, 0), new Point(rail, resizedHeight), new Scalar(255, 255, 255), 3);
             }
 
             for (Point point : latestRejectedPoints) {
@@ -283,137 +263,33 @@ public class CryptoboxTracker extends Tracker {
         }
     }
 
+    public AllianceColor getColor() {
+        return color;
+    }
+
     public synchronized TimestampedData<List<Double>> getLatestRails() {
         return new TimestampedData<List<Double>>(latestRails, latestTimestamp);
     }
 
-    public synchronized TimestampedData<Vector2d> getLatestPositionEstimate() {
-        return new TimestampedData<Vector2d>(latestEstimatedPos, latestTimestamp);
+    public double getResizedWidth() {
+        return resizedWidth;
     }
 
-    private Vector2d getPosFromRails(List<Double> rails) {
-        double focalLengthPx = properties.getHorizontalFocalLengthPx(actualWidth);
-
-        // TODO: maybe refactor into some functions
-        // generally make less awful
-        double distance = Double.NaN, offset = Double.NaN;
-        if (rails.size() > 1) {
-            double meanRailGap = getMeanRailGap(rails);
-            distance = (ACTUAL_RAIL_GAP * focalLengthPx) / meanRailGap;
-            if (rails.size() == 4) {
-                double center = (Collections.max(rails) + Collections.min(rails)) / 2.0;
-                offset = ((0.5 * actualWidth - center) * distance) / focalLengthPx;
-            }
-        }
-        return new Vector2d(distance - DISTANCE_OFFSET, offset - HORIZONTAL_OFFSET);
+    public double getResizedHeight() {
+        return resizedHeight;
     }
 
-    public static Vector2d getFieldPositionFromCryptoRelativePosition(Cryptobox cryptobox, Vector2d cryptoRelPos) {
-        Vector2d cryptoPos = cryptobox.getPose().pos();
-        switch (cryptobox) {
-            case NEAR_BLUE:
-                return new Vector2d(cryptoPos.x() - cryptoRelPos.y(), cryptoPos.y() + cryptoRelPos.x());
-            case NEAR_RED:
-                return new Vector2d(cryptoPos.x() - cryptoRelPos.y(), cryptoPos.y() - cryptoRelPos.x());
-            case FAR_BLUE:
-            case FAR_RED:
-                // intentional fall-through
-                return cryptoPos.added(cryptoRelPos);
-        }
-        throw new RuntimeException("Invalid cryptobox!");
+    public VisionCamera.Properties getCameraProperties() {
+        return properties;
     }
 
-    public Cryptobox getClosestCryptobox() {
-        boolean facingFarWall = Math.abs(drive.getHeading()) < Math.PI / 4;
-        if (color == AllianceColor.RED) {
-            return facingFarWall ? Cryptobox.FAR_RED : Cryptobox.NEAR_RED;
-        } else {
-            return facingFarWall ? Cryptobox.FAR_BLUE : Cryptobox.NEAR_BLUE;
-        }
-    }
-
-    private void updateEstimatedPose() {
-        if (drive == null) {
-            // simple, heuristic-based pose estimation
-            List<Double> rails = new ArrayList<>(latestRails);
-            if (rails.size() == 2 || rails.size() == 3) {
-                double meanRailGap = getMeanRailGap(rails);
-                if (rails.get(0) < meanRailGap) {
-                    while (actualWidth - rails.get(rails.size() - 1) > meanRailGap && rails.size() < 4) {
-                        // add extra rail on the left
-                        rails.add(0, rails.get(0) - meanRailGap);
-                    }
-                } else if (actualWidth - rails.get(rails.size() - 1) < meanRailGap) {
-                    while (rails.get(0) > meanRailGap && rails.size() < 4) {
-                        // add extra rail on the right
-                        rails.add(rails.get(rails.size() - 1) + meanRailGap);
-                    }
-                }
-            }
-
-            // calculate the distance and horizontal offset of the cryptobox
-            // TODO: there are some issues here with coordinate reference frames
-            // this version returns a cryptobox-relative coordinate while the other gives a field centric one
-            latestEstimatedPos = getPosFromRails(rails);
-        } else {
-            // advanced pose estimation
-            if (latestRails.size() < 2 || getMeanRailGap(latestRails) < 25) {
-                latestEstimatedPos = new Vector2d(Double.NaN, Double.NaN);
-            } else {
-                Pose2d robotPose = drive.getEstimatedPose();
-                Cryptobox cryptobox = getClosestCryptobox();
-                if (latestRails.size() == 4) {
-                    // we're good
-                    Log.i("CryptoboxTracker", "rails: " + latestRails);
-                    Log.i("CryptoboxTracker", "relative position: " + getPosFromRails(latestRails));
-                    latestEstimatedPos = getFieldPositionFromCryptoRelativePosition(
-                            cryptobox, getPosFromRails(latestRails));
-                    Log.i("CryptoboxTracker", "cryptobox: " + cryptobox);
-                    Log.i("CryptoboxTracker", "final position: " + latestEstimatedPos);
-                } else if (latestRails.size() < 2 || latestRails.size() > 4) {
-                    // uh-oh
-                    latestEstimatedPos = new Vector2d(Double.NaN, Double.NaN);
-                } else {
-                    // fancy stuff
-                    Log.i("CryptoboxTracker", "current " + robotPose);
-                    double meanRailGap = getMeanRailGap(latestRails);
-                    int numEstimatedRails = 4 - latestRails.size();
-                    double bestError = Double.MAX_VALUE;
-                    Vector2d bestPos = new Vector2d(Double.NaN, Double.NaN);
-                    for (int leftRailsToAdd = 0; leftRailsToAdd <= numEstimatedRails; leftRailsToAdd++) {
-                        List<Double> rails = new ArrayList<>(latestRails);
-                        int rightRailsToAdd = numEstimatedRails - leftRailsToAdd;
-                        for (int i = 0; i < leftRailsToAdd; i++) {
-                            // add extra rail on the left
-                            rails.add(0, rails.get(0) - meanRailGap);
-                        }
-                        for (int i = 0; i < rightRailsToAdd; i++) {
-                            // add extra rail on the right
-                            rails.add(rails.get(rails.size() - 1) + meanRailGap);
-                        }
-                        Vector2d pos = getFieldPositionFromCryptoRelativePosition(
-                                cryptobox, getPosFromRails(rails));
-                        Log.i("CryptoboxTracker", "considering " + pos);
-                        double error = robotPose.pos().added(pos.negated()).norm();
-                        if (error < bestError) {
-                            bestError = error;
-                            bestPos = pos;
-                        }
-                    }
-                    Log.i("CryptoboxTracker", "chose " + bestPos);
-                    latestEstimatedPos = bestPos;
-                }
-            }
-        }
-    }
-
-    public void addListener(CryptoboxTrackerListener listener) {
+    public void addListener(Listener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
-    public void removeListener(CryptoboxTrackerListener listener) {
+    public void removeListener(Listener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
         }

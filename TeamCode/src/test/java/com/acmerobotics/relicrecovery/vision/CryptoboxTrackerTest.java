@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by ryanbrott on 10/12/17.
@@ -44,12 +46,14 @@ public class CryptoboxTrackerTest {
                 return 270.451191280832;
             }
         };
+        VisionCamera visionCamera = mock(VisionCamera.class);
+        when(visionCamera.getProperties()).thenReturn(properties);
 
         CryptoboxTracker redTracker = new CryptoboxTracker(AllianceColor.RED);
         CryptoboxTracker blueTracker = new CryptoboxTracker(AllianceColor.BLUE);
 
-        redTracker.init(properties);
-        blueTracker.init(properties);
+        redTracker.init(visionCamera);
+        blueTracker.init(visionCamera);
 
         File imageSourceDir = new File("scripts/new-cryptobox/images");
         File imageOutputDir = new File("scripts/new-cryptobox/output");
