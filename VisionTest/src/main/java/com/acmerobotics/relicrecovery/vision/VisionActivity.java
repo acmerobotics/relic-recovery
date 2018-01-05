@@ -3,8 +3,11 @@ package com.acmerobotics.relicrecovery.vision;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 
+import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -12,13 +15,20 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-public class VisionActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
+import java.util.List;
+
+public class VisionActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, View.OnTouchListener {
     private JavaCameraView cameraView;
     private Tracker tracker;
-    private Mat bgr;
+    private int intermediateIndex;
+    private Mat bgr, temp;
+    private RobotDashboard dashboard;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -40,6 +50,8 @@ public class VisionActivity extends AppCompatActivity implements CameraBridgeVie
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         View decorView = getWindow().getDecorView();
         // Hide the status bar.
         int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
@@ -55,9 +67,12 @@ public class VisionActivity extends AppCompatActivity implements CameraBridgeVie
         setContentView(cameraView);
         cameraView.setVisibility(View.VISIBLE);
         cameraView.setCvCameraViewListener(this);
+        cameraView.setOnTouchListener(this);
 
         // TODO: add support for different detectors
         tracker = new CryptoboxTracker(AllianceColor.BLUE);
+
+        dashboard = RobotDashboard.open(this, null);
     }
 
     @Override
@@ -81,11 +96,14 @@ public class VisionActivity extends AppCompatActivity implements CameraBridgeVie
         super.onDestroy();
         if (cameraView != null)
             cameraView.disableView();
+        if (dashboard != null)
+            dashboard.stop();
     }
 
     @Override
     public void onCameraViewStarted(int width, int height) {
         bgr = new Mat();
+        temp = new Mat();
 
         tracker.init(null);
     }
@@ -105,8 +123,46 @@ public class VisionActivity extends AppCompatActivity implements CameraBridgeVie
 
         tracker.processFrame(bgr, 0);
 
-        tracker.drawOverlay(overlay, bgr.cols(), bgr.rows(), true);
+        // wrap properly
+        List<LabeledMat> intermediates = tracker.getIntermediates();
+        while (intermediateIndex < 0) {
+            intermediateIndex += intermediates.size() + 1;
+        }
+        intermediateIndex = intermediateIndex % (intermediates.size() + 1);
 
-        return rgba;
+        if (intermediateIndex == 0) {
+            tracker.drawOverlay(overlay, bgr.cols(), bgr.rows(), true);
+
+            return rgba;
+        } else {
+            LabeledMat intermediate = intermediates.get(intermediateIndex - 1);
+
+            if (intermediate.mat.channels() == 3) {
+                // bgr
+                Imgproc.cvtColor(intermediate.mat, temp, Imgproc.COLOR_BGR2RGBA);
+            } else {
+                // gray
+                Imgproc.cvtColor(intermediate.mat, temp, Imgproc.COLOR_GRAY2RGBA);
+            }
+
+            Imgproc.resize(temp, temp, rgba.size());
+
+            Imgproc.putText(temp, intermediate.name, new Point(5, 80), Core.FONT_HERSHEY_DUPLEX, 3, new Scalar(0, 255, 0), 2);
+
+            return temp;
+        }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getX() < v.getWidth() / 2) {
+            // left
+            intermediateIndex--;
+        } else {
+            // right
+            intermediateIndex++;
+        }
+
+        return false;
     }
 }

@@ -1,7 +1,6 @@
 package com.acmerobotics.library.dashboard;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.acmerobotics.library.dashboard.canvas.Canvas;
