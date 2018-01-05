@@ -57,7 +57,6 @@ public class CryptoboxTracker extends Tracker {
     private Mat resized, hsv, hsvMask, hsvMaskOpen, hsvMaskClose, gray, grayMask, grayCombined, grayMaskOpen, grayMaskClose;
     private Mat hierarchy, openKernel, hsvCloseKernel, tapeCloseKernel;
     private int openKernelSize, hsvCloseKernelWidth, hsvCloseKernelHeight, tapeCloseKernelWidth, tapeCloseKernelHeight;
-    private VisionCamera.Properties properties;
     private AllianceColor color;
 
     private List<LabeledMat> intermediates;
@@ -82,8 +81,6 @@ public class CryptoboxTracker extends Tracker {
 
     @Override
     public void init(VisionCamera camera) {
-        this.properties = camera.getProperties();
-
         resized = new Mat();
         hsv = new Mat();
         hsvMask = new Mat();
@@ -229,7 +226,7 @@ public class CryptoboxTracker extends Tracker {
         synchronized (this) {
             latestTimestamp = timestamp;
             latestRails = rails;
-            latestAcceptedPoints = points;
+            latestAcceptedPoints = verticalPoints;
             latestRejectedPoints = rejectedPoints;
 
             synchronized (listeners) {
@@ -276,10 +273,6 @@ public class CryptoboxTracker extends Tracker {
 
     public double getResizedHeight() {
         return resizedHeight;
-    }
-
-    public VisionCamera.Properties getCameraProperties() {
-        return properties;
     }
 
     public void addListener(Listener listener) {

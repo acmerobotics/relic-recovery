@@ -44,7 +44,7 @@ public class CryptoboxPositionTest extends OpMode {
 
         camera = new VuforiaCamera();
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
-        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, drive);
+        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, camera.getProperties(), drive);
         cryptoboxLocalizer.addListener((estimatedPos, timestamp) -> {
                 PositionEstimator positionEstimator = drive.getPositionEstimator();
                 if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) ||

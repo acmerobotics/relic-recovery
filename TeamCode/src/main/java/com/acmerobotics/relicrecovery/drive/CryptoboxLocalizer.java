@@ -34,16 +34,17 @@ public class CryptoboxLocalizer implements CryptoboxTracker.Listener {
     private MecanumDrive drive;
     private Vector2d latestEstimatedPos;
     private List<Listener> listeners;
+    private VisionCamera.Properties cameraProperties;
 
-    public CryptoboxLocalizer(CryptoboxTracker tracker, MecanumDrive drive) {
+    public CryptoboxLocalizer(CryptoboxTracker tracker, VisionCamera.Properties cameraProperties, MecanumDrive drive) {
         this.tracker = tracker;
+        this.cameraProperties = cameraProperties;
         this.drive = drive;
         this.listeners = new ArrayList<>();
     }
 
     private Vector2d getPosFromRails(List<Double> rails) {
         double resizedWidth = tracker.getResizedWidth();
-        VisionCamera.Properties cameraProperties = tracker.getCameraProperties();
         double focalLengthPx = cameraProperties.getHorizontalFocalLengthPx(resizedWidth);
 
         // TODO: maybe refactor into some functions

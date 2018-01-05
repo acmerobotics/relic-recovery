@@ -54,7 +54,7 @@ public class MultiGlyphAuto extends LinearOpMode {
 
         camera = new VuforiaCamera();
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
-        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, drive);
+        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, camera.getProperties(), drive);
         cryptoboxTracker.disable();
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
