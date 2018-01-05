@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.configuration.BalancingStone;
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;

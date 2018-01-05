@@ -2,9 +2,10 @@ package com.acmerobotics.relicrecovery.vision;
 
 import android.util.Log;
 
+import com.acmerobotics.library.R;
+
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.R;
 import org.opencv.android.Utils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;

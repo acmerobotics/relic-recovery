@@ -1,4 +1,4 @@
-package com.acmerobotics.library.configuration;
+package com.acmerobotics.relicrecovery.configuration;
 
 import android.app.Activity;
 import android.content.Context;

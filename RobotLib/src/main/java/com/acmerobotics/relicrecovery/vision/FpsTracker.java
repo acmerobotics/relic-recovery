@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import com.acmerobotics.relicrecovery.util.ExponentialSmoother;
+import com.acmerobotics.library.util.ExponentialSmoother;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;

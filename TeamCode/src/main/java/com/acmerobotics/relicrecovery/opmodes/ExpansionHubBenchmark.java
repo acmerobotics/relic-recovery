@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
-import com.acmerobotics.relicrecovery.drive.TimestampedData;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

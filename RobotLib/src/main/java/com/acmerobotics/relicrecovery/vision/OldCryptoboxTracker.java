@@ -17,9 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import static com.acmerobotics.relicrecovery.util.VisionUtil.nonMaximumSuppression;
-import static com.acmerobotics.relicrecovery.util.VisionUtil.smartHsvRange;
-
 /**
  * Created by ryanbrott on 9/23/17.
  */
@@ -282,7 +279,7 @@ public class OldCryptoboxTracker extends Tracker {
         }
 
         if (rails.size() > 0) {
-            rails = nonMaximumSuppression(rails, 3 * meanRailGap / 8);
+            rails = VisionUtil.nonMaximumSuppression(rails, 3 * meanRailGap / 8);
         }
 
         return rails;
@@ -336,11 +333,11 @@ public class OldCryptoboxTracker extends Tracker {
 
         Scalar redLowerHsv = new Scalar(RED_LOWER_HUE, RED_LOWER_SAT, RED_LOWER_VALUE);
         Scalar redUpperHsv = new Scalar(RED_UPPER_HUE, RED_UPPER_SAT, RED_UPPER_VALUE);
-        smartHsvRange(hsv, redLowerHsv, redUpperHsv, red);
+        VisionUtil.smartHsvRange(hsv, redLowerHsv, redUpperHsv, red);
 
         Scalar blueLowerHsv = new Scalar(BLUE_LOWER_HUE, BLUE_LOWER_SAT, BLUE_LOWER_VALUE);
         Scalar blueUpperHsv = new Scalar(BLUE_UPPER_HUE, BLUE_UPPER_SAT, BLUE_UPPER_VALUE);
-        smartHsvRange(hsv, blueLowerHsv, blueUpperHsv, blue);
+        VisionUtil.smartHsvRange(hsv, blueLowerHsv, blueUpperHsv, blue);
 
         List<Double> rails = new ArrayList<>();
         List<Rail> rawRails = new ArrayList<>();
@@ -398,18 +395,18 @@ public class OldCryptoboxTracker extends Tracker {
                 meanRailWidth += Imgproc.boundingRect(rail.contour).width;
             }
             meanRailWidth /= rawRails.size();
-            rails = nonMaximumSuppression(rails, 2.5 * meanRailWidth);
+            rails = VisionUtil.nonMaximumSuppression(rails, 2.5 * meanRailWidth);
         }
 
         List<Double> glyphRails = new ArrayList<>();
         if (useExtendedTracking) {
             Scalar brownLowerHsv = new Scalar(BROWN_LOWER_HUE, BROWN_LOWER_SAT, BROWN_LOWER_VALUE);
             Scalar brownUpperHsv = new Scalar(BROWN_UPPER_HUE, BROWN_UPPER_SAT, BROWN_UPPER_VALUE);
-            smartHsvRange(hsv, brownLowerHsv, brownUpperHsv, brown);
+            VisionUtil.smartHsvRange(hsv, brownLowerHsv, brownUpperHsv, brown);
 
             Scalar grayLowerHsv = new Scalar(GRAY_LOWER_HUE, GRAY_LOWER_SAT, GRAY_LOWER_VALUE);
             Scalar grayUpperHsv = new Scalar(GRAY_UPPER_HUE, GRAY_UPPER_SAT, GRAY_UPPER_VALUE);
-            smartHsvRange(hsv, grayLowerHsv, grayUpperHsv, gray);
+            VisionUtil.smartHsvRange(hsv, grayLowerHsv, grayUpperHsv, gray);
 
             List<Glyph> brownGlyphs = findGlyphs(brown);
             List<Glyph> grayGlyphs = findGlyphs(gray);
@@ -429,9 +426,9 @@ public class OldCryptoboxTracker extends Tracker {
             glyphRails.addAll(grayRails);
 
             if (brownRails.size() > 1) {
-                glyphRails = nonMaximumSuppression(glyphRails, 3 * getMeanRailGap(brownRails) / 8);
+                glyphRails = VisionUtil.nonMaximumSuppression(glyphRails, 3 * getMeanRailGap(brownRails) / 8);
             } else if (grayRails.size() > 1) {
-                glyphRails = nonMaximumSuppression(glyphRails, 3 * getMeanRailGap(grayRails) / 8);
+                glyphRails = VisionUtil.nonMaximumSuppression(glyphRails, 3 * getMeanRailGap(grayRails) / 8);
             }
         }
 
@@ -450,7 +447,7 @@ public class OldCryptoboxTracker extends Tracker {
                 meanRailGap = getMeanRailGap(glyphRails);
             }
             rails.addAll(glyphRails);
-            rails = nonMaximumSuppression(rails, 3 * meanRailGap / 8);
+            rails = VisionUtil.nonMaximumSuppression(rails, 3 * meanRailGap / 8);
         }
 
         Collections.sort(rails);

@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.util;
+package com.acmerobotics.relicrecovery.vision;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;

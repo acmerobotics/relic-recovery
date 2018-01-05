@@ -56,7 +56,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.acmerobotics.library.configuration.OpModeConfigurationActivity;
+import com.acmerobotics.relicrecovery.configuration.OpModeConfigurationActivity;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.google.blocks.ftcrobotcontroller.BlocksActivity;
 import com.google.blocks.ftcrobotcontroller.ProgrammingModeActivity;

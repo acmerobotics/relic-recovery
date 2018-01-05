@@ -36,7 +36,7 @@
     </activity>
 
     <!-- OpMode Configuration activity -->
-    <activity android:name="com.acmerobotics.library.configuration.OpModeConfigurationActivity">
+    <activity android:name="com.acmerobotics.relicrecovery.configuration.OpModeConfigurationActivity">
     </activity>
 
     <!-- The robot controller service in which most of the robot functionality is managed -->

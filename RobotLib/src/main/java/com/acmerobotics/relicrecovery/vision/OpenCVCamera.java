@@ -1,12 +1,12 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import com.acmerobotics.relicrecovery.drive.TimestampedData;
+import com.acmerobotics.library.util.TimestampedData;
 
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.teamcode.R;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.core.Mat;
@@ -17,7 +17,7 @@ import org.opencv.imgproc.Imgproc;
  */
 
 public class OpenCVCamera extends VisionCamera implements CameraBridgeViewBase.CvCameraViewListener2 {
-    private LinearLayout cameraMonitorView;
+    private ViewGroup cameraMonitorView;
     private JavaCameraView cameraView;
 
     public OpenCVCamera() {
@@ -51,8 +51,11 @@ public class OpenCVCamera extends VisionCamera implements CameraBridgeViewBase.C
         cameraView.setCvCameraViewListener(this);
 
         appUtil.runOnUiThread(() -> {
-            cameraMonitorView = (LinearLayout) activity.findViewById(parameters.cameraMonitorViewId == 0 ?
-                    R.id.cameraMonitorViewId : parameters.cameraMonitorViewId);
+            if (parameters.cameraMonitorViewId == 0) {
+                cameraMonitorView = (ViewGroup) activity.findViewById(android.R.id.content);
+            } else {
+                cameraMonitorView = (LinearLayout) activity.findViewById(parameters.cameraMonitorViewId);
+            }
             cameraMonitorView.addView(cameraView);
             cameraView.enableView();
         });

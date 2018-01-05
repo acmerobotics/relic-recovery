@@ -1,4 +1,4 @@
-package com.acmerobotics.library.configuration;
+package com.acmerobotics.relicrecovery.configuration;
 
 /**
  * Created by ryanbrott on 11/12/17.

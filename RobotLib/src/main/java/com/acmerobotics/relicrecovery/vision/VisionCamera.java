@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.R;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -28,7 +27,7 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
     public static final String TAG = "VisionCamera";
 
     public static class Parameters {
-        @IdRes public int cameraMonitorViewId = R.id.cameraMonitorViewId;
+        @IdRes public int cameraMonitorViewId = 0x7f060024; // org.firstinspires.ftc.teamcode.R.id.cameraMonitorViewId
         public VuforiaLocalizer.CameraDirection cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
     }
 

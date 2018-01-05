@@ -1,7 +1,8 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.RingBuffer;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.loops.Looper;
 
 /**

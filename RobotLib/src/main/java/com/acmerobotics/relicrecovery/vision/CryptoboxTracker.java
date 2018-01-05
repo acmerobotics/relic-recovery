@@ -1,10 +1,9 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import com.acmerobotics.library.configuration.AllianceColor;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.drive.TimestampedData;
-import com.acmerobotics.relicrecovery.util.VisionUtil;
+import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;

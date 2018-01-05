@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import com.acmerobotics.library.configuration.AllianceColor;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
 /**
  * @author Ryan

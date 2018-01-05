@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.util;
+package com.acmerobotics.library.util;
 
 /**
  * This class implements a simple smoother based on an exponential moving average.

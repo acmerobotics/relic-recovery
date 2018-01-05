@@ -2,17 +2,17 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 
 import android.util.Log;
 
-import com.acmerobotics.library.configuration.AllianceColor;
-import com.acmerobotics.library.configuration.Cryptobox;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
+import com.acmerobotics.relicrecovery.configuration.Cryptobox;
+import com.acmerobotics.relicrecovery.drive.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;

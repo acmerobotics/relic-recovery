@@ -2,7 +2,7 @@ package com.acmerobotics.relicrecovery.loops;
 
 import android.util.Log;
 
-import com.acmerobotics.relicrecovery.drive.TimestampedData;
+import com.acmerobotics.library.util.TimestampedData;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.qualcomm.robotcore.util.ThreadPool;

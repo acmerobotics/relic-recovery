@@ -2,14 +2,14 @@ package com.acmerobotics.relicrecovery.opmodes;
 
 import android.app.Activity;
 
-import com.acmerobotics.library.configuration.AllianceColor;
-import com.acmerobotics.library.configuration.BalancingStone;
-import com.acmerobotics.library.configuration.OpModeConfiguration;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
+import com.acmerobotics.relicrecovery.configuration.BalancingStone;
+import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.mech.GlyphGripper;
@@ -23,7 +23,6 @@ import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.JewelColor;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

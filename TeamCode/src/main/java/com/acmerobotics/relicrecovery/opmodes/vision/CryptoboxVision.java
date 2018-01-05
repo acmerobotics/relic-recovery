@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.opmodes.vision;
 
-import com.acmerobotics.library.configuration.AllianceColor;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.OpenCVCamera;

@@ -1,4 +1,4 @@
-package com.acmerobotics.library.configuration;
+package com.acmerobotics.relicrecovery.configuration;
 
 import android.content.Context;
 import android.graphics.Bitmap;
