@@ -44,13 +44,12 @@ public class OpenCVCamera extends VisionCamera implements CameraBridgeViewBase.C
 
     @Override
     protected void doInitialize() {
-        cameraView = new JavaCameraView(activity,
-                parameters.cameraDirection == VuforiaLocalizer.CameraDirection.FRONT ?
-                JavaCameraView.CAMERA_ID_FRONT : JavaCameraView.CAMERA_ID_BACK);
-        cameraView.setVisibility(parameters.cameraMonitorViewId == 0 ? SurfaceView.INVISIBLE : SurfaceView.VISIBLE);
-        cameraView.setCvCameraViewListener(this);
-
         appUtil.runOnUiThread(() -> {
+            cameraView = new JavaCameraView(activity,
+                    parameters.cameraDirection == VuforiaLocalizer.CameraDirection.FRONT ?
+                            JavaCameraView.CAMERA_ID_FRONT : JavaCameraView.CAMERA_ID_BACK);
+            cameraView.setVisibility(parameters.cameraMonitorViewId == 0 ? SurfaceView.INVISIBLE : SurfaceView.VISIBLE);
+            cameraView.setCvCameraViewListener(this);
             if (parameters.cameraMonitorViewId == 0) {
                 cameraMonitorView = (ViewGroup) activity.findViewById(android.R.id.content);
             } else {
