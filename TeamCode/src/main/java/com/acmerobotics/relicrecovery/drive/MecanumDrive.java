@@ -7,7 +7,7 @@ import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.hardware.LynxEmbeddedIMUFactory;
+import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
@@ -108,7 +108,7 @@ public class MecanumDrive implements Loop {
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
         this.scheduler = scheduler;
 
-        imu = LynxEmbeddedIMUFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "hub1"));
+        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "hub1"));
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);

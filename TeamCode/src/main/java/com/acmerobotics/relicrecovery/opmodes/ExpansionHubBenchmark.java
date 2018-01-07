@@ -1,17 +1,18 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
-import com.acmerobotics.relicrecovery.hardware.LynxEmbeddedIMUFactory;
+import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.MovingStatistics;
 
-import java.io.File;
+import org.firstinspires.ftc.robotcore.external.Func;
+
+import java.util.Iterator;
 
 /**
  * Created by ryanbrott on 1/2/18.
@@ -19,102 +20,80 @@ import java.io.File;
 
 @TeleOp(name = "Expansion Hub Benchmark")
 public class ExpansionHubBenchmark extends LinearOpMode {
-    public static final int TRIALS = 1000;
+    public static final int TRIALS = 250;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        File logDir = new File(LoggingUtil.getLogRoot(this), "ExpansionHubBenchmark-" + System.currentTimeMillis());
-        logDir.mkdirs();
+        LynxModule module = hardwareMap.getAll(LynxModule.class).iterator().next();
+
+        telemetry.setAutoClear(false);
+        telemetry.addLine("REV Expansion Hub Benchmark - " + module.getDeviceName());
+        telemetry.addLine("Press start to begin...");
+        telemetry.update();
 
         waitForStart();
 
-        // I2C read test
-        // internal IMU will be used for I2C
-        BNO055IMU imu = LynxEmbeddedIMUFactory.createLynxEmbeddedIMU(
-                hardwareMap.getAll(LynxModule.class).iterator().next());
+        // IMU (unoptimized) test
+        BNO055IMU imu = hardwareMap.getAll(BNO055IMU.class).iterator().next();
         imu.initialize(new BNO055IMU.Parameters());
+        telemetry.addLine("IMU (unoptimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
+        telemetry.update();
+        imu.close();
 
-        CSVLoggingTelemetry i2cLogger = new CSVLoggingTelemetry(new File(logDir, "i2c.csv"));
+        // IMU (optimized) test
+        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(module);
+        imu.initialize(new BNO055IMU.Parameters());
+        telemetry.addLine("IMU (optimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
+        telemetry.update();
+        imu.close();
 
-        i2cLogger.addLine("I2C Read Benchmark Log");
-        i2cLogger.addLine("Trials: " + TRIALS);
-
-        MovingStatistics i2cStatistics = new MovingStatistics(TRIALS);
-        for (int i = 0; i < TRIALS && opModeIsActive(); i++) {
-            double startTime = TimestampedData.getCurrentTime();
-            imu.getAngularOrientation();
-            double dt = TimestampedData.getCurrentTime() - startTime;
-
-            i2cStatistics.add(dt);
-
-            i2cLogger.addData("trial", i);
-            i2cLogger.addData("dt (sec)", dt);
-            i2cLogger.update();
+        Iterator<LynxI2cColorRangeSensor> colorRangeSensorIterator = hardwareMap.getAll(LynxI2cColorRangeSensor.class).iterator();
+        if (colorRangeSensorIterator.hasNext()) {
+            // Color (unoptimized test)
+            LynxI2cColorRangeSensor colorRangeSensor = colorRangeSensorIterator.next();
+            telemetry.addLine("Color (unoptimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
+            telemetry.update();
+            colorRangeSensor.close();
+            // Color (optimized test)
+            // TODO have this automatically detect which bus the color range sensor is plugged into
+            colorRangeSensor = LynxOptimizedI2cSensorFactory.createLynxI2cColorRangeSensor(module, 0);
+            telemetry.addLine("Color (optimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
+            telemetry.update();
+            colorRangeSensor.close();
+        } else {
+            telemetry.addLine("Skipping color test - sensor not found");
+            telemetry.update();
         }
 
-        i2cLogger.addLine("Statistics");
-        i2cLogger.addLine("Mean: " + i2cStatistics.getMean());
-        i2cLogger.addLine("Standard Deviation: " + i2cStatistics.getStandardDeviation());
-
-        // encoder read test
-        // use generic motor encoder
-        DcMotor motor = hardwareMap.dcMotor.iterator().next();
-
-        CSVLoggingTelemetry encoderLogger = new CSVLoggingTelemetry(new File(logDir, "encoder.csv"));
-
-        encoderLogger.addLine("Encoder Read Benchmark Log");
-        encoderLogger.addLine("Trials: " + TRIALS);
-
-        MovingStatistics encoderStatistics = new MovingStatistics(TRIALS);
-        for (int i = 0; i < TRIALS && opModeIsActive(); i++) {
-            double startTime = TimestampedData.getCurrentTime();
-            motor.getCurrentPosition();
-            double dt = TimestampedData.getCurrentTime() - startTime;
-
-            encoderStatistics.add(dt);
-
-            encoderLogger.addData("trial", i);
-            encoderLogger.addData("dt (sec)", dt);
-            encoderLogger.update();
+        Iterator<DcMotor> dcMotorIterator = hardwareMap.getAll(DcMotor.class).iterator();
+        if (dcMotorIterator.hasNext()) {
+            // Encoder test
+            DcMotor motor = hardwareMap.getAll(DcMotor.class).iterator().next();
+            telemetry.addLine("Encoder read: " + formatResults(benchmarkOperation(motor::getCurrentPosition, TRIALS)));
+            telemetry.update();
+        } else {
+            telemetry.addLine("Skipping encoder test - motor not found");
+            telemetry.update();
         }
 
-        encoderLogger.addLine("Statistics");
-        encoderLogger.addLine("Mean: " + encoderStatistics.getMean());
-        encoderLogger.addLine("Standard Deviation: " + encoderStatistics.getStandardDeviation());
-
-        // set power
-        CSVLoggingTelemetry powerLogger = new CSVLoggingTelemetry(new File(logDir, "power.csv"));
-
-        powerLogger.addLine("Set Power Benchmark Log");
-        powerLogger.addLine("Trials: " + TRIALS);
-
-        MovingStatistics powerStatistics = new MovingStatistics(TRIALS);
-        for (int i = 0; i < TRIALS && opModeIsActive(); i++) {
-            double startTime = TimestampedData.getCurrentTime();
-            motor.setPower(2 * Math.random() - 1);
-            double dt = TimestampedData.getCurrentTime() - startTime;
-
-            powerStatistics.add(dt);
-
-            powerLogger.addData("trial", i);
-            powerLogger.addData("dt (sec)", dt);
-            powerLogger.update();
-        }
-
-        motor.setPower(0);
-
-        powerLogger.addLine("Statistics");
-        powerLogger.addLine("Mean: " + powerStatistics.getMean());
-        powerLogger.addLine("Standard Deviation: " + powerStatistics.getStandardDeviation());
-
-        telemetry.addLine("I2C Mean: " + i2cStatistics.getMean());
-        telemetry.addLine("I2c Std Dev: " + i2cStatistics.getStandardDeviation());
-        telemetry.addLine("Encoder Mean: " + encoderStatistics.getMean());
-        telemetry.addLine("Encoder Std Dev: " + encoderStatistics.getStandardDeviation());
-        telemetry.addLine("Power Mean: " + powerStatistics.getMean());
-        telemetry.addLine("Power Sd Dev: " + powerStatistics.getStandardDeviation());
+        telemetry.addLine("Done!");
         telemetry.update();
 
         while (opModeIsActive());
+    }
+
+    private static MovingStatistics benchmarkOperation(Func func, int trials) {
+        MovingStatistics statistics = new MovingStatistics(trials);
+        for (int i = 0; i < trials; i++) {
+            double startTime = TimestampedData.getCurrentTime();
+            func.value();
+            double elapsedTime = TimestampedData.getCurrentTime() - startTime;
+            statistics.add(elapsedTime);
+        }
+        return statistics;
+    }
+
+    private static String formatResults(MovingStatistics statistics) {
+        return String.format("x\u0304 = %.2fms, \u03c3 = %.2fms", statistics.getMean() * 1000, statistics.getStandardDeviation() * 1000);
     }
 }

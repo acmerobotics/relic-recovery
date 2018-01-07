@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.hardware.LynxEmbeddedIMUFactory;
+import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -20,7 +20,7 @@ public class SchedulerTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         PriorityScheduler scheduler = new PriorityScheduler();
         Looper looper = new Looper(scheduler, Looper.DEFAULT_LOOP_TIME);
-        BNO055IMU imu = LynxEmbeddedIMUFactory.createLynxEmbeddedIMU(hardwareMap.getAll(LynxModule.class).iterator().next());
+        BNO055IMU imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(hardwareMap.getAll(LynxModule.class).iterator().next());
         imu.initialize(new BNO055IMU.Parameters());
         DcMotor motor = hardwareMap.getAll(DcMotor.class).iterator().next();
         looper.addLoop(((timestamp, dt) ->
