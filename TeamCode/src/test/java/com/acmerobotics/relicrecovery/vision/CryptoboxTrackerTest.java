@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import com.acmerobotics.relicrecovery.util.VisionUtil;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by ryanbrott on 10/12/17.
@@ -37,18 +39,20 @@ public class CryptoboxTrackerTest {
 //        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
         System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
 
-        CameraProperties properties = new CameraProperties() {
+        VisionCamera.Properties properties = new VisionCamera.Properties() {
             @Override
             public double getHorizontalFocalLengthPx(double imageWidth) {
                 return 270.451191280832;
             }
         };
+        VisionCamera visionCamera = mock(VisionCamera.class);
+        when(visionCamera.getProperties()).thenReturn(properties);
 
-        CryptoboxTracker redTracker = new CryptoboxTracker(CryptoboxTracker.Color.RED);
-        CryptoboxTracker blueTracker = new CryptoboxTracker(CryptoboxTracker.Color.BLUE);
+        CryptoboxTracker redTracker = new CryptoboxTracker(AllianceColor.RED);
+        CryptoboxTracker blueTracker = new CryptoboxTracker(AllianceColor.BLUE);
 
-        redTracker.init(properties);
-        blueTracker.init(properties);
+        redTracker.init(visionCamera);
+        blueTracker.init(visionCamera);
 
         File imageSourceDir = new File("scripts/new-cryptobox/images");
         File imageOutputDir = new File("scripts/new-cryptobox/output");

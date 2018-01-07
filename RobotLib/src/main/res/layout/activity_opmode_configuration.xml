@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:keepScreenOn="true"
-    tools:context="com.acmerobotics.library.configuration.OpModeConfigurationActivity">
+    tools:context="com.acmerobotics.relicrecovery.configuration.OpModeConfigurationActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -154,7 +154,7 @@
                 android:progress="0" />
         </LinearLayout>
 
-        <com.acmerobotics.library.configuration.FieldView
+        <com.acmerobotics.relicrecovery.configuration.FieldView
             android:layout_width="@dimen/field_size"
             android:layout_height="@dimen/field_size"
             android:id="@+id/field_view"

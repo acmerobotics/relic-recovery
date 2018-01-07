@@ -129,9 +129,4 @@ public class PIDTuner extends OpMode {
     public void loop() {
 
     }
-
-    @Override
-    public void stop() {
-        looper.terminate();
-    }
 }

@@ -211,7 +211,7 @@ public class GlyphLift implements Loop {
     }
 
     @Override
-    public void onLoop(long timestamp, long dt) {
+    public void onLoop(double timestamp, double dt) {
         double height = getLeadScrewHeight();
         controller.setSetpoint(targetHeight);
         double heightError = controller.getError(height);

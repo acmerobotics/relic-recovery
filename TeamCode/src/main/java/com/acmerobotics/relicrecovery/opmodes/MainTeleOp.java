@@ -1,19 +1,18 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.configuration.OpModeConfiguration;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.mech.GlyphLift;
 import com.acmerobotics.relicrecovery.mech.Periscope;
 import com.acmerobotics.relicrecovery.mech.RelicRecoverer;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
-import com.acmerobotics.relicrecovery.vision.VisionConstants;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -37,7 +36,7 @@ public class MainTeleOp extends OpMode {
 
     private boolean halfSpeed, secondControllerGlyph = true, changingMode;
 
-    private VisionCamera camera;
+    private VuforiaCamera camera;
 
     @Override
     public void init() {
@@ -52,9 +51,8 @@ public class MainTeleOp extends OpMode {
         Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
         Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
 
-        camera = new VisionCamera();
-        camera.setImageDir(LoggingUtil.getImageDir(this));
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera = new VuforiaCamera();
+        camera.initialize();
 
         drive = new MecanumDrive(hardwareMap, subsystemTelemetry, initialPose);
         frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);

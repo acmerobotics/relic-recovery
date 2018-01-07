@@ -2,8 +2,8 @@ package com.acmerobotics.relicrecovery.util;
 
 import android.os.Environment;
 
-import com.acmerobotics.library.configuration.MatchType;
-import com.acmerobotics.library.configuration.OpModeConfiguration;
+import com.acmerobotics.relicrecovery.configuration.MatchType;
+import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.R;

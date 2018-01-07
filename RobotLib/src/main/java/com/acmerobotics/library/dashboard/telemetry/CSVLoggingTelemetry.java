@@ -130,7 +130,11 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
 
     @Override
     public Line addLine(String lineCaption) {
-        throw new UnsupportedOperationException();
+        if (printStream != null) {
+            printStream.println(lineCaption);
+            printStream.flush();
+        }
+        return null;
     }
 
     @Override

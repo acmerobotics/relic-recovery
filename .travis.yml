@@ -5,6 +5,7 @@ android:
   - platform-tools
   - build-tools-26.0.2
   - android-23
+  - android-26
 notifications:
   email: false
   slack:

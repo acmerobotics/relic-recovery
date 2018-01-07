@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import com.acmerobotics.library.util.RingBuffer;
+
 import org.junit.Before;
 import org.junit.Test;
 

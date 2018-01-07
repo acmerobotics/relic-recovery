@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
@@ -18,6 +19,7 @@ import java.io.File;
  * @author Ryan
  */
 
+@Config
 @TeleOp(name = "Drive Velocity Characterization")
 public class DriveVelocityCharacterization extends LinearOpMode {
     public static double AXIAL_POWER_INCREMENT = 0.05;
@@ -76,7 +78,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
                     } else {
                         double power = AXIAL_POWER_INCREMENT * elapsedTime;
                         double axialDelta = estimatedPose.x() - lastPose.x();
-                        double axialSpeed = axialDelta / dt * 1000;
+                        double axialSpeed = axialDelta / dt;
                         drive.setVelocity(new Vector2d(power, 0), 0);
 
                         axialLog.addData("timestamp", timestamp);
@@ -94,7 +96,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
                     } else {
                         double power = LATERAL_POWER_INCREMENT * elapsedTime;
                         double lateralDelta = estimatedPose.y() - lastPose.y();
-                        double lateralSpeed = lateralDelta / dt * 1000;
+                        double lateralSpeed = lateralDelta / dt;
                         drive.setVelocity(new Vector2d(0, power), 0);
 
                         lateralLog.addData("timestamp", timestamp);
@@ -115,7 +117,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
                         if (Math.abs(headingDelta) > Math.PI / 2) {
                             headingDelta -= Math.signum(headingDelta) * 2 * Math.PI;
                         }
-                        double omega = headingDelta / dt * 1000;
+                        double omega = headingDelta / dt;
                         drive.setVelocity(new Vector2d(0, 0), power);
 
                         headingLog.addData("timestamp", timestamp);

@@ -5,10 +5,9 @@ import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.motion.PIDController;
-import com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
-import com.acmerobotics.relicrecovery.vision.VisionConstants;
+import com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -29,7 +28,7 @@ public class VisionAlignmentTest extends LinearOpMode {
 
     private RobotDashboard dashboard;
 
-    private VisionCamera camera;
+    private VuforiaCamera camera;
     private OldCryptoboxTracker cryptoboxTracker;
 
     private MecanumDrive drive;
@@ -53,11 +52,11 @@ public class VisionAlignmentTest extends LinearOpMode {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        camera = new VisionCamera();
+        camera = new VuforiaCamera();
         cryptoboxTracker = new OldCryptoboxTracker(false);
         camera.addTracker(new FpsTracker());
         camera.addTracker(cryptoboxTracker);
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera.initialize();
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();

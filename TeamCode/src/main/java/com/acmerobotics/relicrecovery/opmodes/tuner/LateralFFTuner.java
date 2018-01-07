@@ -20,7 +20,7 @@ import java.util.Arrays;
 @TeleOp(name = "Lateral FF Tuner")
 public class LateralFFTuner extends LinearOpMode {
     public static final double LOWER_BOUND = 0;
-    public static final double UPPER_BOUND = 0.1;
+    public static final double UPPER_BOUND = 0.001;
     public static final double DISTANCE = 48;
 
     private RobotDashboard dashboard;
@@ -68,6 +68,7 @@ public class LateralFFTuner extends LinearOpMode {
 
         // reset heading + pose
         drive.setEstimatedPose(new Pose2d(0, 0, drive.getHeading()));
+        drive.setHeading(0);
 
         Path forward = new Path(Arrays.asList(
                 new LineSegment(new Pose2d(0, 0, 0), new Pose2d(0, DISTANCE, 0))
@@ -75,6 +76,7 @@ public class LateralFFTuner extends LinearOpMode {
         Path reverse = new Path(Arrays.asList(
                 new LineSegment(new Pose2d(0, DISTANCE, 0), new Pose2d(0, 0, 0))
         ));
+
         drive.followPath(forward);
 
         while (opModeIsActive() && drive.isFollowingPath()) {

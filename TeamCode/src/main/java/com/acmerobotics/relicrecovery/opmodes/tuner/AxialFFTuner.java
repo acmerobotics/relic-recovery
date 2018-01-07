@@ -20,7 +20,7 @@ import java.util.Arrays;
 @TeleOp(name = "Axial FF Tuner")
 public class AxialFFTuner extends LinearOpMode {
     public static final double LOWER_BOUND = 0;
-    public static final double UPPER_BOUND = 0.1;
+    public static final double UPPER_BOUND = 0.001;
     public static final double DISTANCE = 60;
 
     private RobotDashboard dashboard;

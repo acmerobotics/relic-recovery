@@ -1,9 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.vision;
 
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
-import com.acmerobotics.relicrecovery.vision.VisionConstants;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,16 +10,15 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  */
 @TeleOp(name = "FPS Vision", group = "vision")
 public class FpsVision extends OpMode {
-    private VisionCamera camera;
+    private VuforiaCamera camera;
     private FpsTracker fpsTracker;
 
     @Override
     public void init() {
-        camera = new VisionCamera();
+        camera = new VuforiaCamera();
         fpsTracker = new FpsTracker();
         camera.addTracker(fpsTracker);
-        camera.setImageDir(LoggingUtil.getImageDir(this));
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera.initialize();
     }
 
     @Override

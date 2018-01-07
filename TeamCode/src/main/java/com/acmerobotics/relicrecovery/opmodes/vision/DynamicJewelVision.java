@@ -28,27 +28,24 @@
  */
 package com.acmerobotics.relicrecovery.opmodes.vision;
 
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
-import com.acmerobotics.relicrecovery.vision.VisionConstants;
+import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp
 public class DynamicJewelVision extends OpMode {
-    private VisionCamera camera;
+    private VuforiaCamera camera;
     private DynamicJewelTracker jewelTracker;
 
     @Override
     public void init() {
         jewelTracker = new DynamicJewelTracker();
-        camera = new VisionCamera();
-        camera.setImageDir(LoggingUtil.getImageDir(this));
+        camera = new VuforiaCamera();
         camera.addTracker(jewelTracker);
         camera.addTracker(new FpsTracker());
-        camera.initialize(VisionConstants.VUFORIA_PARAMETERS);
+        camera.initialize();
     }
 
     @Override

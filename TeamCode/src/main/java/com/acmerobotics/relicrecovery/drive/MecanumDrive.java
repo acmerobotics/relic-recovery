@@ -7,6 +7,7 @@ import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
 import com.acmerobotics.relicrecovery.motion.PIDController;
@@ -61,7 +62,7 @@ public class MecanumDrive implements Loop {
      */
     public static final double RADIUS = 2;
 
-    public static final int ORIENTATION_CACHE_MS = 50;
+    public static final double ORIENTATION_CACHE_TIME = 0.05;
 
     private DcMotor[] motors;
 
@@ -72,10 +73,10 @@ public class MecanumDrive implements Loop {
 
     private BNO055IMU imu;
     private double headingOffset;
-    private long lastOrientationReadTimestamp;
+    private double lastOrientationReadTimestamp;
     private Orientation cachedOrientation;
 
-    private PoseEstimator poseEstimator;
+    private PositionEstimator positionEstimator;
     private PathFollower pathFollower;
 
     /* inputs are pitch and roll, respectively */
@@ -129,7 +130,7 @@ public class MecanumDrive implements Loop {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        poseEstimator = new PoseEstimator(this, initialPose);
+        positionEstimator = new PositionEstimator(this, initialPose.pos());
         pathFollower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
@@ -147,16 +148,29 @@ public class MecanumDrive implements Loop {
         setHeading(initialPose.heading());
     }
 
-    public void setMaintainHeading(boolean maintainHeading) {
-        this.maintainHeading = maintainHeading;
-        if (maintainHeading) {
-            this.maintainHeadingController.setSetpoint(getHeading());
-            this.maintainHeadingController.reset();
-        }
+    public DcMotor[] getMotors() {
+        return motors;
+    }
+
+    public void enableHeadingCorrection() {
+        maintainHeading = true;
+        this.maintainHeadingController.reset();
+    }
+
+    public void disableHeadingCorrection() {
+        maintainHeading = false;
+    }
+
+    public void setTargetHeading(double heading) {
+        this.maintainHeadingController.setSetpoint(heading);
     }
 
     public boolean getMaintainHeading() {
         return maintainHeading;
+    }
+
+    public PositionEstimator getPositionEstimator() {
+        return positionEstimator;
     }
 
     private void setMode(Mode mode) {
@@ -283,8 +297,8 @@ public class MecanumDrive implements Loop {
     }
 
     private Orientation getAngularOrientation() {
-        long timestamp = System.currentTimeMillis();
-        if ((timestamp - lastOrientationReadTimestamp) > ORIENTATION_CACHE_MS) {
+        double timestamp = TimestampedData.getCurrentTime();
+        if ((timestamp - lastOrientationReadTimestamp) > ORIENTATION_CACHE_TIME) {
             lastOrientationReadTimestamp = timestamp;
             cachedOrientation = imu.getAngularOrientation();
             Log.i("MecanumDrive", "getAngularOrientation(): actually read");
@@ -320,11 +334,12 @@ public class MecanumDrive implements Loop {
     }
 
     public Pose2d getEstimatedPose() {
-        return poseEstimator.getPose();
+        return new Pose2d(positionEstimator.getPosition(), getHeading());
     }
 
     public void setEstimatedPose(Pose2d pose) {
-        poseEstimator.setPose(pose);
+        positionEstimator.setPosition(pose.pos());
+        setHeading(pose.heading());
     }
 
     public void autoBalance() {
@@ -334,11 +349,11 @@ public class MecanumDrive implements Loop {
     }
 
     @Override
-    public void onLoop(long timestamp, long dt) {
+    public void onLoop(double timestamp, double dt) {
         // pose estimation
-        poseEstimator.update(timestamp);
+        positionEstimator.update(timestamp);
 
-        Pose2d estimatedPose = poseEstimator.getPose();
+        Pose2d estimatedPose = getEstimatedPose();
 
         // maintain heading
         double heading = getHeading();
