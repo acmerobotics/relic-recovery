@@ -25,7 +25,7 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
     public static final int LOW_PRIORITY = 5;
 
     /** amount of time required to make a low priority task become high priority */
-    public static final double DECAY_TIME = 0.15;
+    public static final double DECAY_TIME = 0.2;
     public static final double K = Math.log((double) HIGH_PRIORITY / LOW_PRIORITY) / DECAY_TIME;
 
     public static final boolean DEBUG = true;
@@ -54,7 +54,7 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
         }
 
         public double getAdjustedPriority() {
-            double timeSinceQueue = TimestampedData.getCurrentTime();
+            double timeSinceQueue = TimestampedData.getCurrentTime() - timestamp;
             return priority * Math.exp(K * timeSinceQueue);
         }
     }
@@ -92,6 +92,9 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
+                for (TaskWithPriority task : queue) {
+                    Log.i("Scheduler", String.format("[%1.2f] %s", task.getAdjustedPriority(), task.name));
+                }
                 TaskWithPriority taskWithPriority = queue.take();
                 double startTime = TimestampedData.getCurrentTime();
                 taskWithPriority.task.execute();
@@ -123,7 +126,8 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
     }
 
     public double getHighestPriority() {
-        return queue.peek().getAdjustedPriority();
+        TaskWithPriority taskWithPriority = queue.peek();
+        return taskWithPriority == null ? LOW_PRIORITY : taskWithPriority.getAdjustedPriority();
     }
 
     @Override
