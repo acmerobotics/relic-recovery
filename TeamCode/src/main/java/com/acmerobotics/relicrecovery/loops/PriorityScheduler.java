@@ -25,12 +25,18 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
     public class TaskWithPriority {
         public final Task task;
         public final int priority;
+        public final boolean repeat;
         public final double timestamp;
 
-        public TaskWithPriority(Task task, int priority) {
+        public TaskWithPriority(Task task, int priority, boolean repeat) {
             this.task = task;
             this.priority = priority;
+            this.repeat = repeat;
             this.timestamp = TimestampedData.getCurrentTime();
+        }
+
+        public TaskWithPriority copy() {
+            return new TaskWithPriority(task, priority, repeat);
         }
     }
 
@@ -74,14 +80,25 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
             try {
                 TaskWithPriority taskWithPriority = queue.take();
                 taskWithPriority.task.execute();
+                if (taskWithPriority.repeat) {
+                    add(taskWithPriority.copy());
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
+    private void add(TaskWithPriority taskWithPriority) {
+        queue.add(taskWithPriority);
+    }
+
     public void add(Task task, int priority) {
-        queue.add(new TaskWithPriority(task, priority));
+        add(new TaskWithPriority(task, priority, false));
+    }
+
+    public void addRepeating(Task task, int priority) {
+        add(new TaskWithPriority(task, priority, true));
     }
 
     @Override
