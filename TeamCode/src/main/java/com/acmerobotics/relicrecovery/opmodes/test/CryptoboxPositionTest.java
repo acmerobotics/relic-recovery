@@ -13,6 +13,7 @@ import com.acmerobotics.relicrecovery.drive.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
@@ -33,14 +34,17 @@ public class CryptoboxPositionTest extends OpMode {
     private Canvas fieldOverlay;
     private MecanumDrive drive;
     private Looper looper;
+    private PriorityScheduler scheduler;
 
     @Override
     public void init() {
+        scheduler = new PriorityScheduler();
         dashboard = RobotDashboard.getInstance();
         fieldOverlay = dashboard.getFieldOverlay();
         telemetry = new MultipleTelemetry(dashboard.getTelemetry(), telemetry);
 
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(0, 0, Math.PI / 2));
+        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
+        drive.setEstimatedPose(new Pose2d(0, 0, Math.PI / 2));
 
         camera = new VuforiaCamera();
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);

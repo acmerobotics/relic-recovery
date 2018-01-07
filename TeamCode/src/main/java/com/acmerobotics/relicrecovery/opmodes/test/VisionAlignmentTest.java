@@ -4,6 +4,7 @@ import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker;
@@ -47,8 +48,11 @@ public class VisionAlignmentTest extends LinearOpMode {
 
     private double offset = targetOffset, distance = targetDistance;
 
+    private PriorityScheduler scheduler;
+
     @Override
     public void runOpMode() throws InterruptedException {
+        scheduler = new PriorityScheduler();
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
@@ -63,7 +67,7 @@ public class VisionAlignmentTest extends LinearOpMode {
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         imu.initialize(parameters);
 
-        drive = new MecanumDrive(hardwareMap);
+        drive = new MecanumDrive(hardwareMap, scheduler, null);
 
         headingController = new PIDController(headingCoeffs);
         headingController.setInputBounds(0, 360);

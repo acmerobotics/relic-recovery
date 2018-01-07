@@ -6,6 +6,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -27,12 +28,13 @@ public class HeadingFFTuner extends LinearOpMode {
     private Looper looper;
     private MecanumDrive drive;
     private volatile double value;
+    private PriorityScheduler scheduler;
 
     @Override
     public void runOpMode() {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
+        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
 
         looper = new Looper();
         drive.registerLoops(looper);

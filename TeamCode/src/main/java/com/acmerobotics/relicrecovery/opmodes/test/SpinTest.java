@@ -6,6 +6,7 @@ import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -21,12 +22,14 @@ public class SpinTest extends LinearOpMode {
     private RobotDashboard dashboard;
     private Looper looper;
     private MecanumDrive drive;
+    private PriorityScheduler scheduler;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        scheduler = new PriorityScheduler();
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
+        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
 
         looper = new Looper();
         drive.registerLoops(looper);
