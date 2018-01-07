@@ -27,9 +27,9 @@ public class PositionEstimator {
 
     public synchronized void update(double timestamp) {
         if (lastRotations == null) {
-            lastRotations = drive.getRotations();
+            lastRotations = drive.getMotorRotations();
         } else {
-            double[] rotations = drive.getRotations();
+            double[] rotations = drive.getMotorRotations();
             double[] rotationDeltas = new double[4];
             for (int i = 0; i < 4; i++) {
                 rotationDeltas[i] = rotations[i] - lastRotations[i];

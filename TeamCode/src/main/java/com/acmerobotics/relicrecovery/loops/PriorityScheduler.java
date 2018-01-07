@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.loops;
 
+import android.util.Log;
+
 import com.acmerobotics.library.util.TimestampedData;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
@@ -16,7 +18,13 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 
 public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifications {
-    public static final int DEFAULT_CAPACITY = 20;
+    public static final int DEFAULT_CAPACITY = 30;
+
+    public static final int HIGH_PRIORITY = 1;
+    public static final int MEDIUM_PRIORITY = 3;
+    public static final int LOW_PRIORITY = 5;
+
+    public static final boolean DEBUG = true;
 
     public interface Task {
         void execute();
@@ -24,19 +32,21 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
 
     public class TaskWithPriority {
         public final Task task;
+        public final String name;
         public final int priority;
         public final boolean repeat;
         public final double timestamp;
 
-        public TaskWithPriority(Task task, int priority, boolean repeat) {
+        public TaskWithPriority(Task task, String name, int priority, boolean repeat) {
             this.task = task;
+            this.name = name;
             this.priority = priority;
             this.repeat = repeat;
             this.timestamp = TimestampedData.getCurrentTime();
         }
 
         public TaskWithPriority copy() {
-            return new TaskWithPriority(task, priority, repeat);
+            return new TaskWithPriority(task, name, priority, repeat);
         }
     }
 
@@ -79,7 +89,14 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 TaskWithPriority taskWithPriority = queue.take();
+                double startTime = TimestampedData.getCurrentTime();
                 taskWithPriority.task.execute();
+                double elapsedTime = TimestampedData.getCurrentTime() - startTime;
+                if (DEBUG) {
+                    String name = taskWithPriority.name.length() == 0 ? "unknown" : taskWithPriority.name;
+                    Log.i("Scheduler", String.format("Executed '%s': took %.2fms, queued for %.2fms",
+                            name, elapsedTime * 1000, (startTime - taskWithPriority.timestamp) * 1000));
+                }
                 if (taskWithPriority.repeat) {
                     add(taskWithPriority.copy());
                 }
@@ -93,12 +110,12 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
         queue.add(taskWithPriority);
     }
 
-    public void add(Task task, int priority) {
-        add(new TaskWithPriority(task, priority, false));
+    public void add(Task task, String name, int priority) {
+        add(new TaskWithPriority(task, name, priority, false));
     }
 
-    public void addRepeating(Task task, int priority) {
-        add(new TaskWithPriority(task, priority, true));
+    public void addRepeating(Task task, String name, int priority) {
+        add(new TaskWithPriority(task, name, priority, true));
     }
 
     @Override
