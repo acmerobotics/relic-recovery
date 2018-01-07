@@ -22,12 +22,21 @@ public class SchedulerTest extends LinearOpMode {
         Looper looper = new Looper(scheduler, Looper.DEFAULT_LOOP_TIME);
         BNO055IMU imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(hardwareMap.getAll(LynxModule.class).iterator().next());
         imu.initialize(new BNO055IMU.Parameters());
-        DcMotor motor = hardwareMap.getAll(DcMotor.class).iterator().next();
-        looper.addLoop(((timestamp, dt) ->
-            scheduler.add(() -> motor.setPower(TimestampedData.getCurrentTime() % 1), "motor set power", PriorityScheduler.HIGH_PRIORITY)
-        ));
+
+        DcMotor[] motors = new DcMotor[4];
+        for (int i = 0; i < 4; i++) {
+            motors[i] = hardwareMap.dcMotor.get("motor" + i);
+        }
+        looper.addLoop(((timestamp, dt) -> {
+            for (int i = 0; i < 4; i++) {
+                final DcMotor motor = motors[i];
+                scheduler.add(() -> motor.setPower(TimestampedData.getCurrentTime() % 1), "motor " + i + " set power", PriorityScheduler.HIGH_PRIORITY);
+            }
+        }));
         scheduler.addRepeating(imu::getAngularOrientation, "imu read", PriorityScheduler.LOW_PRIORITY);
-        scheduler.addRepeating(motor::getCurrentPosition, "encoder read", PriorityScheduler.LOW_PRIORITY);
+        for (int i = 0; i < 4; i++) {
+            scheduler.addRepeating(motors[i]::getCurrentPosition, "encoder " + i + " read", PriorityScheduler.LOW_PRIORITY);
+        }
 
         waitForStart();
 

@@ -47,23 +47,19 @@ public class ExpansionHubBenchmark extends LinearOpMode {
         telemetry.update();
         imu.close();
 
-        Iterator<LynxI2cColorRangeSensor> colorRangeSensorIterator = hardwareMap.getAll(LynxI2cColorRangeSensor.class).iterator();
-        if (colorRangeSensorIterator.hasNext()) {
-            // Color (unoptimized test)
-            LynxI2cColorRangeSensor colorRangeSensor = colorRangeSensorIterator.next();
-            telemetry.addLine("Color (unoptimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
-            telemetry.update();
-            colorRangeSensor.close();
-            // Color (optimized test)
-            // TODO have this automatically detect which bus the color range sensor is plugged into
-            colorRangeSensor = LynxOptimizedI2cSensorFactory.createLynxI2cColorRangeSensor(module, 0);
-            telemetry.addLine("Color (optimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
-            telemetry.update();
-            colorRangeSensor.close();
-        } else {
-            telemetry.addLine("Skipping color test - sensor not found");
-            telemetry.update();
-        }
+        // Color (unoptimized test)
+        LynxI2cColorRangeSensor colorRangeSensor = hardwareMap.get(LynxI2cColorRangeSensor.class, "colorRange");
+        colorRangeSensor.initialize();
+        telemetry.addLine("Color (unoptimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
+        telemetry.update();
+        colorRangeSensor.close();
+        // Color (optimized test)
+        // TODO have this automatically detect which bus the color range sensor is plugged into
+        colorRangeSensor = LynxOptimizedI2cSensorFactory.createLynxI2cColorRangeSensor(module, 1);
+        colorRangeSensor.initialize();
+        telemetry.addLine("Color (optimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
+        telemetry.update();
+        colorRangeSensor.close();
 
         Iterator<DcMotor> dcMotorIterator = hardwareMap.getAll(DcMotor.class).iterator();
         if (dcMotorIterator.hasNext()) {
