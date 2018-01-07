@@ -122,6 +122,10 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
         add(new TaskWithPriority(task, name, priority, true));
     }
 
+    public double getHighestPriority() {
+        return queue.peek().getAdjustedPriority();
+    }
+
     @Override
     public void onOpModePreInit(OpMode opMode) {
 

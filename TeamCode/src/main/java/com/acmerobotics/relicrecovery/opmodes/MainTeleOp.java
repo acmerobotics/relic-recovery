@@ -57,7 +57,7 @@ public class MainTeleOp extends OpMode {
         drive = new MecanumDrive(hardwareMap, scheduler, subsystemTelemetry);
         drive.setEstimatedPose(initialPose);
 
-        looper = new Looper(TELEOP_LOOP_TIME);
+        looper = new Looper(scheduler, TELEOP_LOOP_TIME);
         drive.registerLoops(looper);
         looper.addLoop((timestamp, dt) -> {
             stickyGamepad1.update();

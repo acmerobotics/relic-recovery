@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.loops;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.acmerobotics.library.util.TimestampedData;
@@ -19,7 +20,8 @@ import java.util.concurrent.ExecutorService;
  */
 
 public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
-    public static double DEFAULT_LOOP_TIME = 0.05;
+    public static final double DEFAULT_LOOP_TIME = 0.05;
+    public static final double PRIORITY_THRESHOLD = 2;
 
     private List<Loop> loops;
     private double loopTime;
@@ -27,12 +29,14 @@ public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
     private AppUtil appUtil = AppUtil.getInstance();
     private OpModeManagerImpl opModeManager;
     private ExecutorService executorService;
+    @Nullable private PriorityScheduler scheduler;
 
     public Looper() {
-        this(DEFAULT_LOOP_TIME);
+        this(null, DEFAULT_LOOP_TIME);
     }
 
-    public Looper(double loopTime) {
+    public Looper(PriorityScheduler scheduler, double loopTime) {
+        this.scheduler = scheduler;
         this.loopTime = loopTime;
         loops = new ArrayList<>();
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(appUtil.getActivity());
@@ -61,6 +65,17 @@ public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
 
             for (Loop loop : loops) {
                 loop.onLoop(loopStartTime, loopTime);
+            }
+
+            if (scheduler != null) {
+                Log.i("Looper", "waiting on scheduler");
+                while (scheduler.getHighestPriority() < PRIORITY_THRESHOLD) {
+                    try {
+                        Thread.sleep(2);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
             }
 
             double loopEndTime = loopStartTime + loopTime;
