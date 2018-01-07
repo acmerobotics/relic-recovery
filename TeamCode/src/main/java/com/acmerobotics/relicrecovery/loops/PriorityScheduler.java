@@ -24,6 +24,10 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
     public static final int MEDIUM_PRIORITY = 3;
     public static final int LOW_PRIORITY = 5;
 
+    /** amount of time required to make a low priority task become high priority */
+    public static final double DECAY_TIME = 0.15;
+    public static final double K = Math.log((double) HIGH_PRIORITY / LOW_PRIORITY) / DECAY_TIME;
+
     public static final boolean DEBUG = true;
 
     public interface Task {
@@ -48,6 +52,11 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
         public TaskWithPriority copy() {
             return new TaskWithPriority(task, name, priority, repeat);
         }
+
+        public double getAdjustedPriority() {
+            double timeSinceQueue = TimestampedData.getCurrentTime();
+            return priority * Math.exp(K * timeSinceQueue);
+        }
     }
 
     private ExecutorService executorService;
@@ -64,13 +73,8 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
         if (opModeManager != null) {
             opModeManager.registerListener(this);
         }
-        queue = new PriorityBlockingQueue<>(capacity, (lhs, rhs) -> {
-            if (lhs.priority == rhs.priority) {
-                return Double.compare(lhs.timestamp, rhs.timestamp);
-            } else {
-                return Integer.compare(lhs.priority, rhs.priority);
-            }
-        });
+        queue = new PriorityBlockingQueue<>(capacity,
+                (lhs, rhs) -> Double.compare(lhs.getAdjustedPriority(), rhs.getAdjustedPriority()));
     }
 
     public void start() {
