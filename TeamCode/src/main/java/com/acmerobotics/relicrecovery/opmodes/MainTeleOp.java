@@ -8,9 +8,7 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.mech.GlyphLift;
-import com.acmerobotics.relicrecovery.mech.Periscope;
-import com.acmerobotics.relicrecovery.mech.RelicRecoverer;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -24,26 +22,28 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
+    public static final double TELEOP_LOOP_TIME = 0.02;
+
     public static Pose2d initialPose = new Pose2d(0, 0, 0);
 
     private Looper looper;
-    private StickyGamepad stickyGamepad1, stickyGamepad2;
+    private StickyGamepad stickyGamepad1;
 
     private MecanumDrive drive;
-    private GlyphLift frontLift;
-    private Periscope periscope;
-    private RelicRecoverer relicRecoverer;
 
-    private boolean halfSpeed, secondControllerGlyph = true, changingMode;
+    private boolean halfSpeed;
 
     private VuforiaCamera camera;
+
+    private PriorityScheduler scheduler;
 
     @Override
     public void init() {
         stickyGamepad1 = new StickyGamepad(gamepad1);
-        stickyGamepad2 = new StickyGamepad(gamepad2);
 
         OpModeConfiguration configuration = new OpModeConfiguration(hardwareMap.appContext);
+
+        scheduler = new PriorityScheduler();
 
         RobotDashboard dashboard = RobotDashboard.getInstance();
 
@@ -54,160 +54,55 @@ public class MainTeleOp extends OpMode {
         camera = new VuforiaCamera();
         camera.initialize();
 
-        drive = new MecanumDrive(hardwareMap, subsystemTelemetry, initialPose);
-        frontLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
-        periscope = new Periscope(hardwareMap, subsystemTelemetry);
-        relicRecoverer = new RelicRecoverer(hardwareMap, subsystemTelemetry);
+        drive = new MecanumDrive(hardwareMap, scheduler, subsystemTelemetry);
+        drive.setEstimatedPose(initialPose);
 
-        looper = new Looper();
-        frontLift.registerLoops(looper);
+        looper = new Looper(scheduler, TELEOP_LOOP_TIME);
         drive.registerLoops(looper);
-        periscope.registerLoops(looper);
-        looper.addLoop(relicRecoverer); // TODO: fix this?
         looper.addLoop((timestamp, dt) -> {
+            stickyGamepad1.update();
+
+            if (stickyGamepad1.b) {
+                halfSpeed = !halfSpeed;
+            }
+
+            double x, y = 0, omega;
+
+            x = 0.75 * -gamepad1.left_stick_y;
+
+            if (Math.abs(gamepad1.left_stick_x) > 0.5) {
+                y = -gamepad1.left_stick_x;
+            }
+
+            if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
+                y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
+            }
+
+            omega = -gamepad1.right_stick_x / 24.0;
+
+            if (halfSpeed) {
+                x *= 0.5;
+                y *= 0.5;
+                omega *= 0.5;
+            }
+
+            if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
+                drive.setVelocity(new Vector2d(x, y), omega);
+            } else if (x != 0 && y != 0 && omega != 0){
+                drive.setVelocity(new Vector2d(x, y), omega);
+            }
+
             allTelemetry.update();
             dashboard.drawOverlay();
         });
         looper.start();
 
 //        drive.setMaintainHeading(true);
-
-        frontLift.zeroLift();
-
-        periscope.raise();
     }
 
     @Override
     public void loop() {
-        stickyGamepad1.update();
-        stickyGamepad2.update();
 
-        if (gamepad2.left_bumper && gamepad2.right_bumper) {
-            if (!changingMode) {
-                secondControllerGlyph = !secondControllerGlyph;
-                changingMode = true;
-            }
-        } else {
-            changingMode = false;
-        }
-
-        if (stickyGamepad1.b) {
-            halfSpeed = !halfSpeed;
-        }
-
-        double x, y = 0, omega;
-
-        if (secondControllerGlyph) {
-            y = (gamepad2.left_trigger - gamepad2.right_trigger) / 4.0;
-
-            double leadScrewPower = Double.NaN, pinionPower = Double.NaN;
-            if (gamepad2.dpad_up) {
-                leadScrewPower = 1;
-            } else if (gamepad2.dpad_down) {
-                leadScrewPower = -1;
-            } else if (frontLift.getLiftMode() == GlyphLift.LiftMode.OPEN_LOOP) {
-                leadScrewPower = 0;
-            }
-
-            if (gamepad2.dpad_left) {
-                pinionPower = 1;
-            } else if (gamepad2.dpad_right) {
-                pinionPower = -1;
-            } else if (frontLift.getLiftMode() == GlyphLift.LiftMode.OPEN_LOOP) {
-                pinionPower = 0;
-            }
-
-            if (!Double.isNaN(leadScrewPower)) {
-                frontLift.setLeadScrewPower(leadScrewPower);
-            }
-
-            if (!Double.isNaN(pinionPower)) {
-                frontLift.setPinionPower(pinionPower);
-            }
-
-            if (stickyGamepad2.y) {
-                frontLift.setHeight(0.5);
-            } else if (stickyGamepad2.x) {
-                frontLift.setHeight(6.5);
-            } else if (stickyGamepad2.a) {
-                frontLift.setHeight(12.5);
-            } else if (stickyGamepad2.b) {
-                frontLift.setHeight(18.5);
-            }
-
-            if (gamepad2.left_bumper) {
-                frontLift.setIntakePower(-1, -1);
-            } else if (gamepad2.right_bumper) {
-//                frontLift.intakeGlyph();
-                frontLift.setIntakePower(1, 1);
-            } else if (frontLift.getIntakeMode() == GlyphLift.IntakeMode.OPEN_LOOP) {
-                frontLift.setIntakePower(0, 0);
-            }
-
-            if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
-                frontLift.setIntakePower(gamepad2.left_stick_y, gamepad2.right_stick_y);
-            }
-        } else {
-            if (gamepad2.dpad_up) {
-                relicRecoverer.setPosition(RelicRecoverer.Position.UP);
-            } else if (gamepad2.dpad_left || gamepad2.dpad_right) {
-                relicRecoverer.setPosition(RelicRecoverer.Position.CLOSED);
-            } else if (gamepad2.dpad_down) {
-                relicRecoverer.setPosition(RelicRecoverer.Position.OPEN);
-            }
-
-            relicRecoverer.setExtendSpeed(gamepad2.right_stick_y);
-            relicRecoverer.setOffsetSpeed(gamepad2.left_stick_y);
-
-            frontLift.setLiftPower(0, 0);
-            frontLift.setIntakePower(0, 0);
-        }
-
-        x = 0.75 * -gamepad1.left_stick_y;
-
-        if (Math.abs(gamepad1.left_stick_x) > 0.5) {
-            y = -gamepad1.left_stick_x;
-        }
-
-        if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
-            y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
-        }
-
-        omega = -gamepad1.right_stick_x / 24.0;
-
-        if (halfSpeed) {
-            x *= 0.5;
-            y *= 0.5;
-            omega *= 0.5;
-        }
-
-//        double targetHeading = Double.NaN;
-//        if (gamepad1.dpad_left) {
-//            targetHeading = Math.PI / 2;
-//        } else if (gamepad1.dpad_down) {
-//            targetHeading = Math.PI;
-//        } else if (gamepad1.dpad_right) {
-//            targetHeading = -Math.PI / 2;
-//        } else if (gamepad1.dpad_up) {
-//            targetHeading = 0;
-//        }
-//
-//        if (!Double.isNaN(targetHeading)) {
-//            Pose2d robotPose = drive.getEstimatedPose();
-//            double turnAngle = Angle.norm(targetHeading - robotPose.heading());
-//            Path turn = new Path(Arrays.asList(
-//                    new PointTurn(robotPose, turnAngle)
-//            ));
-//            drive.followPath(turn);
-//        }
-
-        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
-            drive.setVelocity(new Vector2d(x, y), omega);
-        } else if (x != 0 && y != 0 && omega != 0){
-            drive.setVelocity(new Vector2d(x, y), omega);
-        }
-
-        telemetry.addData("secondControllerMode", secondControllerGlyph ? "GLYPH" : "RELIC");
     }
 }
 

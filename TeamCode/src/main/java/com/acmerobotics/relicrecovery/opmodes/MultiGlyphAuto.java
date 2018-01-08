@@ -12,6 +12,7 @@ import com.acmerobotics.relicrecovery.drive.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.drive.PositionEstimator;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
@@ -43,14 +44,17 @@ public class MultiGlyphAuto extends LinearOpMode {
     private CryptoboxTracker cryptoboxTracker;
     private CryptoboxLocalizer cryptoboxLocalizer;
     private FpsTracker fpsTracker;
+    private PriorityScheduler scheduler;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        scheduler = new PriorityScheduler();
         strafeAlignController = new PIDController(STRAFE_ALIGN_PID);
 
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(48, -48, Math.PI));
+        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
+        drive.setEstimatedPose(new Pose2d(48, -48, Math.PI));
 
         camera = new VuforiaCamera();
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);

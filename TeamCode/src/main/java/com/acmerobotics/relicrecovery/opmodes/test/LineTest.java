@@ -6,6 +6,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -19,13 +20,15 @@ public class LineTest extends LinearOpMode {
     private RobotDashboard dashboard;
     private MecanumDrive drive;
     private Looper looper;
+    private PriorityScheduler scheduler;
 
     @Override
     public void runOpMode() throws InterruptedException {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry(), new Pose2d(60, 0, Math.PI));
+        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
+        drive.setEstimatedPose(new Pose2d(60, 0, Math.PI));
 
         looper = new Looper();
         drive.registerLoops(looper);

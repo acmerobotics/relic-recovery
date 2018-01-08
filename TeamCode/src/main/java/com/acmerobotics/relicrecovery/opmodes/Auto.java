@@ -12,10 +12,7 @@ import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.mech.GlyphGripper;
-import com.acmerobotics.relicrecovery.mech.GlyphLift;
-import com.acmerobotics.relicrecovery.mech.JewelSlapper;
-import com.acmerobotics.relicrecovery.mech.Periscope;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;
 import com.acmerobotics.relicrecovery.path.WaitSegment;
@@ -48,10 +45,6 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
     private Looper looper;
 
     private MecanumDrive drive;
-    private JewelSlapper jewelSlapper;
-    private GlyphGripper glyphGripper;
-    private Periscope periscope;
-    private GlyphLift glyphLift;
 
     private VuforiaCamera camera;
     private DynamicJewelTracker jewelTracker;
@@ -62,9 +55,12 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
     private CSVLoggingTelemetry loggingTelemetry;
 
+    private PriorityScheduler scheduler;
+
     @Override
     public void runOpMode() throws InterruptedException {
         configuration = new OpModeConfiguration(hardwareMap.appContext);
+        scheduler = new PriorityScheduler();
 
         RobotDashboard dashboard = RobotDashboard.getInstance();
 
@@ -76,23 +72,16 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
         BalancingStone balancingStone = configuration.getBalancingStone();
         Pose2d initialPose = balancingStone.getPose();
 
-        drive = new MecanumDrive(hardwareMap, subsystemTelemetry, initialPose);
-        jewelSlapper = new JewelSlapper(hardwareMap);
-        glyphGripper = new GlyphGripper(hardwareMap);
-        periscope = new Periscope(hardwareMap, subsystemTelemetry);
-        glyphLift = new GlyphLift(hardwareMap, subsystemTelemetry, GlyphLift.Side.FRONT);
+        drive = new MecanumDrive(hardwareMap, scheduler, subsystemTelemetry);
+        drive.setEstimatedPose(initialPose);
 
         looper = new Looper();
         drive.registerLoops(looper);
-        periscope.registerLoops(looper);
-        glyphLift.registerLoops(looper);
 
         looper.addLoop((timestamp, dt) -> {
             allTelemetry.update();
             dashboard.drawOverlay();
         });
-
-        glyphGripper.grip();
 
         camera = new VuforiaCamera();
         jewelTracker = new DynamicJewelTracker();
@@ -123,18 +112,6 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
         waitForStart();
 
-        periscope.raise();
-
-        glyphLift.zeroLift();
-
-        while (opModeIsActive() && glyphLift.isLifterZeroing()) {
-            sleep(10);
-        }
-
-        sleep(configuration.getDelay() * 1000);
-
-        jewelSlapper.jewelSlapperDown();
-
         long startTime = System.currentTimeMillis();
 
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
@@ -162,7 +139,6 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
             drive.followPath(jewelTurnOne);
             waitForPathFollower();
 
-            jewelSlapper.jewelSlapperUp();
 
 //            startTime = System.currentTimeMillis();
 //            while (opModeIsActive() && (System.currentTimeMillis() - startTime) < 1500) {
@@ -173,8 +149,6 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
             drive.followPath(jewelTurnTwo);
             waitForPathFollower();
         } else {
-            jewelSlapper.jewelSlapperUp();
-
             sleep(1000);
         }
 
@@ -182,8 +156,6 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
         cryptoPath.addSegment(new WaitSegment(cryptoPath.getPose(cryptoPath.duration()), 1));
         drive.followPath(cryptoPath);
         waitForPathFollower();
-
-        glyphGripper.release();
 
         sleep(500);
 

@@ -8,6 +8,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -43,12 +44,14 @@ public class DriveVelocityCharacterization extends LinearOpMode {
     private State state;
     private ElapsedTime timer;
     private Pose2d lastPose;
+    private PriorityScheduler scheduler;
 
     @Override
     public void runOpMode() {
+        scheduler = new PriorityScheduler();
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
+        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
 
         File logRoot = new File(LoggingUtil.getLogRoot(this), "DriveVelocityCharacterization-" + System.currentTimeMillis());
         logRoot.mkdirs();

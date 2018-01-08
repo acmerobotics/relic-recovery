@@ -9,6 +9,7 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -33,9 +34,11 @@ public class PIDTuner extends OpMode {
 
     private MecanumDrive drive;
     private PIDController headingController, axialController, lateralController;
+    private PriorityScheduler scheduler;
 
     @Override
     public void init() {
+        scheduler = new PriorityScheduler();
         dashboard = RobotDashboard.getInstance();
         fieldOverlay = dashboard.getFieldOverlay();
 
@@ -43,7 +46,7 @@ public class PIDTuner extends OpMode {
 //        drive = new MecanumDrive(hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(),
 //                new CSVLoggingTelemetry(new File(DataFile.getStorageDir(),
 //                        opModeDir + File.pathSeparator + "MecanumDrive.csv").getPath())));
-        drive = new MecanumDrive(hardwareMap);
+        drive = new MecanumDrive(hardwareMap, scheduler, null);
 
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 

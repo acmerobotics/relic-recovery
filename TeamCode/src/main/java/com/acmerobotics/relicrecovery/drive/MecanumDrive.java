@@ -1,18 +1,20 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import android.util.Log;
+import android.support.annotation.Nullable;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.loops.Loop;
 import com.acmerobotics.relicrecovery.loops.Looper;
+import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -69,12 +71,16 @@ public class MecanumDrive implements Loop {
     /**
      * units in encoder ticks; solely intended for internal use
      */
-    private int[] offsets;
+    private int[] encoderOffsets;
 
     private BNO055IMU imu;
     private double headingOffset;
-    private double lastOrientationReadTimestamp;
+
+    private boolean positionEstimationEnabled;
+
+    private boolean cachingEnabled;
     private Orientation cachedOrientation;
+    private int[] cachedEncoderPositions;
 
     private PositionEstimator positionEstimator;
     private PathFollower pathFollower;
@@ -95,31 +101,21 @@ public class MecanumDrive implements Loop {
     private Telemetry telemetry;
     private Canvas fieldOverlay;
 
-    public MecanumDrive(HardwareMap map) {
-        this(map, null);
-    }
+    private PriorityScheduler scheduler;
 
-    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
-        this(map, telemetry, new Pose2d(0, 0, 0));
-    }
-
-    /**
-     * construct drive with configuration names other than the default
-     * @param map hardware map
-     * @param initialPose initial pose
-     */
-    public MecanumDrive(HardwareMap map, Telemetry telemetry, Pose2d initialPose) {
+    public MecanumDrive(HardwareMap map, PriorityScheduler scheduler, @Nullable Telemetry telemetry) {
         this.telemetry = telemetry;
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
+        this.scheduler = scheduler;
 
-        imu = map.get(BNO055IMU.class, "imu");
+        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "hub1"));
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
         powers = new double[4];
         targetPowers = new double[4];
-        offsets = new int[4];
+        encoderOffsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
             motors[i] = map.dcMotor.get(MOTOR_NAMES[i]);
@@ -130,7 +126,7 @@ public class MecanumDrive implements Loop {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        positionEstimator = new PositionEstimator(this, initialPose.pos());
+        positionEstimator = new PositionEstimator(this, new Vector2d(0, 0));
         pathFollower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
 
         balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
@@ -145,7 +141,23 @@ public class MecanumDrive implements Loop {
 
         resetEncoders();
 
-        setHeading(initialPose.heading());
+        setHeading(0);
+    }
+
+    public void enablePositionEstimation() {
+        positionEstimationEnabled = true;
+    }
+
+    public void disablePositionEstimation() {
+        positionEstimationEnabled = false;
+    }
+
+    public void enableCaching() {
+        cachingEnabled = true;
+        scheduler.addRepeating(() -> cachedOrientation = internalGetAngularOrientation(),
+                "drive: read orientation", PriorityScheduler.LOW_PRIORITY);
+        scheduler.addRepeating(() -> cachedEncoderPositions = internalGetEncoderPositions(),
+                "drive: read encoders", PriorityScheduler.LOW_PRIORITY);
     }
 
     public DcMotor[] getMotors() {
@@ -257,38 +269,54 @@ public class MecanumDrive implements Loop {
         return new Pose2d(x, y, h);
     }
 
-    public void resetEncoders() {
+    private void resetEncoders() {
         for(int i = 0; i < 4; i++) {
-            offsets[i] = -motors[i].getCurrentPosition();
+            encoderOffsets[i] = -motors[i].getCurrentPosition();
         }
     }
 
     /** @return motor rotations in radians */
-    public double[] getRotations() {
+    public double[] getMotorRotations() {
         double[] rotations = new double[4];
         for (int i = 0; i < 4; i++) {
-            rotations[i] = getRotation(i);
+            rotations[i] = getMotorRotation(i);
         }
         return rotations;
     }
 
     /** @return motor rotation in radians */
-    public double getRotation(int motor) {
-        return ticksToRadians(motor, getPosition(motor));
+    public double getMotorRotation(int motor) {
+        return ticksToRadians(motor, getEncoderPosition(motor));
     }
 
     /** @return motor positions in encoder ticks */
-    public int[] getPositions() {
-        int[] positions = new int[4];
-        for (int i = 0; i < 4; i++) {
-            positions[i] = getPosition(i);
+    public int[] getEncoderPositions() {
+        if (cachingEnabled) {
+            return cachedEncoderPositions;
+        } else {
+            return internalGetEncoderPositions();
         }
-        return positions;
     }
 
     /** @return motor position in encoder ticks */
-    public int getPosition(int motor) {
-        return offsets[motor] + motors[motor].getCurrentPosition();
+    public int getEncoderPosition(int motor) {
+        if (cachingEnabled) {
+            return cachedEncoderPositions[motor];
+        } else {
+            return internalGetEncoderPosition(motor);
+        }
+    }
+
+    private int internalGetEncoderPosition(int motor) {
+        return encoderOffsets[motor] + motors[motor].getCurrentPosition();
+    }
+
+    private int[] internalGetEncoderPositions() {
+        int[] positions = new int[4];
+        for (int i = 0; i < 4; i++) {
+            positions[i] = internalGetEncoderPosition(i);
+        }
+        return positions;
     }
 
     private double ticksToRadians(int motor, int ticks) {
@@ -296,16 +324,16 @@ public class MecanumDrive implements Loop {
         return 2 * Math.PI * ticks / ticksPerRev;
     }
 
-    private Orientation getAngularOrientation() {
-        double timestamp = TimestampedData.getCurrentTime();
-        if ((timestamp - lastOrientationReadTimestamp) > ORIENTATION_CACHE_TIME) {
-            lastOrientationReadTimestamp = timestamp;
-            cachedOrientation = imu.getAngularOrientation();
-            Log.i("MecanumDrive", "getAngularOrientation(): actually read");
+    private Orientation internalGetAngularOrientation() {
+        return imu.getAngularOrientation();
+    }
+
+    public Orientation getAngularOrientation() {
+        if (cachingEnabled) {
+            return cachedOrientation;
         } else {
-            Log.i("MecanumDrive", "getAngularOrientation(): returned cached read");
+            return imu.getAngularOrientation();
         }
-        return cachedOrientation;
     }
 
     private double getRawHeading() {
@@ -350,8 +378,10 @@ public class MecanumDrive implements Loop {
 
     @Override
     public void onLoop(double timestamp, double dt) {
-        // pose estimation
-        positionEstimator.update(timestamp);
+        // position estimation
+        if (positionEstimationEnabled) {
+            positionEstimator.update(timestamp);
+        }
 
         Pose2d estimatedPose = getEstimatedPose();
 
@@ -427,9 +457,11 @@ public class MecanumDrive implements Loop {
                 break;
         }
 
-        for (int i = 0; i < 4; i++) {
-            motors[i].setPower(powers[i]);
-        }
+        scheduler.add(() -> {
+            for (int i = 0; i < 4; i++) {
+                motors[i].setPower(powers[i]);
+            }
+        }, "drive: set motor powers", PriorityScheduler.HIGH_PRIORITY);
 
         if (telemetry != null) {
             telemetry.addData("driveMode", mode);
@@ -443,7 +475,7 @@ public class MecanumDrive implements Loop {
 
             for (int i = 0; i < 4; i++) {
                 telemetry.addData("drivePower" + i, powers[i]);
-                telemetry.addData("drivePosition" + i, getPosition(i));
+                telemetry.addData("drivePosition" + i, getEncoderPosition(i));
             }
 
             telemetry.addData("pathHeadingError", pathFollower.getHeadingError());
