@@ -1,12 +1,15 @@
 package com.acmerobotics.relicrecovery.loops;
 
-import com.acmerobotics.library.util.TimestampedData;
-
 /**
  * Created by ryanbrott on 10/28/17.
  */
 
 public interface Loop {
-    /** Uses the timescale described in {@link TimestampedData} */
+    /**
+     * Called periodically by {@link Looper}
+     * @param timestamp starting timestamp on {@link com.acmerobotics.library.util.TimestampedData}'s
+     *                  timescale
+     * @param dt time since the last loop
+     */
     void onLoop(double timestamp, double dt);
 }

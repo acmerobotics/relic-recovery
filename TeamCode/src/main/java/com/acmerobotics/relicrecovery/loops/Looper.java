@@ -60,15 +60,15 @@ public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
     @Override
     public void run() {
         double loopStartTime = TimestampedData.getCurrentTime();
+        double lastLoopDt = loopTime;
         while (!Thread.currentThread().isInterrupted()) {
             Log.i("Looper", "start loop");
 
             for (Loop loop : loops) {
-                loop.onLoop(loopStartTime, loopTime);
+                loop.onLoop(loopStartTime, lastLoopDt);
             }
 
             if (scheduler != null) {
-                Log.i("Looper", "waiting on scheduler");
                 while (scheduler.getHighestPriority() < PRIORITY_THRESHOLD) {
                     try {
                         Thread.sleep(2);
@@ -80,10 +80,11 @@ public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
 
             double loopEndTime = loopStartTime + loopTime;
             double currentTime = TimestampedData.getCurrentTime();
+            lastLoopDt = currentTime - loopStartTime;
+            Log.i("Looper", "end loop: took " + 1000 * lastLoopDt + "ms");
             if (currentTime > loopEndTime) {
                 loopEndTime = currentTime;
-                Log.i("Looper", "cut loop short!!");
-                Log.i("Looper", "actually took " + 1000 * (currentTime - loopStartTime) + "ms");
+                Log.w("Looper", "loop took too long!");
             } else {
                 try {
                     double waitTime = loopEndTime - currentTime;
