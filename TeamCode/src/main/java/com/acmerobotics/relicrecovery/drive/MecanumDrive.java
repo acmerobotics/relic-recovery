@@ -64,8 +64,6 @@ public class MecanumDrive implements Loop {
      */
     public static final double RADIUS = 2;
 
-    public static final double ORIENTATION_CACHE_TIME = 0.05;
-
     private DcMotor[] motors;
 
     /**

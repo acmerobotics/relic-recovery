@@ -12,9 +12,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 public abstract class ScheduledLoopOpMode extends OpMode implements Loop {
     protected PriorityScheduler scheduler;
     protected Looper looper;
-    private int loopTime;
+    private double loopTime;
 
-    public ScheduledLoopOpMode(int loopTime) {
+    public ScheduledLoopOpMode(double loopTime) {
         this.loopTime = loopTime;
     }
 
@@ -27,7 +27,7 @@ public abstract class ScheduledLoopOpMode extends OpMode implements Loop {
 
         setup();
 
-        looper.addLoop((timestamp, dt) -> telemetry.update());
+        looper.addLoop((timestamp, dt) -> postLoop());
         looper.start();
     }
 
@@ -49,6 +49,10 @@ public abstract class ScheduledLoopOpMode extends OpMode implements Loop {
     @Override
     public final void internalPostLoop() {
         // intentionally do nothing
+    }
+
+    protected void postLoop() {
+        telemetry.update();
     }
 
     protected abstract void setup();
