@@ -4,6 +4,7 @@ import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
@@ -67,36 +68,36 @@ public class MainTeleOp extends ScheduledLoopOpMode {
     @Override
     public void onLoop(double timestamp, double dt) {
         stickyGamepad1.update();
-//
-//        if (stickyGamepad1.b) {
-//            halfSpeed = !halfSpeed;
-//        }
-//
-//        double x, y = 0, omega;
-//
-//        x = 0.75 * -gamepad1.left_stick_y;
-//
-//        if (Math.abs(gamepad1.left_stick_x) > 0.5) {
-//            y = -gamepad1.left_stick_x;
-//        }
-//
-//        if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
-//            y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
-//        }
-//
-//        omega = -gamepad1.right_stick_x / 24.0;
-//
-//        if (halfSpeed) {
-//            x *= 0.5;
-//            y *= 0.5;
-//            omega *= 0.5;
-//        }
-//
-//        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
-//            drive.setVelocity(new Vector2d(x, y), omega);
-//        } else if (x != 0 && y != 0 && omega != 0){
-//            drive.setVelocity(new Vector2d(x, y), omega);
-//        }
+
+        if (stickyGamepad1.b) {
+            halfSpeed = !halfSpeed;
+        }
+
+        double x, y = 0, omega;
+
+        x = -gamepad1.left_stick_y;
+
+        if (Math.abs(gamepad1.left_stick_x) > 0.5) {
+            y = -gamepad1.left_stick_x;
+        }
+
+        if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
+            y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
+        }
+
+        omega = -gamepad1.right_stick_x;
+
+        if (halfSpeed) {
+            x *= 0.5;
+            y *= 0.5;
+            omega *= 0.5;
+        }
+
+        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
+            drive.setVelocity(new Vector2d(x, y), omega);
+        } else if (x != 0 && y != 0 && omega != 0) {
+            drive.setVelocity(new Vector2d(x, y), omega);
+        }
 
         double dumpLiftPower;
         if (gamepad1.dpad_up) {
