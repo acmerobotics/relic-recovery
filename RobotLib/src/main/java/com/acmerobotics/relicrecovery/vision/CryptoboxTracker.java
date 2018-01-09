@@ -220,7 +220,12 @@ public class CryptoboxTracker extends Tracker {
         }
 
         if (rails.size() > 2) {
-            rails = VisionUtil.nonMaximumSuppression(rails, 0.75 * getMeanRailGap(rails));
+            // TODO: kind of a hack
+            int lastRailSize;
+            do {
+                lastRailSize = rails.size();
+                rails = VisionUtil.nonMaximumSuppression(rails, 0.75 * getMeanRailGap(rails));
+            } while (lastRailSize != rails.size());
         }
 
         synchronized (this) {
