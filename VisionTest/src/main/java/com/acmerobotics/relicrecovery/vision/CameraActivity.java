@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.vision;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -69,8 +70,18 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         cameraView.setCvCameraViewListener(this);
         cameraView.setOnTouchListener(this);
 
-        // TODO: add support for different detectors
-        tracker = new CryptoboxTracker(AllianceColor.BLUE);
+        String detector = getIntent().getStringExtra("detector");
+        if (detector.equals("Red Cryptobox")) {
+            tracker = new CryptoboxTracker(AllianceColor.RED);
+        } else if (detector.equals("Blue Cryptobox")) {
+            tracker = new CryptoboxTracker(AllianceColor.BLUE);
+        } else if (detector.equals("Jewel")) {
+            tracker = new FixedJewelTracker();
+        } else if (detector.equals("Pictograph")) {
+            tracker = new FeatureDetectionVuMarkTracker();
+        } else {
+            Log.wtf("CameraActivity", "Unknown detector: " + detector);
+        }
 
         dashboard = RobotDashboard.open(this, null);
     }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="detectors">
+        <item name="redCryptobox">Red Cryptobox</item>
+        <item name="blueCryptobox">Blue Cryptobox</item>
+        <item name="jewel">Jewel</item>
+        <item name="pictograph">Pictograph</item>
+    </array>
+</resources>
