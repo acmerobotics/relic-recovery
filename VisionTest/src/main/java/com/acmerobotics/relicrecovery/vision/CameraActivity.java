@@ -28,7 +28,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private JavaCameraView cameraView;
     private Tracker tracker;
     private int intermediateIndex;
-    private Mat bgr, temp;
+    private Mat bgra, temp;
     private RobotDashboard dashboard;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
@@ -113,7 +113,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-        bgr = new Mat();
+        bgra = new Mat();
         temp = new Mat();
 
         tracker.init(null);
@@ -128,11 +128,9 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat rgba = inputFrame.rgba();
 
-        Imgproc.cvtColor(rgba, bgr, Imgproc.COLOR_RGBA2BGR);
+        Imgproc.cvtColor(rgba, bgra, Imgproc.COLOR_RGBA2BGR);
 
-        Overlay overlay = new MatOverlay(rgba);
-
-        tracker.processFrame(bgr, 0);
+        tracker.processFrame(bgra, 0);
 
         // wrap properly
         List<LabeledMat> intermediates = tracker.getIntermediates();
@@ -142,14 +140,18 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         intermediateIndex = intermediateIndex % (intermediates.size() + 1);
 
         if (intermediateIndex == 0) {
-            tracker.drawOverlay(overlay, bgr.cols(), bgr.rows(), true);
+            Overlay overlay = new MatOverlay(bgra);
+
+            tracker.drawOverlay(overlay, bgra.cols(), bgra.rows(), true);
+
+            Imgproc.cvtColor(bgra, rgba, Imgproc.COLOR_BGRA2RGBA);
 
             return rgba;
         } else {
             LabeledMat intermediate = intermediates.get(intermediateIndex - 1);
 
             if (intermediate.mat.channels() == 3) {
-                // bgr
+                // bgra
                 Imgproc.cvtColor(intermediate.mat, temp, Imgproc.COLOR_BGR2RGBA);
             } else {
                 // gray
