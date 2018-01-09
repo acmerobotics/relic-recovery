@@ -28,6 +28,8 @@ public abstract class ScheduledLoopOpMode extends OpMode implements Loop {
         setup();
 
         looper.addLoop((timestamp, dt) -> postLoop());
+
+        scheduler.start();
         looper.start();
     }
 

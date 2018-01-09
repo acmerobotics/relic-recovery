@@ -106,7 +106,7 @@ public class MecanumDrive implements Loop {
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
         this.scheduler = scheduler;
 
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "hub1"));
+        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "rearHub"));
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
