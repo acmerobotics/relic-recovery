@@ -14,7 +14,7 @@ android {
 }
 
 dependencies {
-    implementation (name: 'RobotCore-release', ext: 'aar')
+    implementation(name: 'RobotCore-release', ext: 'aar')
 
     implementation project(':RobotLib')
     implementation project(':openCVLibrary331')
@@ -26,4 +26,6 @@ dependencies {
     implementation('com.android.support:support-v4:26.1.0') {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'com.android.support:design:26.1.0'
 }

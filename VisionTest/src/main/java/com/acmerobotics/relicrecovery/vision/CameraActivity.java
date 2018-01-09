@@ -23,7 +23,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
-public class VisionActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, View.OnTouchListener {
+public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, View.OnTouchListener {
     private JavaCameraView cameraView;
     private Tracker tracker;
     private int intermediateIndex;
