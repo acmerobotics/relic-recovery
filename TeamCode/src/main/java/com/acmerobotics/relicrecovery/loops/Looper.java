@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
  */
 
 public class Looper implements Runnable, OpModeManagerNotifier.Notifications {
-    public static final double DEFAULT_LOOP_TIME = 0.05;
+    public static final double DEFAULT_LOOP_TIME = 0.1;
     public static final double PRIORITY_THRESHOLD = 2;
 
     private List<Loop> loops;

@@ -92,8 +92,10 @@ public class PriorityScheduler implements Runnable, OpModeManagerNotifier.Notifi
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                for (TaskWithPriority task : queue) {
-                    Log.i("Scheduler", String.format("[%1.2f] %s", task.getAdjustedPriority(), task.name));
+                if (DEBUG) {
+                    for (TaskWithPriority task : queue) {
+                        Log.i("Scheduler", String.format("[%1.2f] %s", task.getAdjustedPriority(), task.name));
+                    }
                 }
                 TaskWithPriority taskWithPriority = queue.take();
                 double startTime = TimestampedData.getCurrentTime();
