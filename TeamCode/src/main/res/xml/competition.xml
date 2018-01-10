@@ -8,12 +8,18 @@
             <NeveRest20Gearmotor name="frontRight" port="3" />
             <Servo name="dumpRotate1" port="0" />
             <Servo name="dumpRotate2" port="1" />
-            <Servo name="dumpBottomRelease" port="2" />
+            <Servo name="dumpRelease" port="2" />
             <Servo name="dumpFlipper" port="3" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="frontHub" port="2">
+            <!-- Intake motors go in ports 0 and 1 -->
             <RevRoboticsCoreHexMotor name="dumpLift" port="2" />
+            <NeveRest20Gearmotor name="relicExtend" port="3" />
+            <Servo name="relicFlipper" />
+            <Servo name="relicGrabber" />
+            <Servo name="jewelDeployer" />
+            <Servo name="jewelSlapper" />
         </LynxModule>
     </LynxUsbDevice>
 </Robot>
