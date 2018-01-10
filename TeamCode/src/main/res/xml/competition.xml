@@ -6,20 +6,25 @@
             <NeveRest20Gearmotor name="rearLeft" port="1" />
             <NeveRest20Gearmotor name="rearRight" port="2" />
             <NeveRest20Gearmotor name="frontRight" port="3" />
-            <Servo name="dumpRotate1" port="0" />
-            <Servo name="dumpRotate2" port="1" />
+            <Servo name="dumpRotateLeft" port="0" />
+            <Servo name="dumpRotateRight" port="1" />
             <Servo name="dumpRelease" port="2" />
-            <Servo name="dumpFlipper" port="3" />
+            <Servo name="jewelDeployer" port="3" />
+            <Servo name="jewelSlapper" port="4" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
         <LynxModule name="frontHub" port="2">
-            <!-- Intake motors go in ports 0 and 1 -->
-            <RevRoboticsCoreHexMotor name="dumpLift" port="2" />
+            <RevRoboticsCoreHexMotor name="intakeRotate" port="0" />
+            <RevRoboticsCoreHexMotor name="dumpLiftLeft" port="1" />
+            <RevRoboticsCoreHexMotor name="dumpLiftRight" port="2" />
             <NeveRest20Gearmotor name="relicExtend" port="3" />
-            <Servo name="relicFlipper" />
-            <Servo name="relicGrabber" />
-            <Servo name="jewelDeployer" />
-            <Servo name="jewelSlapper" />
+            <Servo name="intakeGripperLeft" port="0" />
+            <Servo name="intakeGripperRight" port="1" />
+            <Servo name="intakeFlipper" port="2" />
+            <Servo name="relicFlipper" port="3" />
+            <Servo name="relicGrabber" port="4" />
+            <Servo name="phoneSwivel" port="5" />
+            <DigitalDevice name="intakeTouch" port="0" />
         </LynxModule>
     </LynxUsbDevice>
 </Robot>

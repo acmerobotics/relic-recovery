@@ -455,11 +455,10 @@ public class MecanumDrive implements Loop {
                 break;
         }
 
-        scheduler.add(() -> {
-            for (int i = 0; i < 4; i++) {
-                motors[i].setPower(powers[i]);
-            }
-        }, "drive: set motor powers", PriorityScheduler.HIGH_PRIORITY);
+        for (int i = 0; i < 4; i++) {
+            int j = i;
+            scheduler.add(() -> motors[j].setPower(powers[j]), "drive: motor " + j + " set power", PriorityScheduler.HIGH_PRIORITY);
+        }
 
         if (telemetry != null) {
             telemetry.addData("driveMode", mode);
