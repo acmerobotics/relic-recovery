@@ -52,6 +52,8 @@ public class DriveVelocityCharacterization extends LinearOpMode {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
         drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
+        drive.enablePositionEstimation();
+        drive.enableCaching();
 
         File logRoot = new File(LoggingUtil.getLogRoot(this), "DriveVelocityCharacterization-" + System.currentTimeMillis());
         logRoot.mkdirs();
@@ -143,6 +145,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
         timer = new ElapsedTime();
 
         looper.start();
+        scheduler.start();
 
         while (opModeIsActive() && state != State.DONE) ;
     }
