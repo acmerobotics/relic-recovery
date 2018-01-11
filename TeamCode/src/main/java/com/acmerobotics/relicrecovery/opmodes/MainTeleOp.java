@@ -8,7 +8,6 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Dump;
-import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.PhoneSwivel;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
@@ -33,7 +32,7 @@ public class MainTeleOp extends ScheduledLoopOpMode {
     private MecanumDrive drive;
     private Dump dump;
     private JewelSlapper jewelSlapper;
-    private Intake intake;
+//    private Intake intake;
     private PhoneSwivel swivel;
 
     private boolean halfSpeed;
@@ -62,13 +61,13 @@ public class MainTeleOp extends ScheduledLoopOpMode {
 
         jewelSlapper = new JewelSlapper(hardwareMap, scheduler);
 
-        intake = new Intake(hardwareMap, scheduler);
+//        intake = new Intake(hardwareMap, scheduler);
 
         swivel = new PhoneSwivel(hardwareMap, scheduler);
 
         drive.registerLoops(looper);
         dump.registerLoops(looper);
-        intake.registerLoops(looper);
+//        intake.registerLoops(looper);
     }
 
     @Override
@@ -150,21 +149,21 @@ public class MainTeleOp extends ScheduledLoopOpMode {
             jewelSlapper.setPosition(JewelSlapper.Position.CENTER);
         }
 
-        if (stickyGamepad2.b) {
-            intake.grip();
-        }
-
-        if (stickyGamepad2.x) {
-            intake.release();
-        }
-
-        if (stickyGamepad2.y) {
-            intake.rotateUp();
-        }
-
-        if (stickyGamepad2.a) {
-            intake.rotateDown();
-        }
+//        if (stickyGamepad2.b) {
+//            intake.grip();
+//        }
+//
+//        if (stickyGamepad2.x) {
+//            intake.release();
+//        }
+//
+//        if (stickyGamepad2.y) {
+//            intake.rotateUp();
+//        }
+//
+//        if (stickyGamepad2.a) {
+//            intake.rotateDown();
+//        }
 
     }
 

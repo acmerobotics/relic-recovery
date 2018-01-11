@@ -1,17 +1,19 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
     <!-- REV -->
-    <LynxUsbDevice name="portal" serialNumber="DQ1NXDE5" parentModuleAddress="1">
-        <LynxModule name="rearHub" port="1">
+    <LynxUsbDevice name="portal" serialNumber="DQ1NXDE5" parentModuleAddress="2">
+        <LynxModule name="rearHub" port="2">
             <NeveRest20Gearmotor name="frontLeft" port="0" />
             <NeveRest20Gearmotor name="rearLeft" port="1" />
             <NeveRest20Gearmotor name="rearRight" port="2" />
             <NeveRest20Gearmotor name="frontRight" port="3" />
-            <Servo name="dumpRotateLeft" port="0" />
-            <Servo name="dumpRotateRight" port="1" />
-            <Servo name="dumpRelease" port="2" />
-            <Servo name="jewelDeployer" port="3" />
-            <Servo name="jewelSlapper" port="4" />
+            <Servo name="intakeFlipper" port="0" />
+            <Servo name="phoneSwivel" port="1" />
+            <!--<Servo name="dumpRotateLeft" port="0" />-->
+            <!--<Servo name="dumpRotateRight" port="1" />-->
+            <!--<Servo name="dumpRelease" port="2" />-->
+            <!--<Servo name="jewelDeployer" port="3" />-->
+            <!--<Servo name="jewelSlapper" port="4" />-->
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
         <!-- ideally, this would be the config but we only have 1 hub atm -->
@@ -31,20 +33,20 @@
     </LynxUsbDevice>
 
     <!-- MR -->
-    <MotorController name="dumpMotorController" serialNumber="AI049PHE">
-        <RevRoboticsCoreHexMotor name="dumpLiftRight" port="1" />
-        <RevRoboticsCoreHexMotor name="dumpLiftLeft" port="2" />
-    </MotorController>
-    <MotorController name="intakeRelicMotorController" serialNumber="AHOOQHU3">
+    <MotorController name="intakeRelicMotorController" serialNumber="AI049PHE">
         <RevRoboticsCoreHexMotor name="intakeRotate" port="1" />
         <NeveRest20Gearmotor name="relicExtend" port="2" />
     </MotorController>
+    <MotorController name="dumpMotorController" serialNumber="AH00QHU3">
+        <RevRoboticsCoreHexMotor name="dumpLiftRight" port="1" />
+        <RevRoboticsCoreHexMotor name="dumpLiftLeft" port="2" />
+    </MotorController>
     <ServoController name="servoController" serialNumber="AI02RKXM">
-        <Servo name="intakeGripperLeft" port="1" />
-        <Servo name="intakeGripperRight" port="2" />
-        <Servo name="intakeFlipper" port="3" />
-        <Servo name="relicFlipper" port="4" />
-        <Servo name="relicGrabber" port="5" />
-        <Servo name="phoneSwivel" port="6" />
+        <!--<Servo name="intakeGripperLeft" port="1" />-->
+        <Servo name="dumpRotateLeft" port="2" />
+        <Servo name="dumpRotateRight" port="3" />
+        <Servo name="dumpRelease" port="4" />
+        <Servo name="jewelDeployer" port="5" />
+        <Servo name="jewelSlapper" port="6" />
     </ServoController>
 </Robot>
