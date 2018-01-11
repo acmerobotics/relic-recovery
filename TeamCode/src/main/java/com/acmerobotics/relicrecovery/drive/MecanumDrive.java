@@ -1,9 +1,5 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import android.support.annotation.Nullable;
-
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -17,7 +13,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
@@ -92,13 +87,7 @@ public class MecanumDrive {
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
-    private Telemetry telemetry;
-    private Canvas fieldOverlay;
-
-    public MecanumDrive(HardwareMap map, @Nullable Telemetry telemetry) {
-        this.telemetry = telemetry;
-        this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
-
+    public MecanumDrive(HardwareMap map) {
         imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "rearHub"));
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
@@ -422,61 +411,5 @@ public class MecanumDrive {
                 lastPowers[i] = powers[i];
             }
         }
-
-        if (telemetry != null) {
-            telemetry.addData("driveMode", mode);
-
-//            telemetry.addData("estimatedX", estimatedPose.x());
-//            telemetry.addData("estimatedY", estimatedPose.y());
-//            telemetry.addData("heading", estimatedPose.heading());
-
-//            telemetry.addData("headingError", headingError);
-//            telemetry.addData("headingUpdate", headingUpdate);
-
-            for (int i = 0; i < 4; i++) {
-                telemetry.addData("drivePower" + i, powers[i]);
-//                telemetry.addData("drivePosition" + i, getEncoderPosition(i));
-            }
-
-            telemetry.addData("pathHeadingError", pathFollower.getHeadingError());
-            telemetry.addData("pathHeadingUpdate", pathFollower.getHeadingUpdate());
-
-            telemetry.addData("pathAxialError", pathFollower.getAxialError());
-            telemetry.addData("pathAxialUpdate", pathFollower.getAxialUpdate());
-
-            telemetry.addData("pathLateralError", pathFollower.getLateralError());
-            telemetry.addData("pathLateralUpdate", pathFollower.getLateralUpdate());
-
-//            telemetry.addData("pitch", pitch);
-//            telemetry.addData("roll", roll);
-//
-//            telemetry.addData("balanceAxialError", balanceAxialError);
-//            telemetry.addData("balanceLateralError", balanceLateralError);
-//
-//            telemetry.addData("balanceAxialUpdate", balanceAxialUpdate);
-//            telemetry.addData("balanceLateralUpdate", balanceLateralUpdate);
-        }
-
-        double robotRadius = 9;
-        fieldOverlay.setStrokeWidth(4);
-
-        Pose2d pathPose = pathFollower.getPose();
-        if (pathPose != null) {
-            fieldOverlay.setStroke("red");
-            fieldOverlay.strokeLine(
-                    pathPose.x() + 0.5 * robotRadius * Math.cos(pathPose.heading()),
-                    pathPose.y() + 0.5 * robotRadius * Math.sin(pathPose.heading()),
-                    pathPose.x() + robotRadius * Math.cos(pathPose.heading()),
-                    pathPose.y() + robotRadius * Math.sin(pathPose.heading()));
-            fieldOverlay.strokeCircle(pathPose.x(), pathPose.y(), robotRadius);
-        }
-
-//        fieldOverlay.setStroke("blue");
-//        fieldOverlay.strokeLine(
-//            estimatedPose.x() + 0.5 * robotRadius * Math.cos(estimatedPose.heading()),
-//            estimatedPose.y() + 0.5 * robotRadius * Math.sin(estimatedPose.heading()),
-//            estimatedPose.x() + robotRadius * Math.cos(estimatedPose.heading()),
-//            estimatedPose.y() + robotRadius * Math.sin(estimatedPose.heading()));
-//        fieldOverlay.strokeCircle(estimatedPose.x(), estimatedPose.y(), robotRadius);
     }
 }

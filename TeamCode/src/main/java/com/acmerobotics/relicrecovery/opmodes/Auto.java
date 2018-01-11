@@ -72,7 +72,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
         BalancingStone balancingStone = configuration.getBalancingStone();
         Pose2d initialPose = balancingStone.getPose();
 
-        drive = new MecanumDrive(hardwareMap, subsystemTelemetry);
+        drive = new MecanumDrive(hardwareMap);
         drive.setEstimatedPose(initialPose);
 
 //        looper = new Looper();

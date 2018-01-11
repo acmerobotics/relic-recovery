@@ -1,20 +1,16 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Dump;
+import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.PhoneSwivel;
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * Created by ryanbrott on 11/5/17.
@@ -25,13 +21,12 @@ public class MainTeleOp extends OpMode {
     public static Pose2d initialPose = new Pose2d(0, 0, 0);
 
     private StickyGamepad stickyGamepad1, stickyGamepad2;
-    private Telemetry allTelemetry;
     private RobotDashboard dashboard;
 
     private MecanumDrive drive;
     private Dump dump;
     private JewelSlapper jewelSlapper;
-//    private Intake intake;
+    private Intake intake;
     private PhoneSwivel swivel;
 
     private boolean halfSpeed;
@@ -45,18 +40,14 @@ public class MainTeleOp extends OpMode {
 
         OpModeConfiguration configuration = new OpModeConfiguration(hardwareMap.appContext);
 
-        CSVLoggingTelemetry loggingTelemetry = new CSVLoggingTelemetry(LoggingUtil.getLogFile(this, configuration));
-        Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
-        allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
-
-        drive = new MecanumDrive(hardwareMap, subsystemTelemetry);
+        drive = new MecanumDrive(hardwareMap);
         drive.setEstimatedPose(initialPose);
 
         dump = new Dump(hardwareMap);
 
         jewelSlapper = new JewelSlapper(hardwareMap);
 
-//        intake = new Intake(hardwareMap, scheduler);
+        intake = new Intake(hardwareMap);
 
         swivel = new PhoneSwivel(hardwareMap);
     }
@@ -140,6 +131,9 @@ public class MainTeleOp extends OpMode {
 //            intake.rotateDown();
 //        }
 
+        drive.update();
+        dump.update();
+        intake.update();
     }
 }
 

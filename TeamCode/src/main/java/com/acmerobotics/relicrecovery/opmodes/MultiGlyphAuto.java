@@ -48,7 +48,7 @@ public class MultiGlyphAuto extends LinearOpMode {
 
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
+        drive = new MecanumDrive(hardwareMap);
         drive.setEstimatedPose(new Pose2d(48, -48, Math.PI));
 
         camera = new VuforiaCamera();
