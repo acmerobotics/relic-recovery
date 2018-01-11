@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import android.app.Activity;
+import android.os.Looper;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
@@ -11,8 +12,6 @@ import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;
 import com.acmerobotics.relicrecovery.path.WaitSegment;
@@ -22,6 +21,7 @@ import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.JewelColor;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -35,9 +35,12 @@ import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import java.util.Arrays;
 
 /**
+ * Kept around for reference
  * @author Ryan
  */
 
+@Deprecated
+@Disabled
 @Autonomous(name = "Auto", group = "auto")
 public class Auto extends LinearOpMode implements OpModeManagerImpl.Notifications {
     public static final double JEWEL_TURN_ANGLE = Math.toRadians(30);
@@ -55,12 +58,9 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
     private CSVLoggingTelemetry loggingTelemetry;
 
-    private PriorityScheduler scheduler;
-
     @Override
     public void runOpMode() throws InterruptedException {
         configuration = new OpModeConfiguration(hardwareMap.appContext);
-        scheduler = new PriorityScheduler();
 
         RobotDashboard dashboard = RobotDashboard.getInstance();
 
@@ -72,16 +72,16 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
         BalancingStone balancingStone = configuration.getBalancingStone();
         Pose2d initialPose = balancingStone.getPose();
 
-        drive = new MecanumDrive(hardwareMap, scheduler, subsystemTelemetry);
+        drive = new MecanumDrive(hardwareMap, subsystemTelemetry);
         drive.setEstimatedPose(initialPose);
 
-        looper = new Looper();
-        drive.registerLoops(looper);
-
-        looper.addLoop((timestamp, dt) -> {
-            allTelemetry.update();
-            dashboard.drawOverlay();
-        });
+//        looper = new Looper();
+//        drive.registerLoops(looper);
+//
+//        looper.addLoop((timestamp, dt) -> {
+//            allTelemetry.update();
+//            dashboard.drawOverlay();
+//        });
 
         camera = new VuforiaCamera();
         jewelTracker = new DynamicJewelTracker();
@@ -103,7 +103,7 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
             AutoTransitioner.transitionOnStop(this, autoTransition);
         }
 
-        looper.start();
+//        looper.start();
 
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity((Activity) hardwareMap.appContext);
         if (opModeManager != null) {

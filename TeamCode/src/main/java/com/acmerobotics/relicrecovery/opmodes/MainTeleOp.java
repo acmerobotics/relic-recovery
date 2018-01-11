@@ -11,6 +11,7 @@ import com.acmerobotics.relicrecovery.subsystems.Dump;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.PhoneSwivel;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -20,9 +21,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  */
 
 @TeleOp(name = "TeleOp", group = "teleop")
-public class MainTeleOp extends ScheduledLoopOpMode {
-    public static final double TELEOP_LOOP_TIME = 0.02;
-
+public class MainTeleOp extends OpMode {
     public static Pose2d initialPose = new Pose2d(0, 0, 0);
 
     private StickyGamepad stickyGamepad1, stickyGamepad2;
@@ -37,12 +36,8 @@ public class MainTeleOp extends ScheduledLoopOpMode {
 
     private boolean halfSpeed;
 
-    public MainTeleOp() {
-        super(TELEOP_LOOP_TIME);
-    }
-
     @Override
-    protected void setup() {
+    public void init() {
         stickyGamepad1 = new StickyGamepad(gamepad1);
         stickyGamepad2 = new StickyGamepad(gamepad2);
 
@@ -54,24 +49,20 @@ public class MainTeleOp extends ScheduledLoopOpMode {
         Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
         allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
 
-        drive = new MecanumDrive(hardwareMap, scheduler, subsystemTelemetry);
+        drive = new MecanumDrive(hardwareMap, subsystemTelemetry);
         drive.setEstimatedPose(initialPose);
 
-        dump = new Dump(hardwareMap, scheduler);
+        dump = new Dump(hardwareMap);
 
-        jewelSlapper = new JewelSlapper(hardwareMap, scheduler);
+        jewelSlapper = new JewelSlapper(hardwareMap);
 
 //        intake = new Intake(hardwareMap, scheduler);
 
-        swivel = new PhoneSwivel(hardwareMap, scheduler);
-
-        drive.registerLoops(looper);
-        dump.registerLoops(looper);
-//        intake.registerLoops(looper);
+        swivel = new PhoneSwivel(hardwareMap);
     }
 
     @Override
-    public void onLoop(double timestamp, double dt) {
+    public void loop() {
         stickyGamepad1.update();
         stickyGamepad2.update();
 
@@ -103,22 +94,6 @@ public class MainTeleOp extends ScheduledLoopOpMode {
             drive.setVelocity(new Vector2d(x, y), omega);
         } else if (x != 0 && y != 0 && omega != 0) {
             drive.setVelocity(new Vector2d(x, y), omega);
-        }
-
-        if (stickyGamepad1.right_bumper) {
-            if (dump.isDown()) {
-                dump.rotateUp();
-            } else {
-                dump.rotateDown();
-            }
-        }
-
-        if (stickyGamepad1.left_bumper) {
-            if (dump.isReleaseEngaged()) {
-                dump.disengageRelease();
-            } else {
-                dump.engageRelease();
-            }
         }
 
         if (gamepad1.left_trigger > 0.8) {
@@ -165,12 +140,6 @@ public class MainTeleOp extends ScheduledLoopOpMode {
 //            intake.rotateDown();
 //        }
 
-    }
-
-    @Override
-    protected void postLoop() {
-        allTelemetry.update();
-        dashboard.drawOverlay();
     }
 }
 

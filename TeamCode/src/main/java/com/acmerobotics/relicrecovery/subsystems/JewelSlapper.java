@@ -1,6 +1,5 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
-import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -25,16 +24,12 @@ public class JewelSlapper {
         }
     }
 
-    private PriorityScheduler scheduler;
-
     private Servo jewelDeployer, jewelSlapper;
 
     private Position position;
     private boolean deployed;
 
-    public JewelSlapper(HardwareMap map, PriorityScheduler scheduler) {
-        this.scheduler = scheduler;
-
+    public JewelSlapper(HardwareMap map) {
         jewelDeployer = map.servo.get("jewelDeployer");
         jewelSlapper = map.servo.get("jewelSlapper");
 
@@ -43,14 +38,14 @@ public class JewelSlapper {
 
     public void deploy() {
         if (!deployed) {
-            scheduler.add(() -> jewelDeployer.setPosition(1), "jewel: deploy set pos", PriorityScheduler.HIGH_PRIORITY);
+            jewelDeployer.setPosition(1);
             deployed = true;
         }
     }
 
     public void undeploy() {
         if (deployed) {
-            scheduler.add(() -> jewelDeployer.setPosition(0), "jewel: deploy set pos", PriorityScheduler.HIGH_PRIORITY);
+            jewelDeployer.setPosition(0);
             deployed = false;
         }
     }
@@ -61,7 +56,7 @@ public class JewelSlapper {
 
     public void setPosition(Position position) {
         if (this.position != position) {
-            scheduler.add(() -> jewelSlapper.setPosition(position.getServoPosition()), "jewel: slapper set pos", PriorityScheduler.HIGH_PRIORITY);
+            jewelSlapper.setPosition(position.getServoPosition());
             this.position = position;
         }
     }

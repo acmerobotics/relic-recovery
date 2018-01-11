@@ -1,9 +1,6 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.relicrecovery.loops.Loop;
-import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -16,8 +13,8 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 @Config
-public class Intake implements Loop {
-    public static PIDCoefficients ROTATE_COEFF = new PIDCoefficients();
+public class Intake {
+    public static PIDCoefficients ROTATE_PID = new PIDCoefficients();
     public static double CALIBRATION_SPEED = 0.2;
     public static double ACCEPTABLE_ERROR = 40; // units: encoder ticks
 
@@ -26,8 +23,6 @@ public class Intake implements Loop {
         PID,
         CALIBRATE
     }
-
-    private PriorityScheduler scheduler;
 
     private Mode mode, postCalibrationMode;
 
@@ -41,10 +36,8 @@ public class Intake implements Loop {
 
     private int encoderOffset;
 
-    public Intake(HardwareMap map, PriorityScheduler scheduler) {
-        this.scheduler = scheduler;
-
-        intakeRotateController = new PIDController(ROTATE_COEFF);
+    public Intake(HardwareMap map) {
+        intakeRotateController = new PIDController(ROTATE_PID);
 
         intakeRotate = map.dcMotor.get("intakeRotate");
         intakeGripperLeft = map.servo.get("intakeGripperLeft");
@@ -57,30 +50,30 @@ public class Intake implements Loop {
 
     public void grip() {
         if (!gripping) {
-            scheduler.add(() -> intakeGripperLeft.setPosition(0.24), "intake: left gripper set pos", PriorityScheduler.HIGH_PRIORITY);
-            scheduler.add(() -> intakeGripperRight.setPosition(0.24), "intake: right gripper set pos", PriorityScheduler.HIGH_PRIORITY);
+            intakeGripperLeft.setPosition(0.24);
+            intakeGripperRight.setPosition(0.24);
             gripping = true;
         }
     }
 
     public void release() {
         if (gripping) {
-            scheduler.add(() -> intakeGripperLeft.setPosition(0.5), "intake: left gripper set pos", PriorityScheduler.HIGH_PRIORITY);
-            scheduler.add(() -> intakeGripperRight.setPosition(0), "intake: right gripper set pos", PriorityScheduler.HIGH_PRIORITY);
+            intakeGripperLeft.setPosition(0.5);
+            intakeGripperRight.setPosition(0);
             gripping = false;
         }
     }
 
     public void engageFlipper() {
         if (!flipperEngaged) {
-            scheduler.add(() -> intakeFlipper.setPosition(1), "intake: flipper set pos", PriorityScheduler.HIGH_PRIORITY);
+            intakeFlipper.setPosition(1);
             flipperEngaged = true;
         }
     }
 
     public void disengageFlipper() {
         if (flipperEngaged) {
-            scheduler.add(() -> intakeFlipper.setPosition(0), "intake: flipper set pos", PriorityScheduler.HIGH_PRIORITY);
+            intakeFlipper.setPosition(0);
             flipperEngaged = false;
         }
     }
@@ -113,43 +106,34 @@ public class Intake implements Loop {
 
     private void calibrate(Mode postCalibrationMode) {
         if (!calibrated && postCalibrationMode != Mode.CALIBRATE) {
-            scheduler.add(() -> intakeRotate.setPower(CALIBRATION_SPEED), "intake: motor set power", PriorityScheduler.HIGH_PRIORITY);
+            intakeRotate.setPower(CALIBRATION_SPEED);
             mode = Mode.CALIBRATE;
             this.postCalibrationMode = postCalibrationMode;
         }
     }
 
-    @Override
-    public void onLoop(double timestamp, double dt) {
+    public void update() {
         if (mode == Mode.PID) {
-            scheduler.add(() -> {
-                double position = intakeRotate.getCurrentPosition() - encoderOffset;
-                double error = intakeRotateController.getError(position);
-                if (Math.abs(error) < ACCEPTABLE_ERROR) {
-                    intakeRotate.setPower(0);
-                    mode = Mode.NORMAL;
-                } else {
-                    double update = intakeRotateController.update(error);
-                    intakeRotate.setPower(update);
-                }
-            }, "intake: rotate PID update", PriorityScheduler.HIGH_PRIORITY);
+            double position = intakeRotate.getCurrentPosition() - encoderOffset;
+            double error = intakeRotateController.getError(position);
+            if (Math.abs(error) < ACCEPTABLE_ERROR) {
+                intakeRotate.setPower(0);
+                mode = Mode.NORMAL;
+            } else {
+                double update = intakeRotateController.update(error);
+                intakeRotate.setPower(update);
+            }
         } else if (mode == Mode.CALIBRATE) {
-            scheduler.add(() -> {
-                boolean touchIsPressed = !intakeTouch.getState();
-                if (touchIsPressed) {
-                    intakeRotate.setPower(0);
-                    calibrated = true;
-                    encoderOffset = intakeRotate.getCurrentPosition();
-                    mode = postCalibrationMode;
-                    if (mode == Mode.PID) {
-                        intakeRotateController.reset();
-                    }
+            boolean touchIsPressed = !intakeTouch.getState();
+            if (touchIsPressed) {
+                intakeRotate.setPower(0);
+                calibrated = true;
+                encoderOffset = intakeRotate.getCurrentPosition();
+                mode = postCalibrationMode;
+                if (mode == Mode.PID) {
+                    intakeRotateController.reset();
                 }
-            }, "intake: calibration update", PriorityScheduler.HIGH_PRIORITY);
+            }
         }
-    }
-
-    public void registerLoops(Looper looper) {
-        looper.addLoop(this);
     }
 }
