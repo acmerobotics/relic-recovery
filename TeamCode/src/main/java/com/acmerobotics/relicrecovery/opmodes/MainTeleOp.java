@@ -3,7 +3,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.subsystems.Dump;
+import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.PhoneSwivel;
@@ -20,7 +20,7 @@ public class MainTeleOp extends OpMode {
     private RobotDashboard dashboard;
 
     private MecanumDrive drive;
-    private Dump dump;
+    private DumpBed dumpBed;
     private JewelSlapper jewelSlapper;
     private Intake intake;
     private PhoneSwivel swivel;
@@ -35,7 +35,7 @@ public class MainTeleOp extends OpMode {
         dashboard = RobotDashboard.getInstance();
 
         drive = new MecanumDrive(hardwareMap);
-        dump = new Dump(hardwareMap, dashboard.getTelemetry());
+        dumpBed = new DumpBed(hardwareMap, telemetry);
         jewelSlapper = new JewelSlapper(hardwareMap);
 //        intake = new Intake(hardwareMap);
         swivel = new PhoneSwivel(hardwareMap);
@@ -79,19 +79,19 @@ public class MainTeleOp extends OpMode {
         }
 
         if (stickyGamepad1.right_bumper) {
-            if (dump.isDumping()) {
-                dump.retract();
+            if (dumpBed.isDumping()) {
+                dumpBed.retract();
             } else {
-                dump.dump();
+                dumpBed.dump();
             }
         }
 
         if (stickyGamepad1.dpad_up) {
-            dump.liftUp();
+            dumpBed.liftUp();
         }
 
         if (stickyGamepad1.dpad_down) {
-            dump.liftDown();
+            dumpBed.liftDown();
         }
 
 //        if (stickyGamepad2.b) {
@@ -111,9 +111,8 @@ public class MainTeleOp extends OpMode {
 //        }
 
         drive.update();
-        dump.update();
+        dumpBed.update();
 //        intake.update();
-        dashboard.getTelemetry().update();
     }
 }
 

@@ -9,28 +9,14 @@
             <NeveRest20Gearmotor name="frontRight" port="3" />
             <Servo name="intakeFlipper" port="0" />
             <Servo name="phoneSwivel" port="1" />
+            <Servo name="intakeGripperRight" port="2" />
+            <Servo name="relicFinger" port="4" />
+            <Servo name="relicWrist" port="5" />
+            <DigitalDevice name="dumpLiftTopTouch" port="1" />
             <DigitalDevice name="dumpLiftBottomTouch" port="3" />
-            <!--<Servo name="dumpRotateLeft" port="0" />-->
-            <!--<Servo name="dumpRotateRight" port="1" />-->
-            <!--<Servo name="dumpRelease" port="2" />-->
-            <!--<Servo name="jewelDeployer" port="3" />-->
-            <!--<Servo name="jewelSlapper" port="4" />-->
+            <DigitalDevice name="intakeTouch" port="5" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
-        <!-- ideally, this would be the config but we only have 1 hub atm -->
-        <!--<LynxModule name="frontHub" port="2">-->
-            <!--<RevRoboticsCoreHexMotor name="intakeRotate" port="0" />-->
-            <!--<RevRoboticsCoreHexMotor name="dumpLiftLeft" port="1" />-->
-            <!--<RevRoboticsCoreHexMotor name="dumpLiftRight" port="2" />-->
-            <!--<NeveRest20Gearmotor name="relicExtend" port="3" />-->
-            <!--<Servo name="intakeGripperLeft" port="0" />-->
-            <!--<Servo name="intakeGripperRight" port="1" />-->
-            <!--<Servo name="intakeFlipper" port="2" />-->
-            <!--<Servo name="relicFlipper" port="3" />-->
-            <!--<Servo name="relicGrabber" port="4" />-->
-            <!--<Servo name="phoneSwivel" port="5" />-->
-            <!--<DigitalDevice name="intakeTouch" port="0" />-->
-        <!--</LynxModule>-->
     </LynxUsbDevice>
 
     <!-- MR -->
@@ -43,7 +29,7 @@
         <RevRoboticsCoreHexMotor name="dumpLiftLeft" port="2" />
     </MotorController>
     <ServoController name="servoController" serialNumber="AI02RKXM">
-        <!--<Servo name="intakeGripperLeft" port="1" />-->
+        <Servo name="intakeGripperLeft" port="1" />
         <Servo name="dumpRotateLeft" port="2" />
         <Servo name="dumpRotateRight" port="3" />
         <Servo name="dumpRelease" port="4" />
