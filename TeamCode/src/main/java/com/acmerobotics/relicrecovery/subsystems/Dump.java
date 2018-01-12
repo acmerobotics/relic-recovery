@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * Created by ryanbrott on 1/9/18.
  */
@@ -23,7 +25,7 @@ public class Dump {
     public static final double HYSTERESIS_LOWER_HEIGHT = 3; // in
     public static final double HYSTERESIS_UPPER_HEIGHT = 4; // in
 
-    public static final double CALIBRATION_SPEED = 0.2;
+    public static final double CALIBRATION_SPEED = -0.2;
 
     public static final double LIFT_PULLEY_RADIUS = 1; // in
 
@@ -55,7 +57,11 @@ public class Dump {
 
     private boolean liftDown, liftDumping, releaseEngaged, calibrated;
 
-    public Dump(HardwareMap map) {
+    private Telemetry telemetry;
+
+    public Dump(HardwareMap map, Telemetry telemetry) {
+        this.telemetry = telemetry;
+
         dumpLiftLeft = map.dcMotor.get("dumpLiftLeft");
         dumpLiftRight = map.dcMotor.get("dumpLiftRight");
 
@@ -64,6 +70,7 @@ public class Dump {
         dumpRelease = map.servo.get("dumpRelease");
 
         dumpLiftBottomTouch = map.digitalChannel.get("dumpLiftBottomTouch");
+        dumpLiftBottomTouch.setMode(DigitalChannel.Mode.INPUT);
 
         liftController = new PIDController(LIFT_PID);
 
@@ -119,6 +126,10 @@ public class Dump {
         }
     }
 
+    public boolean isDumping() {
+        return liftDumping;
+    }
+
     public void dump() {
         if (!liftDumping) {
             liftDumping = true;
@@ -140,52 +151,58 @@ public class Dump {
     }
 
     private double getPosition() {
-        return dumpLiftLeft.getCurrentPosition() - encoderOffset;
+        return dumpLiftRight.getCurrentPosition() - encoderOffset;
     }
 
     private double getHeight() {
         double position = getPosition();
         double pulleyCircumference = 2 * Math.PI * LIFT_PULLEY_RADIUS;
-        return pulleyCircumference * position / dumpLiftLeft.getMotorType().getTicksPerRev();
+        return pulleyCircumference * position / dumpLiftRight.getMotorType().getTicksPerRev();
     }
 
     public void calibrate(Mode postCalibrationMode) {
         if (!calibrated && postCalibrationMode != Mode.CALIBRATE) {
-            dumpLiftLeft.setPower(-CALIBRATION_SPEED);
-            dumpLiftRight.setPower(-CALIBRATION_SPEED);
+            dumpLiftLeft.setPower(CALIBRATION_SPEED);
+            dumpLiftRight.setPower(CALIBRATION_SPEED);
             this.postCalibrationMode = postCalibrationMode;
             mode = Mode.CALIBRATE;
         }
     }
 
     public void update() {
+        telemetry.addData("dumpMode", mode);
         switch (mode) {
             case NORMAL:
                 // do nothing
                 break;
             case PID:
                 double height = getHeight();
+                telemetry.addData("dumpLiftHeight", height);
                 if (height > HYSTERESIS_UPPER_HEIGHT) {
                     setDumpRotation(0.4);
                 } else if (height < HYSTERESIS_LOWER_HEIGHT) {
                     setDumpRotation(0);
                 }
                 double error = liftController.getError(height);
+                telemetry.addData("dumpLiftError", error);
                 if (Math.abs(error) < ACCEPTABLE_HEIGHT_ERROR) {
                     dumpLiftLeft.setPower(0);
                     dumpLiftRight.setPower(0);
                     mode = Mode.NORMAL;
                 } else {
                     double update = liftController.update(error);
+                    telemetry.addData("dumpLiftUpdate", update);
                     dumpLiftLeft.setPower(update);
                     dumpLiftRight.setPower(update);
                 }
                 break;
             case CALIBRATE:
-                if (!dumpLiftBottomTouch.getState()) {
+                boolean dumpLiftBottomPressed = !dumpLiftBottomTouch.getState();
+                telemetry.addData("dumpLiftBottomTouch", dumpLiftBottomPressed);
+                if (dumpLiftBottomPressed) {
                     dumpLiftLeft.setPower(0);
                     dumpLiftRight.setPower(0);
-                    encoderOffset = dumpLiftLeft.getCurrentPosition();
+                    encoderOffset = dumpLiftRight.getCurrentPosition();
                     calibrated = true;
                     mode = postCalibrationMode;
                     if (postCalibrationMode == Mode.PID) {

@@ -1,9 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Dump;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
@@ -18,8 +16,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
-    public static Pose2d initialPose = new Pose2d(0, 0, 0);
-
     private StickyGamepad stickyGamepad1, stickyGamepad2;
     private RobotDashboard dashboard;
 
@@ -38,18 +34,13 @@ public class MainTeleOp extends OpMode {
 
         dashboard = RobotDashboard.getInstance();
 
-        OpModeConfiguration configuration = new OpModeConfiguration(hardwareMap.appContext);
-
         drive = new MecanumDrive(hardwareMap);
-        drive.setEstimatedPose(initialPose);
-
-        dump = new Dump(hardwareMap);
-
+        dump = new Dump(hardwareMap, dashboard.getTelemetry());
         jewelSlapper = new JewelSlapper(hardwareMap);
-
-        intake = new Intake(hardwareMap);
-
+//        intake = new Intake(hardwareMap);
         swivel = new PhoneSwivel(hardwareMap);
+
+        swivel.pointAtJewel();
     }
 
     @Override
@@ -87,32 +78,20 @@ public class MainTeleOp extends OpMode {
             drive.setVelocity(new Vector2d(x, y), omega);
         }
 
-        if (gamepad1.left_trigger > 0.8) {
-            swivel.pointAtJewel();
-        }
-
-        if (gamepad1.right_trigger > 0.8) {
-            swivel.pointAtCryptobox();
+        if (stickyGamepad1.right_bumper) {
+            if (dump.isDumping()) {
+                dump.retract();
+            } else {
+                dump.dump();
+            }
         }
 
         if (stickyGamepad1.dpad_up) {
-            jewelSlapper.undeploy();
+            dump.liftUp();
         }
 
         if (stickyGamepad1.dpad_down) {
-            jewelSlapper.deploy();
-        }
-
-        if (stickyGamepad1.dpad_left) {
-            jewelSlapper.setPosition(JewelSlapper.Position.LEFT);
-        }
-
-        if (stickyGamepad1.dpad_right) {
-            jewelSlapper.setPosition(JewelSlapper.Position.RIGHT);
-        }
-
-        if (stickyGamepad1.x) {
-            jewelSlapper.setPosition(JewelSlapper.Position.CENTER);
+            dump.liftDown();
         }
 
 //        if (stickyGamepad2.b) {
@@ -133,7 +112,8 @@ public class MainTeleOp extends OpMode {
 
         drive.update();
         dump.update();
-        intake.update();
+//        intake.update();
+        dashboard.getTelemetry().update();
     }
 }
 

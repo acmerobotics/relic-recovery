@@ -20,14 +20,14 @@ public class PhoneSwivel {
 
     public void pointAtJewel() {
         if (!pointedAtJewel) {
-            servo.setPosition(0);
+            servo.setPosition(1);
             pointedAtJewel = true;
         }
     }
 
     public void pointAtCryptobox() {
         if (pointedAtJewel) {
-            servo.setPosition(1);
+            servo.setPosition(0.15);
             pointedAtJewel = false;
         }
     }

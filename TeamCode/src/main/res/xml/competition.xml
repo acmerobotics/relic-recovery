@@ -9,6 +9,7 @@
             <NeveRest20Gearmotor name="frontRight" port="3" />
             <Servo name="intakeFlipper" port="0" />
             <Servo name="phoneSwivel" port="1" />
+            <DigitalDevice name="dumpLiftBottomTouch" port="3" />
             <!--<Servo name="dumpRotateLeft" port="0" />-->
             <!--<Servo name="dumpRotateRight" port="1" />-->
             <!--<Servo name="dumpRelease" port="2" />-->

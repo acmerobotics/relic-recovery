@@ -182,8 +182,6 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
 
     @Override
     public void onOpModePostStop(OpMode opMode) {
-        MainTeleOp.initialPose = drive.getEstimatedPose();
-
         if (opModeManager != null) {
             opModeManager.unregisterListener(this);
         }
