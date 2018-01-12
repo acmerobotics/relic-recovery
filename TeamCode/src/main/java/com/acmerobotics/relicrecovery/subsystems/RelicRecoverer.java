@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -34,6 +35,7 @@ public class RelicRecoverer {
 
     public RelicRecoverer(HardwareMap map) {
         relicExtend = map.dcMotor.get("relicExtend");
+        relicExtend.setDirection(DcMotorSimple.Direction.REVERSE);
 
         relicWrist = map.servo.get("relicWrist");
         relicFinger = map.servo.get("relicFinger");

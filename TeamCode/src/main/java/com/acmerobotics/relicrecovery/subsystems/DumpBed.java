@@ -76,6 +76,10 @@ public class DumpBed {
         setLiftPower(LIFT_POWER_UP);
     }
 
+    public boolean isLiftDown() {
+        return liftDown;
+    }
+
     private void setDumpRotation(double rot) {
         double servoPosition = LEFT_ROTATE_DOWN_POS + rot * (LEFT_ROTATE_UP_POS - LEFT_ROTATE_DOWN_POS);
         dumpRotateLeft.setPosition(servoPosition);

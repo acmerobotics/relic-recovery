@@ -37,9 +37,9 @@ public class MainTeleOp extends OpMode {
         dashboard = RobotDashboard.getInstance();
 
         drive = new MecanumDrive(hardwareMap);
-        dumpBed = new DumpBed(hardwareMap, telemetry);
+        dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
         jewelSlapper = new JewelSlapper(hardwareMap);
-        intake = new Intake(hardwareMap);
+        intake = new Intake(hardwareMap, dashboard.getTelemetry());
         swivel = new PhoneSwivel(hardwareMap);
         relicRecoverer = new RelicRecoverer(hardwareMap);
 
@@ -85,20 +85,20 @@ public class MainTeleOp extends OpMode {
 //        }
 
         // dump bed
+        if (stickyGamepad1.left_bumper) {
+            if (dumpBed.isLiftDown()) {
+                dumpBed.liftUp();
+            } else {
+                dumpBed.liftDown();
+            }
+        }
+
         if (stickyGamepad1.right_bumper) {
             if (dumpBed.isDumping()) {
                 dumpBed.retract();
             } else {
                 dumpBed.dump();
             }
-        }
-
-        if (stickyGamepad1.dpad_up) {
-            dumpBed.liftUp();
-        }
-
-        if (stickyGamepad1.dpad_down) {
-            dumpBed.liftDown();
         }
 
         // intake
@@ -124,7 +124,9 @@ public class MainTeleOp extends OpMode {
 
         // relic
         if (gamepad2.right_stick_y != 0) {
-            relicRecoverer.setExtendPower(-gamepad2.right_stick_y);
+            relicRecoverer.setExtendPower(-0.25 * gamepad2.right_stick_y);
+        } else {
+            relicRecoverer.setExtendPower(0);
         }
 
         if (gamepad2.x) {
@@ -150,6 +152,8 @@ public class MainTeleOp extends OpMode {
         drive.update();
         dumpBed.update();
         intake.update();
+
+        dashboard.getTelemetry().update();
     }
 }
 

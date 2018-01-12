@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * Created by ryanbrott on 1/9/18.
  */
@@ -15,7 +17,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @Config
 public class Intake {
     public static PIDCoefficients ROTATE_PID = new PIDCoefficients();
-    public static double CALIBRATION_SPEED = 0.2;
+    public static double CALIBRATION_SPEED = -0.2;
     public static double ACCEPTABLE_ERROR = 40; // units: encoder ticks
 
     public enum Mode {
@@ -36,14 +38,20 @@ public class Intake {
 
     private int encoderOffset;
 
-    public Intake(HardwareMap map) {
+    private Telemetry telemetry;
+
+    public Intake(HardwareMap map, Telemetry telemetry) {
+        this.telemetry = telemetry;
+
         intakeRotateController = new PIDController(ROTATE_PID);
 
         intakeRotate = map.dcMotor.get("intakeRotate");
         intakeGripperLeft = map.servo.get("intakeGripperLeft");
         intakeGripperRight = map.servo.get("intakeGripperRight");
         intakeFlipper = map.servo.get("intakeFlipper");
+
         intakeTouch = map.digitalChannel.get("intakeTouch");
+        intakeTouch.setMode(DigitalChannel.Mode.INPUT);
 
         mode = Mode.NORMAL;
     }
@@ -83,7 +91,7 @@ public class Intake {
     }
 
     public void rotateUp() {
-        if (down || mode == Mode.PID) {
+        if (down) {
             if (!calibrated) {
                 calibrate(Mode.PID);
             } else {
@@ -96,7 +104,7 @@ public class Intake {
     }
 
     public void rotateDown() {
-        if (!down || mode == Mode.PID) {
+        if (!down) {
             if (!calibrated) {
                 calibrate(Mode.PID);
             } else {
@@ -117,9 +125,12 @@ public class Intake {
     }
 
     public void update() {
+        telemetry.addData("intakeMode", mode);
         if (mode == Mode.PID) {
             double position = intakeRotate.getCurrentPosition() - encoderOffset;
+            telemetry.addData("intakePosition", position);
             double error = intakeRotateController.getError(position);
+            telemetry.addData("intakeError", error);
             if (Math.abs(error) < ACCEPTABLE_ERROR) {
                 intakeRotate.setPower(0);
                 mode = Mode.NORMAL;
@@ -129,6 +140,7 @@ public class Intake {
             }
         } else if (mode == Mode.CALIBRATE) {
             boolean touchIsPressed = !intakeTouch.getState();
+            telemetry.addData("intakeTouch", touchIsPressed);
             if (touchIsPressed) {
                 intakeRotate.setPower(0);
                 calibrated = true;
