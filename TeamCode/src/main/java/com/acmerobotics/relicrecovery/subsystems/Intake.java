@@ -32,7 +32,7 @@ public class Intake {
 
     private PIDController intakeRotateController;
 
-    private boolean gripping, flipperEngaged, down, calibrated;
+    private boolean closed, flipperEngaged, down, calibrated;
 
     private int encoderOffset;
 
@@ -48,19 +48,19 @@ public class Intake {
         mode = Mode.NORMAL;
     }
 
-    public void grip() {
-        if (!gripping) {
-            intakeGripperLeft.setPosition(0.24);
-            intakeGripperRight.setPosition(0.24);
-            gripping = true;
+    public void close() {
+        if (!closed) {
+            intakeGripperLeft.setPosition(0.05);
+            intakeGripperRight.setPosition(0.3);
+            closed = true;
         }
     }
 
-    public void release() {
-        if (gripping) {
-            intakeGripperLeft.setPosition(0.5);
-            intakeGripperRight.setPosition(0);
-            gripping = false;
+    public void open() {
+        if (closed) {
+            intakeGripperLeft.setPosition(0.35);
+            intakeGripperRight.setPosition(0.1);
+            closed = false;
         }
     }
 

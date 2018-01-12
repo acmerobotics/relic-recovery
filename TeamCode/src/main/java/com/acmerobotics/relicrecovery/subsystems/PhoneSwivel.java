@@ -27,7 +27,7 @@ public class PhoneSwivel {
 
     public void pointAtCryptobox() {
         if (pointedAtJewel) {
-            servo.setPosition(0.15);
+            servo.setPosition(0.54);
             pointedAtJewel = false;
         }
     }

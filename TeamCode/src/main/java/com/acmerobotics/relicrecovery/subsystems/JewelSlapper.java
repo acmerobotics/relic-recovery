@@ -9,9 +9,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class JewelSlapper {
     public enum Position {
-        LEFT(0),
-        CENTER(0.5),
-        RIGHT(1);
+        LEFT(1),
+        CENTER(0.75),
+        RIGHT(0.43),
+        STOW(0);
 
         private double servoPos;
 
@@ -38,14 +39,16 @@ public class JewelSlapper {
 
     public void deploy() {
         if (!deployed) {
-            jewelDeployer.setPosition(1);
+            jewelDeployer.setPosition(0.75);
+            setPosition(Position.CENTER);
             deployed = true;
         }
     }
 
-    public void undeploy() {
+    public void stow() {
         if (deployed) {
-            jewelDeployer.setPosition(0);
+            jewelDeployer.setPosition(0.01);
+            setPosition(Position.STOW);
             deployed = false;
         }
     }

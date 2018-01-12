@@ -95,11 +95,11 @@ public class MainTeleOp extends OpMode {
         }
 
 //        if (stickyGamepad2.b) {
-//            intake.grip();
+//            intake.close();
 //        }
 //
 //        if (stickyGamepad2.x) {
-//            intake.release();
+//            intake.open();
 //        }
 //
 //        if (stickyGamepad2.y) {
