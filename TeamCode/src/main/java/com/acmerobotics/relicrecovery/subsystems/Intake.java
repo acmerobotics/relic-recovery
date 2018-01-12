@@ -48,6 +48,10 @@ public class Intake {
         mode = Mode.NORMAL;
     }
 
+    public boolean isClosed() {
+        return closed;
+    }
+
     public void close() {
         if (!closed) {
             intakeGripperLeft.setPosition(0.05);

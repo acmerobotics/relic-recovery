@@ -7,6 +7,7 @@ import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.PhoneSwivel;
+import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -23,6 +24,7 @@ public class MainTeleOp extends OpMode {
     private DumpBed dumpBed;
     private JewelSlapper jewelSlapper;
     private Intake intake;
+    private RelicRecoverer relicRecoverer;
     private PhoneSwivel swivel;
 
     private boolean halfSpeed;
@@ -37,8 +39,9 @@ public class MainTeleOp extends OpMode {
         drive = new MecanumDrive(hardwareMap);
         dumpBed = new DumpBed(hardwareMap, telemetry);
         jewelSlapper = new JewelSlapper(hardwareMap);
-//        intake = new Intake(hardwareMap);
+        intake = new Intake(hardwareMap);
         swivel = new PhoneSwivel(hardwareMap);
+        relicRecoverer = new RelicRecoverer(hardwareMap);
 
         swivel.pointAtJewel();
     }
@@ -48,6 +51,7 @@ public class MainTeleOp extends OpMode {
         stickyGamepad1.update();
         stickyGamepad2.update();
 
+        // drive
         if (stickyGamepad1.b) {
             halfSpeed = !halfSpeed;
         }
@@ -72,12 +76,15 @@ public class MainTeleOp extends OpMode {
             omega *= 0.5;
         }
 
-        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
-            drive.setVelocity(new Vector2d(x, y), omega);
-        } else if (x != 0 && y != 0 && omega != 0) {
-            drive.setVelocity(new Vector2d(x, y), omega);
-        }
+        drive.setVelocity(new Vector2d(x, y), omega);
 
+//        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
+//            drive.setVelocity(new Vector2d(x, y), omega);
+//        } else if (x != 0 && y != 0 && omega != 0) {
+//            drive.setVelocity(new Vector2d(x, y), omega);
+//        }
+
+        // dump bed
         if (stickyGamepad1.right_bumper) {
             if (dumpBed.isDumping()) {
                 dumpBed.retract();
@@ -94,25 +101,55 @@ public class MainTeleOp extends OpMode {
             dumpBed.liftDown();
         }
 
-//        if (stickyGamepad2.b) {
-//            intake.close();
-//        }
-//
-//        if (stickyGamepad2.x) {
-//            intake.open();
-//        }
-//
-//        if (stickyGamepad2.y) {
-//            intake.rotateUp();
-//        }
-//
-//        if (stickyGamepad2.a) {
-//            intake.rotateDown();
-//        }
+        // intake
+        if (stickyGamepad2.right_bumper) {
+            if (intake.isClosed()) {
+                intake.open();
+            } else {
+                intake.close();
+            }
+        }
+
+        if (gamepad2.right_trigger > 0.8) {
+            intake.rotateUp();
+        } else {
+            intake.rotateDown();
+        }
+
+        if (gamepad2.left_trigger > 0.8) {
+            intake.engageFlipper();
+        } else {
+            intake.disengageFlipper();
+        }
+
+        // relic
+        if (gamepad2.right_stick_y != 0) {
+            relicRecoverer.setExtendPower(-gamepad2.right_stick_y);
+        }
+
+        if (gamepad2.x) {
+            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.VERTICAL);
+        }
+
+        if (gamepad2.y) {
+            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.HORIZONTAL);
+        }
+
+        if (gamepad2.a) {
+            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.STOW);
+        }
+
+        if (gamepad2.b) {
+            if (relicRecoverer.isFingerClosed()) {
+                relicRecoverer.openFinger();
+            } else {
+                relicRecoverer.closeFinger();
+            }
+        }
 
         drive.update();
         dumpBed.update();
-//        intake.update();
+        intake.update();
     }
 }
 

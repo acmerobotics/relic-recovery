@@ -34,21 +34,22 @@ public class JewelSlapper {
         jewelDeployer = map.servo.get("jewelDeployer");
         jewelSlapper = map.servo.get("jewelSlapper");
 
-        setPosition(Position.LEFT);
+        setSlapperPosition(Position.STOW);
+        stowArm();
     }
 
-    public void deploy() {
+    public void deployArm() {
         if (!deployed) {
             jewelDeployer.setPosition(0.75);
-            setPosition(Position.CENTER);
+            setSlapperPosition(Position.CENTER);
             deployed = true;
         }
     }
 
-    public void stow() {
+    public void stowArm() {
         if (deployed) {
             jewelDeployer.setPosition(0.01);
-            setPosition(Position.STOW);
+            setSlapperPosition(Position.STOW);
             deployed = false;
         }
     }
@@ -57,7 +58,7 @@ public class JewelSlapper {
         return position;
     }
 
-    public void setPosition(Position position) {
+    public void setSlapperPosition(Position position) {
         if (this.position != position) {
             jewelSlapper.setPosition(position.getServoPosition());
             this.position = position;

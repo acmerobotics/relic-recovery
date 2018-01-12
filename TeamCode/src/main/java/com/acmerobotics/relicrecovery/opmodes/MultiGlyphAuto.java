@@ -67,7 +67,7 @@ public class MultiGlyphAuto extends LinearOpMode {
 //                                Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < VISION_UPDATE_MAX_DIST)) {
 //                    Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
 //                    Log.i("CryptoTrackerListener", "old position: " + positionEstimator.getPosition());
-//                    positionEstimator.setPosition(estimatedPos);
+//                    positionEstimator.setSlapperPosition(estimatedPos);
 //                    Log.i("CryptoTrackerListener", "new position: " + positionEstimator.getPosition());
 //                } else {
 //                    Log.i("CryptoTrackerListener", "ignored vision update");

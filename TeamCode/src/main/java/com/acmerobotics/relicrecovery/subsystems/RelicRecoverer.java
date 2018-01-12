@@ -37,6 +37,9 @@ public class RelicRecoverer {
 
         relicWrist = map.servo.get("relicWrist");
         relicFinger = map.servo.get("relicFinger");
+
+        setWristPosition(WristPosition.STOW);
+        closeFinger();
     }
 
     public void setExtendPower(double power) {
@@ -62,5 +65,9 @@ public class RelicRecoverer {
             relicFinger.setPosition(0.5);
             fingerClosed = false;
         }
+    }
+
+    public boolean isFingerClosed() {
+        return fingerClosed;
     }
 }

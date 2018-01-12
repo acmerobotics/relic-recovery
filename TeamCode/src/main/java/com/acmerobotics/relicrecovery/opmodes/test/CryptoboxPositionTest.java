@@ -49,7 +49,7 @@ public class CryptoboxPositionTest extends OpMode {
 //                        Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < 6) {
 //                    Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
 //                    Log.i("CryptoTrackerListener", "old pose: " + positionEstimator.getPosition());
-//                    positionEstimator.setPosition(estimatedPos);
+//                    positionEstimator.setSlapperPosition(estimatedPos);
 //                    Log.i("CryptoTrackerListener", "new pose: " + positionEstimator.getPosition());
 //                } else {
 //                    Log.i("CryptoTrackerListener", "ignored vision update");
