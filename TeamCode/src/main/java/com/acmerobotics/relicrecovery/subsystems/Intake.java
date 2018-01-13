@@ -95,29 +95,25 @@ public class Intake {
     }
 
     public void rotateUp() {
-        if (down) {
-            if (!calibrated) {
-                calibrate(Mode.PID);
-            } else {
-                intakeRotateController.reset();
-            }
-            intakeRotateController.setSetpoint(0.57 * intakeRotate.getMotorType().getTicksPerRev());
-            down = false;
-            mode = Mode.PID;
+        if (!calibrated) {
+            calibrate(Mode.PID);
+        } else {
+            intakeRotateController.reset();
         }
+        intakeRotateController.setSetpoint(0.57 * intakeRotate.getMotorType().getTicksPerRev());
+        down = false;
+        mode = Mode.PID;
     }
 
     public void rotateDown() {
-        if (!down) {
-            if (!calibrated) {
-                calibrate(Mode.PID);
-            } else {
-                intakeRotateController.reset();
-            }
-            intakeRotateController.setSetpoint(0);
-            down = true;
-            mode = Mode.PID;
+        if (!calibrated) {
+            calibrate(Mode.PID);
+        } else {
+            intakeRotateController.reset();
         }
+        intakeRotateController.setSetpoint(0);
+        down = true;
+        mode = Mode.PID;
     }
 
     private void calibrate(Mode postCalibrationMode) {

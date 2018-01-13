@@ -6,7 +6,6 @@ import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
-import com.acmerobotics.relicrecovery.subsystems.PhoneSwivel;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -25,7 +24,6 @@ public class MainTeleOp extends OpMode {
     private JewelSlapper jewelSlapper;
     private Intake intake;
     private RelicRecoverer relicRecoverer;
-    private PhoneSwivel swivel;
 
     private boolean halfSpeed;
 
@@ -40,7 +38,6 @@ public class MainTeleOp extends OpMode {
         dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
         jewelSlapper = new JewelSlapper(hardwareMap);
         intake = new Intake(hardwareMap, dashboard.getTelemetry());
-        swivel = new PhoneSwivel(hardwareMap);
         relicRecoverer = new RelicRecoverer(hardwareMap);
 
         dumpBed.liftDown();
@@ -113,12 +110,6 @@ public class MainTeleOp extends OpMode {
             } else {
                 intake.rotateDown();
             }
-        }
-
-        if (gamepad2.right_trigger > 0.8) {
-            intake.rotateUp();
-        } else {
-            intake.rotateDown();
         }
 
         if (stickyGamepad2.left_bumper) {

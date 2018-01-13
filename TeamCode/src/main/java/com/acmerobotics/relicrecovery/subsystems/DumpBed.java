@@ -14,8 +14,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class DumpBed {
-    public static final double LIFT_POWER_DOWN = -0.4;
-    public static final double LIFT_POWER_UP = 0.8;
+    public static final double LIFT_POWER_DOWN = -0.3;
+    public static final double LIFT_POWER_UP = 0.6;
 
     public static final double LEFT_ROTATE_DOWN_POS = 0.25;
     public static final double LEFT_ROTATE_UP_POS = 0.94;
@@ -53,6 +53,8 @@ public class DumpBed {
         dumpLiftBottomTouch.setMode(DigitalChannel.Mode.INPUT);
         dumpLiftTopTouch = map.digitalChannel.get("dumpLiftTopTouch");
         dumpLiftTopTouch.setMode(DigitalChannel.Mode.INPUT);
+
+        engageRelease();
     }
 
     private void setLiftPower(double power) {
