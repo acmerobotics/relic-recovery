@@ -19,8 +19,8 @@ public class LynxOptimizedI2cSensorFactory {
                 new LynxI2cDeviceSynchV1(AppUtil.getDefContext(), module, bus), true);
     }
 
-    public static LynxEmbeddedIMU createLynxEmbeddedIMU(LynxModule module) {
-        return new LynxEmbeddedIMU(createLynxI2cDeviceSync(module, 0));
+    public static LynxEmbeddedIMU createLynxBNO055IMU(LynxModule module, int bus) {
+        return new LynxEmbeddedIMU(createLynxI2cDeviceSync(module, bus));
     }
 
     public static LynxI2cColorRangeSensor createLynxI2cColorRangeSensor(LynxModule module, int bus) {

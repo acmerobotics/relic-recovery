@@ -16,9 +16,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class Intake {
-    public static PIDCoefficients ROTATE_PID = new PIDCoefficients();
+    public static PIDCoefficients ROTATE_PID = new PIDCoefficients(-0.005, 0, 0);
     public static double CALIBRATION_SPEED = -0.2;
-    public static double ACCEPTABLE_ERROR = 40; // units: encoder ticks
+    public static double ACCEPTABLE_ERROR = 3; // units: encoder ticks
 
     public enum Mode {
         NORMAL,
@@ -90,6 +90,10 @@ public class Intake {
         }
     }
 
+    public boolean isRotatedDown() {
+        return down;
+    }
+
     public void rotateUp() {
         if (down) {
             if (!calibrated) {
@@ -97,7 +101,7 @@ public class Intake {
             } else {
                 intakeRotateController.reset();
             }
-            intakeRotateController.setSetpoint(0.5 * intakeRotate.getMotorType().getTicksPerRev());
+            intakeRotateController.setSetpoint(0.57 * intakeRotate.getMotorType().getTicksPerRev());
             down = false;
             mode = Mode.PID;
         }

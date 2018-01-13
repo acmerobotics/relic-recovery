@@ -43,7 +43,12 @@ public class MainTeleOp extends OpMode {
         swivel = new PhoneSwivel(hardwareMap);
         relicRecoverer = new RelicRecoverer(hardwareMap);
 
-        swivel.pointAtJewel();
+        dumpBed.liftDown();
+    }
+
+    @Override
+    public void init_loop() {
+        dumpBed.update();
     }
 
     @Override
@@ -103,10 +108,10 @@ public class MainTeleOp extends OpMode {
 
         // intake
         if (stickyGamepad2.right_bumper) {
-            if (intake.isClosed()) {
-                intake.open();
+            if (intake.isRotatedDown()) {
+                intake.rotateUp();
             } else {
-                intake.close();
+                intake.rotateDown();
             }
         }
 
@@ -114,6 +119,14 @@ public class MainTeleOp extends OpMode {
             intake.rotateUp();
         } else {
             intake.rotateDown();
+        }
+
+        if (stickyGamepad2.left_bumper) {
+            if (intake.isClosed()) {
+                intake.open();
+            } else {
+                intake.close();
+            }
         }
 
         if (gamepad2.left_trigger > 0.8) {
@@ -124,7 +137,7 @@ public class MainTeleOp extends OpMode {
 
         // relic
         if (gamepad2.right_stick_y != 0) {
-            relicRecoverer.setExtendPower(-0.25 * gamepad2.right_stick_y);
+            relicRecoverer.setExtendPower(-0.25 * gamepad2.left_stick_y);
         } else {
             relicRecoverer.setExtendPower(0);
         }

@@ -1,100 +1,59 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import android.app.Activity;
-import android.os.Looper;
-
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PointTurn;
-import com.acmerobotics.relicrecovery.path.WaitSegment;
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
-import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
+import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.subsystems.DumpBed;
+import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.JewelColor;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
+import com.acmerobotics.relicrecovery.vision.VuforiaVuMarkTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
-
-import java.util.Arrays;
 
 /**
- * Kept around for reference
  * @author Ryan
  */
 
-@Deprecated
-@Disabled
 @Autonomous(name = "Auto", group = "auto")
-public class Auto extends LinearOpMode implements OpModeManagerImpl.Notifications {
-    public static final double JEWEL_TURN_ANGLE = Math.toRadians(30);
-
-    private Looper looper;
-
+public class Auto extends LinearOpMode {
     private MecanumDrive drive;
+    private JewelSlapper jewelSlapper;
+    private DumpBed dumpBed;
 
     private VuforiaCamera camera;
-    private DynamicJewelTracker jewelTracker;
+    private FixedJewelTracker jewelTracker;
+    private VuforiaVuMarkTracker vuMarkTracker;
 
     private OpModeConfiguration configuration;
-
-    private OpModeManagerImpl opModeManager;
-
-    private CSVLoggingTelemetry loggingTelemetry;
 
     @Override
     public void runOpMode() throws InterruptedException {
         configuration = new OpModeConfiguration(hardwareMap.appContext);
-
-        RobotDashboard dashboard = RobotDashboard.getInstance();
-
-        loggingTelemetry = new CSVLoggingTelemetry(LoggingUtil.getLogFile(this, configuration));
-        Telemetry subsystemTelemetry = new MultipleTelemetry(loggingTelemetry, dashboard.getTelemetry());
-        Telemetry allTelemetry = new MultipleTelemetry(telemetry, loggingTelemetry, dashboard.getTelemetry());
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         BalancingStone balancingStone = configuration.getBalancingStone();
         Pose2d initialPose = balancingStone.getPose();
 
         drive = new MecanumDrive(hardwareMap);
         drive.setEstimatedPose(initialPose);
-
-//        looper = new Looper();
-//        drive.registerLoops(looper);
-//
-//        looper.addLoop((timestamp, dt) -> {
-//            allTelemetry.update();
-//            dashboard.drawOverlay();
-//        });
+        jewelSlapper = new JewelSlapper(hardwareMap);
+        dumpBed = new DumpBed(hardwareMap, telemetry);
 
         camera = new VuforiaCamera();
-        jewelTracker = new DynamicJewelTracker();
+        jewelTracker = new FixedJewelTracker();
+        vuMarkTracker = new VuforiaVuMarkTracker();
         camera.addTracker(jewelTracker);
+        camera.addTracker(vuMarkTracker);
         camera.addTracker(new FpsTracker());
         camera.initialize();
-
-        VuforiaLocalizer vuforia = camera.getVuforia();
-        VuforiaTrackables relicTrackables = vuforia.loadTrackablesFromAsset("RelicVuMark");
-        VuforiaTrackable relicVuMark = relicTrackables.get(0);
-        relicVuMark.setName("relicVuMark");
-
-        relicTrackables.activate();
 
         AllianceColor allianceColor = configuration.getAllianceColor();
 
@@ -103,87 +62,49 @@ public class Auto extends LinearOpMode implements OpModeManagerImpl.Notification
             AutoTransitioner.transitionOnStop(this, autoTransition);
         }
 
-//        looper.start();
-
-        opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity((Activity) hardwareMap.appContext);
-        if (opModeManager != null) {
-            opModeManager.registerListener(this);
-        }
-
         waitForStart();
 
-        long startTime = System.currentTimeMillis();
+        jewelTracker.enable();
+        vuMarkTracker.enable();
 
-        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
-        while (opModeIsActive() && (jewelTracker.getLeftColor() == JewelColor.UNKNOWN
-                || vuMark == RelicRecoveryVuMark.UNKNOWN) && (System.currentTimeMillis() - startTime) < 7000) {
-            vuMark = RelicRecoveryVuMark.from(relicVuMark);
-
-            sleep(10);
-        }
-
-//        periscope.stop();
-
-        if ((System.currentTimeMillis() - startTime) < 7000) {
-            boolean turnLeft = jewelTracker.getLeftColor().getAllianceColor() != allianceColor;
-
-            double turnAngle = (turnLeft ? 1 : -1) * JEWEL_TURN_ANGLE;
-            Path jewelTurnOne = new Path(Arrays.asList(
-                    new PointTurn(initialPose, turnAngle)
-            ));
-            Path jewelTurnTwo = new Path(Arrays.asList(
-                    new PointTurn(new Pose2d(initialPose.pos(),
-                            Angle.norm(initialPose.heading() + turnAngle)), -turnAngle)
-            ));
-
-            drive.followPath(jewelTurnOne);
-            waitForPathFollower();
-
-
-//            startTime = System.currentTimeMillis();
-//            while (opModeIsActive() && (System.currentTimeMillis() - startTime) < 1500) {
-//                Thread.yield();
-//            }
-            sleep(1000);
-
-            drive.followPath(jewelTurnTwo);
-            waitForPathFollower();
-        } else {
-            sleep(1000);
-        }
-
-        Path cryptoPath = AutoPaths.makePathToCryptobox(balancingStone, vuMark);
-        cryptoPath.addSegment(new WaitSegment(cryptoPath.getPose(cryptoPath.duration()), 1));
-        drive.followPath(cryptoPath);
-        waitForPathFollower();
+        jewelSlapper.deployArmAndSlapper();
 
         sleep(500);
 
-        Path cryptoRetreat = AutoPaths.makeCryptoboxRetreat(balancingStone, vuMark);
-        drive.followPath(cryptoRetreat);
-        waitForPathFollower();
-    }
-
-    private void waitForPathFollower() {
-        while (opModeIsActive() && drive.isFollowingPath()) {
-            sleep(10);
+        RelicRecoveryVuMark vuMark;
+        while (opModeIsActive()) {
+            vuMark = vuMarkTracker.getVuMark();
+            if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
+                vuMarkTracker.disable();
+                break;
+            }
         }
+
+        AllianceColor leftJewelColor = jewelTracker.getLeftBlue() > jewelTracker.getRightBlue() ?
+                AllianceColor.BLUE : AllianceColor.RED;
+
+        if (leftJewelColor == allianceColor) {
+            jewelSlapper.setSlapperPosition(JewelSlapper.Position.RIGHT);
+        } else {
+            jewelSlapper.setSlapperPosition(JewelSlapper.Position.LEFT);
+        }
+
+        sleep(500);
+
+        jewelSlapper.stowArmAndSlapper();
+
+        sleep(500);
+
+        followPathSync(new PathBuilder(new Pose2d(48, -48, Math.PI))
+            .lineTo(new Vector2d(12, -48))
+            .turn(-Math.PI / 2)
+            .build());
     }
 
-    @Override
-    public void onOpModePreInit(OpMode opMode) {
-
-    }
-
-    @Override
-    public void onOpModePreStart(OpMode opMode) {
-
-    }
-
-    @Override
-    public void onOpModePostStop(OpMode opMode) {
-        if (opModeManager != null) {
-            opModeManager.unregisterListener(this);
+    private void followPathSync(Path path) {
+        drive.followPath(path);
+        while (opModeIsActive() && !drive.isFollowingPath()) {
+            drive.update();
         }
     }
 }

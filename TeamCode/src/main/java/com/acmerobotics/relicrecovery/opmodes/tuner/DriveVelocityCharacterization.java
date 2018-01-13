@@ -6,11 +6,11 @@ import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.io.File;
 
@@ -39,7 +39,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
     private RobotDashboard dashboard;
     private MecanumDrive drive;
     private State state;
-    private ElapsedTime timer;
+    private double startTimestamp;
     private Pose2d lastPose;
 
     private double lastTime;
@@ -61,14 +61,14 @@ public class DriveVelocityCharacterization extends LinearOpMode {
 
         lastPose = new Pose2d(0, 0, 0);
 
-        timer = new ElapsedTime();
-
         waitForStart();
+
+        startTimestamp = TimestampedData.getCurrentTime();
 
         while (opModeIsActive() && state != State.DONE) {
             telemetry.addData("state", state);
 
-            double elapsedTime = timer.time();
+            double elapsedTime = TimestampedData.getCurrentTime() - startTimestamp;
             double dt = elapsedTime - lastTime;
             lastTime = elapsedTime;
 
@@ -140,7 +140,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
     }
 
     private void reset() {
-        timer.reset();
+        startTimestamp = TimestampedData.getCurrentTime();
         lastPose = new Pose2d(0, 0, 0);
         drive.setEstimatedPose(new Pose2d(0, 0, 0));
         lastTime = 0;

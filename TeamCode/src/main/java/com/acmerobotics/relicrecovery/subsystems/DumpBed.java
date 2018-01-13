@@ -18,7 +18,7 @@ public class DumpBed {
     public static final double LIFT_POWER_UP = 0.8;
 
     public static final double LEFT_ROTATE_DOWN_POS = 0.25;
-    public static final double LEFT_ROTATE_UP_POS = 0.78;
+    public static final double LEFT_ROTATE_UP_POS = 0.94;
 
     public static final double RELEASE_ENGAGE_POS = 0.61;
     public static final double RELEASE_DISENGAGE_POS = 0;
@@ -35,7 +35,7 @@ public class DumpBed {
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel dumpLiftBottomTouch, dumpLiftTopTouch;
 
-    private boolean liftDumping, releaseEngaged, liftDown;
+    private boolean liftDumping, liftDown;
 
     private Telemetry telemetry;
 
@@ -53,9 +53,6 @@ public class DumpBed {
         dumpLiftBottomTouch.setMode(DigitalChannel.Mode.INPUT);
         dumpLiftTopTouch = map.digitalChannel.get("dumpLiftTopTouch");
         dumpLiftTopTouch.setMode(DigitalChannel.Mode.INPUT);
-
-        engageRelease();
-        setDumpRotation(0);
     }
 
     private void setLiftPower(double power) {
@@ -87,17 +84,11 @@ public class DumpBed {
     }
 
     private void engageRelease() {
-        if (!releaseEngaged) {
-            dumpRelease.setPosition(RELEASE_ENGAGE_POS);
-            releaseEngaged = true;
-        }
+        dumpRelease.setPosition(RELEASE_ENGAGE_POS);
     }
 
     private void disengageRelease() {
-        if (releaseEngaged) {
-            dumpRelease.setPosition(RELEASE_DISENGAGE_POS);
-            releaseEngaged = false;
-        }
+        dumpRelease.setPosition(RELEASE_DISENGAGE_POS);
     }
 
     public boolean isDumping() {
@@ -136,7 +127,9 @@ public class DumpBed {
                 if (bottomTouch) {
                     mode = Mode.NORMAL;
                     setLiftPower(0);
-                    setDumpRotation(0);
+                    if (!liftDumping) {
+                        setDumpRotation(0);
+                    }
                 }
                 break;
             case MOVE_UP:

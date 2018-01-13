@@ -88,7 +88,7 @@ public class MecanumDrive {
     private double targetOmega = 0;
 
     public MecanumDrive(HardwareMap map) {
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "rearHub"));
+        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "rearHub"), 1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
@@ -292,7 +292,7 @@ public class MecanumDrive {
     }
 
     private double getRawHeading() {
-        return getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+        return -getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
     }
 
     public double getHeading() {
