@@ -5,8 +5,6 @@ import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -25,25 +23,14 @@ public class AxialFFTuner extends LinearOpMode {
     public static final double DISTANCE = 60;
 
     private RobotDashboard dashboard;
-    private Looper looper;
     private MecanumDrive drive;
     private volatile double value;
-    private PriorityScheduler scheduler;
 
     @Override
     public void runOpMode() {
-        scheduler = new PriorityScheduler();
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
-
-        looper = new Looper();
-        drive.registerLoops(looper);
-        looper.addLoop(((timestamp, dt) -> {
-            telemetry.addData("value", value);
-            telemetry.update();
-        }));
-        looper.start();
+        drive = new MecanumDrive(hardwareMap);
 
         waitForStart();
 
@@ -67,7 +54,7 @@ public class AxialFFTuner extends LinearOpMode {
     }
 
     private double testFeedforwardCoefficient(double coefficient) {
-        DriveConstants.AXIAL_COEFFS.a = coefficient;
+        DriveConstants.AXIAL_PID.a = coefficient;
 
         // reset heading + pose
         drive.setEstimatedPose(new Pose2d(0, 0, drive.getHeading()));
@@ -81,7 +68,8 @@ public class AxialFFTuner extends LinearOpMode {
         drive.followPath(forward);
 
         while (opModeIsActive() && drive.isFollowingPath()) {
-            sleep(10);
+            telemetry.addData("value", value);
+            telemetry.update();
         }
 
         double axialError = drive.getEstimatedPose().x() - DISTANCE;
@@ -89,7 +77,8 @@ public class AxialFFTuner extends LinearOpMode {
         drive.followPath(reverse);
 
         while (opModeIsActive() && drive.isFollowingPath()) {
-            sleep(10);
+            telemetry.addData("value", value);
+            telemetry.update();
         }
 
         return axialError;

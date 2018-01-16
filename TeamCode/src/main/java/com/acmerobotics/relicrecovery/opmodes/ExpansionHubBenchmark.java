@@ -41,7 +41,7 @@ public class ExpansionHubBenchmark extends LinearOpMode {
         imu.close();
 
         // IMU (optimized) test
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(module);
+        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(module, 0);
         imu.initialize(new BNO055IMU.Parameters());
         telemetry.addLine("IMU (optimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
         telemetry.update();

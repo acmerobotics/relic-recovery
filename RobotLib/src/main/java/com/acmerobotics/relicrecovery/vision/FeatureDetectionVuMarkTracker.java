@@ -208,6 +208,7 @@ public class FeatureDetectionVuMarkTracker extends Tracker {
             overlay.fillCircle(bottomLeftPoint, 5, bottomLeftValue > 127 ? new Scalar(255, 255, 255) : new Scalar(0, 0, 0));
             overlay.putText(String.valueOf(topLeftValue), Overlay.TextAlign.RIGHT, topLeftPoint, new Scalar(0, 0, 255), 50);
             overlay.putText(String.valueOf(bottomLeftValue), Overlay.TextAlign.RIGHT, bottomLeftPoint, new Scalar(0, 0, 255), 50);
+            overlay.putText(latestVuMark.toString(), Overlay.TextAlign.LEFT, new Point(5, 45), new Scalar(0, 0, 255), 45);
         }
     }
 

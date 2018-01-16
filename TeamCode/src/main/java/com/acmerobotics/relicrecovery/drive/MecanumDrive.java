@@ -1,16 +1,10 @@
 package com.acmerobotics.relicrecovery.drive;
 
-import android.support.annotation.Nullable;
-
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
-import com.acmerobotics.relicrecovery.loops.Loop;
-import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -19,7 +13,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
@@ -41,12 +34,11 @@ import java.util.Collections;
  *
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
-public class MecanumDrive implements Loop {
+public class MecanumDrive {
     public enum Mode {
         OPEN_LOOP,
         OPEN_LOOP_RAMP,
-        FOLLOW_PATH,
-        AUTO_BALANCE
+        FOLLOW_PATH
     }
 
     public static final String[] MOTOR_NAMES = {"frontLeft", "rearLeft", "rearRight", "frontRight"};
@@ -54,7 +46,7 @@ public class MecanumDrive implements Loop {
     public static final double WHEELBASE_WIDTH = 18;
     public static final double WHEELBASE_HEIGHT = 18;
 
-    /***
+    /**
      * K = (wheelbase width + wheelbase height) / 4 (in)
      */
     public static final double K = (WHEELBASE_WIDTH + WHEELBASE_HEIGHT) / 4;
@@ -64,8 +56,6 @@ public class MecanumDrive implements Loop {
      */
     public static final double RADIUS = 2;
 
-    public static final double ORIENTATION_CACHE_TIME = 0.05;
-
     private DcMotor[] motors;
 
     /**
@@ -73,20 +63,19 @@ public class MecanumDrive implements Loop {
      */
     private int[] encoderOffsets;
 
+    private double lastTimestamp;
+
     private BNO055IMU imu;
+
+    private boolean useCachedOrientation;
+    private Orientation cachedOrientation;
     private double headingOffset;
 
     private boolean positionEstimationEnabled;
+    private double[] lastRotations;
+    private Vector2d estimatedPosition;
 
-    private boolean cachingEnabled;
-    private Orientation cachedOrientation;
-    private int[] cachedEncoderPositions;
-
-    private PositionEstimator positionEstimator;
     private PathFollower pathFollower;
-
-    /* inputs are pitch and roll, respectively */
-    private PIDController balanceAxialController, balanceLateralController;
 
     private PIDController maintainHeadingController;
     private boolean maintainHeading;
@@ -94,21 +83,12 @@ public class MecanumDrive implements Loop {
     private Mode mode = Mode.OPEN_LOOP;
     private Mode lastMode;
 
-    private double[] powers, targetPowers;
+    private double[] powers, targetPowers, lastPowers;
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
-    private Telemetry telemetry;
-    private Canvas fieldOverlay;
-
-    private PriorityScheduler scheduler;
-
-    public MecanumDrive(HardwareMap map, PriorityScheduler scheduler, @Nullable Telemetry telemetry) {
-        this.telemetry = telemetry;
-        this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
-        this.scheduler = scheduler;
-
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "hub1"));
+    public MecanumDrive(HardwareMap map) {
+        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "rearHub"), 1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
@@ -126,18 +106,13 @@ public class MecanumDrive implements Loop {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        positionEstimator = new PositionEstimator(this, new Vector2d(0, 0));
-        pathFollower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+        pathFollower = new PathFollower(DriveConstants.HEADING_PID, DriveConstants.AXIAL_PID, DriveConstants.LATERAL_PID);
 
-        balanceAxialController = new PIDController(DriveConstants.BALANCE_AXIAL_COEFFS);
-        balanceAxialController.setOutputBounds(-1, 1);
-        balanceAxialController.setSetpoint(0);
+        estimatedPosition = new Vector2d(0, 0);
 
-        balanceLateralController = new PIDController(DriveConstants.BALANCE_LATERAL_COEFFS);
-        balanceLateralController.setOutputBounds(-1, 1);
-        balanceLateralController.setSetpoint(0);
+        lastPowers = new double[4];
 
-        maintainHeadingController = new PIDController(DriveConstants.MAINTAIN_HEADING_COEFFS);
+        maintainHeadingController = new PIDController(DriveConstants.MAINTAIN_HEADING_PID);
 
         resetEncoders();
 
@@ -150,14 +125,6 @@ public class MecanumDrive implements Loop {
 
     public void disablePositionEstimation() {
         positionEstimationEnabled = false;
-    }
-
-    public void enableCaching() {
-        cachingEnabled = true;
-        scheduler.addRepeating(() -> cachedOrientation = internalGetAngularOrientation(),
-                "drive: read orientation", PriorityScheduler.LOW_PRIORITY);
-        scheduler.addRepeating(() -> cachedEncoderPositions = internalGetEncoderPositions(),
-                "drive: read encoders", PriorityScheduler.LOW_PRIORITY);
     }
 
     public DcMotor[] getMotors() {
@@ -179,10 +146,6 @@ public class MecanumDrive implements Loop {
 
     public boolean getMaintainHeading() {
         return maintainHeading;
-    }
-
-    public PositionEstimator getPositionEstimator() {
-        return positionEstimator;
     }
 
     private void setMode(Mode mode) {
@@ -227,7 +190,7 @@ public class MecanumDrive implements Loop {
      * @param omega
      */
     // removed K's to circumvent scaling issues
-    void internalSetVelocity(Vector2d vel, double omega) {
+    private void internalSetVelocity(Vector2d vel, double omega) {
         targetPowers[0] = vel.x() - vel.y() - omega;
         targetPowers[1] = vel.x() + vel.y() - omega;
         targetPowers[2] = vel.x() - vel.y() + omega;
@@ -291,20 +254,12 @@ public class MecanumDrive implements Loop {
 
     /** @return motor positions in encoder ticks */
     public int[] getEncoderPositions() {
-        if (cachingEnabled) {
-            return cachedEncoderPositions;
-        } else {
-            return internalGetEncoderPositions();
-        }
+        return internalGetEncoderPositions();
     }
 
     /** @return motor position in encoder ticks */
     public int getEncoderPosition(int motor) {
-        if (cachingEnabled) {
-            return cachedEncoderPositions[motor];
-        } else {
-            return internalGetEncoderPosition(motor);
-        }
+        return internalGetEncoderPosition(motor);
     }
 
     private int internalGetEncoderPosition(int motor) {
@@ -329,15 +284,15 @@ public class MecanumDrive implements Loop {
     }
 
     public Orientation getAngularOrientation() {
-        if (cachingEnabled) {
-            return cachedOrientation;
-        } else {
-            return imu.getAngularOrientation();
+        if (!useCachedOrientation) {
+            cachedOrientation = internalGetAngularOrientation();
+            useCachedOrientation = true;
         }
+        return cachedOrientation;
     }
 
     private double getRawHeading() {
-        return getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+        return -getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
     }
 
     public double getHeading() {
@@ -346,10 +301,6 @@ public class MecanumDrive implements Loop {
 
     public void resetHeading() {
         setHeading(0);
-    }
-
-    public void registerLoops(Looper looper) {
-        looper.addLoop(this);
     }
 
     public void followPath(Path path) {
@@ -362,34 +313,44 @@ public class MecanumDrive implements Loop {
     }
 
     public Pose2d getEstimatedPose() {
-        return new Pose2d(positionEstimator.getPosition(), getHeading());
+        return new Pose2d(estimatedPosition, getHeading());
     }
 
     public void setEstimatedPose(Pose2d pose) {
-        positionEstimator.setPosition(pose.pos());
+        estimatedPosition = pose.pos();
         setHeading(pose.heading());
     }
 
-    public void autoBalance() {
-        setMode(Mode.AUTO_BALANCE);
-        balanceAxialController.reset();
-        balanceLateralController.reset();
+    private void invalidateHeading() {
+        useCachedOrientation = false;
     }
 
-    @Override
-    public void onLoop(double timestamp, double dt) {
+    public void update() {
+        invalidateHeading();
+
         // position estimation
         if (positionEstimationEnabled) {
-            positionEstimator.update(timestamp);
+            double[] rotations = getMotorRotations();
+            double heading = getHeading();
+            if (lastRotations != null) {
+                double[] rotationDeltas = new double[4];
+                for (int i = 0; i < 4; i++) {
+                    rotationDeltas[i] = rotations[i] - lastRotations[i];
+                }
+
+                Vector2d robotPoseDelta = MecanumDrive.getPoseDelta(rotationDeltas).pos();
+                Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
+
+                estimatedPosition = estimatedPosition.added(fieldPoseDelta);
+            }
+            lastRotations = rotations;
         }
 
-        Pose2d estimatedPose = getEstimatedPose();
-
         // maintain heading
-        double heading = getHeading();
-        double headingError = maintainHeadingController.getError(heading);
-        double headingUpdate = 0;
         if (maintainHeading) {
+            double heading = getHeading();
+            double headingError = maintainHeadingController.getError(heading);
+            double headingUpdate = 0;
             if (Math.abs(targetOmega) > 0) {
                 maintainHeadingController.setSetpoint(heading);
                 internalSetVelocity(targetVel, targetOmega);
@@ -400,16 +361,6 @@ public class MecanumDrive implements Loop {
         } else {
             internalSetVelocity(targetVel, targetOmega);
         }
-
-        // auto balance
-        Orientation angularOrientation = getAngularOrientation().toAxesOrder(AxesOrder.XYZ);
-        double pitch = angularOrientation.secondAngle;
-        double roll = angularOrientation.firstAngle;
-
-        double balanceAxialError = balanceAxialController.getError(pitch);
-        double balanceLateralError = balanceLateralController.getError(roll);
-
-        double balanceAxialUpdate = 0, balanceLateralUpdate = 0;
 
         switch (mode) {
             case OPEN_LOOP:
@@ -425,6 +376,11 @@ public class MecanumDrive implements Loop {
                         maxDesiredAbsPowerDelta = desiredAbsPowerDelta;
                     }
                 }
+
+                double timestamp = TimestampedData.getCurrentTime();
+                double dt = timestamp - lastTimestamp;
+                lastTimestamp = timestamp;
+
                 double maxAbsPowerDelta = DriveConstants.RAMP_MAX_ACCEL * (dt / 1000.0);
                 double multiplier;
                 if (maxDesiredAbsPowerDelta > maxAbsPowerDelta) {
@@ -438,7 +394,8 @@ public class MecanumDrive implements Loop {
                 break;
             case FOLLOW_PATH:
                 if (pathFollower.isFollowingPath()) {
-                    Pose2d update = pathFollower.update(estimatedPose, timestamp);
+                    Pose2d estimatedPose = getEstimatedPose();
+                    Pose2d update = pathFollower.update(estimatedPose);
                     internalSetVelocity(update.pos(), update.heading());
                 } else {
                     stop();
@@ -446,77 +403,13 @@ public class MecanumDrive implements Loop {
                 }
                 powers = targetPowers;
                 break;
-            case AUTO_BALANCE:
-                balanceAxialUpdate = balanceAxialController.update(balanceAxialError);
-                balanceLateralUpdate = balanceLateralController.update(balanceLateralError);
-
-                internalSetVelocity(new Vector2d(balanceAxialUpdate, balanceLateralUpdate), 0);
-
-                powers = targetPowers;
-
-                break;
         }
 
-        scheduler.add(() -> {
-            for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
+            if (lastPowers[i] != powers[i]) {
                 motors[i].setPower(powers[i]);
+                lastPowers[i] = powers[i];
             }
-        }, "drive: set motor powers", PriorityScheduler.HIGH_PRIORITY);
-
-        if (telemetry != null) {
-            telemetry.addData("driveMode", mode);
-
-            telemetry.addData("estimatedX", estimatedPose.x());
-            telemetry.addData("estimatedY", estimatedPose.y());
-            telemetry.addData("heading", estimatedPose.heading());
-
-            telemetry.addData("headingError", headingError);
-            telemetry.addData("headingUpdate", headingUpdate);
-
-            for (int i = 0; i < 4; i++) {
-                telemetry.addData("drivePower" + i, powers[i]);
-                telemetry.addData("drivePosition" + i, getEncoderPosition(i));
-            }
-
-            telemetry.addData("pathHeadingError", pathFollower.getHeadingError());
-            telemetry.addData("pathHeadingUpdate", pathFollower.getHeadingUpdate());
-
-            telemetry.addData("pathAxialError", pathFollower.getAxialError());
-            telemetry.addData("pathAxialUpdate", pathFollower.getAxialUpdate());
-
-            telemetry.addData("pathLateralError", pathFollower.getLateralError());
-            telemetry.addData("pathLateralUpdate", pathFollower.getLateralUpdate());
-
-            telemetry.addData("pitch", pitch);
-            telemetry.addData("roll", roll);
-
-            telemetry.addData("balanceAxialError", balanceAxialError);
-            telemetry.addData("balanceLateralError", balanceLateralError);
-
-            telemetry.addData("balanceAxialUpdate", balanceAxialUpdate);
-            telemetry.addData("balanceLateralUpdate", balanceLateralUpdate);
         }
-
-        double robotRadius = 9;
-        fieldOverlay.setStrokeWidth(4);
-
-        Pose2d pathPose = pathFollower.getPose();
-        if (pathPose != null) {
-            fieldOverlay.setStroke("red");
-            fieldOverlay.strokeLine(
-                    pathPose.x() + 0.5 * robotRadius * Math.cos(pathPose.heading()),
-                    pathPose.y() + 0.5 * robotRadius * Math.sin(pathPose.heading()),
-                    pathPose.x() + robotRadius * Math.cos(pathPose.heading()),
-                    pathPose.y() + robotRadius * Math.sin(pathPose.heading()));
-            fieldOverlay.strokeCircle(pathPose.x(), pathPose.y(), robotRadius);
-        }
-
-        fieldOverlay.setStroke("blue");
-        fieldOverlay.strokeLine(
-            estimatedPose.x() + 0.5 * robotRadius * Math.cos(estimatedPose.heading()),
-            estimatedPose.y() + 0.5 * robotRadius * Math.sin(estimatedPose.heading()),
-            estimatedPose.x() + robotRadius * Math.cos(estimatedPose.heading()),
-            estimatedPose.y() + robotRadius * Math.sin(estimatedPose.heading()));
-        fieldOverlay.strokeCircle(estimatedPose.x(), estimatedPose.y(), robotRadius);
     }
 }

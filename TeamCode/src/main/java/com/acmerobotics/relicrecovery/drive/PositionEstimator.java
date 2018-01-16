@@ -3,25 +3,22 @@ package com.acmerobotics.relicrecovery.drive;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.RingBuffer;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.loops.Looper;
 
 /**
  * Created by ryanbrott on 10/28/17.
  */
 
+@Deprecated
 public class PositionEstimator {
-    public static final double HISTORY_DURATION = 5; // in seconds
-
     private MecanumDrive drive;
     private double[] lastRotations;
     private volatile Vector2d currentPosition;
     private RingBuffer<TimestampedData<Vector2d>> positionDeltas;
 
-    public PositionEstimator(MecanumDrive drive, Vector2d initialPosition) {
+    private PositionEstimator(MecanumDrive drive, Vector2d initialPosition) {
         this.drive = drive;
         this.currentPosition = initialPosition;
-        // TODO: make this more flexible if we decide to change the loop hz
-        positionDeltas = new RingBuffer<>((int) (HISTORY_DURATION / Looper.DEFAULT_LOOP_TIME));
+        positionDeltas = new RingBuffer<>(500);
         positionDeltas.add(new TimestampedData<>(initialPosition));
     }
 

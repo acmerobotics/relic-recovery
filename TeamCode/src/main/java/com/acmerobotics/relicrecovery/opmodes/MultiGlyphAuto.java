@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import android.util.Log;
+import android.os.Looper;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.config.Config;
@@ -10,9 +10,6 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.drive.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
-import com.acmerobotics.relicrecovery.drive.PositionEstimator;
-import com.acmerobotics.relicrecovery.loops.Looper;
-import com.acmerobotics.relicrecovery.loops.PriorityScheduler;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
@@ -44,16 +41,14 @@ public class MultiGlyphAuto extends LinearOpMode {
     private CryptoboxTracker cryptoboxTracker;
     private CryptoboxLocalizer cryptoboxLocalizer;
     private FpsTracker fpsTracker;
-    private PriorityScheduler scheduler;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        scheduler = new PriorityScheduler();
         strafeAlignController = new PIDController(STRAFE_ALIGN_PID);
 
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, scheduler, dashboard.getTelemetry());
+        drive = new MecanumDrive(hardwareMap);
         drive.setEstimatedPose(new Pose2d(48, -48, Math.PI));
 
         camera = new VuforiaCamera();
@@ -65,27 +60,27 @@ public class MultiGlyphAuto extends LinearOpMode {
         camera.addTracker(fpsTracker);
         camera.initialize();
 
-        cryptoboxLocalizer.addListener((estimatedPos, timestamp) -> {
-                PositionEstimator positionEstimator = drive.getPositionEstimator();
-                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) &&
-                        (VISION_UPDATE_MAX_DIST == -1 ||
-                                Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < VISION_UPDATE_MAX_DIST)) {
-                    Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
-                    Log.i("CryptoTrackerListener", "old position: " + positionEstimator.getPosition());
-                    positionEstimator.setPosition(estimatedPos);
-                    Log.i("CryptoTrackerListener", "new position: " + positionEstimator.getPosition());
-                } else {
-                    Log.i("CryptoTrackerListener", "ignored vision update");
-                }
-        });
+//        cryptoboxLocalizer.addListener((estimatedPos, timestamp) -> {
+//                PositionEstimator positionEstimator = drive.getPositionEstimator();
+//                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) &&
+//                        (VISION_UPDATE_MAX_DIST == -1 ||
+//                                Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < VISION_UPDATE_MAX_DIST)) {
+//                    Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
+//                    Log.i("CryptoTrackerListener", "old position: " + positionEstimator.getPosition());
+//                    positionEstimator.setSlapperPosition(estimatedPos);
+//                    Log.i("CryptoTrackerListener", "new position: " + positionEstimator.getPosition());
+//                } else {
+//                    Log.i("CryptoTrackerListener", "ignored vision update");
+//                }
+//        });
 
-        looper = new Looper();
-        drive.registerLoops(looper);
-        looper.addLoop(((timestamp, dt) -> {
-            dashboard.drawOverlay();
-            telemetry.update();
-        }));
-        looper.start();
+//        looper = new Looper();
+//        drive.registerLoops(looper);
+//        looper.addLoop(((timestamp, dt) -> {
+//            dashboard.drawOverlay();
+//            telemetry.update();
+//        }));
+//        looper.start();
 
         waitForStart();
 

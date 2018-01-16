@@ -89,6 +89,10 @@ public class PathFollower {
         return path != null && (timestamp - pathStartTimestamp) < path.duration();
     }
 
+    public Pose2d update(Pose2d estimatedPose) {
+        return update(estimatedPose, TimestampedData.getCurrentTime());
+    }
+
     /**
      * Update the drive controls
      * @param estimatedPose current robot pose
