@@ -73,9 +73,11 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         cameraView.setOnTouchListener(this);
 
         String detector = getIntent().getStringExtra("detector");
-        if (detector.equals("Red Cryptobox")) {
+        if (detector.equals("Basic Cryptobox")) {
+            tracker = new OldCryptoboxTracker(false);
+        } else if (detector.equals("Complex Cryptobox [Red]")) {
             tracker = new CryptoboxTracker(AllianceColor.RED);
-        } else if (detector.equals("Blue Cryptobox")) {
+        } else if (detector.equals("Complex Cryptobox [Blue]")) {
             tracker = new CryptoboxTracker(AllianceColor.BLUE);
         } else if (detector.equals("Jewel")) {
             tracker = new FixedJewelTracker();
@@ -118,7 +120,22 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         bgra = new Mat();
         temp = new Mat();
 
-        tracker.init(null);
+        tracker.init(new VisionCamera(null) {
+            @Override
+            protected void doInitialize() {
+                // do nothing
+            }
+
+            @Override
+            public void close() {
+                // do nothing
+            }
+
+            @Override
+            public Properties getProperties() {
+                return new OpenCVCamera.OpenCVProperties(cameraView);
+            }
+        });
     }
 
     @Override

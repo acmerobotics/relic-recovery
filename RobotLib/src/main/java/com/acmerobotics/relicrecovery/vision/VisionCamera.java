@@ -136,7 +136,7 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
      * @author Ryan
      */
 
-    public static interface Properties {
+    public interface Properties {
         /** @return camera's horizontal (along x-axis) focal length in pixels */
         double getHorizontalFocalLengthPx(double imageWidth);
     }
