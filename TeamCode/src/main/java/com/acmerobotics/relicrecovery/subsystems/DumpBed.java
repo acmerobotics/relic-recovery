@@ -17,8 +17,8 @@ public class DumpBed {
     public static final double LIFT_POWER_DOWN = -0.3;
     public static final double LIFT_POWER_UP = 0.6;
 
-    public static final double LEFT_ROTATE_DOWN_POS = 0.25;
-    public static final double LEFT_ROTATE_UP_POS = 0.94;
+    public static final double LEFT_ROTATE_DOWN_POS = 0.39;
+    public static final double LEFT_ROTATE_UP_POS = 0.86;
 
     public static final double RELEASE_ENGAGE_POS = 0.61;
     public static final double RELEASE_DISENGAGE_POS = 0;
@@ -73,6 +73,10 @@ public class DumpBed {
         mode = Mode.MOVE_UP;
         setDumpRotation(0.5);
         setLiftPower(LIFT_POWER_UP);
+    }
+
+    public Mode getMode() {
+        return mode;
     }
 
     public boolean isLiftDown() {

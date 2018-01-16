@@ -1,13 +1,12 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.drive.MecanumDrive;
 import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
@@ -62,23 +61,34 @@ public class Auto extends LinearOpMode {
             AutoTransitioner.transitionOnStop(this, autoTransition);
         }
 
+        dumpBed.liftDown();
+        while (!isStopRequested() && !isStarted()) {
+            dumpBed.update();
+        }
+
         waitForStart();
+
+        while (opModeIsActive() && dumpBed.getMode() != DumpBed.Mode.NORMAL) {
+            dumpBed.update();
+        }
 
         jewelTracker.enable();
         vuMarkTracker.enable();
 
         jewelSlapper.deployArmAndSlapper();
 
-        sleep(500);
+        sleep(1500);
 
-        RelicRecoveryVuMark vuMark;
-        while (opModeIsActive()) {
+        double startTime = TimestampedData.getCurrentTime();
+
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
+        while (opModeIsActive() && (TimestampedData.getCurrentTime() - startTime) < 8) {
             vuMark = vuMarkTracker.getVuMark();
             if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
-                vuMarkTracker.disable();
                 break;
             }
         }
+        vuMarkTracker.disable();
 
         AllianceColor leftJewelColor = jewelTracker.getLeftBlue() > jewelTracker.getRightBlue() ?
                 AllianceColor.BLUE : AllianceColor.RED;
@@ -89,22 +99,30 @@ public class Auto extends LinearOpMode {
             jewelSlapper.setSlapperPosition(JewelSlapper.Position.LEFT);
         }
 
-        sleep(500);
+        sleep(1500);
 
         jewelSlapper.stowArmAndSlapper();
 
-        sleep(500);
-
-        followPathSync(new PathBuilder(new Pose2d(48, -48, Math.PI))
-            .lineTo(new Vector2d(12, -48))
-            .turn(-Math.PI / 2)
-            .build());
+//        sleep(1500);
+//
+//        followPathSync(AutoPaths.makePathToCryptobox(balancingStone, vuMark));
+//
+//        dumpBed.liftDown();
+//        startTime = TimestampedData.getCurrentTime();
+//        while (opModeIsActive() && (TimestampedData.getCurrentTime() - startTime) < 1.5) {
+//            dumpBed.update();
+//        }
+//        dumpBed.dump();
+//        sleep(1500);
+//        dumpBed.retract();
+//        sleep(1500);
     }
 
     private void followPathSync(Path path) {
         drive.followPath(path);
-        while (opModeIsActive() && !drive.isFollowingPath()) {
+        while (opModeIsActive() && drive.isFollowingPath()) {
             drive.update();
         }
+        drive.stop();
     }
 }

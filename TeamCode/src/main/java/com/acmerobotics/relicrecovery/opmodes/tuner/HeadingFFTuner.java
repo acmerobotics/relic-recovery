@@ -54,7 +54,7 @@ public class HeadingFFTuner extends LinearOpMode {
     }
 
     private double testFeedforwardCoefficient(double coefficient) {
-        DriveConstants.HEADING_COEFFS.a = coefficient;
+        DriveConstants.HEADING_PID.a = coefficient;
 
         // reset heading + pose
         drive.setEstimatedPose(new Pose2d(0, 0, 0));

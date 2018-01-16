@@ -39,7 +39,7 @@ public class JewelSlapper {
 
     public void deployArmAndSlapper() {
         if (!deployed) {
-            jewelDeployer.setPosition(0.75);
+            jewelDeployer.setPosition(0.77);
             setSlapperPosition(Position.CENTER);
             deployed = true;
         }

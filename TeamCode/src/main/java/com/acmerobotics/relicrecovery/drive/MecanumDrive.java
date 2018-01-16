@@ -106,13 +106,13 @@ public class MecanumDrive {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        pathFollower = new PathFollower(DriveConstants.HEADING_COEFFS, DriveConstants.AXIAL_COEFFS, DriveConstants.LATERAL_COEFFS);
+        pathFollower = new PathFollower(DriveConstants.HEADING_PID, DriveConstants.AXIAL_PID, DriveConstants.LATERAL_PID);
 
         estimatedPosition = new Vector2d(0, 0);
 
         lastPowers = new double[4];
 
-        maintainHeadingController = new PIDController(DriveConstants.MAINTAIN_HEADING_COEFFS);
+        maintainHeadingController = new PIDController(DriveConstants.MAINTAIN_HEADING_PID);
 
         resetEncoders();
 

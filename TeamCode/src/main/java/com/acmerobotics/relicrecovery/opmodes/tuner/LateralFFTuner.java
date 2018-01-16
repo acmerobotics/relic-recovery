@@ -54,7 +54,7 @@ public class LateralFFTuner extends LinearOpMode {
     }
 
     private double testFeedforwardCoefficient(double coefficient) {
-        DriveConstants.LATERAL_COEFFS.a = coefficient;
+        DriveConstants.LATERAL_PID.a = coefficient;
 
         // reset heading + pose
         drive.setEstimatedPose(new Pose2d(0, 0, drive.getHeading()));

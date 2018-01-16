@@ -34,6 +34,8 @@ public class MainTeleOp extends OpMode {
 
         dashboard = RobotDashboard.getInstance();
 
+        telemetry.setMsTransmissionInterval(50);
+
         drive = new MecanumDrive(hardwareMap);
         dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
         jewelSlapper = new JewelSlapper(hardwareMap);
@@ -46,6 +48,7 @@ public class MainTeleOp extends OpMode {
     @Override
     public void init_loop() {
         dumpBed.update();
+        intake.update();
     }
 
     @Override
@@ -66,16 +69,16 @@ public class MainTeleOp extends OpMode {
             y = -gamepad1.left_stick_x;
         }
 
-        if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
-            y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
-        }
-
         omega = -gamepad1.right_stick_x;
 
         if (halfSpeed) {
             x *= 0.5;
             y *= 0.5;
             omega *= 0.5;
+        }
+
+        if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
+            y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
         }
 
         drive.setVelocity(new Vector2d(x, y), omega);
@@ -104,14 +107,6 @@ public class MainTeleOp extends OpMode {
         }
 
         // intake
-        if (stickyGamepad2.right_bumper) {
-            if (intake.isRotatedDown()) {
-                intake.rotateUp();
-            } else {
-                intake.rotateDown();
-            }
-        }
-
         if (stickyGamepad2.left_bumper) {
             if (intake.isClosed()) {
                 intake.open();
@@ -121,6 +116,12 @@ public class MainTeleOp extends OpMode {
         }
 
         if (gamepad2.left_trigger > 0.8) {
+            intake.rotateUp();
+        } else {
+            intake.rotateDown();
+        }
+
+        if (gamepad2.right_trigger > 0.8) {
             intake.engageFlipper();
         } else {
             intake.disengageFlipper();
@@ -157,7 +158,9 @@ public class MainTeleOp extends OpMode {
         dumpBed.update();
         intake.update();
 
-        dashboard.getTelemetry().update();
+        telemetry.addData("test", Math.random());
+
+//        dashboard.getTelemetry().update();
     }
 }
 

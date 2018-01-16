@@ -5,6 +5,7 @@ import com.acmerobotics.library.dashboard.config.Config;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
+import org.opencv.core.Rect2d;
 import org.opencv.core.Scalar;
 
 /**
@@ -15,10 +16,12 @@ import org.opencv.core.Scalar;
 public class FixedJewelTracker extends Tracker {
     public static final String TAG = "FixedJewelTracker";
 
-    public static final float JEWEL_PLATFORM_ASPECT_RATIO = 2.6f; // width/height
+    public static Rect2d LEFT_JEWEL_RECT = new Rect2d(0.55, 0.84, 0.22, 0.16);
+    public static Rect2d RIGHT_JEWEL_RECT = new Rect2d();
+
     public static double COLOR_THRESHOLD = 0.7;
 
-    private Rect jewelPlatformRect, leftJewelRect, rightJewelRect;
+    private Rect scaledLeftJewelRect, scaledRightJewelRect;
     private double leftRed, leftBlue, rightRed, rightBlue;
 
     @Override
@@ -28,20 +31,22 @@ public class FixedJewelTracker extends Tracker {
 
     @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
-        if (jewelPlatformRect == null) {
-            int imageWidth = frame.width(), imageHeight = frame.height();
-            int platformWidth = imageWidth / 2;
-            int platformHeight = (int) (platformWidth / JEWEL_PLATFORM_ASPECT_RATIO);
-            int offsetX = (imageWidth - platformWidth) / 2;
-            int offsetY = (imageHeight - platformHeight) / 2;
+        int imageWidth = frame.width(), imageHeight = frame.height();
+        scaledLeftJewelRect = new Rect(
+                (int) (imageWidth * LEFT_JEWEL_RECT.x),
+                (int) (imageHeight * LEFT_JEWEL_RECT.y),
+                (int) (imageWidth * LEFT_JEWEL_RECT.width),
+                (int) (imageHeight * LEFT_JEWEL_RECT.height)
+        );
+        scaledRightJewelRect = new Rect(
+                (int) (imageWidth * RIGHT_JEWEL_RECT.x),
+                (int) (imageHeight * RIGHT_JEWEL_RECT.y),
+                (int) (imageWidth * RIGHT_JEWEL_RECT.width),
+                (int) (imageHeight * RIGHT_JEWEL_RECT.height)
+        );
 
-            jewelPlatformRect = new Rect(offsetX, offsetY, platformWidth, platformHeight);
-            leftJewelRect = new Rect(offsetX, offsetY, platformHeight, platformHeight);
-            rightJewelRect = new Rect(offsetX + platformWidth - platformHeight, offsetY, platformHeight, platformHeight);
-        }
-
-        Mat leftJewelCropped = frame.submat(leftJewelRect);
-        Mat rightJewelCropped = frame.submat(rightJewelRect);
+        Mat leftJewelCropped = frame.submat(scaledLeftJewelRect);
+        Mat rightJewelCropped = frame.submat(scaledRightJewelRect);
 
         Scalar leftJewelTotalColor = Core.sumElems(leftJewelCropped);
         Scalar rightJewelTotalColor = Core.sumElems(rightJewelCropped);
@@ -73,9 +78,7 @@ public class FixedJewelTracker extends Tracker {
 
     @Override
     public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
-        if (jewelPlatformRect != null) {
-            overlay.strokeRect(jewelPlatformRect, new Scalar(0, 255, 0), 5);
-
+        if (scaledLeftJewelRect != null) {
             Scalar leftColor;
             if (leftBlue > COLOR_THRESHOLD) {
                 leftColor = new Scalar(255, 0, 0);
@@ -84,7 +87,7 @@ public class FixedJewelTracker extends Tracker {
             } else {
                 leftColor = new Scalar(0, 255, 0);
             }
-            overlay.strokeRect(leftJewelRect, leftColor, 5);
+            overlay.strokeRect(scaledLeftJewelRect, leftColor, 5);
 
             Scalar rightColor;
             if (rightBlue > COLOR_THRESHOLD) {
@@ -94,7 +97,7 @@ public class FixedJewelTracker extends Tracker {
             } else {
                 rightColor = new Scalar(0, 255, 0);
             }
-            overlay.strokeRect(rightJewelRect, rightColor, 5);
+            overlay.strokeRect(scaledRightJewelRect, rightColor, 5);
         }
     }
 

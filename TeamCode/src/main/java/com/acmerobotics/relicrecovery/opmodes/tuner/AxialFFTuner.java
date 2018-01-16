@@ -54,7 +54,7 @@ public class AxialFFTuner extends LinearOpMode {
     }
 
     private double testFeedforwardCoefficient(double coefficient) {
-        DriveConstants.AXIAL_COEFFS.a = coefficient;
+        DriveConstants.AXIAL_PID.a = coefficient;
 
         // reset heading + pose
         drive.setEstimatedPose(new Pose2d(0, 0, drive.getHeading()));
