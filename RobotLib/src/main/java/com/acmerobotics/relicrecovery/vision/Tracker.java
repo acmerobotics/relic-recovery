@@ -2,8 +2,7 @@ package com.acmerobotics.relicrecovery.vision;
 
 import org.opencv.core.Mat;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 /**
  * Created by ryanbrott on 9/23/17.
@@ -11,9 +10,11 @@ import java.util.List;
 
 public abstract class Tracker {
     private boolean enabled = true;
+    private LinkedHashMap<String, Mat> intermediates = new LinkedHashMap<>();
 
     void internalProcessFrame(Mat frame, double timestamp) {
         if (enabled) {
+            intermediates.clear();
             processFrame(frame, timestamp);
         }
     }
@@ -30,8 +31,12 @@ public abstract class Tracker {
         return enabled;
     }
 
-    public List<LabeledMat> getIntermediates() {
-        return Collections.emptyList();
+    public LinkedHashMap<String, Mat> getIntermediates() {
+        return intermediates;
+    }
+
+    protected void addIntermediate(String key, Mat value) {
+        intermediates.put(key, value);
     }
 
     public abstract void init(VisionCamera camera);

@@ -59,8 +59,6 @@ public class CryptoboxTracker extends Tracker {
     private int openKernelSize, hsvCloseKernelWidth, hsvCloseKernelHeight, tapeCloseKernelWidth, tapeCloseKernelHeight;
     private AllianceColor color;
 
-    private List<LabeledMat> intermediates;
-
     private double latestTimestamp;
     private List<Double> latestRails;
     private List<Point> latestAcceptedPoints;
@@ -71,12 +69,6 @@ public class CryptoboxTracker extends Tracker {
     public CryptoboxTracker(AllianceColor color) {
         this.color = color;
         listeners = new ArrayList<>();
-        intermediates = new ArrayList<>();
-    }
-
-    @Override
-    public List<LabeledMat> getIntermediates() {
-        return intermediates;
     }
 
     @Override
@@ -96,8 +88,6 @@ public class CryptoboxTracker extends Tracker {
 
     @Override
     public void processFrame(Mat frame, double timestamp) {
-        intermediates.clear();
-
         resizedWidth = RESIZE_WIDTH;
         resizedHeight = (int) (frame.rows() * (resizedWidth / frame.cols()));
 
@@ -131,7 +121,7 @@ public class CryptoboxTracker extends Tracker {
 
         Imgproc.GaussianBlur(resized, resized, new Size(5, 5), 0);
 
-        intermediates.add(new LabeledMat("blurred", resized));
+        addIntermediate("blurred", resized);
 
         Imgproc.cvtColor(resized, hsv, Imgproc.COLOR_BGR2HSV);
 
@@ -148,35 +138,35 @@ public class CryptoboxTracker extends Tracker {
 
         VisionUtil.smartHsvRange(hsv, lowerHsv, upperHsv, hsvMask);
 
-        intermediates.add(new LabeledMat("hsv threshold", hsvMask));
+        addIntermediate("hsv threshold", hsvMask);
 
         Imgproc.morphologyEx(hsvMask, hsvMaskOpen, Imgproc.MORPH_OPEN, openKernel);
 
-        intermediates.add(new LabeledMat("hsv open", hsvMaskOpen));
+        addIntermediate("hsv open", hsvMaskOpen);
 
         Imgproc.morphologyEx(hsvMaskOpen, hsvMaskClose, Imgproc.MORPH_CLOSE, hsvCloseKernel);
 
-        intermediates.add(new LabeledMat("hsv close", hsvMaskClose));
+        addIntermediate("hsv close", hsvMaskClose);
 
         Imgproc.cvtColor(resized, gray, Imgproc.COLOR_BGR2GRAY);
 
-        intermediates.add(new LabeledMat("gray", gray));
+        addIntermediate("gray", gray);
 
         Core.bitwise_and(gray, hsvMaskClose, grayCombined);
 
-        intermediates.add(new LabeledMat("gray combined", grayCombined));
+        addIntermediate("gray combined", grayCombined);
 
         Imgproc.threshold(grayCombined, grayMask, TAPE_THRESHOLD, 255, Imgproc.THRESH_BINARY);
 
-        intermediates.add(new LabeledMat("gray threshold", grayMask));
+        addIntermediate("gray threshold", grayMask);
 
         Imgproc.morphologyEx(grayMask, grayMaskOpen, Imgproc.MORPH_OPEN, openKernel);
 
-        intermediates.add(new LabeledMat("gray open", grayMaskOpen));
+        addIntermediate("gray open", grayMaskOpen);
 
         Imgproc.morphologyEx(grayMaskOpen, grayMaskClose, Imgproc.MORPH_CLOSE, tapeCloseKernel);
 
-        intermediates.add(new LabeledMat("gray close", grayMaskClose));
+        addIntermediate("gray close", grayMaskClose);
 
         List<MatOfPoint> contours = new ArrayList<>();
         Imgproc.findContours(grayMaskClose, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);

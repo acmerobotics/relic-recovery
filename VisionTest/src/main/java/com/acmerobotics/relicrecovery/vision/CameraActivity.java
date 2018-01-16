@@ -22,7 +22,9 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.List;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class CameraActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2, View.OnTouchListener {
     private JavaCameraView cameraView;
@@ -133,7 +135,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         tracker.processFrame(bgra, 0);
 
         // wrap properly
-        List<LabeledMat> intermediates = tracker.getIntermediates();
+        Set<Map.Entry<String, Mat>> intermediates = tracker.getIntermediates().entrySet();
         while (intermediateIndex < 0) {
             intermediateIndex += intermediates.size() + 1;
         }
@@ -148,19 +150,25 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
 
             return rgba;
         } else {
-            LabeledMat intermediate = intermediates.get(intermediateIndex - 1);
+            Iterator<Map.Entry<String, Mat>> intermediateIterator = intermediates.iterator();
+            Map.Entry<String, Mat> intermediate = null;
+            int index = intermediateIndex;
+            while (index > 0) {
+                intermediate = intermediateIterator.next();
+                index--;
+            }
 
-            if (intermediate.mat.channels() == 3) {
+            if (intermediate.getValue().channels() == 3) {
                 // bgra
-                Imgproc.cvtColor(intermediate.mat, temp, Imgproc.COLOR_BGR2RGBA);
+                Imgproc.cvtColor(intermediate.getValue(), temp, Imgproc.COLOR_BGR2RGBA);
             } else {
                 // gray
-                Imgproc.cvtColor(intermediate.mat, temp, Imgproc.COLOR_GRAY2RGBA);
+                Imgproc.cvtColor(intermediate.getValue(), temp, Imgproc.COLOR_GRAY2RGBA);
             }
 
             Imgproc.resize(temp, temp, rgba.size());
 
-            Imgproc.putText(temp, intermediate.name, new Point(5, 80), Core.FONT_HERSHEY_DUPLEX, 3, new Scalar(0, 255, 0), 2);
+            Imgproc.putText(temp, intermediate.getKey(), new Point(5, 80), Core.FONT_HERSHEY_DUPLEX, 3, new Scalar(0, 255, 0), 2);
 
             return temp;
         }
