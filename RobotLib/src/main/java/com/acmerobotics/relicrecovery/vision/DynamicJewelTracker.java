@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -42,7 +43,7 @@ public class DynamicJewelTracker extends Tracker {
     public static double MAX_DIST_RATIO_ERROR = 0.3;
 
     private Mat resized, hsv, red, blue;
-    private Mat temp, morph, hierarchy, openKernel, closeKernel;
+    private Mat temp, redMorphClose, redMorphOpen, blueMorphClose, blueMorphOpen, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
     private List<RotatedRect> lastRedJewels, lastBlueJewels;
     private List<MatOfPoint> lastContours;
@@ -61,17 +62,37 @@ public class DynamicJewelTracker extends Tracker {
         }
     }
 
-    private List<RotatedRect> findJewelEllipses(Mat mask) {
-        if (morph == null) {
-            morph = new Mat();
+    private List<RotatedRect> findJewelEllipses(AllianceColor color, Mat mask) {
+        if (redMorphClose == null) {
+            redMorphClose = new Mat();
+            redMorphOpen = new Mat();
+            blueMorphClose = new Mat();
+            blueMorphOpen = new Mat();
             hierarchy = new Mat();
         }
 
-        Imgproc.morphologyEx(mask, morph, Imgproc.MORPH_OPEN, openKernel);
-        Imgproc.morphologyEx(morph, morph, Imgproc.MORPH_CLOSE, closeKernel);
+        Mat morphClose, morphOpen;
+        String prefix;
+        if (color == AllianceColor.RED) {
+            prefix = "red";
+            morphClose = redMorphClose;
+            morphOpen = redMorphOpen;
+        } else {
+            prefix = "blue";
+            morphClose = blueMorphClose;
+            morphOpen = blueMorphOpen;
+        }
+
+        Imgproc.morphologyEx(mask, morphOpen, Imgproc.MORPH_OPEN, openKernel);
+
+        addIntermediate(prefix + "MorphOpen", morphOpen);
+
+        Imgproc.morphologyEx(morphOpen, morphClose, Imgproc.MORPH_CLOSE, closeKernel);
+
+        addIntermediate(prefix + "MorphClose", morphClose);
 
         List<MatOfPoint> jewelContours = new ArrayList<>();
-        Imgproc.findContours(morph, jewelContours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(morphClose, jewelContours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
         lastContours.addAll(jewelContours);
 
@@ -128,6 +149,8 @@ public class DynamicJewelTracker extends Tracker {
         Imgproc.pyrDown(frame, resized);
         Imgproc.pyrDown(resized, resized);
 
+        addIntermediate("blurred", resized);
+
         Imgproc.cvtColor(resized, hsv, Imgproc.COLOR_BGR2HSV);
 
         Scalar redLowerHsv = new Scalar(RED_LOWER_HUE, RED_LOWER_SAT, RED_LOWER_VALUE);
@@ -144,8 +167,13 @@ public class DynamicJewelTracker extends Tracker {
             lastContours.clear();
         }
 
-        lastRedJewels = findJewelEllipses(red);
-        lastBlueJewels = findJewelEllipses(blue);
+        addIntermediate("red", red);
+
+        lastRedJewels = findJewelEllipses(AllianceColor.RED, red);
+
+        addIntermediate("blue", blue);
+
+        lastBlueJewels = findJewelEllipses(AllianceColor.BLUE, blue);
 
         if (lastRedJewels.size() == 0 || lastBlueJewels.size() == 0) {
             leftJewelColor = JewelColor.UNKNOWN;

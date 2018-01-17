@@ -79,8 +79,10 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             tracker = new CryptoboxTracker(AllianceColor.RED);
         } else if (detector.equals("Complex Cryptobox [Blue]")) {
             tracker = new CryptoboxTracker(AllianceColor.BLUE);
-        } else if (detector.equals("Jewel")) {
+        } else if (detector.equals("Fixed Jewel")) {
             tracker = new FixedJewelTracker();
+        } else if (detector.equals("Dynamic Jewel")) {
+            tracker = new DynamicJewelTracker();
         } else if (detector.equals("Pictograph")) {
             tracker = new FeatureDetectionVuMarkTracker();
         } else {

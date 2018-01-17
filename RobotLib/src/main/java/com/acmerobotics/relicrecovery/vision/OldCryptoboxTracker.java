@@ -360,13 +360,9 @@ public class OldCryptoboxTracker extends Tracker {
         Scalar redUpperHsv = new Scalar(RED_UPPER_HUE, RED_UPPER_SAT, RED_UPPER_VALUE);
         VisionUtil.smartHsvRange(hsv, redLowerHsv, redUpperHsv, red);
 
-        addIntermediate("red", red);
-
         Scalar blueLowerHsv = new Scalar(BLUE_LOWER_HUE, BLUE_LOWER_SAT, BLUE_LOWER_VALUE);
         Scalar blueUpperHsv = new Scalar(BLUE_UPPER_HUE, BLUE_UPPER_SAT, BLUE_UPPER_VALUE);
         VisionUtil.smartHsvRange(hsv, blueLowerHsv, blueUpperHsv, blue);
-
-        addIntermediate("blue", blue);
 
         List<Double> rails = new ArrayList<>();
         List<Rail> rawRails = new ArrayList<>();
@@ -379,7 +375,12 @@ public class OldCryptoboxTracker extends Tracker {
             latestRawRails.clear();
         }
 
+        addIntermediate("red", red);
+
         List<Rail> rawRedRails = findRailsFromMask(CryptoboxColor.RED, red);
+
+        addIntermediate("blue", blue);
+
         List<Rail> rawBlueRails = findRailsFromMask(CryptoboxColor.BLUE, blue);
 
         latestRawRails.addAll(rawRedRails);
