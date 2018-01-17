@@ -26,7 +26,6 @@ import java.util.List;
 
 public class RobotDashboard {
     public static final String TAG = "RobotDashboard";
-	public static final String CONFIG_PREFS = "config";
 
 	public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(Message.class, new MessageDeserializer())
@@ -155,6 +154,7 @@ public class RobotDashboard {
 
 	public void stop() {
 		server.stop();
+		telemetry.stop();
 		dashboard = null;
 	}
 }
