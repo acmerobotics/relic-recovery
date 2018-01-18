@@ -11,6 +11,10 @@ function scale(value, fromStart, fromEnd, toStart, toEnd) {
   return toStart + ((toEnd - toStart) * (value - fromStart) / (fromEnd - fromStart));
 }
 
+function scalePoint(value, fromStart, fromEnd, toStart, toEnd) {
+  return Math.floor(scale(value, fromStart, fromEnd, toStart, toEnd)) + 0.5;
+}
+
 export default class Field {
   constructor(canvas, options) {
     this.canvas = canvas;
@@ -66,6 +70,7 @@ export default class Field {
   }
 
   renderOverlay(x, y, width, height) {
+    this.ctx.lineCap = 'butt';
     this.overlay.ops.forEach((op) => {
       switch (op.type) {
       case 'fill':
@@ -80,8 +85,8 @@ export default class Field {
       case 'circle':
         this.ctx.beginPath();
         this.ctx.arc(
-          scale(op.y, 72, -72, x, width + x),
-          scale(op.x, 72, -72, y, height + y),
+          scalePoint(op.y, 72, -72, x, width + x),
+          scalePoint(op.x, 72, -72, y, height + y),
           scale(op.radius, 0, 72, 0, width / 2), 0, 2 * Math.PI);
         if (op.stroke) {
           this.ctx.stroke();
@@ -92,11 +97,11 @@ export default class Field {
       case 'polygon': {
         this.ctx.beginPath();
         const { xPoints, yPoints, stroke } = op;
-        this.ctx.moveTo(scale(yPoints[0], 72, -72, x, width + x),
-          scale(xPoints[0], 72, -72, y, height + y));
+        this.ctx.moveTo(scalePoint(yPoints[0], 72, -72, x, width + x),
+          scalePoint(xPoints[0], 72, -72, y, height + y));
         for (let i = 1; i < xPoints.length; i += 1) {
-          this.ctx.lineTo(scale(yPoints[i], 72, -72, x, width + x),
-            scale(xPoints[i], 72, -72, y, height + y));
+          this.ctx.lineTo(scalePoint(yPoints[i], 72, -72, x, width + x),
+            scalePoint(xPoints[i], 72, -72, y, height + y));
         }
         this.ctx.closePath();
         if (stroke) {
@@ -109,11 +114,11 @@ export default class Field {
       case 'polyline': {
         this.ctx.beginPath();
         const { xPoints, yPoints } = op;
-        this.ctx.moveTo(scale(yPoints[0], 72, -72, x, width + x),
-          scale(xPoints[0], 72, -72, y, height + y));
+        this.ctx.moveTo(scalePoint(yPoints[0], 72, -72, x, width + x),
+          scalePoint(xPoints[0], 72, -72, y, height + y));
         for (let i = 1; i < xPoints.length; i += 1) {
-          this.ctx.lineTo(scale(yPoints[i], 72, -72, x, width + x),
-            scale(xPoints[i], 72, -72, y, height + y));
+          this.ctx.lineTo(scalePoint(yPoints[i], 72, -72, x, width + x),
+            scalePoint(xPoints[i], 72, -72, y, height + y));
         }
         this.ctx.stroke();
         break;

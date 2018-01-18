@@ -37,7 +37,7 @@ public class CryptoboxPositionTest extends OpMode {
         fieldOverlay = dashboard.getFieldOverlay();
         telemetry = new MultipleTelemetry(dashboard.getTelemetry(), telemetry);
 
-        drive = new MecanumDrive(hardwareMap);
+        drive = new MecanumDrive(hardwareMap, telemetry);
         drive.setEstimatedPose(new Pose2d(0, 0, Math.PI / 2));
 
         camera = new VuforiaCamera();

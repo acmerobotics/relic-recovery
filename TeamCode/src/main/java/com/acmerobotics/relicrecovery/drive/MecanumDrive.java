@@ -2,6 +2,8 @@ package com.acmerobotics.relicrecovery.drive;
 
 import android.util.Log;
 
+import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -9,6 +11,7 @@ import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -111,12 +114,16 @@ public class MecanumDrive {
     private Telemetry telemetry;
     private LinkedHashMap<String, Object> telemetryMap;
 
+    private Canvas fieldOverlay;
+
     public MecanumDrive(HardwareMap map, Telemetry telemetry) {
         this.telemetry = telemetry;
         telemetryMap = new LinkedHashMap<>();
         for (String key : CONDITIONAL_TELEMETRY_KEYS) {
             telemetryMap.put(key, 0);
         }
+
+        this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
         imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "rearHub"), 1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -448,6 +455,9 @@ public class MecanumDrive {
                     telemetryMap.put("pathLateralUpdate", pathFollower.getLateralUpdate());
                     telemetryMap.put("pathHeadingError", pathFollower.getHeadingError());
                     telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
+
+                    fieldOverlay.setStroke("#F44336");
+                    DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
                 } else {
                     stop();
                     revertMode();
@@ -463,6 +473,9 @@ public class MecanumDrive {
             }
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
         }
+
+        fieldOverlay.setStroke("#3F51B5");
+        DrawingUtil.drawMecanumRobot(fieldOverlay, getEstimatedPose());
 
         for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
             telemetry.addData(entry.getKey(), entry.getValue());
