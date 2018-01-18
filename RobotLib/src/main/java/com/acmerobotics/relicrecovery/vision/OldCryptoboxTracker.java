@@ -59,6 +59,7 @@ public class OldCryptoboxTracker extends Tracker {
     private int actualWidth, actualHeight;
     private Mat resized, hsv, red, blue, brown, gray;
     private Mat morph, hierarchy, openKernel, closeKernel;
+    private Mat redMorphClose, redMorphOpen, blueMorphClose, blueMorphOpen;
     private int openKernelSize, closeKernelSize;
     private boolean useExtendedTracking, initialized;
     private double focalLengthPx;
@@ -144,14 +145,31 @@ public class OldCryptoboxTracker extends Tracker {
      * @param mask
      * @return detected rail x-coordinates
      */
-    public List<Rail> findRailsFromMask(Mat mask) {
+    public List<Rail> findRailsFromMask(CryptoboxColor color, Mat mask) {
         List<Rail> rails = new ArrayList<>();
 
-        Imgproc.morphologyEx(mask, morph, Imgproc.MORPH_OPEN, openKernel);
-        Imgproc.morphologyEx(morph, morph, Imgproc.MORPH_CLOSE, closeKernel);
+        Mat morphOpen, morphClose;
+        String prefix;
+        if (color == CryptoboxColor.RED) {
+            prefix = "red";
+            morphOpen = redMorphOpen;
+            morphClose = redMorphClose;
+        } else {
+            prefix = "blue";
+            morphOpen = blueMorphOpen;
+            morphClose = blueMorphClose;
+        }
+
+        Imgproc.morphologyEx(mask, morphOpen, Imgproc.MORPH_OPEN, openKernel);
+
+        addIntermediate(prefix + "MorphOpen", morphOpen);
+
+        Imgproc.morphologyEx(morphOpen, morphClose, Imgproc.MORPH_CLOSE, closeKernel);
+
+        addIntermediate(prefix + "MorphClose", morphClose);
 
         List<MatOfPoint> railContours = new ArrayList<>();
-        Imgproc.findContours(morph, railContours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(morphClose, railContours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
         for (MatOfPoint contour : railContours) {
             int area = (int) Imgproc.contourArea(contour);
@@ -307,6 +325,11 @@ public class OldCryptoboxTracker extends Tracker {
             morph = new Mat();
             hierarchy = new Mat();
 
+            redMorphClose = new Mat();
+            redMorphOpen = new Mat();
+            blueMorphClose = new Mat();
+            blueMorphOpen = new Mat();
+
             initialized = true;
         }
 
@@ -329,6 +352,8 @@ public class OldCryptoboxTracker extends Tracker {
         Imgproc.pyrDown(frame, resized);
         Imgproc.pyrDown(resized, resized);
 
+        addIntermediate("blurred", resized);
+
         Imgproc.cvtColor(resized, hsv, Imgproc.COLOR_BGR2HSV);
 
         Scalar redLowerHsv = new Scalar(RED_LOWER_HUE, RED_LOWER_SAT, RED_LOWER_VALUE);
@@ -350,8 +375,13 @@ public class OldCryptoboxTracker extends Tracker {
             latestRawRails.clear();
         }
 
-        List<Rail> rawRedRails = findRailsFromMask(red);
-        List<Rail> rawBlueRails = findRailsFromMask(blue);
+        addIntermediate("red", red);
+
+        List<Rail> rawRedRails = findRailsFromMask(CryptoboxColor.RED, red);
+
+        addIntermediate("blue", blue);
+
+        List<Rail> rawBlueRails = findRailsFromMask(CryptoboxColor.BLUE, blue);
 
         latestRawRails.addAll(rawRedRails);
         latestRawRails.addAll(rawBlueRails);

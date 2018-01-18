@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="detectors">
-        <item name="redCryptobox">Red Cryptobox</item>
-        <item name="blueCryptobox">Blue Cryptobox</item>
-        <item name="jewel">Jewel</item>
-        <item name="pictograph">Pictograph</item>
+        <item>Basic Cryptobox</item>
+        <item>Complex Cryptobox [Red]</item>
+        <item>Complex Cryptobox [Blue]</item>
+        <item>Dynamic Jewel</item>
+        <item>Fixed Jewel</item>
+        <item>Pictograph</item>
     </array>
 </resources>

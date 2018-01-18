@@ -73,7 +73,7 @@ public class OpenCVCamera extends VisionCamera implements CameraBridgeViewBase.C
 
     @Override
     public Properties getProperties() {
-        return new OpenCVProperties();
+        return new OpenCVProperties(cameraView);
     }
 
     @Override
@@ -99,7 +99,13 @@ public class OpenCVCamera extends VisionCamera implements CameraBridgeViewBase.C
         return frame;
     }
 
-    private class OpenCVProperties implements Properties {
+    public static class OpenCVProperties implements Properties {
+        private JavaCameraView cameraView;
+
+        public OpenCVProperties(JavaCameraView cameraView) {
+            this.cameraView = cameraView;
+        }
+
         @Override
         public double getHorizontalFocalLengthPx(double imageWidth) {
             double fov = Math.toRadians(cameraView.getCamera().getParameters().getHorizontalViewAngle());

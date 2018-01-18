@@ -16,8 +16,10 @@ import org.opencv.core.Scalar;
 public class FixedJewelTracker extends Tracker {
     public static final String TAG = "FixedJewelTracker";
 
-    public static Rect2d LEFT_JEWEL_RECT = new Rect2d(0.55, 0.84, 0.22, 0.16);
-    public static Rect2d RIGHT_JEWEL_RECT = new Rect2d();
+    public static final float JEWEL_PLATFORM_ASPECT_RATIO = 2.6f; // width/height
+
+    public static Rect2d LEFT_JEWEL_RECT = new Rect2d(0.5 - JEWEL_PLATFORM_ASPECT_RATIO * 0.125, 0.375, 0.25, 0.25);
+    public static Rect2d RIGHT_JEWEL_RECT = new Rect2d(0.25 + JEWEL_PLATFORM_ASPECT_RATIO * 0.125, 0.375, 0.25, 0.25);
 
     public static double COLOR_THRESHOLD = 0.7;
 

@@ -3,18 +3,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_gravity="center"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.acmerobotics.relicrecovery.vision.MainActivity"
     tools:showIn="@layout/activity_main">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:textAlignment="center"
+        android:text="@string/select_detector_text" />
+
     <Spinner
         android:id="@+id/spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_margin="8dp"
         android:entries="@array/detectors" />
 
     <Button
@@ -22,5 +31,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/startText" />
+        android:layout_margin="8dp"
+        android:text="@string/start_text" />
 </LinearLayout>

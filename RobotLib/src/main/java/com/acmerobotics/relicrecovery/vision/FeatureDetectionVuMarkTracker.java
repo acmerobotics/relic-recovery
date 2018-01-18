@@ -18,9 +18,11 @@ import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
+import org.opencv.features2d.Features2d;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
@@ -37,11 +39,13 @@ import java.util.List;
 public class FeatureDetectionVuMarkTracker extends Tracker {
     public static final int BRIGHTNESS_THRESHOLD = 25;
 
+    public static int RESIZE_WIDTH = 480;
+
     private FeatureDetector featureDetector;
     private DescriptorExtractor descriptorExtractor;
     private DescriptorMatcher descriptorMatcher;
 
-    private Mat gray;
+    private Mat gray, bgr;
     private MatOfKeyPoint objectKeypoints;
     private List<KeyPoint> objectKeypointList;
     private Mat objectDescriptors;
@@ -75,6 +79,7 @@ public class FeatureDetectionVuMarkTracker extends Tracker {
         }
 
         gray = new Mat();
+        bgr = new Mat();
 
         sceneKeypoints = new MatOfKeyPoint();
         sceneDescriptors = new Mat();
@@ -84,7 +89,9 @@ public class FeatureDetectionVuMarkTracker extends Tracker {
 
     @Override
     public void processFrame(Mat frame, double timestamp) {
-        Imgproc.cvtColor(frame, gray, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.resize(frame, bgr, new Size(RESIZE_WIDTH, ((double) frame.height()) / frame.width() * RESIZE_WIDTH));
+
+        Imgproc.cvtColor(bgr, gray, Imgproc.COLOR_BGR2GRAY);
 
         featureDetector.detect(gray, sceneKeypoints);
         descriptorExtractor.compute(gray, sceneKeypoints, sceneDescriptors);
@@ -119,6 +126,9 @@ public class FeatureDetectionVuMarkTracker extends Tracker {
         }
 
         Log.i("FeatureDetector", "Found " + latestGoodMatches.size() + " matches");
+
+        Features2d.drawKeypoints(bgr, sceneKeypoints, bgr, new Scalar(0, 255, 255), 0);
+        addIntermediate("keypoints", bgr);
 
         if (latestGoodMatches.isEmpty()) {
             synchronized (this) {
@@ -206,8 +216,8 @@ public class FeatureDetectionVuMarkTracker extends Tracker {
         if (latestVuMark != null && latestVuMark != RelicRecoveryVuMark.UNKNOWN) {
             overlay.fillCircle(topLeftPoint, 5, topLeftValue > 127 ? new Scalar(255, 255, 255) : new Scalar(0, 0, 0));
             overlay.fillCircle(bottomLeftPoint, 5, bottomLeftValue > 127 ? new Scalar(255, 255, 255) : new Scalar(0, 0, 0));
-            overlay.putText(String.valueOf(topLeftValue), Overlay.TextAlign.RIGHT, topLeftPoint, new Scalar(0, 0, 255), 50);
-            overlay.putText(String.valueOf(bottomLeftValue), Overlay.TextAlign.RIGHT, bottomLeftPoint, new Scalar(0, 0, 255), 50);
+//            overlay.putText(String.valueOf(topLeftValue), Overlay.TextAlign.RIGHT, topLeftPoint, new Scalar(0, 0, 255), 50);
+//            overlay.putText(String.valueOf(bottomLeftValue), Overlay.TextAlign.RIGHT, bottomLeftPoint, new Scalar(0, 0, 255), 50);
             overlay.putText(latestVuMark.toString(), Overlay.TextAlign.LEFT, new Point(5, 45), new Scalar(0, 0, 255), 45);
         }
     }
