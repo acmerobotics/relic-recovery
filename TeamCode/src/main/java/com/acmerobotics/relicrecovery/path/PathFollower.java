@@ -32,6 +32,10 @@ public class PathFollower {
         lateralController = new PIDFController(lateralCoeff);
     }
 
+    public Path getPath() {
+        return path;
+    }
+
     public double getHeadingError() {
         return headingError;
     }

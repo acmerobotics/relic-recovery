@@ -471,6 +471,9 @@ public class MecanumDrive {
                     telemetryMap.put("pathHeadingError", pathFollower.getHeadingError());
                     telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
 
+                    fieldOverlay.setStroke("#4CAF50");
+                    DrawingUtil.drawPath(fieldOverlay, pathFollower.getPath());
+
                     fieldOverlay.setStroke("#F44336");
                     DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
                 } else {
