@@ -12,10 +12,6 @@ import org.opencv.android.JavaCameraView;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
-/**
- * @author Ryan
- */
-
 public class OpenCVCamera extends VisionCamera implements CameraBridgeViewBase.CvCameraViewListener2 {
     private ViewGroup cameraMonitorView;
     private JavaCameraView cameraView;

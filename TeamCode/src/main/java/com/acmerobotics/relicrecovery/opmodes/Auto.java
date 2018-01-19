@@ -19,10 +19,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
-/**
- * @author Ryan
- */
-
 @Autonomous(name = "Auto", group = "auto")
 public class Auto extends LinearOpMode {
     private MecanumDrive drive;

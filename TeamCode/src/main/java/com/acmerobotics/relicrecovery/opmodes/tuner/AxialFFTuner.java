@@ -11,10 +11,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.util.Arrays;
 
-/**
- * @author Ryan
- */
-
 @TeleOp(name = "Axial FF Tuner")
 public class AxialFFTuner extends LinearOpMode {
     public static final double LOWER_BOUND = 0;

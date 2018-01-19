@@ -9,10 +9,6 @@ import com.google.gson.JsonParseException;
 
 import java.lang.reflect.Type;
 
-/**
- * @author Ryan
- */
-
 public class MessageDeserializer implements JsonDeserializer<Message> {
     @Override
     public Message deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {

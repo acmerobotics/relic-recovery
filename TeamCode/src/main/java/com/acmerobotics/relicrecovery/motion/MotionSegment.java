@@ -1,7 +1,6 @@
 package com.acmerobotics.relicrecovery.motion;
 
 /**
- * @author kellyrm
  * motion segment with constant jerk
  */
 

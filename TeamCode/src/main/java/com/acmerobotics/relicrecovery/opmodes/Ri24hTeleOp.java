@@ -7,10 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-/**
- * @author Ryan
- */
-
 @Disabled
 @TeleOp(name = "RI24H TeleOp", group = "teleop")
 public class Ri24hTeleOp extends OpMode {

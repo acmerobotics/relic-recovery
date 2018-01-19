@@ -9,10 +9,6 @@ import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.acmerobotics.relicrecovery.path.Path;
 
-/**
- * @author Ryan
- */
-
 @Config
 public class PathFollower {
 

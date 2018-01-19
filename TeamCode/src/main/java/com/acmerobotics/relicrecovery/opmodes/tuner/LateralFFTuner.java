@@ -11,10 +11,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.util.Arrays;
 
-/**
- * @author Ryan
- */
-
 @TeleOp(name = "Lateral FF Tuner")
 public class LateralFFTuner extends LinearOpMode {
     public static final double LOWER_BOUND = 0;

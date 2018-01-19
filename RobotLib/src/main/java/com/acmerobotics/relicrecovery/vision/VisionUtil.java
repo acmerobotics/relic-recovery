@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author Ryan
- */
-
 public class VisionUtil {
     private static Mat temp;
 

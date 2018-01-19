@@ -15,10 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-/**
- * @author Ryan
- */
-
 public class DashboardTelemetry implements Telemetry {
     private class TelemetryUpdateThread implements Runnable {
         private Message telemetryMessageToSend;

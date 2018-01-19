@@ -5,10 +5,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 
-/**
- * @author Ryan
- */
-
 public interface Overlay {
     enum TextAlign {
         LEFT,

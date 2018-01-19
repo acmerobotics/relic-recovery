@@ -4,7 +4,6 @@ package com.acmerobotics.relicrecovery.motion;
 import com.acmerobotics.relicrecovery.util.SuperArrayList;
 
 /**
- * @author kellyrm
  * a list of continous motion segments
  */
 

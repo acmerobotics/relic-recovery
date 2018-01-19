@@ -3,11 +3,6 @@ package com.acmerobotics.relicrecovery.motion;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/**
- * @author kellyrm
- *
- */
-
 public class MotionTest {
 
     public static void main(String[] args) {

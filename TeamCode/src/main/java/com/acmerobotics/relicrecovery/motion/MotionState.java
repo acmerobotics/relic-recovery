@@ -3,7 +3,6 @@ package com.acmerobotics.relicrecovery.motion;
 import com.acmerobotics.relicrecovery.util.MathUtil;
 
 /**
- *  @author kellyrm
  *  fully defined state of one dimensional motion
  */
 

@@ -1,7 +1,6 @@
 package com.acmerobotics.relicrecovery.motion;
 
 /**
- * @author kellyrm
  * goal of a motion profile
  */
 

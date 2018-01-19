@@ -174,10 +174,6 @@ public class VuforiaCamera extends VisionCamera {
         return new VuforiaProperties();
     }
 
-    /**
-     * @author Ryan
-     */
-
     private class VuforiaProperties implements Properties {
         @Override
         public double getHorizontalFocalLengthPx(double imageWidth) {

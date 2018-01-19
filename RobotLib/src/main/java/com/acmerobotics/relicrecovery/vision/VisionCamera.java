@@ -19,10 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * @author Ryan
- */
-
 public abstract class VisionCamera implements OpModeManagerNotifier.Notifications {
     public static final String TAG = "VisionCamera";
 
@@ -131,10 +127,6 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
     protected abstract void doInitialize();
     public abstract void close();
     public abstract Properties getProperties();
-
-    /**
-     * @author Ryan
-     */
 
     public interface Properties {
         /** @return camera's horizontal (along x-axis) focal length in pixels */

@@ -13,10 +13,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Ryan
- */
-
 @Config
 public class AutoPaths {
     public static double STONE_CORRECTION = 3; // in
