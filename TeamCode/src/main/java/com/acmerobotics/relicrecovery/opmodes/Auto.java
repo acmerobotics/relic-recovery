@@ -41,7 +41,8 @@ public class Auto extends LinearOpMode {
         BalancingStone balancingStone = configuration.getBalancingStone();
         Pose2d initialPose = balancingStone.getPose();
 
-        drive = new MecanumDrive(hardwareMap);
+        drive = new MecanumDrive(hardwareMap, telemetry);
+        drive.enablePositionEstimation();
         drive.setEstimatedPose(initialPose);
         jewelSlapper = new JewelSlapper(hardwareMap);
         dumpBed = new DumpBed(hardwareMap, telemetry);

@@ -30,7 +30,7 @@ public class HeadingFFTuner extends LinearOpMode {
     public void runOpMode() {
         dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap);
+        drive = new MecanumDrive(hardwareMap, telemetry);
 
         waitForStart();
 

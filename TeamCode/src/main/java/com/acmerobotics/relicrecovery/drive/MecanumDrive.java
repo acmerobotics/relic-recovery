@@ -1,5 +1,9 @@
 package com.acmerobotics.relicrecovery.drive;
 
+import android.util.Log;
+
+import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -7,17 +11,21 @@ import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by kelly on 9/28/2017
@@ -87,7 +95,36 @@ public class MecanumDrive {
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
-    public MecanumDrive(HardwareMap map) {
+    public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
+            "pathAxialError",
+            "pathAxialUpdate",
+            "pathLateralError",
+            "pathLateralUpdate",
+            "pathHeadingError",
+            "pathHeadingUpdate",
+            "maintainHeadingError",
+            "maintainHeadingUpdate",
+            "driveHeading",
+            MOTOR_NAMES[0] + "Rotation",
+            MOTOR_NAMES[1] + "Rotation",
+            MOTOR_NAMES[2] + "Rotation",
+            MOTOR_NAMES[3] + "Rotation"
+    };
+
+    private Telemetry telemetry;
+    private LinkedHashMap<String, Object> telemetryMap;
+
+    private Canvas fieldOverlay;
+
+    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
+        this.telemetry = telemetry;
+        telemetryMap = new LinkedHashMap<>();
+        for (String key : CONDITIONAL_TELEMETRY_KEYS) {
+            telemetryMap.put(key, 0);
+        }
+
+        this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
+
         imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "rearHub"), 1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
@@ -304,6 +341,9 @@ public class MecanumDrive {
     }
 
     public void followPath(Path path) {
+        if (!positionEstimationEnabled) {
+            Log.i("MecanumDrive", "Following path without position estimation enabled");
+        }
         pathFollower.follow(path);
         setMode(Mode.FOLLOW_PATH);
     }
@@ -328,38 +368,49 @@ public class MecanumDrive {
     public void update() {
         invalidateHeading();
 
-        // position estimation
-        if (positionEstimationEnabled) {
-            double[] rotations = getMotorRotations();
+        telemetryMap.put("driveMode", mode);
+
+        if (positionEstimationEnabled || mode == Mode.FOLLOW_PATH || maintainHeading) {
             double heading = getHeading();
-            if (lastRotations != null) {
-                double[] rotationDeltas = new double[4];
-                for (int i = 0; i < 4; i++) {
-                    rotationDeltas[i] = rotations[i] - lastRotations[i];
+
+            // position estimation
+            if (positionEstimationEnabled || mode == Mode.FOLLOW_PATH) {
+                double[] rotations = getMotorRotations();
+                if (lastRotations != null) {
+                    double[] rotationDeltas = new double[4];
+                    for (int i = 0; i < 4; i++) {
+                        rotationDeltas[i] = rotations[i] - lastRotations[i];
+                    }
+
+                    Vector2d robotPoseDelta = MecanumDrive.getPoseDelta(rotationDeltas).pos();
+                    Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
+
+                    estimatedPosition = estimatedPosition.added(fieldPoseDelta);
                 }
+                lastRotations = rotations;
 
-                Vector2d robotPoseDelta = MecanumDrive.getPoseDelta(rotationDeltas).pos();
-                Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
-
-                estimatedPosition = estimatedPosition.added(fieldPoseDelta);
+                for (int i = 0; i < 4; i++) {
+                    telemetryMap.put(MOTOR_NAMES[i] + "Rotation", rotations[i]);
+                }
+                telemetryMap.put("driveHeading", getHeading());
             }
-            lastRotations = rotations;
-        }
 
-        // maintain heading
-        if (maintainHeading) {
-            double heading = getHeading();
-            double headingError = maintainHeadingController.getError(heading);
-            double headingUpdate = 0;
-            if (Math.abs(targetOmega) > 0) {
-                maintainHeadingController.setSetpoint(heading);
-                internalSetVelocity(targetVel, targetOmega);
+            // maintain heading
+            if (maintainHeading) {
+                double headingError = maintainHeadingController.getError(heading);
+                double headingUpdate = 0;
+                if (Math.abs(targetOmega) > 0) {
+                    maintainHeadingController.setSetpoint(heading);
+                    internalSetVelocity(targetVel, targetOmega);
+                } else {
+                    headingUpdate = maintainHeadingController.update(headingError);
+                    internalSetVelocity(targetVel, headingUpdate);
+                }
+                telemetryMap.put("maintainHeadingError", headingError);
+                telemetryMap.put("maintainHeadingUpdate", headingUpdate);
             } else {
-                headingUpdate = maintainHeadingController.update(headingError);
-                internalSetVelocity(targetVel, headingUpdate);
+                internalSetVelocity(targetVel, targetOmega);
             }
-        } else {
-            internalSetVelocity(targetVel, targetOmega);
         }
 
         switch (mode) {
@@ -397,6 +448,16 @@ public class MecanumDrive {
                     Pose2d estimatedPose = getEstimatedPose();
                     Pose2d update = pathFollower.update(estimatedPose);
                     internalSetVelocity(update.pos(), update.heading());
+
+                    telemetryMap.put("pathAxialError", pathFollower.getAxialError());
+                    telemetryMap.put("pathAxialUpdate", pathFollower.getAxialUpdate());
+                    telemetryMap.put("pathLateralError", pathFollower.getLateralError());
+                    telemetryMap.put("pathLateralUpdate", pathFollower.getLateralUpdate());
+                    telemetryMap.put("pathHeadingError", pathFollower.getHeadingError());
+                    telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
+
+                    fieldOverlay.setStroke("#F44336");
+                    DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
                 } else {
                     stop();
                     revertMode();
@@ -410,6 +471,14 @@ public class MecanumDrive {
                 motors[i].setPower(powers[i]);
                 lastPowers[i] = powers[i];
             }
+            telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
+        }
+
+        fieldOverlay.setStroke("#3F51B5");
+        DrawingUtil.drawMecanumRobot(fieldOverlay, getEstimatedPose());
+
+        for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
+            telemetry.addData(entry.getKey(), entry.getValue());
         }
     }
 }

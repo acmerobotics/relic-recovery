@@ -36,7 +36,7 @@ public class MainTeleOp extends OpMode {
 
         telemetry.setMsTransmissionInterval(50);
 
-        drive = new MecanumDrive(hardwareMap);
+        drive = new MecanumDrive(hardwareMap, telemetry);
         dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
         jewelSlapper = new JewelSlapper(hardwareMap);
         intake = new Intake(hardwareMap, dashboard.getTelemetry());
