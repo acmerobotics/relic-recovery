@@ -4,10 +4,6 @@ import org.opencv.core.Mat;
 
 import java.util.LinkedHashMap;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
-
 public abstract class Tracker {
     private boolean enabled = true;
     private LinkedHashMap<String, Mat> intermediates = new LinkedHashMap<>();

@@ -17,10 +17,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Created by ryanbrott on 11/12/17.
- */
-
 // TODO: Create an abstract base class for basic telemetry functionality
 public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Notifications {
     private Map<String, String> map;

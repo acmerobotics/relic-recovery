@@ -2,10 +2,6 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 
-/**
- * Created by ryanbrott on 11/17/17.
- */
-
 public class WaitSegment implements PathSegment {
     private Pose2d pose;
     private double duration;

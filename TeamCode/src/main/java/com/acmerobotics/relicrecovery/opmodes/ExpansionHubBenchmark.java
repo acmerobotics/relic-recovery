@@ -14,10 +14,6 @@ import org.firstinspires.ftc.robotcore.external.Func;
 
 import java.util.Iterator;
 
-/**
- * Created by ryanbrott on 1/2/18.
- */
-
 @TeleOp(name = "Expansion Hub Benchmark")
 public class ExpansionHubBenchmark extends LinearOpMode {
     public static final int TRIALS = 250;

@@ -6,10 +6,6 @@ import com.acmerobotics.library.localization.Vector2d;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ryanbrott on 12/11/17.
- */
-
 public class PathBuilder {
     private Pose2d currentPose;
     private List<PathSegment> segments;

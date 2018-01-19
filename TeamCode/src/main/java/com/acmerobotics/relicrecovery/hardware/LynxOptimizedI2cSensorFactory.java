@@ -8,10 +8,6 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
-/**
- * Created by ryanbrott on 1/6/18.
- */
-
 public class LynxOptimizedI2cSensorFactory {
 
     public static I2cDeviceSynch createLynxI2cDeviceSync(LynxModule module, int bus) {

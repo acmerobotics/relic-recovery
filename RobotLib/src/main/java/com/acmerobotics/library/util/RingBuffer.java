@@ -1,9 +1,5 @@
 package com.acmerobotics.library.util;
 
-/**
- * Created by ryanbrott on 10/28/17.
- */
-
 public class RingBuffer<T> {
     private T[] buffer;
     private int capacity, nextPos, available;

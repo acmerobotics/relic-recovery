@@ -17,10 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
-
 @Config
 public class OldCryptoboxTracker extends Tracker {
     public static final String TAG = "OldCryptoboxTracker";

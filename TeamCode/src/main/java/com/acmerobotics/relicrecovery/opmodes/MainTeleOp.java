@@ -10,10 +10,6 @@ import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-/**
- * Created by ryanbrott on 11/5/17.
- */
-
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
     private StickyGamepad stickyGamepad1, stickyGamepad2;

@@ -7,10 +7,6 @@ import org.junit.Test;
 
 import static junit.framework.Assert.*;
 
-/**
- * Created by ryanbrott on 10/28/17.
- */
-
 public class RingBufferTest {
     private RingBuffer<Integer> buffer;
 

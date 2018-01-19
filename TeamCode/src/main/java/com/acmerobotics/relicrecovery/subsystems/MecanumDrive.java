@@ -33,8 +33,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Created by kelly on 9/28/2017
- *
  * Wheel layout (top view):
  *
  *        FRONT

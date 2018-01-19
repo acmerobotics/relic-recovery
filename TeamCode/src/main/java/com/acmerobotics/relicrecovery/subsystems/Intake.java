@@ -10,10 +10,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/**
- * Created by ryanbrott on 1/9/18.
- */
-
 @Config
 public class Intake extends Subsystem {
     public static PIDCoefficients ROTATE_PID = new PIDCoefficients(-0.01, 0, 0);

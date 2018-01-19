@@ -15,10 +15,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
-/**
- * Created by ryanbrott on 12/4/17.
- */
-
 @Config
 @Autonomous(name = "Multi Glyph Auto")
 public class MultiGlyphAuto extends LinearOpMode {

@@ -16,10 +16,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by ryanbrott on 10/12/17.
- */
-
 public class CryptoboxTrackerTest {
     @Test
     public void testNonMaximumSuppression() {

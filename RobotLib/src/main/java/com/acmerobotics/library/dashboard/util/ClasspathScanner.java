@@ -12,10 +12,6 @@ import java.util.List;
 
 import dalvik.system.DexFile;
 
-/**
- * Created by ryanbrott on 8/20/17.
- */
-
 public class ClasspathScanner {
     public static final String TAG = "ClasspathScanner";
 

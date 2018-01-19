@@ -8,10 +8,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/**
- * Created by ryanbrott on 1/9/18.
- */
-
 @Config
 public class DumpBed extends Subsystem {
     public static final double LIFT_POWER_DOWN = -0.3;

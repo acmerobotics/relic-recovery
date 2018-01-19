@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
@@ -39,7 +40,7 @@ public class Auto extends LinearOpMode {
         configuration = new OpModeConfiguration(hardwareMap.appContext);
 
         BalancingStone balancingStone = configuration.getBalancingStone();
-        Pose2d initialPose = balancingStone.getPose();
+        Vector2d initialPosition = balancingStone.getPosition();
 
         drive = new MecanumDrive(hardwareMap, telemetry);
         drive.enablePositionEstimation();

@@ -1,10 +1,5 @@
 package com.acmerobotics.library.localization;
 
-/**
- * Created by kelly on 9/28/2017.
- *
- */
-
 public class Angle {
 
     public static final double TAU = Math.PI * 2;

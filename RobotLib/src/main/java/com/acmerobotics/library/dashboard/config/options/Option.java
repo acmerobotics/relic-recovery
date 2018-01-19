@@ -10,10 +10,6 @@ import java.lang.reflect.Modifier;
 
 import static com.acmerobotics.library.dashboard.RobotDashboard.TAG;
 
-/**
- * Created by ryanbrott on 10/13/17.
- */
-
 public abstract class Option {
     public abstract JsonElement getJson();
     public abstract void updateJson(JsonElement element);

@@ -1,25 +1,21 @@
 package com.acmerobotics.relicrecovery.configuration;
 
-import com.acmerobotics.library.localization.Pose2d;
-
-/**
- * Created by ryanbrott on 11/12/17.
- */
+import com.acmerobotics.library.localization.Vector2d;
 
 public enum BalancingStone {
-    NEAR_BLUE(0, AllianceColor.BLUE, new Pose2d(48, -48, Math.PI)),
-    FAR_BLUE(1, AllianceColor.BLUE, new Pose2d(-24, -48, Math.PI)),
-    NEAR_RED(2, AllianceColor.RED, new Pose2d(48, 48, 0)),
-    FAR_RED(3, AllianceColor.RED, new Pose2d(-24, 48, 0));
+    NEAR_BLUE(0, AllianceColor.BLUE, new Vector2d(48, -48)),
+    FAR_BLUE(1, AllianceColor.BLUE, new Vector2d(-24, -48)),
+    NEAR_RED(2, AllianceColor.RED, new Vector2d(48, 48)),
+    FAR_RED(3, AllianceColor.RED, new Vector2d(-24, 48));
 
     private int index;
     private AllianceColor allianceColor;
-    private Pose2d pose;
+    private Vector2d position;
 
-    BalancingStone(int i, AllianceColor color, Pose2d pose) {
+    BalancingStone(int i, AllianceColor color, Vector2d position) {
         this.index = i;
         this.allianceColor = color;
-        this.pose = pose;
+        this.position = position;
     }
 
     public int getIndex() {
@@ -43,7 +39,7 @@ public enum BalancingStone {
         return Cryptobox.fromIndex(index);
     }
 
-    public Pose2d getPose() {
-        return pose;
+    public Vector2d getPosition() {
+        return position;
     }
 }
