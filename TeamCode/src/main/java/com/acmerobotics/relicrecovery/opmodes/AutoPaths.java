@@ -72,4 +72,38 @@ public class AutoPaths {
         }
         return new Path(Collections.emptyList());
     }
+
+    public static Path makeDiagonalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+        int vuMarkInt = vuMarkMap.get(vuMark);
+        switch (stone) {
+            case NEAR_BLUE: {
+                double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
+                Pose2d stonePose = new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI);
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX - 12, -48))
+                            .turn(-Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX, -60))
+                            .build();
+                } else {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 12, -48))
+                            .turn(3 * Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX, -60))
+                            .build();
+                }
+            }
+            case FAR_BLUE: {
+                double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
+                        .lineTo(new Vector2d(-48 - CRYPTO_COL_WIDTH * vuMarkInt, -48))
+                        .turn(3 * Math.PI / 4)
+                        .lineTo(new Vector2d(-60, cryptoboxY))
+                        .build();
+            }
+            // TODO: add red once path endpoints are determined
+        }
+        throw new UnsupportedOperationException("implement red diagonal paths");
+//        return new Path(Collections.emptyList());
+    }
 }

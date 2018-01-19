@@ -25,17 +25,15 @@ public class AutoPathTest extends OpMode {
     @Override
     public void loop() {
         fieldOverlay.setStroke("#4CAF50");
-        DrawingUtil.drawPath(fieldOverlay, AutoPaths.makeNormalPathToCryptobox(
-                BalancingStone.NEAR_BLUE, RelicRecoveryVuMark.CENTER));
-        DrawingUtil.drawPath(fieldOverlay, AutoPaths.makeNormalPathToCryptobox(
+        DrawingUtil.drawPath(fieldOverlay, AutoPaths.makeDiagonalPathToCryptobox(
+                BalancingStone.FAR_BLUE, RelicRecoveryVuMark.LEFT));
+        DrawingUtil.drawPath(fieldOverlay, AutoPaths.makeDiagonalPathToCryptobox(
                 BalancingStone.FAR_BLUE, RelicRecoveryVuMark.CENTER));
-        DrawingUtil.drawPath(fieldOverlay, AutoPaths.makeNormalPathToCryptobox(
-                BalancingStone.NEAR_RED, RelicRecoveryVuMark.CENTER));
-        DrawingUtil.drawPath(fieldOverlay, AutoPaths.makeNormalPathToCryptobox(
-                BalancingStone.FAR_RED, RelicRecoveryVuMark.CENTER));
+        DrawingUtil.drawPath(fieldOverlay, AutoPaths.makeDiagonalPathToCryptobox(
+                BalancingStone.FAR_BLUE, RelicRecoveryVuMark.RIGHT));
         fieldOverlay.setStroke("#F44336");
         DrawingUtil.drawMecanumRobot(fieldOverlay, new Pose2d(
-                BalancingStone.FAR_BLUE.getPosition()));
+                BalancingStone.NEAR_BLUE.getPosition()));
         dashboard.drawOverlay();
     }
 }
