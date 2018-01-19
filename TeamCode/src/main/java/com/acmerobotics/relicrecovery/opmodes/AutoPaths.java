@@ -15,7 +15,9 @@ import java.util.Map;
 
 @Config
 public class AutoPaths {
+    /** used to artificially adjust the balancing stone location */
     public static double STONE_CORRECTION = 3; // in
+
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
     public static final Map<RelicRecoveryVuMark, Integer> vuMarkMap;
@@ -28,39 +30,43 @@ public class AutoPaths {
         vuMarkMap.put(RelicRecoveryVuMark.UNKNOWN, 0);
     }
 
-    public static Path makePathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+    public static Path makeNormalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
         int vuMarkInt = vuMarkMap.get(vuMark);
         switch (stone) {
             case NEAR_BLUE: {
-                return new PathBuilder(new Pose2d(48, -48, Math.PI))
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION + CRYPTO_COL_WIDTH * vuMarkInt, -48))
+                double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
+                        .lineTo(new Vector2d(cryptoboxX, -48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION + CRYPTO_COL_WIDTH * vuMarkInt, -58))
+                        .lineTo(new Vector2d(cryptoboxX, -58))
                         .build();
             }
             case FAR_BLUE: {
-                return new PathBuilder(new Pose2d(-24, -48, Math.PI))
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, -48))
+                double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
+                        .lineTo(new Vector2d(-48, -48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, -36 - CRYPTO_COL_WIDTH * vuMarkInt))
+                        .lineTo(new Vector2d(-48, cryptoboxY))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(-58 + STONE_CORRECTION, -36 - CRYPTO_COL_WIDTH  * vuMarkInt))
+                        .lineTo(new Vector2d(-58, cryptoboxY))
                         .build();
             }
             case FAR_RED: {
-                return new PathBuilder(new Pose2d(-24, 48, Math.PI))
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, 48))
+                double cryptoboxY = 36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
+                        .lineTo(new Vector2d(-48, 48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, 36 - CRYPTO_COL_WIDTH * vuMarkInt))
+                        .lineTo(new Vector2d(-48, cryptoboxY))
                         .turn(Math.PI / 2)
-                        .lineTo(new Vector2d(-58 + STONE_CORRECTION, 36 - CRYPTO_COL_WIDTH  * vuMarkInt))
+                        .lineTo(new Vector2d(-58, cryptoboxY))
                         .build();
             }
             case NEAR_RED: {
-                return new PathBuilder(new Pose2d(48, 48, 0))
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION - CRYPTO_COL_WIDTH * vuMarkInt, 48))
+                double cryptoboxX = 12 - CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), 0))
+                        .lineTo(new Vector2d(cryptoboxX, 48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION - CRYPTO_COL_WIDTH * vuMarkInt, 58))
+                        .lineTo(new Vector2d(cryptoboxX, 58))
                         .build();
             }
         }
