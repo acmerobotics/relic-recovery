@@ -1,17 +1,13 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import android.os.Looper;
-
-import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.drive.CryptoboxLocalizer;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
@@ -33,9 +29,7 @@ public class MultiGlyphAuto extends LinearOpMode {
 
     private PIDController strafeAlignController;
 
-    private RobotDashboard dashboard;
-    private Looper looper;
-    private MecanumDrive drive;
+    private Robot robot;
 
     private VuforiaCamera camera;
     private CryptoboxTracker cryptoboxTracker;
@@ -46,14 +40,12 @@ public class MultiGlyphAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         strafeAlignController = new PIDController(STRAFE_ALIGN_PID);
 
-        dashboard = RobotDashboard.getInstance();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, telemetry);
-        drive.setEstimatedPose(new Pose2d(48, -48, Math.PI));
+        robot = new Robot(this);
+        robot.drive.setEstimatedPose(new Pose2d(48, -48, Math.PI));
 
         camera = new VuforiaCamera();
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
-        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, camera.getProperties(), drive);
+        cryptoboxLocalizer = new CryptoboxLocalizer(cryptoboxTracker, camera.getProperties(), robot.drive);
         cryptoboxTracker.disable();
         fpsTracker = new FpsTracker();
         camera.addTracker(cryptoboxTracker);
@@ -84,7 +76,7 @@ public class MultiGlyphAuto extends LinearOpMode {
 
         waitForStart();
 
-        drive.followPath(new PathBuilder(new Pose2d(48, -48, Math.PI))
+        robot.drive.followPath(new PathBuilder(new Pose2d(48, -48, Math.PI))
                 .lineTo(new Vector2d(12, -48))
                 .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(12, -12))
@@ -107,39 +99,39 @@ public class MultiGlyphAuto extends LinearOpMode {
             }
 
             if (STRAFE_ALIGN) {
-                drive.enableHeadingCorrection();
-                drive.setTargetHeading(Math.PI / 2);
+                robot.drive.enableHeadingCorrection();
+                robot.drive.setTargetHeading(Math.PI / 2);
 
                 strafeAlignController.reset();
                 strafeAlignController.setSetpoint(v.x());
                 while (opModeIsActive()) {
-                    double error = strafeAlignController.getError(drive.getEstimatedPose().x());
+                    double error = strafeAlignController.getError(robot.drive.getEstimatedPose().x());
                     if (Math.abs(error) < 1.5) {
-                        drive.stop();
+                        robot.drive.stop();
                         break;
                     }
-                    drive.setVelocity(new Vector2d(0, strafeAlignController.update(error)), 0);
+                    robot.drive.setVelocity(new Vector2d(0, strafeAlignController.update(error)), 0);
                     sleep(10);
                 }
 
-                drive.disableHeadingCorrection();
+                robot.drive.disableHeadingCorrection();
 
-                drive.followPath(new PathBuilder(new Pose2d(v.x(), -12, Math.PI / 2)).lineTo(v).build());
+                robot.drive.followPath(new PathBuilder(new Pose2d(v.x(), -12, Math.PI / 2)).lineTo(v).build());
                 waitForPathFollower();
             } else {
-                drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
+                robot.drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
                 waitForPathFollower();
             }
 
             sleep(1500);
 
-            drive.followPath(new PathBuilder(new Pose2d(v, Math.PI / 2)).lineTo(new Vector2d(12, -12)).build());
+            robot.drive.followPath(new PathBuilder(new Pose2d(v, Math.PI / 2)).lineTo(new Vector2d(12, -12)).build());
             waitForPathFollower();
         }
     }
 
     private void waitForPathFollower() {
-        while (opModeIsActive() && drive.isFollowingPath()) {
+        while (opModeIsActive() && robot.drive.isFollowingPath()) {
             sleep(10);
         }
     }

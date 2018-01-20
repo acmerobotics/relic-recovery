@@ -25,6 +25,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
     public final OpModeConfiguration config;
 
     // subsystems
+    public final MecanumDrive drive;
     public final Intake intake;
     public final DumpBed dumpBed;
     public final JewelSlapper jewelSlapper;
@@ -46,6 +47,9 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
 
         robotTelemetry = new CSVLoggingTelemetry(new File(logRoot, "Robot.csv"));
 
+        CSVLoggingTelemetry driveLogger = new CSVLoggingTelemetry(new File(logRoot, "Drive.csv"));
+        drive = new MecanumDrive(opMode.hardwareMap, new MultipleTelemetry(driveLogger, dashboard.getTelemetry()));
+
         CSVLoggingTelemetry intakeLogger = new CSVLoggingTelemetry(new File(logRoot, "Intake.csv"));
         intake = new Intake(opMode.hardwareMap, new MultipleTelemetry(intakeLogger, dashboard.getTelemetry()));
 
@@ -59,7 +63,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
         relicRecoverer = new RelicRecoverer(opMode.hardwareMap, new MultipleTelemetry(relicRecovererLogger, dashboard.getTelemetry()));
 
         subsystems = new ArrayList<>(Arrays.asList(intake, dumpBed, jewelSlapper, relicRecoverer));
-        allTelemetry = new MultipleTelemetry(intakeLogger, dumpBedLogger, jewelSlapperLogger, relicRecovererLogger, dashboard.getTelemetry());
+        allTelemetry = new MultipleTelemetry(driveLogger, intakeLogger, dumpBedLogger, jewelSlapperLogger, relicRecovererLogger, dashboard.getTelemetry());
 
         Activity activity = (Activity) opMode.hardwareMap.appContext;
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(activity);
