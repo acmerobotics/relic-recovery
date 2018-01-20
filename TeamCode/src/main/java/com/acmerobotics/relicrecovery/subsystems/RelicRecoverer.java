@@ -5,11 +5,15 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * Created by ryanbrott on 1/11/18.
  */
 
-public class RelicRecoverer {
+public class RelicRecoverer extends Subsystem {
+    private Telemetry telemetry;
+
     public enum WristPosition {
         STOW(0.93),
         VERTICAL(0.5),
@@ -33,7 +37,9 @@ public class RelicRecoverer {
 
     private WristPosition wristPosition;
 
-    public RelicRecoverer(HardwareMap map) {
+    public RelicRecoverer(HardwareMap map, Telemetry telemetry) {
+        this.telemetry = telemetry;
+
         relicExtend = map.dcMotor.get("relicExtend");
         relicExtend.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -71,5 +77,10 @@ public class RelicRecoverer {
 
     public boolean isFingerClosed() {
         return fingerClosed;
+    }
+
+    @Override
+    public void update() {
+
     }
 }

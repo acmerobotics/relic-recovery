@@ -1,15 +1,19 @@
-package com.acmerobotics.relicrecovery.drive;
+package com.acmerobotics.relicrecovery.subsystems;
 
 import android.util.Log;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
+import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
+import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -17,6 +21,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -42,7 +47,19 @@ import java.util.Map;
  *
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
+@Config
 public class MecanumDrive {
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 48.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
+
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.01, 0, 0, 0.234, 0);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(0, 0, 0, 0.0185, 0);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(0, 0, 0, 0.0183, 0);
+
+    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0, 0, 0);
+
+    public static double RAMP_MAX_ACCEL = 25;
+
     public enum Mode {
         OPEN_LOOP,
         OPEN_LOOP_RAMP,
@@ -143,13 +160,13 @@ public class MecanumDrive {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
-        pathFollower = new PathFollower(DriveConstants.HEADING_PID, DriveConstants.AXIAL_PID, DriveConstants.LATERAL_PID);
+        pathFollower = new PathFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
 
         estimatedPosition = new Vector2d(0, 0);
 
         lastPowers = new double[4];
 
-        maintainHeadingController = new PIDController(DriveConstants.MAINTAIN_HEADING_PID);
+        maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
 
         resetEncoders();
 
@@ -432,7 +449,7 @@ public class MecanumDrive {
                 double dt = timestamp - lastTimestamp;
                 lastTimestamp = timestamp;
 
-                double maxAbsPowerDelta = DriveConstants.RAMP_MAX_ACCEL * (dt / 1000.0);
+                double maxAbsPowerDelta = RAMP_MAX_ACCEL * (dt / 1000.0);
                 double multiplier;
                 if (maxDesiredAbsPowerDelta > maxAbsPowerDelta) {
                     multiplier = maxAbsPowerDelta / maxDesiredAbsPowerDelta;

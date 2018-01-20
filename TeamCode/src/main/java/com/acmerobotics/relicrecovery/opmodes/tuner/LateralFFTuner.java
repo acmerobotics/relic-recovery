@@ -3,8 +3,7 @@ package com.acmerobotics.relicrecovery.opmodes.tuner;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.drive.DriveConstants;
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -54,7 +53,7 @@ public class LateralFFTuner extends LinearOpMode {
     }
 
     private double testFeedforwardCoefficient(double coefficient) {
-        DriveConstants.LATERAL_PID.a = coefficient;
+        MecanumDrive.LATERAL_PID.a = coefficient;
 
         // reset heading + pose
         drive.setEstimatedPose(new Pose2d(0, 0, drive.getHeading()));

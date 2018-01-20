@@ -2,11 +2,11 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
 import com.acmerobotics.relicrecovery.motion.MotionProfile;
 import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 import java.util.Locale;
 
@@ -24,7 +24,7 @@ public class LineSegment implements PathSegment {
         this.seg = end.pos().added(start.pos().negated());
         MotionGoal goal = new MotionGoal(length(), 0);
         MotionState startState = new MotionState(0, 0, 0, 0, 0);
-        this.profile = MotionProfileGenerator.generateProfile(startState, goal, DriveConstants.AXIAL_CONSTRAINTS);
+        this.profile = MotionProfileGenerator.generateProfile(startState, goal, MecanumDrive.AXIAL_CONSTRAINTS);
     }
 
     public Pose2d start() {

@@ -5,7 +5,7 @@ import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
@@ -44,7 +44,7 @@ public class Auto extends LinearOpMode {
         drive = new MecanumDrive(hardwareMap, telemetry);
         drive.enablePositionEstimation();
         drive.setEstimatedPose(initialPose);
-        jewelSlapper = new JewelSlapper(hardwareMap);
+        jewelSlapper = new JewelSlapper(hardwareMap, telemetry);
         dumpBed = new DumpBed(hardwareMap, telemetry);
 
         camera = new VuforiaCamera();

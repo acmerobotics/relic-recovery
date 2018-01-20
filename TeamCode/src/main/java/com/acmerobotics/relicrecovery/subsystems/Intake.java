@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  */
 
 @Config
-public class Intake {
+public class Intake extends Subsystem {
     public static PIDCoefficients ROTATE_PID = new PIDCoefficients(-0.01, 0, 0);
     public static double CALIBRATION_SPEED = -0.2;
     public static double ACCEPTABLE_ERROR = 3; // units: encoder ticks
