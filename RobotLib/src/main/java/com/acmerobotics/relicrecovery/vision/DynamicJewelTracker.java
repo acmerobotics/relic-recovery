@@ -71,20 +71,20 @@ public class DynamicJewelTracker extends Tracker {
 
     private class JewelPair {
         public final Jewel redJewel, blueJewel;
-        public final double distance;
+        public final double distanceRatio;
 
         public JewelPair(Jewel redJewel, Jewel blueJewel) {
             this.redJewel = redJewel;
             this.blueJewel = blueJewel;
             double deltaX = redJewel.centroid.x - blueJewel.centroid.x;
             double deltaY = redJewel.centroid.y - blueJewel.centroid.y;
-            distance = Math.hypot(deltaX, deltaY);
+            double distance = Math.hypot(deltaX, deltaY);
+            double avgRadius = (redJewel.radius() + blueJewel.radius()) / 2;
+            distanceRatio = distance / avgRadius;
         }
 
         /** lower is better */
         public double score() {
-            double avgRadius = (redJewel.radius() + blueJewel.radius()) / 2;
-            double distanceRatio = distance / avgRadius;
             double distanceError = Math.pow(distanceRatio - DISTANCE_RATIO, 2);
             return redJewel.score() + blueJewel.score() + DISTANCE_WEIGHT * distanceError;
         }
@@ -102,11 +102,11 @@ public class DynamicJewelTracker extends Tracker {
     public static int CLOSE_KERNEL_SIZE = 11;
 
     // red HSV range
-    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 80;
+    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 0, RED_LOWER_VALUE = 120;
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
 
     // blue HSV range
-    public static int BLUE_LOWER_HUE = 95, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 80;
+    public static int BLUE_LOWER_HUE = 95, BLUE_LOWER_SAT = 0, BLUE_LOWER_VALUE = 120;
     public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
 
     public static int TARGET_AREA = 8000; // px^2
@@ -114,7 +114,7 @@ public class DynamicJewelTracker extends Tracker {
 
     public static int RESIZE_WIDTH = 480;
 
-    private Mat resized, hsv, red, blue;
+    private Mat resized, hsv, hue, saturation, value, red, blue;
     private Mat temp, redMorphClose, redMorphOpen, blueMorphClose, blueMorphOpen, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
     private List<Jewel> lastRedJewels, lastBlueJewels;
@@ -190,6 +190,9 @@ public class DynamicJewelTracker extends Tracker {
         if (resized == null) {
             resized = new Mat();
             hsv = new Mat();
+            hue = new Mat();
+            saturation = new Mat();
+            value = new Mat();
             red = new Mat();
             blue = new Mat();
         }
@@ -217,6 +220,14 @@ public class DynamicJewelTracker extends Tracker {
         addIntermediate("blurred", resized);
 
         Imgproc.cvtColor(resized, hsv, Imgproc.COLOR_BGR2HSV);
+
+        Core.extractChannel(hsv, hue, 0);
+        Core.extractChannel(hsv, saturation, 1);
+        Core.extractChannel(hsv, value, 2);
+
+        addIntermediate("hue", hue);
+        addIntermediate("saturation", saturation);
+        addIntermediate("value", value);
 
         Scalar redLowerHsv = new Scalar(RED_LOWER_HUE, RED_LOWER_SAT, RED_LOWER_VALUE);
         Scalar redUpperHsv = new Scalar(RED_UPPER_HUE, RED_UPPER_SAT, RED_UPPER_VALUE);
@@ -295,7 +306,7 @@ public class DynamicJewelTracker extends Tracker {
             for (int i = 0; i < lastJewelPairs.size() && i < 4; i++) {
                 JewelPair jewelPair = lastJewelPairs.get(i);
                 String displayText = String.format(Locale.US, "[%.2f] %d %d %.2f", jewelPair.score(),
-                        lastRedJewels.indexOf(jewelPair.redJewel), lastBlueJewels.indexOf(jewelPair.blueJewel), jewelPair.distance);
+                        lastRedJewels.indexOf(jewelPair.redJewel), lastBlueJewels.indexOf(jewelPair.blueJewel), jewelPair.distanceRatio);
                 overlay.putText(displayText, Overlay.TextAlign.LEFT, new Point(5, imageHeight - 5 - 35 * i), new Scalar(0, 255, 0), 30);
             }
         }
