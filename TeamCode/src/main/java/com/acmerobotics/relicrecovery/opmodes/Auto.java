@@ -1,12 +1,11 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VuforiaVuMarkTracker;
@@ -17,30 +16,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 @Autonomous(name = "Auto", group = "auto")
 public class Auto extends LinearOpMode {
-    private RobotDashboard dashboard;
-    private MecanumDrive drive;
-//    private JewelSlapper jewelSlapper;
-//    private DumpBed dumpBed;
+    private Robot robot;
 
     private VuforiaCamera camera;
     private FixedJewelTracker jewelTracker;
     private VuforiaVuMarkTracker vuMarkTracker;
 
-    private OpModeConfiguration configuration;
-
     @Override
     public void runOpMode() throws InterruptedException {
-        dashboard = RobotDashboard.getInstance();
-        dashboard.getTelemetry().setMsTransmissionInterval(50);
-        configuration = new OpModeConfiguration(hardwareMap.appContext);
+        robot = new Robot(this);
+        robot.dashboard.getTelemetry().setMsTransmissionInterval(50);
+        robot.start();
 
-        BalancingStone balancingStone = configuration.getBalancingStone();
+        BalancingStone balancingStone = robot.config.getBalancingStone();
         Vector2d initialPosition = balancingStone.getPosition();
 
-        drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
-        drive.setEstimatedPose(new Pose2d(initialPosition, Math.PI));
-//        jewelSlapper = new JewelSlapper(hardwareMap);
-//        dumpBed = new DumpBed(hardwareMap, telemetry);
+        robot.drive.setEstimatedPose(new Pose2d(initialPosition, Math.PI));
 
 //        camera = new VuforiaCamera();
 //        jewelTracker = new FixedJewelTracker();
@@ -49,10 +40,8 @@ public class Auto extends LinearOpMode {
 //        camera.addTracker(vuMarkTracker);
 //        camera.addTracker(new FpsTracker());
 //        camera.initialize();
-//
-//        AllianceColor allianceColor = configuration.getAllianceColor();
 
-        String autoTransition = configuration.getAutoTransition();
+        String autoTransition = robot.config.getAutoTransition();
         if (!autoTransition.equals(OpModeConfiguration.NO_AUTO_TRANSITION)) {
             AutoTransitioner.transitionOnStop(this, autoTransition);
         }
@@ -115,16 +104,10 @@ public class Auto extends LinearOpMode {
     }
 
     private void followPathSync(Path path) {
-        drive.followPath(path);
-        int i = 0;
-        while (opModeIsActive() && drive.isFollowingPath()) {
-            drive.update();
-            dashboard.getTelemetry().update();
-            if (i % 4 == 0) {
-                RobotDashboard.getInstance().drawOverlay();
-            }
-            i++;
+        robot.drive.followPath(path);
+        while (opModeIsActive() && robot.drive.isFollowingPath()) {
+            sleep(5);
         }
-        drive.stop();
+        robot.drive.stop();
     }
 }

@@ -1,50 +1,29 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
-import com.acmerobotics.relicrecovery.subsystems.DumpBed;
-import com.acmerobotics.relicrecovery.subsystems.Intake;
-import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
-import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
+import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
     private StickyGamepad stickyGamepad1, stickyGamepad2;
-    private RobotDashboard dashboard;
 
-    private MecanumDrive drive;
-    private DumpBed dumpBed;
-    private JewelSlapper jewelSlapper;
-    private Intake intake;
-    private RelicRecoverer relicRecoverer;
+    private Robot robot;
 
     private boolean halfSpeed;
 
     @Override
     public void init() {
+        robot = new Robot(this);
+        robot.start();
+
         stickyGamepad1 = new StickyGamepad(gamepad1);
         stickyGamepad2 = new StickyGamepad(gamepad2);
 
-        dashboard = RobotDashboard.getInstance();
-
         telemetry.setMsTransmissionInterval(50);
 
-        drive = new MecanumDrive(hardwareMap, telemetry);
-//        dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
-//        jewelSlapper = new JewelSlapper(hardwareMap);
-//        intake = new Intake(hardwareMap, dashboard.getTelemetry());
-//        relicRecoverer = new RelicRecoverer(hardwareMap);
-
 //        dumpBed.liftDown();
-    }
-
-    @Override
-    public void init_loop() {
-//        dumpBed.update();
-//        intake.update();
     }
 
     @Override
@@ -77,7 +56,11 @@ public class MainTeleOp extends OpMode {
             y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
         }
 
-        drive.setVelocity(new Vector2d(x, y), omega);
+        telemetry.addData("x", x);
+        telemetry.addData("y", y);
+        telemetry.addData("omega", omega);
+
+        robot.drive.setVelocity(new Vector2d(x, y), omega);
 
 //        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
 //            drive.setVelocity(new Vector2d(x, y), omega);
@@ -150,13 +133,10 @@ public class MainTeleOp extends OpMode {
 //            }
 //        }
 
-        drive.update();
-//        dumpBed.update();
-//        intake.update();
-
-        telemetry.addData("test", Math.random());
-
-//        dashboard.getTelemetry().update();
+        telemetry.addData("leftStickX", gamepad1.left_stick_x);
+        telemetry.addData("leftStickY", gamepad1.left_stick_y);
+        telemetry.addData("rightStickX", gamepad1.right_stick_x);
+        telemetry.addData("rightStickY", gamepad1.right_stick_y);
     }
 }
 

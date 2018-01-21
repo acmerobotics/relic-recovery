@@ -46,7 +46,7 @@ import java.util.Map;
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
 @Config
-public class MecanumDrive {
+public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 48.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
@@ -426,6 +426,8 @@ public class MecanumDrive {
             } else {
                 internalSetVelocity(targetVel, targetOmega);
             }
+        } else {
+            internalSetVelocity(targetVel, targetOmega);
         }
 
         switch (mode) {

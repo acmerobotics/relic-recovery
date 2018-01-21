@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
@@ -12,11 +13,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.qualcomm.robotcore.util.ThreadPool;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -25,11 +26,12 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
     public final OpModeConfiguration config;
 
     // subsystems
-    public final MecanumDrive drive;
-    public final Intake intake;
-    public final DumpBed dumpBed;
-    public final JewelSlapper jewelSlapper;
-    public final RelicRecoverer relicRecoverer;
+    // note: these *should* be final but it messes with some fancy initialization stuff
+    public MecanumDrive drive;
+    public Intake intake;
+    public DumpBed dumpBed;
+    public JewelSlapper jewelSlapper;
+    public RelicRecoverer relicRecoverer;
 
     private List<Subsystem> subsystems;
     private MultipleTelemetry allTelemetry;
@@ -47,23 +49,57 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
 
         robotTelemetry = new CSVLoggingTelemetry(new File(logRoot, "Robot.csv"));
 
-        CSVLoggingTelemetry driveLogger = new CSVLoggingTelemetry(new File(logRoot, "Drive.csv"));
-        drive = new MecanumDrive(opMode.hardwareMap, new MultipleTelemetry(driveLogger, dashboard.getTelemetry()));
+        List<Telemetry> allTelemetryList = new ArrayList<>();
+        subsystems = new ArrayList<>();
 
-        CSVLoggingTelemetry intakeLogger = new CSVLoggingTelemetry(new File(logRoot, "Intake.csv"));
-        intake = new Intake(opMode.hardwareMap, new MultipleTelemetry(intakeLogger, dashboard.getTelemetry()));
+        try {
+            CSVLoggingTelemetry driveLogger = new CSVLoggingTelemetry(new File(logRoot, "Drive.csv"));
+            drive = new MecanumDrive(opMode.hardwareMap, new MultipleTelemetry(driveLogger, dashboard.getTelemetry()));
+            subsystems.add(drive);
+            allTelemetryList.add(driveLogger);
+        } catch (IllegalArgumentException e) {
+            Log.w("Robot", "skipping MecanumDrive");
+        }
 
-        CSVLoggingTelemetry dumpBedLogger = new CSVLoggingTelemetry(new File(logRoot, "DumpBed.csv"));
-        dumpBed = new DumpBed(opMode.hardwareMap, new MultipleTelemetry(dumpBedLogger, dashboard.getTelemetry()));
+        try {
+            CSVLoggingTelemetry intakeLogger = new CSVLoggingTelemetry(new File(logRoot, "Intake.csv"));
+            intake = new Intake(opMode.hardwareMap, new MultipleTelemetry(intakeLogger, dashboard.getTelemetry()));
+            subsystems.add(intake);
+            allTelemetryList.add(intakeLogger);
+        } catch (IllegalArgumentException e) {
+            Log.w("Robot", "skipping Intake");
+        }
 
-        CSVLoggingTelemetry jewelSlapperLogger = new CSVLoggingTelemetry(new File(logRoot, "JewelSlapper.csv"));
-        jewelSlapper = new JewelSlapper(opMode.hardwareMap, new MultipleTelemetry(jewelSlapperLogger, dashboard.getTelemetry()));
+        try {
+            CSVLoggingTelemetry dumpBedLogger = new CSVLoggingTelemetry(new File(logRoot, "DumpBed.csv"));
+            dumpBed = new DumpBed(opMode.hardwareMap, new MultipleTelemetry(dumpBedLogger, dashboard.getTelemetry()));
+            subsystems.add(dumpBed);
+            allTelemetryList.add(dumpBedLogger);
+        } catch (IllegalArgumentException e) {
+            Log.w("Robot", "skipping DumpBed");
+        }
 
-        CSVLoggingTelemetry relicRecovererLogger = new CSVLoggingTelemetry(new File(logRoot, "RelicRecoverer.csv"));
-        relicRecoverer = new RelicRecoverer(opMode.hardwareMap, new MultipleTelemetry(relicRecovererLogger, dashboard.getTelemetry()));
+        try {
+            CSVLoggingTelemetry jewelSlapperLogger = new CSVLoggingTelemetry(new File(logRoot, "JewelSlapper.csv"));
+            jewelSlapper = new JewelSlapper(opMode.hardwareMap, new MultipleTelemetry(jewelSlapperLogger, dashboard.getTelemetry()));
+            subsystems.add(jewelSlapper);
+            allTelemetryList.add(jewelSlapperLogger);
+        } catch (IllegalArgumentException e) {
+            Log.w("Robot", "skipping JewelSlapper");
+        }
 
-        subsystems = new ArrayList<>(Arrays.asList(intake, dumpBed, jewelSlapper, relicRecoverer));
-        allTelemetry = new MultipleTelemetry(driveLogger, intakeLogger, dumpBedLogger, jewelSlapperLogger, relicRecovererLogger, dashboard.getTelemetry());
+        try {
+            CSVLoggingTelemetry relicRecovererLogger = new CSVLoggingTelemetry(new File(logRoot, "RelicRecoverer.csv"));
+            relicRecoverer = new RelicRecoverer(opMode.hardwareMap, new MultipleTelemetry(relicRecovererLogger, dashboard.getTelemetry()));
+            subsystems.add(relicRecoverer);
+            allTelemetryList.add(relicRecovererLogger);
+        } catch (IllegalArgumentException e) {
+            Log.w("Robot", "skipping RelicRecoverer");
+        }
+
+        allTelemetryList.add(dashboard.getTelemetry());
+        Telemetry[] telemetryArray = new Telemetry[allTelemetryList.size()];
+        allTelemetry = new MultipleTelemetry(allTelemetryList.toArray(telemetryArray));
 
         Activity activity = (Activity) opMode.hardwareMap.appContext;
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(activity);
@@ -86,6 +122,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
         while (!Thread.currentThread().isInterrupted()) {
             double startTimestamp = TimestampedData.getCurrentTime();
             for (Subsystem subsystem : subsystems) {
+                if (subsystem == null) continue;
                 subsystem.update();
             }
             double postSubsystemUpdateTimestamp = TimestampedData.getCurrentTime();
