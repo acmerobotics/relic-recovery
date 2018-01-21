@@ -492,8 +492,8 @@ public class MecanumDrive {
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
         }
 
-        fieldOverlay.setStroke("#3F51B5");
-        DrawingUtil.drawMecanumRobot(fieldOverlay, getEstimatedPose());
+//        fieldOverlay.setStroke("#3F51B5");
+//        DrawingUtil.drawMecanumRobot(fieldOverlay, getEstimatedPose());
 
         for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
             telemetry.addData(entry.getKey(), entry.getValue());

@@ -33,18 +33,18 @@ public class MainTeleOp extends OpMode {
         telemetry.setMsTransmissionInterval(50);
 
         drive = new MecanumDrive(hardwareMap, telemetry);
-        dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
-        jewelSlapper = new JewelSlapper(hardwareMap, dashboard.getTelemetry());
-        intake = new Intake(hardwareMap, dashboard.getTelemetry());
-        relicRecoverer = new RelicRecoverer(hardwareMap, dashboard.getTelemetry());
+//        dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
+//        jewelSlapper = new JewelSlapper(hardwareMap);
+//        intake = new Intake(hardwareMap, dashboard.getTelemetry());
+//        relicRecoverer = new RelicRecoverer(hardwareMap);
 
-        dumpBed.liftDown();
+//        dumpBed.liftDown();
     }
 
     @Override
     public void init_loop() {
-        dumpBed.update();
-        intake.update();
+//        dumpBed.update();
+//        intake.update();
     }
 
     @Override
@@ -85,74 +85,74 @@ public class MainTeleOp extends OpMode {
 //            drive.setVelocity(new Vector2d(x, y), omega);
 //        }
 
-        // dump bed
-        if (stickyGamepad1.left_bumper) {
-            if (dumpBed.isLiftDown()) {
-                dumpBed.liftUp();
-            } else {
-                dumpBed.liftDown();
-            }
-        }
-
-        if (stickyGamepad1.right_bumper) {
-            if (dumpBed.isDumping()) {
-                dumpBed.retract();
-            } else {
-                dumpBed.dump();
-            }
-        }
-
-        // intake
-        if (stickyGamepad2.left_bumper) {
-            if (intake.isClosed()) {
-                intake.open();
-            } else {
-                intake.close();
-            }
-        }
-
-        if (gamepad2.left_trigger > 0.8) {
-            intake.rotateUp();
-        } else {
-            intake.rotateDown();
-        }
-
-        if (gamepad2.right_trigger > 0.8) {
-            intake.engageFlipper();
-        } else {
-            intake.disengageFlipper();
-        }
-
-        // relic
-        if (gamepad2.right_stick_y != 0) {
-            relicRecoverer.setExtendPower(-0.25 * gamepad2.left_stick_y);
-        } else {
-            relicRecoverer.setExtendPower(0);
-        }
-
-        if (gamepad2.x) {
-            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.VERTICAL);
-        }
-
-        if (gamepad2.y) {
-            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.HORIZONTAL);
-        }
-
-        if (gamepad2.a) {
-            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.STOW);
-        }
-
-        if (gamepad2.b) {
-            if (relicRecoverer.isFingerClosed()) {
-                relicRecoverer.openFinger();
-            } else {
-                relicRecoverer.closeFinger();
-            }
-        }
+//        // dump bed
+//        if (stickyGamepad1.left_bumper) {
+//            if (dumpBed.isLiftDown()) {
+//                dumpBed.liftUp();
+//            } else {
+//                dumpBed.liftDown();
+//            }
+//        }
+//
+//        if (stickyGamepad1.right_bumper) {
+//            if (dumpBed.isDumping()) {
+//                dumpBed.retract();
+//            } else {
+//                dumpBed.dump();
+//            }
+//        }
+//
+//        // intake
+//        if (stickyGamepad2.left_bumper) {
+//            if (intake.isClosed()) {
+//                intake.open();
+//            } else {
+//                intake.close();
+//            }
+//        }
+//
+//        if (gamepad2.left_trigger > 0.8) {
+//            intake.rotateUp();
+//        } else {
+//            intake.rotateDown();
+//        }
+//
+//        if (gamepad2.right_trigger > 0.8) {
+//            intake.engageFlipper();
+//        } else {
+//            intake.disengageFlipper();
+//        }
+//
+//        // relic
+//        if (gamepad2.right_stick_y != 0) {
+//            relicRecoverer.setExtendPower(-0.25 * gamepad2.left_stick_y);
+//        } else {
+//            relicRecoverer.setExtendPower(0);
+//        }
+//
+//        if (gamepad2.x) {
+//            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.VERTICAL);
+//        }
+//
+//        if (gamepad2.y) {
+//            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.HORIZONTAL);
+//        }
+//
+//        if (gamepad2.a) {
+//            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.STOW);
+//        }
+//
+//        if (gamepad2.b) {
+//            if (relicRecoverer.isFingerClosed()) {
+//                relicRecoverer.openFinger();
+//            } else {
+//                relicRecoverer.closeFinger();
+//            }
+//        }
 
         drive.update();
-        dumpBed.update();
-        intake.update();
+//        dumpBed.update();
+//        intake.update();
 
         telemetry.addData("test", Math.random());
 
