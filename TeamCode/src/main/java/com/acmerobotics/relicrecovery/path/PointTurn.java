@@ -3,11 +3,11 @@ package com.acmerobotics.relicrecovery.path;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.drive.DriveConstants;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
 import com.acmerobotics.relicrecovery.motion.MotionProfile;
 import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 import java.util.Locale;
 
@@ -25,7 +25,7 @@ public class PointTurn implements PathSegment {
         this.angle = angle;
         MotionState start = new MotionState(0, 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(angle, 0);
-        this.profile = MotionProfileGenerator.generateProfile(start, goal, DriveConstants.POINT_TURN_CONSTRAINTS);
+        this.profile = MotionProfileGenerator.generateProfile(start, goal, MecanumDrive.POINT_TURN_CONSTRAINTS);
     }
 
     @Override

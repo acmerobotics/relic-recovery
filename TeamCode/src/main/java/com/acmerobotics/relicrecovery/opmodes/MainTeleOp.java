@@ -2,7 +2,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.drive.MecanumDrive;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
@@ -38,9 +38,9 @@ public class MainTeleOp extends OpMode {
 
         drive = new MecanumDrive(hardwareMap, telemetry);
         dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
-        jewelSlapper = new JewelSlapper(hardwareMap);
+        jewelSlapper = new JewelSlapper(hardwareMap, dashboard.getTelemetry());
         intake = new Intake(hardwareMap, dashboard.getTelemetry());
-        relicRecoverer = new RelicRecoverer(hardwareMap);
+        relicRecoverer = new RelicRecoverer(hardwareMap, dashboard.getTelemetry());
 
         dumpBed.liftDown();
     }

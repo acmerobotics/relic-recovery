@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.drive;
+package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;

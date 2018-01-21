@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  */
 
 @Config
-public class DumpBed {
+public class DumpBed extends Subsystem {
     public static final double LIFT_POWER_DOWN = -0.3;
     public static final double LIFT_POWER_UP = 0.6;
 

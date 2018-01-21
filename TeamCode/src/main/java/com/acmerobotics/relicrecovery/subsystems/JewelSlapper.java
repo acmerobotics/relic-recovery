@@ -3,11 +3,15 @@ package com.acmerobotics.relicrecovery.subsystems;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /**
  * Created by ryanbrott on 1/9/18.
  */
 
-public class JewelSlapper {
+public class JewelSlapper extends Subsystem {
+    private Telemetry telemetry;
+
     public enum Position {
         LEFT(1),
         CENTER(0.75),
@@ -30,7 +34,9 @@ public class JewelSlapper {
     private Position position;
     private boolean deployed;
 
-    public JewelSlapper(HardwareMap map) {
+    public JewelSlapper(HardwareMap map, Telemetry telemetry) {
+        this.telemetry = telemetry;
+
         jewelDeployer = map.servo.get("jewelDeployer");
         jewelSlapper = map.servo.get("jewelSlapper");
 
@@ -62,5 +68,10 @@ public class JewelSlapper {
             jewelSlapper.setPosition(position.getServoPosition());
             this.position = position;
         }
+    }
+
+    @Override
+    public void update() {
+
     }
 }
