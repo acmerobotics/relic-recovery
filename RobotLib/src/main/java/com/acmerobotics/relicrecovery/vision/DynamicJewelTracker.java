@@ -12,10 +12,15 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by ryanbrott on 10/30/17.
@@ -23,31 +28,102 @@ import java.util.List;
 
 @Config
 public class DynamicJewelTracker extends Tracker {
+    public static double DISTANCE_RATIO = 6.0 / 1.875; // distance between centers / radius
+
+    // filter weights
+    public static double ECCENTRICITY_WEIGHT = 1;
+    public static double SOLIDITY_WEIGHT = 1;
+    public static double AREA_WEIGHT = 0;
+    public static double DISTANCE_WEIGHT = 0.05;
+    public static double AREA_DIFF_WEIGHT = 5;
+
+    private class Jewel {
+        public final MatOfPoint contour;
+        public final RotatedRect ellipse;
+        public final Point centroid;
+        public final double eccentricity, solidity, area;
+
+        public Jewel(MatOfPoint contour) {
+            this.contour = contour;
+
+            MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
+            this.ellipse = Imgproc.fitEllipse(contour2f);
+            this.eccentricity = ellipse.size.width / ellipse.size.height;
+            this.area = Imgproc.contourArea(contour);
+            Rect rect = Imgproc.boundingRect(contour);
+            this.solidity = area / rect.area();
+
+            Moments moments = Imgproc.moments(contour);
+            centroid = new Point(moments.get_m10() / moments.get_m00(), moments.get_m01() / moments.get_m00());
+        }
+
+        /** lower is better */
+        public double score() {
+            double eccentricityError = Math.pow(Math.log(eccentricity), 2);
+            double solidityError = Math.pow(Math.log(solidity) - Math.log(Math.PI / 4), 2);
+            double areaError = Math.pow(TARGET_AREA - area, 2);
+            return ECCENTRICITY_WEIGHT * eccentricityError + SOLIDITY_WEIGHT * solidityError + AREA_WEIGHT * areaError;
+        }
+
+        public double radius() {
+            return (ellipse.size.width + ellipse.size.height) / 2;
+        }
+    }
+
+    private class JewelPair {
+        public final Jewel redJewel, blueJewel;
+        public final double distanceRatio, areaDiff;
+
+        public JewelPair(Jewel redJewel, Jewel blueJewel) {
+            this.redJewel = redJewel;
+            this.blueJewel = blueJewel;
+            double deltaX = redJewel.centroid.x - blueJewel.centroid.x;
+            double deltaY = redJewel.centroid.y - blueJewel.centroid.y;
+            double distance = Math.hypot(deltaX, deltaY);
+            double avgRadius = (redJewel.radius() + blueJewel.radius()) / 2;
+            distanceRatio = distance / avgRadius;
+            areaDiff = redJewel.area / (redJewel.area + blueJewel.area);
+        }
+
+        /** lower is better */
+        public double score() {
+            double distanceError = Math.pow(distanceRatio - DISTANCE_RATIO, 2);
+            double areaDiffError = Math.pow(areaDiff - 0.5, 2);
+            return redJewel.score() + blueJewel.score() + DISTANCE_WEIGHT * distanceError + AREA_DIFF_WEIGHT * areaDiffError;
+        }
+
+        public JewelPosition position() {
+            return redJewel.centroid.x < blueJewel.centroid.x
+                    ? JewelPosition.RED_BLUE : JewelPosition.BLUE_RED;
+        }
+    }
+
+    public static final Comparator<Jewel> JEWEL_COMPARATOR = (lhs, rhs) -> Double.compare(lhs.score(), rhs.score());
+    public static final Comparator<JewelPair> JEWEL_PAIR_COMPARATOR = (lhs, rhs) -> Double.compare(lhs.score(), rhs.score());
 
     public static int OPEN_KERNEL_SIZE = 5;
     public static int CLOSE_KERNEL_SIZE = 11;
 
     // red HSV range
-    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 80;
-    public static int RED_UPPER_HUE = 22, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
+    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 40, RED_LOWER_VALUE = 120;
+    public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
 
     // blue HSV range
-    public static int BLUE_LOWER_HUE = 99, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 80;
-    public static int BLUE_UPPER_HUE = 120, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
+    public static int BLUE_LOWER_HUE = 95, BLUE_LOWER_SAT = 40, BLUE_LOWER_VALUE = 120;
+    public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
 
-    public static int MIN_BLOB_SIZE = 250;
-    public static double MAX_ASPECT_RATIO_ERROR = 0.3;
-    public static double MAX_ECCENTRICITY_ERROR = 0.3;
+    public static int TARGET_AREA = 8000; // px^2
+    public static int MIN_AREA = 500;
 
-    public static double DIST_RATIO = 6.0 / 1.875; // distance between centers / radius
-    public static double MAX_DIST_RATIO_ERROR = 0.3;
+    public static int RESIZE_WIDTH = 480;
 
-    private Mat resized, hsv, red, blue;
+    private Mat resized, hsv, hue, saturation, value, red, blue;
     private Mat temp, redMorphClose, redMorphOpen, blueMorphClose, blueMorphOpen, hierarchy, openKernel, closeKernel;
     private int openKernelSize, closeKernelSize;
-    private List<RotatedRect> lastRedJewels, lastBlueJewels;
-    private List<MatOfPoint> lastContours;
-    private volatile JewelColor leftJewelColor = JewelColor.UNKNOWN;
+    private List<Jewel> lastRedJewels, lastBlueJewels;
+    private List<JewelPair> lastJewelPairs;
+    private volatile JewelPosition jewelPosition = JewelPosition.UNKNOWN;
+    private double resizedWidth, resizedHeight;
 
     private void smartHsvRange(Mat src, Scalar lowerHsv, Scalar upperHsv, Mat dest) {
         if (lowerHsv.val[0] > upperHsv.val[0]) {
@@ -62,7 +138,7 @@ public class DynamicJewelTracker extends Tracker {
         }
     }
 
-    private List<RotatedRect> findJewelEllipses(AllianceColor color, Mat mask) {
+    private List<Jewel> findJewels(AllianceColor color, Mat mask) {
         if (redMorphClose == null) {
             redMorphClose = new Mat();
             redMorphOpen = new Mat();
@@ -94,26 +170,14 @@ public class DynamicJewelTracker extends Tracker {
         List<MatOfPoint> jewelContours = new ArrayList<>();
         Imgproc.findContours(morphClose, jewelContours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        lastContours.addAll(jewelContours);
-
-        List<RotatedRect> jewelEllipses = new ArrayList<>();
+        List<Jewel> jewels = new ArrayList<>();
         for (MatOfPoint contour : jewelContours) {
-            if (Imgproc.contourArea(contour) < MIN_BLOB_SIZE) {
-                continue;
+            if (Imgproc.contourArea(contour) >= MIN_AREA && contour.rows() >= 5) {
+                jewels.add(new Jewel(contour));
             }
-            Rect rect = Imgproc.boundingRect(contour);
-            if (Math.abs(rect.width / rect.height - 1) > MAX_ASPECT_RATIO_ERROR) {
-                continue;
-            }
-            MatOfPoint2f contour2f = new MatOfPoint2f(contour.toArray());
-            RotatedRect ellipse = Imgproc.fitEllipse(contour2f);
-            if (Math.abs(ellipse.size.width / ellipse.size.height - 1) > MAX_ECCENTRICITY_ERROR) {
-                continue;
-            }
-            jewelEllipses.add(ellipse);
         }
 
-        return jewelEllipses;
+        return jewels;
     }
 
     @Override
@@ -123,9 +187,15 @@ public class DynamicJewelTracker extends Tracker {
 
     @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
+        resizedWidth = RESIZE_WIDTH;
+        resizedHeight = (int) (frame.rows() * (resizedWidth / frame.cols()));
+
         if (resized == null) {
             resized = new Mat();
             hsv = new Mat();
+            hue = new Mat();
+            saturation = new Mat();
+            value = new Mat();
             red = new Mat();
             blue = new Mat();
         }
@@ -146,12 +216,21 @@ public class DynamicJewelTracker extends Tracker {
             closeKernelSize = CLOSE_KERNEL_SIZE;
         }
 
-        Imgproc.pyrDown(frame, resized);
-        Imgproc.pyrDown(resized, resized);
+        Imgproc.resize(frame, resized, new Size(resizedWidth, resizedHeight));
+
+        Imgproc.GaussianBlur(resized, resized, new Size(5, 5), 0);
 
         addIntermediate("blurred", resized);
 
         Imgproc.cvtColor(resized, hsv, Imgproc.COLOR_BGR2HSV);
+
+        Core.extractChannel(hsv, hue, 0);
+        Core.extractChannel(hsv, saturation, 1);
+        Core.extractChannel(hsv, value, 2);
+
+        addIntermediate("hue", hue);
+        addIntermediate("saturation", saturation);
+        addIntermediate("value", value);
 
         Scalar redLowerHsv = new Scalar(RED_LOWER_HUE, RED_LOWER_SAT, RED_LOWER_VALUE);
         Scalar redUpperHsv = new Scalar(RED_UPPER_HUE, RED_UPPER_SAT, RED_UPPER_VALUE);
@@ -161,87 +240,82 @@ public class DynamicJewelTracker extends Tracker {
         Scalar blueUpperHsv = new Scalar(BLUE_UPPER_HUE, BLUE_UPPER_SAT, BLUE_UPPER_VALUE);
         smartHsvRange(hsv, blueLowerHsv, blueUpperHsv, blue);
 
-        if (lastContours == null) {
-            lastContours = new ArrayList<>();
-        } else {
-            lastContours.clear();
-        }
-
         addIntermediate("red", red);
 
-        lastRedJewels = findJewelEllipses(AllianceColor.RED, red);
+        lastRedJewels = findJewels(AllianceColor.RED, red);
 
         addIntermediate("blue", blue);
 
-        lastBlueJewels = findJewelEllipses(AllianceColor.BLUE, blue);
+        lastBlueJewels = findJewels(AllianceColor.BLUE, blue);
 
-        if (lastRedJewels.size() == 0 || lastBlueJewels.size() == 0) {
-            leftJewelColor = JewelColor.UNKNOWN;
-        } else {
-            double minDistRatioError = Double.POSITIVE_INFINITY;
-            RotatedRect bestRedJewel = null, bestBlueJewel = null;
-            for (RotatedRect redJewel : lastRedJewels) {
-                double redRadius = (redJewel.size.width + redJewel.size.height) / 4.0;
-                for (RotatedRect blueJewel : lastBlueJewels) {
-                    double blueRadius = (blueJewel.size.width + blueJewel.size.height) / 4.0;
-                    double meanRadius = (redRadius + blueRadius) / 2.0;
-                    double distance = Math.hypot(redJewel.center.x - blueJewel.center.x, redJewel.center.y - blueJewel.center.y);
-                    double distanceRatio = distance / meanRadius;
-                    double distanceRatioError = Math.abs(distanceRatio - DIST_RATIO);
-                    if (distanceRatioError < minDistRatioError) {
-                        minDistRatioError = distanceRatioError;
-                        bestRedJewel = redJewel;
-                        bestBlueJewel = blueJewel;
-                    }
-                }
+        Collections.sort(lastRedJewels, JEWEL_COMPARATOR);
+        Collections.sort(lastBlueJewels, JEWEL_COMPARATOR);
+
+        lastJewelPairs = new ArrayList<>();
+        for (Jewel redJewel : lastRedJewels) {
+            for (Jewel blueJewel : lastBlueJewels) {
+                lastJewelPairs.add(new JewelPair(redJewel, blueJewel));
             }
-            if (minDistRatioError > MAX_DIST_RATIO_ERROR) {
-                leftJewelColor = JewelColor.UNKNOWN;
+        }
+
+        Collections.sort(lastJewelPairs, JEWEL_PAIR_COMPARATOR);
+
+        synchronized (this) {
+            if (lastJewelPairs.size() > 0) {
+                jewelPosition = lastJewelPairs.get(0).position();
             } else {
-                leftJewelColor = bestRedJewel.center.x < bestBlueJewel.center.x ? JewelColor.RED : JewelColor.BLUE;
+                jewelPosition = JewelPosition.UNKNOWN;
             }
         }
     }
 
     @Override
     public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
-        overlay.setScalingFactor(4);
+        overlay.setScalingFactor(imageWidth / resizedWidth);
 
         if (lastRedJewels != null) {
-            for (MatOfPoint contour : lastContours) {
-                overlay.strokeContour(contour, new Scalar(255, 255, 255), 10);
+            for (int i = 0; i < lastRedJewels.size(); i++) {
+                Jewel redDetection = lastRedJewels.get(i);
+                overlay.strokeContour(redDetection.contour, new Scalar(255, 255, 0), 2);
+                overlay.putText(String.valueOf(i), Overlay.TextAlign.CENTER,
+                        new Point(redDetection.centroid.x, redDetection.centroid.y), new Scalar(255, 255, 0), 30);
             }
 
-            for (RotatedRect redJewel : lastRedJewels) {
-                overlay.strokeCircle(redJewel.center, (redJewel.size.width + redJewel.size.height) / 4, new Scalar(0, 0, 255), 10);
-            }
-
-            for (RotatedRect blueJewel : lastBlueJewels) {
-                overlay.strokeCircle(blueJewel.center, (blueJewel.size.width + blueJewel.size.height) / 4, new Scalar(255, 0, 0), 10);
+            for (int i = 0; i < lastBlueJewels.size(); i++) {
+                Jewel blueDetection = lastBlueJewels.get(i);
+                overlay.strokeContour(blueDetection.contour, new Scalar(0, 255, 255), 2);
+                overlay.putText(String.valueOf(i), Overlay.TextAlign.CENTER,
+                        new Point(blueDetection.centroid.x, blueDetection.centroid.y), new Scalar(0, 255, 255), 30);
             }
         }
 
         overlay.setScalingFactor(1);
 
-        overlay.putText(
-                toString(),
-                Overlay.TextAlign.LEFT,
-                new Point(5, 50),
-                new Scalar(0, 0, 255),
-                45
-        );
+        if (lastRedJewels != null) {
+            for (int i = 0; i < lastRedJewels.size() && i < 4; i++) {
+                Jewel redDetection = lastRedJewels.get(i);
+                String displayText = String.format(Locale.US, "[%.2f] %.2f,%.2f,%.2fK",
+                        redDetection.score(), redDetection.eccentricity, redDetection.solidity, redDetection.area / 1000);
+                overlay.putText(displayText, Overlay.TextAlign.LEFT, new Point(5, 5 + 35 * (i + 1)), new Scalar(0, 0, 255), 30);
+            }
+
+            for (int i = 0; i < lastBlueJewels.size() && i < 4; i++) {
+                Jewel blueDetection = lastBlueJewels.get(i);
+                String displayText = String.format(Locale.US, "[%.2f] %.2f,%.2f,%.2fK",
+                        blueDetection.score(), blueDetection.eccentricity, blueDetection.solidity, blueDetection.area / 1000);
+                overlay.putText(displayText, Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, 5 + 35 * (i + 1)), new Scalar(255, 0, 0), 30);
+            }
+
+            for (int i = 0; i < lastJewelPairs.size() && i < 4; i++) {
+                JewelPair jewelPair = lastJewelPairs.get(i);
+                String displayText = String.format(Locale.US, "[%.2f] %d %d %.2f,%.2f", jewelPair.score(),
+                        lastRedJewels.indexOf(jewelPair.redJewel), lastBlueJewels.indexOf(jewelPair.blueJewel), jewelPair.distanceRatio, jewelPair.areaDiff);
+                overlay.putText(displayText, Overlay.TextAlign.LEFT, new Point(5, imageHeight - 5 - 35 * i), new Scalar(0, 255, 0), 30);
+            }
+        }
     }
 
-    public synchronized JewelColor getLeftColor() {
-        return leftJewelColor;
-    }
-
-    public synchronized JewelColor getRightColor() {
-        return leftJewelColor.opposite();
-    }
-
-    @Override
-    public synchronized String toString() {
-        return leftJewelColor + " / " + leftJewelColor.opposite();
+    public synchronized JewelPosition getJewelPosition() {
+        return jewelPosition;
     }
 }
