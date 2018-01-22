@@ -9,12 +9,12 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -24,7 +24,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
@@ -344,17 +343,11 @@ public class MecanumDrive extends Subsystem {
     }
 
     private double getRawHeading() {
-        double rawHeading = -getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
-        telemetryMap.put("rawHeading", rawHeading);
-        return rawHeading;
+        return getAngularOrientation().firstAngle;
     }
 
     public double getHeading() {
-        double rawHeadingWithOffset = getRawHeading() + headingOffset;
-        telemetryMap.put("rawHeadingWithOffset", rawHeadingWithOffset);
-        double normalizedHeading = Angle.inferiorNorm(getRawHeading() + headingOffset);
-        telemetryMap.put("normalizedHeading", normalizedHeading);
-        return normalizedHeading;
+        return Angle.norm(getRawHeading() + headingOffset);
     }
 
     public void resetHeading() {
