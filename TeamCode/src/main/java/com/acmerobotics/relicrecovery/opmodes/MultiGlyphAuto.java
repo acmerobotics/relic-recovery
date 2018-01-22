@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
+import android.util.Log;
+
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -18,7 +20,7 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 @Config
 @Autonomous(name = "Multi Glyph Auto")
 public class MultiGlyphAuto extends LinearOpMode {
-    public static boolean USE_VISION = true;
+    public static boolean USE_VISION = false;
     public static boolean STRAFE_ALIGN = false;
     public static int VISION_UPDATE_MAX_DIST = -1;
     public static PIDCoefficients STRAFE_ALIGN_PID = new PIDCoefficients(-0.1, 0, 0);
@@ -38,6 +40,7 @@ public class MultiGlyphAuto extends LinearOpMode {
 
         robot = new Robot(this);
         robot.drive.setEstimatedPose(new Pose2d(48, -48, Math.PI));
+        robot.start();
 
         camera = new VuforiaCamera();
         cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
@@ -48,27 +51,19 @@ public class MultiGlyphAuto extends LinearOpMode {
         camera.addTracker(fpsTracker);
         camera.initialize();
 
-//        cryptoboxLocalizer.addListener((estimatedPos, timestamp) -> {
-//                PositionEstimator positionEstimator = drive.getPositionEstimator();
-//                if (!Double.isNaN(estimatedPos.x()) && !Double.isNaN(estimatedPos.y()) &&
-//                        (VISION_UPDATE_MAX_DIST == -1 ||
-//                                Vector2d.distance(positionEstimator.getPosition(), estimatedPos) < VISION_UPDATE_MAX_DIST)) {
-//                    Log.i("CryptoTrackerListener", "vision update: " + estimatedPos);
-//                    Log.i("CryptoTrackerListener", "old position: " + positionEstimator.getPosition());
-//                    positionEstimator.setSlapperPosition(estimatedPos);
-//                    Log.i("CryptoTrackerListener", "new position: " + positionEstimator.getPosition());
-//                } else {
-//                    Log.i("CryptoTrackerListener", "ignored vision update");
-//                }
-//        });
+        cryptoboxLocalizer.addListener((visionPosition, timestamp) -> {
+                Vector2d estimatedPosition = robot.drive.getEstimatedPosition();
+                if (!Double.isNaN(visionPosition.x()) && !Double.isNaN(visionPosition.y()) &&
+                        (VISION_UPDATE_MAX_DIST == -1 ||
+                                Vector2d.distance(estimatedPosition, visionPosition) < VISION_UPDATE_MAX_DIST)) {
+                    robot.drive.setEstimatedPosition(visionPosition);
 
-//        looper = new Looper();
-//        drive.registerLoops(looper);
-//        looper.addLoop(((timestamp, dt) -> {
-//            dashboard.drawOverlay();
-//            telemetry.update();
-//        }));
-//        looper.start();
+                    Log.i("CryptoTrackerListener", "vision position: " + visionPosition);
+                    Log.i("CryptoTrackerListener", "old position: " + estimatedPosition);
+                } else {
+                    Log.i("CryptoTrackerListener", "ignored vision update");
+                }
+        });
 
         waitForStart();
 

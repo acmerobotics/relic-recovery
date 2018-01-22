@@ -50,9 +50,9 @@ public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 48.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.01, 0, 0, 0.234, 0);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(0, 0, 0, 0.0185, 0);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(0, 0, 0, 0.0183, 0);
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.02, 0, 0, 0.232, 0);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0179, 0);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0187, 0);
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -344,11 +344,17 @@ public class MecanumDrive extends Subsystem {
     }
 
     private double getRawHeading() {
-        return -getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+        double rawHeading = -getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+        telemetryMap.put("rawHeading", rawHeading);
+        return rawHeading;
     }
 
     public double getHeading() {
-        return Angle.norm(getRawHeading() + headingOffset);
+        double rawHeadingWithOffset = getRawHeading() + headingOffset;
+        telemetryMap.put("rawHeadingWithOffset", rawHeadingWithOffset);
+        double normalizedHeading = Angle.inferiorNorm(getRawHeading() + headingOffset);
+        telemetryMap.put("normalizedHeading", normalizedHeading);
+        return normalizedHeading;
     }
 
     public void resetHeading() {
@@ -365,6 +371,14 @@ public class MecanumDrive extends Subsystem {
 
     public boolean isFollowingPath() {
         return pathFollower.isFollowingPath();
+    }
+
+    public Vector2d getEstimatedPosition() {
+        return estimatedPosition;
+    }
+
+    public void setEstimatedPosition(Vector2d position) {
+        estimatedPosition = position;
     }
 
     public Pose2d getEstimatedPose() {
@@ -494,8 +508,8 @@ public class MecanumDrive extends Subsystem {
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
         }
 
-//        fieldOverlay.setStroke("#3F51B5");
-//        DrawingUtil.drawMecanumRobot(fieldOverlay, getEstimatedPose());
+        fieldOverlay.setStroke("#3F51B5");
+        DrawingUtil.drawMecanumRobot(fieldOverlay, getEstimatedPose());
 
         for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
             telemetry.addData(entry.getKey(), entry.getValue());

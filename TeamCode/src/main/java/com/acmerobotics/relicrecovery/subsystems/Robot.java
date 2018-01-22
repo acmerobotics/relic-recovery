@@ -127,6 +127,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             }
             double postSubsystemUpdateTimestamp = TimestampedData.getCurrentTime();
             allTelemetry.update();
+            dashboard.drawOverlay();
             double postTelemetryUpdateTimestamp = TimestampedData.getCurrentTime();
             robotTelemetry.addData("subsystemUpdateTime", postSubsystemUpdateTimestamp - startTimestamp);
             robotTelemetry.addData("telemetryUpdateTime", postTelemetryUpdateTimestamp - postSubsystemUpdateTimestamp);

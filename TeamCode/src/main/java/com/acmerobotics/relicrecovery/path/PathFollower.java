@@ -7,7 +7,6 @@ import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
-import com.acmerobotics.relicrecovery.path.Path;
 
 @Config
 public class PathFollower {

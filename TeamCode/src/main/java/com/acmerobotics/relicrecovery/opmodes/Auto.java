@@ -1,7 +1,6 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.path.Path;
@@ -29,9 +28,10 @@ public class Auto extends LinearOpMode {
         robot.start();
 
         BalancingStone balancingStone = robot.config.getBalancingStone();
-        Vector2d initialPosition = balancingStone.getPosition();
+        Path path = AutoPaths.makeNormalPathToCryptobox(balancingStone, RelicRecoveryVuMark.CENTER);
+        Pose2d initialPose = path.getPose(0);
 
-        robot.drive.setEstimatedPose(new Pose2d(initialPosition, Math.PI));
+        robot.drive.setEstimatedPose(initialPose);
 
 //        camera = new VuforiaCamera();
 //        jewelTracker = new FixedJewelTracker();
@@ -88,9 +88,7 @@ public class Auto extends LinearOpMode {
 //
 //        jewelSlapper.stowArmAndSlapper();
 
-        sleep(1500);
-
-        followPathSync(AutoPaths.makeNormalPathToCryptobox(balancingStone, RelicRecoveryVuMark.CENTER));
+        followPathSync(path);
 //
 //        dumpBed.liftDown();
 //        startTime = TimestampedData.getCurrentTime();
