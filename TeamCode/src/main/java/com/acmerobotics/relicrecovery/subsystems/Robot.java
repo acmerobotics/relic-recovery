@@ -38,14 +38,10 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
     private CSVLoggingTelemetry robotTelemetry;
     private OpModeManagerImpl opModeManager;
     private ExecutorService updateExecutor;
-    private OpMode opMode;
 
     private boolean started;
 
     public Robot(OpMode opMode) {
-        this.opMode = opMode;
-        opMode.telemetry.setMsTransmissionInterval(50);
-
         dashboard = RobotDashboard.getInstance();
         config = new OpModeConfiguration(opMode.hardwareMap.appContext);
 
@@ -136,8 +132,6 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             robotTelemetry.addData("subsystemUpdateTime", postSubsystemUpdateTimestamp - startTimestamp);
             robotTelemetry.addData("telemetryUpdateTime", postTelemetryUpdateTimestamp - postSubsystemUpdateTimestamp);
             robotTelemetry.update();
-            opMode.telemetry.addData("x", Math.random());
-            opMode.telemetry.update();
         }
     }
 

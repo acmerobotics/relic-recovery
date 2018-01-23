@@ -114,7 +114,7 @@ public class DumpBed extends Subsystem {
         }
     }
 
-    private void setLiftPower(double power) {
+    public void setLiftPower(double power) {
         liftMotor.setPower(power);
     }
 

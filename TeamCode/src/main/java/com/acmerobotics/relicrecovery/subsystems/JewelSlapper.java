@@ -72,6 +72,7 @@ public class JewelSlapper extends Subsystem {
 
     @Override
     public void update() {
-
+        telemetry.addData("jewelSlapperDeployed", deployed);
+        telemetry.addData("jewelSlapperPosition", position);
     }
 }
