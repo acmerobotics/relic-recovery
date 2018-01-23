@@ -39,7 +39,7 @@ public class MultiGlyphAuto extends LinearOpMode {
         strafeAlignController = new PIDController(STRAFE_ALIGN_PID);
 
         robot = new Robot(this);
-        robot.drive.setEstimatedPose(new Pose2d(48, -48, Math.PI));
+        robot.drive.setEstimatedPose(new Pose2d(48 + AutoPaths.STONE_CORRECTION, -48, Math.PI));
         robot.start();
 
         camera = new VuforiaCamera();

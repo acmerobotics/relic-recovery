@@ -212,7 +212,9 @@ public class DumpBed extends Subsystem {
             case MOTION_PROFILE: {
                 boolean magneticTouchPressed = !liftMagneticTouch.getState();
                 telemetryMap.put("dumpTouchPressed", magneticTouchPressed);
-                if (magneticTouchPressed) {
+                double liftHeight = getLiftHeight();
+                telemetryMap.put("dumpLiftHeight", liftHeight);
+                if (magneticTouchPressed && Math.abs(liftHeight - profile.start().x) > 1) {
                     setLiftPower(0);
                     mode = Mode.STATIC;
                     if (movingDown) {
@@ -232,8 +234,6 @@ public class DumpBed extends Subsystem {
                 } else {
                     MotionState motionState = profile.get(timestamp);
                     profileController.setSetpoint(motionState);
-                    double liftHeight = getLiftHeight();
-                    telemetryMap.put("dumpLiftHeight", liftHeight);
                     if (!liftDumping) {
                         if (dumpRotation > 0.25 && liftHeight < ROTATE_HEIGHT) {
                             setDumpRotation(0);

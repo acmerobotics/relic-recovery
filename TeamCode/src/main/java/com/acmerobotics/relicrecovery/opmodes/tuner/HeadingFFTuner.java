@@ -1,11 +1,10 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PointTurn;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
+import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -14,18 +13,19 @@ import java.util.Arrays;
 @TeleOp(name = "Heading FF Tuner")
 public class HeadingFFTuner extends LinearOpMode {
     public static final double LOWER_BOUND = 0;
-    public static final double UPPER_BOUND = 0.025;
+    public static final double UPPER_BOUND = 0.075;
     public static final double TURN_ANGLE = Math.PI / 2;
 
-    private RobotDashboard dashboard;
-    private MecanumDrive drive;
+    private Robot robot;
     private volatile double value;
 
     @Override
     public void runOpMode() {
-        dashboard = RobotDashboard.getInstance();
-        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        drive = new MecanumDrive(hardwareMap, telemetry);
+        robot = new Robot(this);
+
+        robot.drive.enablePositionEstimation();
+
+        robot.start();
 
         waitForStart();
 
@@ -52,24 +52,28 @@ public class HeadingFFTuner extends LinearOpMode {
         MecanumDrive.HEADING_PID.a = coefficient;
 
         // reset heading + pose
-        drive.setEstimatedPose(new Pose2d(0, 0, 0));
-        drive.setHeading(0);
+        robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));
 
         // turn
         Path path = new Path(Arrays.asList(
                 new PointTurn(new Pose2d(0, 0, 0), TURN_ANGLE)
         ));
-        drive.followPath(path);
+        robot.drive.followPath(path);
 
-        while (opModeIsActive() && drive.isFollowingPath()) {
-            telemetry.addData("value", value);
-            telemetry.update();
+        telemetry.addData("headingKa", value);
+        telemetry.update();
+
+        double errorSum = 0;
+        int numErrors = 0;
+
+        while (opModeIsActive() && robot.drive.isFollowingPath()) {
+            errorSum += robot.drive.getPathFollower().getHeadingError();
+            numErrors++;
+            sleep(5);
         }
 
         sleep(1000);
 
-        double headingError = drive.getHeading() - TURN_ANGLE;
-
-        return headingError;
+        return errorSum / numErrors;
     }
 }
