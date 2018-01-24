@@ -139,7 +139,7 @@ public class MecanumDrive extends Subsystem {
 
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
-        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "rearHub"), 1);
+        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "frontHub"), 1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);

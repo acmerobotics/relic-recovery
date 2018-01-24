@@ -27,7 +27,7 @@ public class JewelSlapper extends Subsystem {
 
     private Servo jewelDeployer, jewelSlapper;
 
-    private Position position;
+    private Position position = Position.STOW;
     private boolean deployed;
 
     public JewelSlapper(HardwareMap map, Telemetry telemetry) {

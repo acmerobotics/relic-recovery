@@ -14,8 +14,8 @@ public class Intake extends Subsystem {
     public Intake(HardwareMap map, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        leftIntake = map.dcMotor.get("leftIntake");
-        rightIntake = map.dcMotor.get("rightIntake");
+        leftIntake = map.dcMotor.get("intakeLeft");
+        rightIntake = map.dcMotor.get("intakeRight");
     }
 
     public void setIntakePower(double intakePower) {

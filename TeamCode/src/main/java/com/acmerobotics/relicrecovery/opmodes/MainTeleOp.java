@@ -11,7 +11,7 @@ public class MainTeleOp extends OpMode {
 
     private Robot robot;
 
-    private boolean halfSpeed;
+    private boolean halfSpeed, intakeRunning;
 
     @Override
     public void init() {
@@ -62,81 +62,35 @@ public class MainTeleOp extends OpMode {
 
         robot.drive.setVelocity(new Vector2d(x, y), omega);
 
-//        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
-//            drive.setVelocity(new Vector2d(x, y), omega);
-//        } else if (x != 0 && y != 0 && omega != 0) {
-//            drive.setVelocity(new Vector2d(x, y), omega);
-//        }
+        // dump bed
+        if (stickyGamepad1.dpad_up) {
+            robot.dumpBed.moveUp();
+        }
 
-//        // dump bed
-//        if (stickyGamepad1.left_bumper) {
-//            if (dumpBed.isLiftDown()) {
-//                dumpBed.liftUp();
-//            } else {
-//                dumpBed.liftDown();
-//            }
-//        }
-//
-//        if (stickyGamepad1.right_bumper) {
-//            if (dumpBed.isDumping()) {
-//                dumpBed.retract();
-//            } else {
-//                dumpBed.dump();
-//            }
-//        }
-//
-//        // intake
-//        if (stickyGamepad2.left_bumper) {
-//            if (intake.isClosed()) {
-//                intake.open();
-//            } else {
-//                intake.close();
-//            }
-//        }
-//
-//        if (gamepad2.left_trigger > 0.8) {
-//            intake.rotateUp();
-//        } else {
-//            intake.rotateDown();
-//        }
-//
-//        if (gamepad2.right_trigger > 0.8) {
-//            intake.engageFlipper();
-//        } else {
-//            intake.disengageFlipper();
-//        }
-//
-//        // relic
-//        if (gamepad2.right_stick_y != 0) {
-//            relicRecoverer.setExtendPower(-0.25 * gamepad2.left_stick_y);
-//        } else {
-//            relicRecoverer.setExtendPower(0);
-//        }
-//
-//        if (gamepad2.x) {
-//            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.VERTICAL);
-//        }
-//
-//        if (gamepad2.y) {
-//            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.HORIZONTAL);
-//        }
-//
-//        if (gamepad2.a) {
-//            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.STOW);
-//        }
-//
-//        if (gamepad2.b) {
-//            if (relicRecoverer.isFingerClosed()) {
-//                relicRecoverer.openFinger();
-//            } else {
-//                relicRecoverer.closeFinger();
-//            }
-//        }
+        if (stickyGamepad1.dpad_down) {
+            robot.dumpBed.moveDown();
+        }
 
-        telemetry.addData("leftStickX", gamepad1.left_stick_x);
-        telemetry.addData("leftStickY", gamepad1.left_stick_y);
-        telemetry.addData("rightStickX", gamepad1.right_stick_x);
-        telemetry.addData("rightStickY", gamepad1.right_stick_y);
+        if (stickyGamepad1.right_bumper) {
+            if (robot.dumpBed.isDumping()) {
+                robot.dumpBed.retract();
+            } else {
+                robot.dumpBed.dump();
+            }
+        }
+
+        // intake
+        if (gamepad1.left_bumper) {
+            if (intakeRunning) {
+                robot.intake.setIntakePower(0);
+                intakeRunning = false;
+            } else {
+                robot.intake.setIntakePower(1);
+                intakeRunning = true;
+            }
+        }
+
+        telemetry.addData("x", Math.random());
     }
 }
 

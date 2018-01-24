@@ -1,14 +1,6 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.motion.MotionConstraints;
-import com.acmerobotics.relicrecovery.motion.MotionGoal;
-import com.acmerobotics.relicrecovery.motion.MotionProfile;
-import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
-import com.acmerobotics.relicrecovery.motion.MotionState;
-import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
-import com.acmerobotics.relicrecovery.motion.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,19 +13,18 @@ import java.util.Map;
 
 @Config
 public class DumpBed extends Subsystem {
-    public static final double LIFT_HEIGHT = 0; // TODO: determine
-    public static final double PULLEY_RADIUS = 0; // TODO: determine
+    public static final double LIFT_HEIGHT = 10.75;
+    public static final double PULLEY_RADIUS = 0.717;
 
-    public static MotionConstraints LIFT_CONSTRAINTS = new MotionConstraints(0, 0, 0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static PIDFCoefficients LIFT_PIDF = new PIDFCoefficients(0, 0, 0, 0, 0);
+    public static double LIFT_UP_POWER = 0.5;
+    public static double LIFT_DOWN_POWER = -0.2;
 
-    public static double LIFT_CALIBRATION_POWER = -0.2;
-    public static double LIFT_PROFILE_MIN_POWER = 0.2;
+    public static double LIFT_DUMP_ROTATION = 0.7;
 
-    public static double ROTATE_HEIGHT = 0;
+    public static double LIFT_CALIBRATION_POWER = -0.1;
 
-    public static double LEFT_ROTATE_DOWN_POS = 0.39;
-    public static double LEFT_ROTATE_UP_POS = 0.86;
+    public static double LEFT_ROTATE_DOWN_POS = 0.54;
+    public static double LEFT_ROTATE_UP_POS = 0;
 
     public static double RELEASE_ENGAGE_POS = 0.61;
     public static double RELEASE_DISENGAGE_POS = 0;
@@ -41,7 +32,8 @@ public class DumpBed extends Subsystem {
     public enum Mode {
         STATIC,
         CALIBRATE,
-        MOTION_PROFILE
+        MOVE_DOWN,
+        MOVE_UP
     }
 
     private Mode mode = Mode.STATIC;
@@ -50,10 +42,7 @@ public class DumpBed extends Subsystem {
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel liftMagneticTouch;
 
-    private MotionProfile profile;
-    private PIDFController profileController;
-
-    private boolean liftDumping, releaseEngaged, calibrated, snapToEndpoint, movingDown;
+    private boolean liftDumping, releaseEngaged, calibrated, liftUp, skipFirstRead;
     private double encoderOffset, dumpRotation;
 
     public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
@@ -74,18 +63,18 @@ public class DumpBed extends Subsystem {
             telemetryMap.put(key, 0);
         }
 
-        profileController = new PIDFController(LIFT_PIDF);
+        liftMotor = map.dcMotor.get("dumpLift");
 
-        liftMotor = map.dcMotor.get("liftMotor");
+        dumpRotateLeft = map.servo.get("dumpRotateLeft");
+        dumpRotateRight = map.servo.get("dumpRotateRight");
+        dumpRelease = map.servo.get("dumpRelease");
 
-        dumpRotateLeft = map.servo.get("bedRotateLeft");
-        dumpRotateRight = map.servo.get("bedRotateRight");
-        dumpRelease = map.servo.get("bedRelease");
-
-        liftMagneticTouch = map.digitalChannel.get("liftMagneticTouch");
+        liftMagneticTouch = map.digitalChannel.get("dumpLiftMagneticTouch");
         liftMagneticTouch.setMode(DigitalChannel.Mode.INPUT);
 
         engageRelease();
+        setDumpRotation(0);
+        calibrate();
     }
 
     public Mode getMode() {
@@ -120,23 +109,31 @@ public class DumpBed extends Subsystem {
 
     public double getLiftHeight() {
         double position = getEncoderPosition();
-        return 2 * Math.PI * PULLEY_RADIUS * position;
+        double ticksPerRev = liftMotor.getMotorType().getTicksPerRev();
+        return 2 * Math.PI * PULLEY_RADIUS * position / ticksPerRev;
     }
 
     public void setLiftHeight(double height) {
-        setEncoderPosition((int) (height / (2 * Math.PI * PULLEY_RADIUS)));
+        double ticksPerRev = liftMotor.getMotorType().getTicksPerRev();
+        setEncoderPosition((int) (height * ticksPerRev / (2 * Math.PI * PULLEY_RADIUS)));
     }
 
-    public void moveLiftToHeight(double height) {
-        if (!calibrated) return;
-        double startingHeight = getLiftHeight();
-        MotionState start = new MotionState(startingHeight, 0, 0, 0, TimestampedData.getCurrentTime());
-        MotionGoal goal = new MotionGoal(height, 0);
-        profile = MotionProfileGenerator.generateProfile(start, goal, LIFT_CONSTRAINTS);
-        mode = Mode.MOTION_PROFILE;
-        snapToEndpoint = (height == 0 || height == LIFT_HEIGHT);
-        movingDown = height < startingHeight;
-        profileController.reset();
+    public void moveUp() {
+        if (!isCalibrated()) return;
+        if (!liftUp) {
+            mode = Mode.MOVE_UP;
+            liftUp = true;
+            skipFirstRead = !liftMagneticTouch.getState();
+        }
+    }
+
+    public void moveDown() {
+        if (!isCalibrated()) return;
+        if (liftUp) {
+            mode = Mode.MOVE_DOWN;
+            liftUp = false;
+            skipFirstRead = !liftMagneticTouch.getState();
+        }
     }
 
     private void setDumpRotation(double rot) {
@@ -175,8 +172,8 @@ public class DumpBed extends Subsystem {
     public void retract() {
         if (liftDumping) {
             liftDumping = false;
-            if (getLiftHeight() > ROTATE_HEIGHT) {
-                setDumpRotation(0.5);
+            if (liftUp) {
+                setDumpRotation(LIFT_DUMP_ROTATION);
             } else {
                 setDumpRotation(0);
             }
@@ -189,8 +186,9 @@ public class DumpBed extends Subsystem {
         telemetryMap.put("dumpCalibrated", calibrated);
         telemetryMap.put("dumpLiftDumping", liftDumping);
         telemetryMap.put("dumpReleaseEngaged", releaseEngaged);
-        telemetryMap.put("dumpLiftSnap", snapToEndpoint);
         telemetryMap.put("dumpRotation", dumpRotation);
+        telemetryMap.put("dumpLiftUp", liftUp);
+        telemetryMap.put("dumpSkipFirstRead", skipFirstRead);
 
         switch (mode) {
             case STATIC:
@@ -209,51 +207,49 @@ public class DumpBed extends Subsystem {
                 }
                 break;
             }
-            case MOTION_PROFILE: {
+            case MOVE_UP: {
                 boolean magneticTouchPressed = !liftMagneticTouch.getState();
                 telemetryMap.put("dumpTouchPressed", magneticTouchPressed);
                 double liftHeight = getLiftHeight();
                 telemetryMap.put("dumpLiftHeight", liftHeight);
-                if (magneticTouchPressed && Math.abs(liftHeight - profile.start().x) > 1) {
+
+                if (!liftDumping) {
+                    setDumpRotation(LIFT_DUMP_ROTATION);
+                }
+
+                if (magneticTouchPressed && !skipFirstRead) {
                     setLiftPower(0);
                     mode = Mode.STATIC;
-                    if (movingDown) {
-                        setLiftHeight(0);
-                    } else {
-                        setLiftHeight(LIFT_HEIGHT);
-                    }
+                } else {
+                    setLiftPower(LIFT_UP_POWER);
                 }
-                double timestamp = TimestampedData.getCurrentTime();
-                if (timestamp > profile.end().t) {
-                    if (snapToEndpoint) {
-                        setLiftPower((movingDown ? -1 : 1) * LIFT_PROFILE_MIN_POWER);
-                    } else {
-                        setLiftPower(0);
-                        mode = Mode.STATIC;
+
+                if (!magneticTouchPressed && skipFirstRead) {
+                    skipFirstRead = false;
+                }
+
+                break;
+            }
+            case MOVE_DOWN: {
+                boolean magneticTouchPressed = !liftMagneticTouch.getState();
+                telemetryMap.put("dumpTouchPressed", magneticTouchPressed);
+                double liftHeight = getLiftHeight();
+                telemetryMap.put("dumpLiftHeight", liftHeight);
+
+                if (magneticTouchPressed && !skipFirstRead) {
+                    setLiftPower(0);
+                    mode = Mode.STATIC;
+                    if (!liftDumping) {
+                        setDumpRotation(0);
                     }
                 } else {
-                    MotionState motionState = profile.get(timestamp);
-                    profileController.setSetpoint(motionState);
-                    if (!liftDumping) {
-                        if (dumpRotation > 0.25 && liftHeight < ROTATE_HEIGHT) {
-                            setDumpRotation(0);
-                        } else if (dumpRotation < 0.25 && liftHeight > ROTATE_HEIGHT) {
-                            setDumpRotation(0.5);
-                        }
-                    }
-                    double heightError = liftHeight - motionState.x;
-                    telemetryMap.put("dumpLiftHeightError", heightError);
-                    double liftUpdate = profileController.update(heightError);
-                    telemetryMap.put("dumpLiftHeightUpdate", liftUpdate);
-                    double liftPower;
-                    if (snapToEndpoint) {
-                        liftPower = Math.max(liftUpdate, Math.signum(liftUpdate) * LIFT_PROFILE_MIN_POWER);
-                    } else {
-                        liftPower = liftUpdate;
-                    }
-                    telemetryMap.put("dumpLiftPower", liftPower);
-                    setLiftPower(liftPower);
+                    setLiftPower(LIFT_DOWN_POWER);
                 }
+
+                if (!magneticTouchPressed && skipFirstRead) {
+                    skipFirstRead = false;
+                }
+
                 break;
             }
         }

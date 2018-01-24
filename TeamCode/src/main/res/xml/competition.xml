@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
     <!-- REV -->
-    <LynxUsbDevice name="portal" serialNumber="DQ1NXDE5" parentModuleAddress="1">
-        <LynxModule name="frontHub" port="1">
+    <LynxUsbDevice name="portal" serialNumber="DQ1NXDE5" parentModuleAddress="3">
+        <LynxModule name="frontHub" port="3">
             <NeveRest20Gearmotor name="frontLeft" port="0" />
             <NeveRest20Gearmotor name="rearLeft" port="1" />
             <NeveRest20Gearmotor name="rearRight" port="2" />
@@ -11,10 +11,9 @@
             <Servo name="jewelSlapper" port="1" />
             <Servo name="relicWrist" port="2" />
             <Servo name="relicFinger" port="3" />
-            <DigitalDevice name="dumpLiftMagneticTouch" port="1" />
             <AdafruitBNO055IMU name="imu" port="1" bus="0" />
-            <LynxColorSensor name="frontIntakeColorDistance" port="2" bus="0" />
-            <LynxColorSensor name="rearIntakeColorDistance" port="3" bus="0" />
+            <!--<LynxColorSensor name="frontIntakeColorDistance" port="2" bus="0" />-->
+            <!--<LynxColorSensor name="rearIntakeColorDistance" port="3" bus="0" />-->
         </LynxModule>
         <LynxModule name="rearHub" port="2">
             <NeveRest20Gearmotor name="intakeLeft" port="0" />
@@ -25,6 +24,7 @@
             <Servo name="dumpRotateRight" port="1" />
             <Servo name="dumpRelease" port="2" />
             <Servo name="phoneSwivel" port="3" />
+            <DigitalDevice name="dumpLiftMagneticTouch" port="1" />
         </LynxModule>
     </LynxUsbDevice>
 </Robot>
