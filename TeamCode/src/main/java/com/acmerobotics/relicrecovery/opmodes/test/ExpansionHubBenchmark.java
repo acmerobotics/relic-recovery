@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;

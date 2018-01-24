@@ -1,8 +1,7 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.util.Log;
 
-import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
@@ -13,13 +12,10 @@ import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
-@Config
-@Autonomous(name = "Multi Glyph Auto")
-public class MultiGlyphAuto extends LinearOpMode {
+public class OldMultiglyph extends LinearOpMode {
     public static boolean USE_VISION = false;
     public static boolean STRAFE_ALIGN = false;
     public static int VISION_UPDATE_MAX_DIST = -1;
@@ -39,7 +35,6 @@ public class MultiGlyphAuto extends LinearOpMode {
         strafeAlignController = new PIDController(STRAFE_ALIGN_PID);
 
         robot = new Robot(this);
-        robot.drive.setEstimatedPose(new Pose2d(48 + AutoPaths.STONE_CORRECTION, -48, Math.PI));
         robot.start();
 
         camera = new VuforiaCamera();
