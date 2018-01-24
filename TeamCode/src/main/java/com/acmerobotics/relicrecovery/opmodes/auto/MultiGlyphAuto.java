@@ -28,7 +28,7 @@ public class MultiGlyphAuto extends AutoOpMode {
         while (opModeIsActive()) {
             int choice = (int) (3 * Math.random());
             choice--;
-            Vector2d v = new Vector2d(12 + choice * CryptoboxTracker.ACTUAL_RAIL_GAP, -60);
+            Vector2d v = new Vector2d(12 + choice * CryptoboxTracker.ACTUAL_RAIL_GAP, -56);
 
             sleep(1500);
 

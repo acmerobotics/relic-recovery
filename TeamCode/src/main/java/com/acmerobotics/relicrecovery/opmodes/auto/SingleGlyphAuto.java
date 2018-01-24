@@ -18,10 +18,10 @@ public class SingleGlyphAuto extends AutoOpMode {
 
     @Override
     protected void run() {
-        RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
+//        RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
 
         BalancingStone balancingStone = robot.config.getBalancingStone();
-        Path path = AutoPaths.makeNormalPathToCryptobox(balancingStone, vuMark);
+        Path path = AutoPaths.makeNormalPathToCryptobox(balancingStone, RelicRecoveryVuMark.CENTER);
         Pose2d initialPose = path.getPose(0);
         robot.drive.setEstimatedPose(initialPose);
 

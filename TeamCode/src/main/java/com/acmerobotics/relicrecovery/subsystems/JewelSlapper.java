@@ -5,10 +5,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/**
- * Created by ryanbrott on 1/9/18.
- */
-
 public class JewelSlapper extends Subsystem {
     private Telemetry telemetry;
 

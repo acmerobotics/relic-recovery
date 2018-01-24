@@ -2,9 +2,6 @@ package com.acmerobotics.relicrecovery.vision;
 
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
-/**
- * @author Ryan
- */
 public enum JewelPosition {
     RED_BLUE("Red / Blue", AllianceColor.RED, AllianceColor.BLUE),
     BLUE_RED("Blue / Red", AllianceColor.BLUE, AllianceColor.RED),
