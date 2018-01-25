@@ -22,8 +22,6 @@ public class MainTeleOp extends OpMode {
         stickyGamepad2 = new StickyGamepad(gamepad2);
 
         telemetry.setMsTransmissionInterval(50);
-
-//        dumpBed.liftDown();
     }
 
     @Override
@@ -80,11 +78,11 @@ public class MainTeleOp extends OpMode {
         }
 
         // intake
-        if (gamepad1.left_bumper) {
+        if (stickyGamepad1.left_bumper) {
             if (intakeRunning) {
                 robot.intake.setIntakePower(0);
                 intakeRunning = false;
-            } else {
+            } else if (!robot.dumpBed.isDumping() && !robot.dumpBed.isLiftUp()) {
                 robot.intake.setIntakePower(1);
                 intakeRunning = true;
             }

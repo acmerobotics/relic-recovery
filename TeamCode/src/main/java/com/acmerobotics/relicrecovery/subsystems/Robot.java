@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
+import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
@@ -60,46 +61,46 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
         subsystems = new ArrayList<>();
 
         try {
-//            CSVLoggingTelemetry driveLogger = new CSVLoggingTelemetry(new File(logRoot, "Drive.csv"));
-            drive = new MecanumDrive(opMode.hardwareMap, dashboard.getTelemetry());
+            CSVLoggingTelemetry driveLogger = new CSVLoggingTelemetry(new File(logRoot, "Drive.csv"));
+            drive = new MecanumDrive(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), driveLogger));
             subsystems.add(drive);
-//            allTelemetry.add(driveLogger);
+            allTelemetry.add(driveLogger);
         } catch (IllegalArgumentException e) {
             Log.w("Robot", "skipping MecanumDrive");
         }
 
         try {
-//            CSVLoggingTelemetry intakeLogger = new CSVLoggingTelemetry(new File(logRoot, "Intake.csv"));
-            intake = new Intake(opMode.hardwareMap, dashboard.getTelemetry());
+            CSVLoggingTelemetry intakeLogger = new CSVLoggingTelemetry(new File(logRoot, "Intake.csv"));
+            intake = new Intake(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), intakeLogger));
             subsystems.add(intake);
-//            allTelemetry.add(intakeLogger);
+            allTelemetry.add(intakeLogger);
         } catch (IllegalArgumentException e) {
             Log.w("Robot", "skipping Intake");
         }
 
         try {
-//            CSVLoggingTelemetry dumpBedLogger = new CSVLoggingTelemetry(new File(logRoot, "DumpBed.csv"));
-            dumpBed = new DumpBed(opMode.hardwareMap, dashboard.getTelemetry());
+            CSVLoggingTelemetry dumpBedLogger = new CSVLoggingTelemetry(new File(logRoot, "DumpBed.csv"));
+            dumpBed = new DumpBed(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), dumpBedLogger));
             subsystems.add(dumpBed);
-//            allTelemetry.add(dumpBedLogger);
+            allTelemetry.add(dumpBedLogger);
         } catch (IllegalArgumentException e) {
             Log.w("Robot", "skipping DumpBed");
         }
 
         try {
-//            CSVLoggingTelemetry jewelSlapperLogger = new CSVLoggingTelemetry(new File(logRoot, "JewelSlapper.csv"));
-            jewelSlapper = new JewelSlapper(opMode.hardwareMap, dashboard.getTelemetry());
+            CSVLoggingTelemetry jewelSlapperLogger = new CSVLoggingTelemetry(new File(logRoot, "JewelSlapper.csv"));
+            jewelSlapper = new JewelSlapper(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), jewelSlapperLogger));
             subsystems.add(jewelSlapper);
-//            allTelemetry.add(jewelSlapperLogger);
+            allTelemetry.add(jewelSlapperLogger);
         } catch (IllegalArgumentException e) {
             Log.w("Robot", "skipping JewelSlapper");
         }
 
         try {
-//            CSVLoggingTelemetry relicRecovererLogger = new CSVLoggingTelemetry(new File(logRoot, "RelicRecoverer.csv"));
-            relicRecoverer = new RelicRecoverer(opMode.hardwareMap, dashboard.getTelemetry());
+            CSVLoggingTelemetry relicRecovererLogger = new CSVLoggingTelemetry(new File(logRoot, "RelicRecoverer.csv"));
+            relicRecoverer = new RelicRecoverer(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), relicRecovererLogger));
             subsystems.add(relicRecoverer);
-//            allTelemetry.add(relicRecovererLogger);
+            allTelemetry.add(relicRecovererLogger);
         } catch (IllegalArgumentException e) {
             Log.w("Robot", "skipping RelicRecoverer");
         }
