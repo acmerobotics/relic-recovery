@@ -27,7 +27,7 @@ public class DynamicJewelTracker extends Tracker {
     public static double DISTANCE_RATIO = 6.0 / 1.875; // distance between centers / radius
 
     // filter weights
-    public static double ECCENTRICITY_WEIGHT = 1;
+    public static double ECCENTRICITY_WEIGHT = 2;
     public static double SOLIDITY_WEIGHT = 1;
     public static double AREA_WEIGHT = 0;
     public static double DISTANCE_WEIGHT = 0.05;
@@ -101,14 +101,14 @@ public class DynamicJewelTracker extends Tracker {
     public static int CLOSE_KERNEL_SIZE = 11;
 
     // red HSV range
-    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 40, RED_LOWER_VALUE = 120;
+    public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 120;
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
 
     // blue HSV range
-    public static int BLUE_LOWER_HUE = 95, BLUE_LOWER_SAT = 40, BLUE_LOWER_VALUE = 120;
+    public static int BLUE_LOWER_HUE = 95, BLUE_LOWER_SAT = 80, BLUE_LOWER_VALUE = 120;
     public static int BLUE_UPPER_HUE = 124, BLUE_UPPER_SAT = 255, BLUE_UPPER_VALUE = 255;
 
-    public static int TARGET_AREA = 8000; // px^2
+    public static int TARGET_AREA = 5200; // px^2
     public static int MIN_AREA = 500;
 
     public static int RESIZE_WIDTH = 480;
@@ -272,14 +272,14 @@ public class DynamicJewelTracker extends Tracker {
         if (lastRedJewels != null) {
             for (int i = 0; i < lastRedJewels.size(); i++) {
                 Jewel redDetection = lastRedJewels.get(i);
-                overlay.strokeContour(redDetection.contour, new Scalar(255, 255, 0), 2);
+                overlay.strokeContour(redDetection.contour, new Scalar(255, 255, 0), 4);
                 overlay.putText(String.valueOf(i), Overlay.TextAlign.CENTER,
                         new Point(redDetection.centroid.x, redDetection.centroid.y), new Scalar(255, 255, 0), 30);
             }
 
             for (int i = 0; i < lastBlueJewels.size(); i++) {
                 Jewel blueDetection = lastBlueJewels.get(i);
-                overlay.strokeContour(blueDetection.contour, new Scalar(0, 255, 255), 2);
+                overlay.strokeContour(blueDetection.contour, new Scalar(0, 255, 255), 4);
                 overlay.putText(String.valueOf(i), Overlay.TextAlign.CENTER,
                         new Point(blueDetection.centroid.x, blueDetection.centroid.y), new Scalar(0, 255, 255), 30);
             }
