@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,6 +13,7 @@ public class MainTeleOp extends OpMode {
     private Robot robot;
 
     private boolean halfSpeed, intakeRunning;
+    private int leftIntakePower, rightIntakePower;
 
     @Override
     public void init() {
@@ -30,7 +32,7 @@ public class MainTeleOp extends OpMode {
         stickyGamepad2.update();
 
         // drive
-        if (stickyGamepad1.b) {
+        if (stickyGamepad1.x) {
             halfSpeed = !halfSpeed;
         }
 
@@ -61,12 +63,12 @@ public class MainTeleOp extends OpMode {
         robot.drive.setVelocity(new Vector2d(x, y), omega);
 
         // dump bed
-        if (stickyGamepad1.dpad_up) {
-            robot.dumpBed.moveUp();
-        }
-
-        if (stickyGamepad1.dpad_down) {
-            robot.dumpBed.moveDown();
+        if (stickyGamepad1.b) {
+            if (robot.dumpBed.isLiftUp()) {
+                robot.dumpBed.moveDown();
+            } else {
+                robot.dumpBed.moveUp();
+            }
         }
 
         if (stickyGamepad1.right_bumper) {
@@ -78,14 +80,34 @@ public class MainTeleOp extends OpMode {
         }
 
         // intake
-        if (stickyGamepad1.left_bumper) {
+        if (stickyGamepad2.left_bumper) {
             if (intakeRunning) {
-                robot.intake.setIntakePower(0);
+                leftIntakePower = 0;
+                rightIntakePower = 0;
                 intakeRunning = false;
-            } else if (!robot.dumpBed.isDumping() && !robot.dumpBed.isLiftUp()) {
-                robot.intake.setIntakePower(1);
+            } else {
+                leftIntakePower = 1;
+                rightIntakePower = 1;
                 intakeRunning = true;
             }
+        } else if (stickyGamepad2.right_bumper) {
+            if (intakeRunning) {
+                leftIntakePower = 0;
+                rightIntakePower = 0;
+                intakeRunning = false;
+            } else {
+                leftIntakePower = -1;
+                rightIntakePower = -1;
+                intakeRunning = true;
+            }
+        }
+
+        if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getMode() != DumpBed.Mode.STATIC) {
+            robot.intake.setIntakePower(0, 0);
+        } else if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
+            robot.intake.setIntakePower(-gamepad2.left_stick_y, -gamepad2.right_stick_y);
+        } else {
+            robot.intake.setIntakePower(leftIntakePower, rightIntakePower);
         }
 
         telemetry.addData("x", Math.random());

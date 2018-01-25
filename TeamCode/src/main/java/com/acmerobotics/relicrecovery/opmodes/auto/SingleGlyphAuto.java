@@ -21,10 +21,14 @@ public class SingleGlyphAuto extends AutoOpMode {
 //        RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
 
         BalancingStone balancingStone = robot.config.getBalancingStone();
-        Path path = AutoPaths.makeNormalPathToCryptobox(balancingStone, RelicRecoveryVuMark.CENTER);
+        Path path = AutoPaths.makeDiagonalPathToCryptobox(balancingStone, RelicRecoveryVuMark.RIGHT);
         Pose2d initialPose = path.getPose(0);
         robot.drive.setEstimatedPose(initialPose);
 
         followPathSync(path);
+
+        robot.dumpBed.dump();
+        sleep(1000);
+        robot.dumpBed.retract();
     }
 }

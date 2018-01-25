@@ -26,9 +26,9 @@ public class DumpBed extends Subsystem {
     public static double LIFT_DOWN_POWER = -0.2;
     public static double LIFT_CALIBRATION_POWER = -0.2;
 
-    public static double BED_INTERMEDIATE_ROTATION = 0.6;
+    public static double BED_INTERMEDIATE_ROTATION = 0.5;
 
-    public static double LEFT_ROTATE_DOWN_POS = 0.54;
+    public static double LEFT_ROTATE_DOWN_POS = 0.5;
     public static double LEFT_ROTATE_UP_POS = 0;
 
     public static double RELEASE_ENGAGE_POS = 0.61;

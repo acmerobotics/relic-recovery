@@ -16,25 +16,48 @@ public class MultiGlyphAuto extends AutoOpMode {
 
     @Override
     protected void run() {
+        robot.intake.setIntakePower(1, 1);
+
         followPathSync(new PathBuilder(new Pose2d(48, -48, Math.PI))
                 .lineTo(new Vector2d(12, -48))
                 .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(12, -24))
-                .lineTo(new Vector2d(12, -56))
                 .build());
 
-        sleep(1500);
+        robot.intake.setIntakePower(0, 0);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -56, Math.PI / 2))
+        followPathSync(new PathBuilder(new Pose2d(12, -24, Math.PI / 2))
+                .lineTo(new Vector2d(12, -55))
+                .build());
+
+        robot.dumpBed.dump();
+        sleep(1000);
+        robot.dumpBed.retract();
+        sleep(1000);
+
+        robot.intake.setIntakePower(1, 1);
+
+        followPathSync(new PathBuilder(new Pose2d(12, -55, Math.PI / 2))
                 .lineTo(new Vector2d(12, -12))
                 .lineTo(new Vector2d(12, -24))
                 .lineTo(new Vector2d(12, 0))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56))
+                .lineTo(new Vector2d(12, -24))
                 .build());
+
+        robot.intake.setIntakePower(0, 0);
+
+        followPathSync(new PathBuilder(new Pose2d(12, -24, Math.PI / 2))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -55))
+                .build());
+
+        robot.dumpBed.dump();
+        sleep(1000);
+        robot.dumpBed.retract();
+        sleep(1000);
 
 //        sleep(1500);
 //
-//        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56, Math.PI / 2))
+//        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -55, Math.PI / 2))
 //                .lineTo(new Vector2d())));
     }
 }

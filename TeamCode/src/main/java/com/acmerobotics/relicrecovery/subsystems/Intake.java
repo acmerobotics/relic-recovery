@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class Intake extends Subsystem {
     private DcMotor leftIntake, rightIntake;
-    private double intakePower;
+    private double leftIntakePower, rightIntakePower;
 
     private Telemetry telemetry;
 
@@ -18,14 +18,16 @@ public class Intake extends Subsystem {
         rightIntake = map.dcMotor.get("intakeRight");
     }
 
-    public void setIntakePower(double intakePower) {
-        this.intakePower = intakePower;
-        leftIntake.setPower(intakePower);
-        rightIntake.setPower(intakePower);
+    public void setIntakePower(double leftIntakePower, double rightIntakePower) {
+        this.leftIntakePower = leftIntakePower;
+        this.rightIntakePower = rightIntakePower;
+        leftIntake.setPower(leftIntakePower);
+        rightIntake.setPower(rightIntakePower);
     }
 
     @Override
     public void update() {
-        telemetry.addData("intakePower", intakePower);
+        telemetry.addData("leftIntakePower", leftIntakePower);
+        telemetry.addData("rightIntakePower", rightIntakePower);
     }
 }

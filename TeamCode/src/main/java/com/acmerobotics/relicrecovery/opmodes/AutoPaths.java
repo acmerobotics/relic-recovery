@@ -38,7 +38,7 @@ public class AutoPaths {
                 return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
                         .lineTo(new Vector2d(cryptoboxX, -48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(cryptoboxX, -58))
+                        .lineTo(new Vector2d(cryptoboxX, -57))
                         .build();
             }
             case FAR_BLUE: {
@@ -48,7 +48,7 @@ public class AutoPaths {
                         .turn(-Math.PI / 2)
                         .lineTo(new Vector2d(-48, cryptoboxY))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(-58, cryptoboxY))
+                        .lineTo(new Vector2d(-57, cryptoboxY))
                         .build();
             }
             case FAR_RED: {
@@ -58,7 +58,7 @@ public class AutoPaths {
                         .turn(-Math.PI / 2)
                         .lineTo(new Vector2d(-48, cryptoboxY))
                         .turn(Math.PI / 2)
-                        .lineTo(new Vector2d(-58, cryptoboxY))
+                        .lineTo(new Vector2d(-57, cryptoboxY))
                         .build();
             }
             case NEAR_RED: {
@@ -66,7 +66,7 @@ public class AutoPaths {
                 return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), 0))
                         .lineTo(new Vector2d(cryptoboxX, 48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(cryptoboxX, 58))
+                        .lineTo(new Vector2d(cryptoboxX, 57))
                         .build();
             }
         }
@@ -87,9 +87,9 @@ public class AutoPaths {
                             .build();
                 } else {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX + 12, -48))
-                            .turn(3 * Math.PI / 4)
-                            .lineTo(new Vector2d(cryptoboxX, -60))
+                            .lineTo(new Vector2d(cryptoboxX + 18, -48))
+                            .turn(-3 * Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX + 8, -58))
                             .build();
                 }
             }
