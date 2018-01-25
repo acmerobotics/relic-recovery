@@ -1,9 +1,11 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -13,15 +15,12 @@ import java.util.Map;
 
 @Config
 public class DumpBed extends Subsystem {
-    public static final double LIFT_HEIGHT = 10.75;
-    public static final double PULLEY_RADIUS = 0.717;
+    public static PIDCoefficients LIFT_PID = new PIDCoefficients(-0.01, -0.005, 0);
 
     public static double LIFT_UP_POWER = 0.5;
     public static double LIFT_DOWN_POWER = -0.2;
 
     public static double LIFT_DUMP_ROTATION = 0.7;
-
-    public static double LIFT_CALIBRATION_POWER = -0.1;
 
     public static double LEFT_ROTATE_DOWN_POS = 0.54;
     public static double LEFT_ROTATE_UP_POS = 0;
@@ -31,7 +30,7 @@ public class DumpBed extends Subsystem {
 
     public enum Mode {
         STATIC,
-        CALIBRATE,
+        PID,
         MOVE_DOWN,
         MOVE_UP
     }
@@ -42,14 +41,16 @@ public class DumpBed extends Subsystem {
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel liftMagneticTouch;
 
-    private boolean liftDumping, releaseEngaged, calibrated, liftUp, skipFirstRead;
-    private double encoderOffset, dumpRotation;
+    private boolean liftDumping, releaseEngaged, liftUp, skipFirstRead;
+    private double dumpRotation;
+
+    private PIDController pidController;
 
     public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
-            "dumpTouchPressed",
-            "dumpLiftHeight",
-            "dumpLiftHeightError",
-            "dumpLiftHeightUpdate",
+            "dumpMagneticState",
+            "dumpLiftEncoder",
+            "dumpLiftEncoderError",
+            "dumpLiftEncoderUpdate",
             "dumpLiftPower"
     };
 
@@ -63,6 +64,8 @@ public class DumpBed extends Subsystem {
             telemetryMap.put(key, 0);
         }
 
+        pidController = new PIDController(LIFT_PID);
+
         liftMotor = map.dcMotor.get("dumpLift");
 
         dumpRotateLeft = map.servo.get("dumpRotateLeft");
@@ -74,52 +77,19 @@ public class DumpBed extends Subsystem {
 
         engageRelease();
         setDumpRotation(0);
-        calibrate();
+        liftUp = true;
+        moveDown();
     }
 
     public Mode getMode() {
         return mode;
     }
 
-    public double getEncoderPosition() {
-        return liftMotor.getCurrentPosition() - encoderOffset;
-    }
-
-    public void setEncoderPosition(int position) {
-        encoderOffset = liftMotor.getCurrentPosition() - position;
-    }
-
-    public void resetEncoder() {
-        setEncoderPosition(0);
-    }
-
-    public boolean isCalibrated() {
-        return calibrated;
-    }
-
-    public void calibrate() {
-        if (!calibrated) {
-            mode = Mode.CALIBRATE;
-        }
-    }
-
-    public void setLiftPower(double power) {
-        liftMotor.setPower(power);
-    }
-
-    public double getLiftHeight() {
-        double position = getEncoderPosition();
-        double ticksPerRev = liftMotor.getMotorType().getTicksPerRev();
-        return 2 * Math.PI * PULLEY_RADIUS * position / ticksPerRev;
-    }
-
-    public void setLiftHeight(double height) {
-        double ticksPerRev = liftMotor.getMotorType().getTicksPerRev();
-        setEncoderPosition((int) (height * ticksPerRev / (2 * Math.PI * PULLEY_RADIUS)));
+    public int getEncoderPosition() {
+        return liftMotor.getCurrentPosition();
     }
 
     public void moveUp() {
-        if (!isCalibrated()) return;
         if (!liftUp) {
             mode = Mode.MOVE_UP;
             liftUp = true;
@@ -128,7 +98,6 @@ public class DumpBed extends Subsystem {
     }
 
     public void moveDown() {
-        if (!isCalibrated()) return;
         if (liftUp) {
             mode = Mode.MOVE_DOWN;
             liftUp = false;
@@ -183,48 +152,47 @@ public class DumpBed extends Subsystem {
 
     public void update() {
         telemetryMap.put("dumpMode", mode);
-        telemetryMap.put("dumpCalibrated", calibrated);
         telemetryMap.put("dumpLiftDumping", liftDumping);
         telemetryMap.put("dumpReleaseEngaged", releaseEngaged);
         telemetryMap.put("dumpRotation", dumpRotation);
         telemetryMap.put("dumpLiftUp", liftUp);
         telemetryMap.put("dumpSkipFirstRead", skipFirstRead);
 
+        double liftPower = 0;
+
         switch (mode) {
             case STATIC:
                 // do nothing
                 break;
-            case CALIBRATE: {
-                boolean magneticTouchPressed = !liftMagneticTouch.getState();
-                telemetryMap.put("dumpTouchPressed", magneticTouchPressed);
-                if (magneticTouchPressed) {
-                    setLiftPower(0);
-                    resetEncoder();
-                    calibrated = true;
-                    mode = Mode.STATIC;
-                } else {
-                    setLiftPower(LIFT_CALIBRATION_POWER);
-                }
+            case PID: {
+                int encoderPosition = getEncoderPosition();
+                telemetryMap.put("dumpLiftEncoderPosition", encoderPosition);
+                double error = pidController.getError(encoderPosition);
+                telemetryMap.put("dumpLiftEncoderError", error);
+                double update = pidController.update(error);
+                telemetryMap.put("dumpLiftEncoderUpdate", update);
+
+                liftPower = update;
+
                 break;
             }
             case MOVE_UP: {
-                boolean magneticTouchPressed = !liftMagneticTouch.getState();
-                telemetryMap.put("dumpTouchPressed", magneticTouchPressed);
-                double liftHeight = getLiftHeight();
-                telemetryMap.put("dumpLiftHeight", liftHeight);
+                boolean magneticState = !liftMagneticTouch.getState();
+                telemetryMap.put("dumpMagneticState", magneticState);
 
                 if (!liftDumping) {
                     setDumpRotation(LIFT_DUMP_ROTATION);
                 }
 
-                if (magneticTouchPressed && !skipFirstRead) {
-                    setLiftPower(0);
-                    mode = Mode.STATIC;
+                if (magneticState && !skipFirstRead) {
+                    mode = Mode.PID;
+                    pidController.reset();
+                    pidController.setSetpoint(getEncoderPosition());
                 } else {
-                    setLiftPower(LIFT_UP_POWER);
+                    liftPower = LIFT_UP_POWER;
                 }
 
-                if (!magneticTouchPressed && skipFirstRead) {
+                if (!magneticState && skipFirstRead) {
                     skipFirstRead = false;
                 }
 
@@ -232,18 +200,17 @@ public class DumpBed extends Subsystem {
             }
             case MOVE_DOWN: {
                 boolean magneticTouchPressed = !liftMagneticTouch.getState();
-                telemetryMap.put("dumpTouchPressed", magneticTouchPressed);
-                double liftHeight = getLiftHeight();
-                telemetryMap.put("dumpLiftHeight", liftHeight);
+                telemetryMap.put("dumpMagneticState", magneticTouchPressed);
 
                 if (magneticTouchPressed && !skipFirstRead) {
-                    setLiftPower(0);
-                    mode = Mode.STATIC;
+                    mode = Mode.PID;
+                    pidController.reset();
+                    pidController.setSetpoint(getEncoderPosition());
                     if (!liftDumping) {
                         setDumpRotation(0);
                     }
                 } else {
-                    setLiftPower(LIFT_DOWN_POWER);
+                    liftPower = LIFT_DOWN_POWER;
                 }
 
                 if (!magneticTouchPressed && skipFirstRead) {
@@ -253,6 +220,9 @@ public class DumpBed extends Subsystem {
                 break;
             }
         }
+
+        telemetryMap.put("dumpLiftPower", liftPower);
+        liftMotor.setPower(liftPower);
 
         for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
             telemetry.addData(entry.getKey(), entry.getValue());
