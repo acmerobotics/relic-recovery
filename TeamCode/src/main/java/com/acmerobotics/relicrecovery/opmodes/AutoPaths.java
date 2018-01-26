@@ -76,10 +76,10 @@ public class AutoPaths {
     public static Path makeDiagonalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
         vuMark = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.RIGHT : vuMark;
         int vuMarkInt = vuMarkMap.get(vuMark);
+        Pose2d stonePose = new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI);
         switch (stone) {
             case NEAR_BLUE: {
                 double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
-                Pose2d stonePose = new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI);
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX - 18, -48))
@@ -102,6 +102,21 @@ public class AutoPaths {
             }
             case FAR_BLUE: {
                 double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-58, -48))
+                            .turn(Math.PI - Math.atan((12.0 - CRYPTO_COL_WIDTH) / 14.0))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+//                    return new PathBuilder(stonePose)
+//                            .lineTo()
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52 + CRYPTO_COL_WIDTH, -48))
+                            .turn(3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
+                            .build();
+                }
                 return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
                         .lineTo(new Vector2d(-48 - CRYPTO_COL_WIDTH * vuMarkInt, -48))
                         .turn(3 * Math.PI / 4)
