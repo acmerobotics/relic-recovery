@@ -309,9 +309,11 @@ public class DynamicJewelTracker extends Tracker {
                 overlay.putText(displayText, Overlay.TextAlign.LEFT, new Point(5, imageHeight - 5 - 35 * i), new Scalar(0, 255, 0), 30);
             }
 
-            JewelPair jewelPair = lastJewelPairs.get(0);
-            overlay.putText(jewelPair.redJewel.centroid.x + " / " + jewelPair.blueJewel.centroid.x, Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, imageHeight - 75), new Scalar(0, 255, 0), 30);
-            overlay.putText(getJewelPosition().toString(), Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, imageHeight - 40), new Scalar(0, 255, 0), 30);
+            if (lastJewelPairs.size() > 0) {
+                JewelPair jewelPair = lastJewelPairs.get(0);
+                overlay.putText(jewelPair.redJewel.centroid.x + " / " + jewelPair.blueJewel.centroid.x, Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, imageHeight - 75), new Scalar(0, 255, 0), 30);
+                overlay.putText(getJewelPosition().toString(), Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, imageHeight - 40), new Scalar(0, 255, 0), 30);
+            }
         }
     }
 

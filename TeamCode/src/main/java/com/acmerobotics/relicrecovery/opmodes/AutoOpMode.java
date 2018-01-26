@@ -64,6 +64,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     protected RelicRecoveryVuMark scoreJewelAndReadPictograph() {
+        jewelTracker.enable();
+
         robot.jewelSlapper.deployArmAndSlapper();
 
         sleep(1500);
@@ -78,7 +80,10 @@ public abstract class AutoOpMode extends LinearOpMode {
             }
         }
 
-        JewelPosition jewelPosition = jewelTracker.getJewelPosition().opposite();
+        JewelPosition jewelPosition = jewelTracker.getJewelPosition();
+
+        jewelTracker.disable();
+
         if (jewelPosition != JewelPosition.UNKNOWN) {
             if (robot.config.getAllianceColor() == jewelPosition.rightColor()) {
                 // remove left

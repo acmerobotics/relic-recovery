@@ -16,7 +16,7 @@ import java.util.Map;
 @Config
 public class AutoPaths {
     /** used to artificially adjust the balancing stone location */
-    public static double STONE_CORRECTION = -2.5; // in
+    public static double STONE_CORRECTION = 0; // in
 
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
@@ -104,20 +104,24 @@ public class AutoPaths {
                 double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(-58, -48))
-                            .turn(Math.PI - Math.atan((12.0 - CRYPTO_COL_WIDTH) / 14.0))
+                            .lineTo(new Vector2d(-52, -48))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 12))
+                            .turn(-3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 6))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(-42 - 10 / Math.sqrt(3) + CRYPTO_COL_WIDTH, -48))
-                            .turn(5 * Math.PI / 6)
-                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
+                            .lineTo(new Vector2d(-52, -48))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 9))
+                            .turn(3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY - 3))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(-52 + CRYPTO_COL_WIDTH, -48))
+                            .lineTo(new Vector2d(-52, -48))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 12))
                             .turn(3 * Math.PI / 4)
-                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
+                            .lineTo(new Vector2d(-58, cryptoboxY - 6))
                             .build();
                 }
                 return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
