@@ -2,7 +2,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Path;
@@ -14,18 +13,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 public class NormalAuto extends AutoOpMode {
     @Override
     protected void setup() {
-
+        Pose2d initialPose = AutoPaths.getAdjustedBalancingStonePose(robot.config.getBalancingStone());
+        robot.drive.setEstimatedPose(initialPose);
     }
 
     @Override
     protected void run() {
         RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
 
-        BalancingStone balancingStone = robot.config.getBalancingStone();
-        Path path = AutoPaths.makeNormalPathToCryptobox(balancingStone, vuMark);
-        Pose2d initialPose = path.getPose(0);
-        robot.drive.setEstimatedPose(initialPose);
-
+        Path path = AutoPaths.makeNormalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
         followPathSync(path);
 
         robot.dumpBed.dump();
