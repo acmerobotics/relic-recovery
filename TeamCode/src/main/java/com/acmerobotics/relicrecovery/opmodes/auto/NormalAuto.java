@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 @Autonomous
-public class SingleGlyphAuto extends AutoOpMode {
+public class NormalAuto extends AutoOpMode {
     @Override
     protected void setup() {
 
@@ -22,7 +22,7 @@ public class SingleGlyphAuto extends AutoOpMode {
         RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
 
         BalancingStone balancingStone = robot.config.getBalancingStone();
-        Path path = AutoPaths.makeDiagonalPathToCryptobox(balancingStone, vuMark);
+        Path path = AutoPaths.makeNormalPathToCryptobox(balancingStone, vuMark);
         Pose2d initialPose = path.getPose(0);
         robot.drive.setEstimatedPose(initialPose);
 

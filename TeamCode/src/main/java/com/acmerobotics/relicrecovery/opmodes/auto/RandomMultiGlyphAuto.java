@@ -7,7 +7,9 @@ import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 @Autonomous
 public class RandomMultiGlyphAuto extends AutoOpMode {
     @Override

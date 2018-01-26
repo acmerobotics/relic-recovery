@@ -6,7 +6,9 @@ import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 @Autonomous
 public class MultiGlyphAuto extends AutoOpMode {
     @Override
