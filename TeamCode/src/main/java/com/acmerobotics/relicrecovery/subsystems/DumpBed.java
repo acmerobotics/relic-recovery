@@ -48,7 +48,7 @@ public class DumpBed extends Subsystem {
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel liftMagneticTouch;
 
-    private boolean liftDumping, releaseEngaged, liftUp, skipFirstRead, calibrated;
+    private boolean liftDumping, releaseEngaged, liftUp, skipFirstRead, calibrated, missedSensor, movingDownToSensor;
     private double dumpRotation;
     private int encoderOffset;
 
@@ -138,6 +138,7 @@ public class DumpBed extends Subsystem {
         if (!calibrated) return;
         if (!liftUp) {
             mode = Mode.MOVE_UP;
+            missedSensor = false;
             liftUp = true;
             skipFirstRead = !liftMagneticTouch.getState();
         }
@@ -147,6 +148,7 @@ public class DumpBed extends Subsystem {
         if (!calibrated) return;
         if (liftUp) {
             mode = Mode.MOVE_DOWN;
+            missedSensor = false;
             liftUp = false;
             skipFirstRead = !liftMagneticTouch.getState();
         }
@@ -234,14 +236,33 @@ public class DumpBed extends Subsystem {
                     setDumpRotation(BED_INTERMEDIATE_ROTATION);
                 }
 
+                if (!missedSensor && liftHeight > LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
+                    missedSensor = true;
+                    movingDownToSensor = true;
+                }
+
                 if (magneticState && !skipFirstRead) {
                     mode = Mode.PID;
                     setLiftHeight(LIFT_HEIGHT);
                     pidController.reset();
                     pidController.setSetpoint(LIFT_HEIGHT);
-                } else if (liftHeight > LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
-                    liftPower = -LIFT_UP_POWER;
-                } else {
+                } else if (missedSensor && movingDownToSensor) {
+                    if (liftHeight < LIFT_HEIGHT - ENDPOINT_ALLOWANCE_HEIGHT) {
+                        movingDownToSensor = false;
+                        liftPower = LIFT_UP_POWER;
+                    } else {
+                        movingDownToSensor = true;
+                        liftPower = LIFT_DOWN_POWER;
+                    }
+                } else if (missedSensor && !movingDownToSensor) {
+                    if (liftHeight > LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
+                        movingDownToSensor = true;
+                        liftPower = LIFT_DOWN_POWER;
+                    } else {
+                        movingDownToSensor = false;
+                        liftPower = LIFT_UP_POWER;
+                    }
+                }  else {
                     liftPower = LIFT_UP_POWER;
                 }
 
@@ -257,14 +278,33 @@ public class DumpBed extends Subsystem {
                 double liftHeight = getLiftHeight();
                 telemetryMap.put("dumpLiftHeight", liftHeight);
 
+                if (!missedSensor && liftHeight < -ENDPOINT_ALLOWANCE_HEIGHT) {
+                    missedSensor = true;
+                    movingDownToSensor = false;
+                }
+
                 if (magneticTouchPressed && !skipFirstRead) {
                     mode = Mode.STATIC;
                     setLiftHeight(0);
                     if (!liftDumping) {
                         setDumpRotation(0);
                     }
-                } else if (liftHeight < -ENDPOINT_ALLOWANCE_HEIGHT) {
-                    liftPower = -LIFT_DOWN_POWER;
+                } else if (missedSensor && movingDownToSensor) {
+                    if (liftHeight < -ENDPOINT_ALLOWANCE_HEIGHT) {
+                        movingDownToSensor = false;
+                        liftPower = LIFT_UP_POWER;
+                    } else {
+                        movingDownToSensor = true;
+                        liftPower = LIFT_DOWN_POWER;
+                    }
+                } else if (missedSensor && !movingDownToSensor) {
+                    if (liftHeight > ENDPOINT_ALLOWANCE_HEIGHT) {
+                        movingDownToSensor = true;
+                        liftPower = LIFT_DOWN_POWER;
+                    } else {
+                        movingDownToSensor = false;
+                        liftPower = LIFT_UP_POWER;
+                    }
                 } else {
                     liftPower = LIFT_DOWN_POWER;
                 }

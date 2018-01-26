@@ -109,8 +109,6 @@ public class MainTeleOp extends OpMode {
         } else {
             robot.intake.setIntakePower(leftIntakePower, rightIntakePower);
         }
-
-        telemetry.addData("x", Math.random());
     }
 }
 
