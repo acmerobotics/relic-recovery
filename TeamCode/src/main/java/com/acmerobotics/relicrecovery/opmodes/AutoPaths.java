@@ -16,7 +16,7 @@ import java.util.Map;
 @Config
 public class AutoPaths {
     /** used to artificially adjust the balancing stone location */
-    public static double STONE_CORRECTION = 0; // in
+    public static double STONE_CORRECTION = -2.5; // in
 
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
@@ -99,6 +99,7 @@ public class AutoPaths {
                             .lineTo(new Vector2d(cryptoboxX + 8, -58))
                             .build();
                 }
+                break;
             }
             case FAR_BLUE: {
                 double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
@@ -124,15 +125,58 @@ public class AutoPaths {
                             .lineTo(new Vector2d(-58, cryptoboxY - 6))
                             .build();
                 }
-                return new PathBuilder(new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI))
-                        .lineTo(new Vector2d(-48 - CRYPTO_COL_WIDTH * vuMarkInt, -48))
-                        .turn(3 * Math.PI / 4)
-                        .lineTo(new Vector2d(-60, cryptoboxY))
-                        .build();
+                break;
             }
-            // TODO: add red once path endpoints are determined
+            case NEAR_RED: {
+                double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 18, 48))
+                            .turn(-Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX + 8, 58))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 4 + 10 / Math.sqrt(3), 48))
+                            .turn(-Math.PI / 3)
+                            .lineTo(new Vector2d(cryptoboxX + 4, 58))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX - 18, 48))
+                            .turn(-3 * Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX - 8, 58))
+                            .build();
+                }
+                break;
+            }
+            case FAR_RED: {
+                double cryptoboxY = 36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, 48))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 12))
+                            .turn(-3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY - 6))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, 48))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 9))
+                            .turn(3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 3))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, 48))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 12))
+                            .turn(3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 6))
+                            .build();
+                }
+                break;
+            }
         }
-        throw new UnsupportedOperationException("implement red diagonal paths");
-//        return new Path(Collections.emptyList());
+        return new Path(Collections.emptyList());
     }
 }
