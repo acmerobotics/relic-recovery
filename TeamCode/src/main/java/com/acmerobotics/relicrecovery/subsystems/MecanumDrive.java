@@ -483,12 +483,6 @@ public class MecanumDrive extends Subsystem {
                     telemetryMap.put("pathLateralUpdate", pathFollower.getLateralUpdate());
                     telemetryMap.put("pathHeadingError", pathFollower.getHeadingError());
                     telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
-
-                    fieldOverlay.setStroke("#4CAF50");
-                    DrawingUtil.drawPath(fieldOverlay, pathFollower.getPath());
-
-                    fieldOverlay.setStroke("#F44336");
-                    DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
                 } else {
                     stop();
                     revertMode();
@@ -503,6 +497,16 @@ public class MecanumDrive extends Subsystem {
                 lastPowers[i] = powers[i];
             }
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
+        }
+
+        if (pathFollower.getPath() != null) {
+            fieldOverlay.setStroke("#4CAF50");
+            DrawingUtil.drawPath(fieldOverlay, pathFollower.getPath());
+        }
+
+        if (pathFollower.getPose() != null) {
+            fieldOverlay.setStroke("#F44336");
+            DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
         }
 
         fieldOverlay.setStroke("#3F51B5");
