@@ -27,10 +27,10 @@ public class AutoPaths {
         vuMarkMap.put(RelicRecoveryVuMark.LEFT, 1);
         vuMarkMap.put(RelicRecoveryVuMark.CENTER, 0);
         vuMarkMap.put(RelicRecoveryVuMark.RIGHT, -1);
-        vuMarkMap.put(RelicRecoveryVuMark.UNKNOWN, 0);
     }
 
     public static Path makeNormalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+        vuMark = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
         int vuMarkInt = vuMarkMap.get(vuMark);
         switch (stone) {
             case NEAR_BLUE: {
@@ -74,6 +74,7 @@ public class AutoPaths {
     }
 
     public static Path makeDiagonalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+        vuMark = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.RIGHT : vuMark;
         int vuMarkInt = vuMarkMap.get(vuMark);
         switch (stone) {
             case NEAR_BLUE: {
@@ -81,11 +82,17 @@ public class AutoPaths {
                 Pose2d stonePose = new Pose2d(stone.getPosition().added(new Vector2d(STONE_CORRECTION, 0)), Math.PI);
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX - 12, -48))
+                            .lineTo(new Vector2d(cryptoboxX - 18, -48))
                             .turn(-Math.PI / 4)
-                            .lineTo(new Vector2d(cryptoboxX, -60))
+                            .lineTo(new Vector2d(cryptoboxX - 8, -58))
                             .build();
-                } else {
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 8 + 10 / Math.sqrt(3), -48))
+                            .turn(-2 * Math.PI / 3)
+                            .lineTo(new Vector2d(cryptoboxX + 8, -58))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX + 18, -48))
                             .turn(-3 * Math.PI / 4)
