@@ -9,10 +9,10 @@ public class JewelSlapper extends Subsystem {
     private Telemetry telemetry;
 
     public enum Position {
-        LEFT(1),
-        CENTER(0.75),
-        RIGHT(0.43),
-        STOW(0);
+        LEFT(0),
+        CENTER(0.53),
+        RIGHT(1),
+        STOW(1);
 
         private double servoPos;
 
@@ -41,7 +41,7 @@ public class JewelSlapper extends Subsystem {
 
     public void deployArmAndSlapper() {
         if (!deployed) {
-            jewelDeployer.setPosition(0.77);
+            jewelDeployer.setPosition(0.62);
             setSlapperPosition(Position.CENTER);
             deployed = true;
         }
@@ -49,7 +49,7 @@ public class JewelSlapper extends Subsystem {
 
     public void stowArmAndSlapper() {
         if (deployed) {
-            jewelDeployer.setPosition(0.01);
+            jewelDeployer.setPosition(0.07);
             setSlapperPosition(Position.STOW);
             deployed = false;
         }

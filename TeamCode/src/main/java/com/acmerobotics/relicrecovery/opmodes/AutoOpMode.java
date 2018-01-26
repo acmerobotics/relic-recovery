@@ -78,7 +78,7 @@ public abstract class AutoOpMode extends LinearOpMode {
             }
         }
 
-        JewelPosition jewelPosition = jewelTracker.getJewelPosition();
+        JewelPosition jewelPosition = jewelTracker.getJewelPosition().opposite();
         if (jewelPosition != JewelPosition.UNKNOWN) {
             if (robot.config.getAllianceColor() == jewelPosition.rightColor()) {
                 // remove left

@@ -36,6 +36,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
     public DumpBed dumpBed;
     public JewelSlapper jewelSlapper;
     public RelicRecoverer relicRecoverer;
+    public PhoneSwivel phoneSwivel;
 
     private List<Subsystem> subsystems;
     private List<Telemetry> allTelemetry;
@@ -103,6 +104,13 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             allTelemetry.add(relicRecovererLogger);
         } catch (IllegalArgumentException e) {
             Log.w("Robot", "skipping RelicRecoverer");
+        }
+
+        try {
+            phoneSwivel = new PhoneSwivel(opMode.hardwareMap);
+            subsystems.add(phoneSwivel);
+        } catch (IllegalArgumentException e) {
+            Log.w("Robot", "skipping PhoneSwivel");
         }
 
         allTelemetry.add(dashboard.getTelemetry());

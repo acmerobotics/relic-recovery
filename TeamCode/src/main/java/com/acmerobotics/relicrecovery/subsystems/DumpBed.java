@@ -22,34 +22,34 @@ public class DumpBed extends Subsystem {
 
     public static PIDCoefficients LIFT_PID = new PIDCoefficients(-2, 0, 0);
 
-    public static double LIFT_UP_POWER = 0.5;
-    public static double LIFT_DOWN_POWER = -0.2;
+    public static double LIFT_UP_POWER = 1;
+    public static double LIFT_DOWN_POWER = -0.4;
     public static double LIFT_CALIBRATION_POWER = -0.2;
 
     public static double BED_INTERMEDIATE_ROTATION = 0.5;
 
     public static double LEFT_ROTATE_DOWN_POS = 0.5;
-    public static double LEFT_ROTATE_UP_POS = 0;
+    public static double LEFT_ROTATE_UP_POS = 0.05;
 
     public static double RELEASE_ENGAGE_POS = 0.61;
-    public static double RELEASE_DISENGAGE_POS = 0;
+    public static double RELEASE_DISENGAGE_POS = 0.11;
 
     public enum Mode {
-        STATIC,
+        MANUAL,
         PID,
         MOVE_DOWN,
         MOVE_UP,
         CALIBRATE
     }
 
-    private Mode mode = Mode.STATIC;
+    private Mode mode = Mode.MANUAL;
 
     private DcMotor liftMotor;
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel liftMagneticTouch;
 
     private boolean liftDumping, releaseEngaged, liftUp, skipFirstRead, calibrated, missedSensor, movingDownToSensor;
-    private double dumpRotation;
+    private double dumpRotation, manualLiftPower;
     private int encoderOffset;
 
     private PIDController pidController;
@@ -123,7 +123,8 @@ public class DumpBed extends Subsystem {
     }
 
     public void setLiftPower(double power) {
-        liftMotor.setPower(power);
+        manualLiftPower = power;
+        mode = Mode.MANUAL;
     }
 
     public double getLiftHeight() {
@@ -151,6 +152,10 @@ public class DumpBed extends Subsystem {
             missedSensor = false;
             liftUp = false;
             skipFirstRead = !liftMagneticTouch.getState();
+
+            if (isDumping()) {
+                retract();
+            }
         }
     }
 
@@ -214,8 +219,8 @@ public class DumpBed extends Subsystem {
         double liftPower = 0;
 
         switch (mode) {
-            case STATIC:
-                // do nothing
+            case MANUAL:
+                liftPower = this.manualLiftPower;
                 break;
             case PID: {
                 double liftHeight = getLiftHeight();
@@ -284,7 +289,7 @@ public class DumpBed extends Subsystem {
                 }
 
                 if (magneticTouchPressed && !skipFirstRead) {
-                    mode = Mode.STATIC;
+                    mode = Mode.MANUAL;
                     setLiftHeight(0);
                     if (!liftDumping) {
                         setDumpRotation(0);
@@ -320,7 +325,7 @@ public class DumpBed extends Subsystem {
                 telemetryMap.put("dumpMagneticState", magneticTouchPressed);
 
                 if (magneticTouchPressed) {
-                    mode = Mode.STATIC;
+                    mode = Mode.MANUAL;
                     liftUp = false;
                     setLiftHeight(0);
                     calibrated = true;
@@ -333,7 +338,7 @@ public class DumpBed extends Subsystem {
         }
 
         telemetryMap.put("dumpLiftPower", liftPower);
-        setLiftPower(liftPower);
+        liftMotor.setPower(liftPower);
 
         for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
             telemetry.addData(entry.getKey(), entry.getValue());

@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
@@ -18,16 +19,20 @@ public class SingleGlyphAuto extends AutoOpMode {
 
     @Override
     protected void run() {
-//        RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
+        RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
 
         BalancingStone balancingStone = robot.config.getBalancingStone();
-        Path path = AutoPaths.makeDiagonalPathToCryptobox(balancingStone, RelicRecoveryVuMark.RIGHT);
+        Path path = AutoPaths.makeDiagonalPathToCryptobox(balancingStone, vuMark);
         Pose2d initialPose = path.getPose(0);
         robot.drive.setEstimatedPose(initialPose);
 
         followPathSync(path);
 
         robot.dumpBed.dump();
+        sleep(1000);
+        robot.drive.setVelocity(new Vector2d(0.2, 0), 0);
+        sleep(750);
+        robot.drive.stop();
         sleep(1000);
         robot.dumpBed.retract();
     }

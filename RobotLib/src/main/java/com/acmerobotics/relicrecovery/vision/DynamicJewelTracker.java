@@ -287,7 +287,7 @@ public class DynamicJewelTracker extends Tracker {
 
         overlay.setScalingFactor(1);
 
-        if (lastRedJewels != null) {
+        if (lastJewelPairs != null) {
             for (int i = 0; i < lastRedJewels.size() && i < 4; i++) {
                 Jewel redDetection = lastRedJewels.get(i);
                 String displayText = String.format(Locale.US, "[%.2f] %.2f,%.2f,%.2fK",
@@ -308,6 +308,10 @@ public class DynamicJewelTracker extends Tracker {
                         lastRedJewels.indexOf(jewelPair.redJewel), lastBlueJewels.indexOf(jewelPair.blueJewel), jewelPair.distanceRatio, jewelPair.areaDiff);
                 overlay.putText(displayText, Overlay.TextAlign.LEFT, new Point(5, imageHeight - 5 - 35 * i), new Scalar(0, 255, 0), 30);
             }
+
+            JewelPair jewelPair = lastJewelPairs.get(0);
+            overlay.putText(jewelPair.redJewel.centroid.x + " / " + jewelPair.blueJewel.centroid.x, Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, imageHeight - 75), new Scalar(0, 255, 0), 30);
+            overlay.putText(getJewelPosition().toString(), Overlay.TextAlign.RIGHT, new Point(imageWidth - 5, imageHeight - 40), new Scalar(0, 255, 0), 30);
         }
     }
 

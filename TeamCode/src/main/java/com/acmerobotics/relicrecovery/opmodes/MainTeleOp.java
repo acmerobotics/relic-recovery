@@ -32,7 +32,7 @@ public class MainTeleOp extends OpMode {
         stickyGamepad2.update();
 
         // drive
-        if (stickyGamepad1.x) {
+        if (stickyGamepad1.b) {
             halfSpeed = !halfSpeed;
         }
 
@@ -63,7 +63,11 @@ public class MainTeleOp extends OpMode {
         robot.drive.setVelocity(new Vector2d(x, y), omega);
 
         // dump bed
-        if (stickyGamepad1.b) {
+        if (gamepad1.y) {
+            robot.dumpBed.setLiftPower(DumpBed.LIFT_UP_POWER);
+        } else if (gamepad1.x) {
+            robot.dumpBed.setLiftPower(DumpBed.LIFT_DOWN_POWER);
+        } else if (stickyGamepad1.left_bumper) {
             if (robot.dumpBed.isLiftUp()) {
                 robot.dumpBed.moveDown();
             } else {
@@ -102,7 +106,7 @@ public class MainTeleOp extends OpMode {
             }
         }
 
-        if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getMode() != DumpBed.Mode.STATIC) {
+        if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getMode() != DumpBed.Mode.MANUAL) {
             robot.intake.setIntakePower(0, 0);
         } else if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
             robot.intake.setIntakePower(-gamepad2.left_stick_y, -gamepad2.right_stick_y);
