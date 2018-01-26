@@ -6,7 +6,6 @@ import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
-import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VuforiaVuMarkTracker;
@@ -36,7 +35,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         vuMarkTracker = new VuforiaVuMarkTracker();
         camera.addTracker(jewelTracker);
         camera.addTracker(vuMarkTracker);
-        camera.addTracker(new FpsTracker());
         camera.initialize();
 
         String autoTransition = robot.config.getAutoTransition();

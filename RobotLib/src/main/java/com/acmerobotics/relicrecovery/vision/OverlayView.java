@@ -65,6 +65,8 @@ public class OverlayView extends View {
         // draw
         CanvasOverlay overlay = new CanvasOverlay(canvas);
         for (Tracker tracker : trackers) {
+            if (!tracker.isEnabled()) continue;
+
             canvas.save();
 
             overlay.setScalingFactor(1);
