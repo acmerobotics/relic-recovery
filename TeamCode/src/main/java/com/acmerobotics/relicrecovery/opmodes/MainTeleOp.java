@@ -63,16 +63,14 @@ public class MainTeleOp extends OpMode {
         robot.drive.setVelocity(new Vector2d(x, y), omega);
 
         // dump bed
-        if (gamepad1.y) {
+        if (gamepad2.y) {
             robot.dumpBed.setLiftPower(DumpBed.LIFT_UP_POWER);
-        } else if (gamepad1.x) {
+        } else if (gamepad2.x) {
             robot.dumpBed.setLiftPower(DumpBed.LIFT_DOWN_POWER);
-        } else if (stickyGamepad1.left_bumper) {
-            if (robot.dumpBed.isLiftUp()) {
-                robot.dumpBed.moveDown();
-            } else {
-                robot.dumpBed.moveUp();
-            }
+        } else if (stickyGamepad2.dpad_up) {
+            robot.dumpBed.moveUp();
+        } else if (stickyGamepad2.dpad_down) {
+            robot.dumpBed.moveDown();
         } else if (robot.dumpBed.getMode() == DumpBed.Mode.MANUAL) {
             robot.dumpBed.setLiftPower(0);
         }
