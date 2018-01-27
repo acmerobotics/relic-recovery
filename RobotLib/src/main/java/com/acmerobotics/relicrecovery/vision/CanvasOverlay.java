@@ -13,10 +13,6 @@ import org.opencv.core.Scalar;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Ryan
- */
-
 public class CanvasOverlay implements Overlay {
     private static final Map<TextAlign, Paint.Align> PAINT_ALIGN_MAP = new HashMap<>();
 

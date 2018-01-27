@@ -2,10 +2,6 @@ package com.acmerobotics.library.dashboard.util;
 
 import java.lang.reflect.Field;
 
-/**
- * @author Ryan
- */
-
 public class EnumUtil {
     public static <T extends  Enum> T fromValue(String value, Class<T> classOfT) {
         for (T type : classOfT.getEnumConstants()) {

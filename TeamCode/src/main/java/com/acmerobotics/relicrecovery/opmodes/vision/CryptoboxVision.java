@@ -8,10 +8,6 @@ import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
-
 @TeleOp(name = "Cryptobox Vision", group = "vision")
 public class CryptoboxVision extends OpMode {
     private VisionCamera camera;

@@ -1,9 +1,5 @@
 package com.acmerobotics.library.dashboard.canvas;
 
-/**
- * Created by ryanbrott on 8/4/17.
- */
-
 public class StrokeWidth extends CanvasOp {
     private int width;
 

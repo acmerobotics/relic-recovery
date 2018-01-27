@@ -7,10 +7,6 @@ import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-/**
- * Created by ryanbrott on 12/30/17.
- */
-
 @TeleOp(name = "Feature Detection Vision", group = "vision")
 public class FeatureDetectionVision extends OpMode {
     private VisionCamera camera;

@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
     <!-- REV -->
-    <LynxUsbDevice name="portal" serialNumber="DQ1NXDE5" parentModuleAddress="2">
-        <LynxModule name="rearHub" port="2">
+    <LynxUsbDevice name="portal" serialNumber="DQ1NXDE5" parentModuleAddress="1">
+        <LynxModule name="frontHub" port="1">
             <NeveRest20Gearmotor name="frontLeft" port="0" />
             <NeveRest20Gearmotor name="rearLeft" port="1" />
             <NeveRest20Gearmotor name="rearRight" port="2" />

@@ -1,54 +1,29 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
-import com.acmerobotics.relicrecovery.subsystems.Intake;
-import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
-import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
+import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-/**
- * Created by ryanbrott on 11/5/17.
- */
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
     private StickyGamepad stickyGamepad1, stickyGamepad2;
-    private RobotDashboard dashboard;
 
-    private MecanumDrive drive;
-    private DumpBed dumpBed;
-    private JewelSlapper jewelSlapper;
-    private Intake intake;
-    private RelicRecoverer relicRecoverer;
+    private Robot robot;
 
-    private boolean halfSpeed;
+    private boolean halfSpeed, intakeRunning;
+    private int leftIntakePower, rightIntakePower;
 
     @Override
     public void init() {
+        robot = new Robot(this);
+        robot.start();
+
         stickyGamepad1 = new StickyGamepad(gamepad1);
         stickyGamepad2 = new StickyGamepad(gamepad2);
 
-        dashboard = RobotDashboard.getInstance();
-
         telemetry.setMsTransmissionInterval(50);
-
-        drive = new MecanumDrive(hardwareMap, telemetry);
-        dumpBed = new DumpBed(hardwareMap, dashboard.getTelemetry());
-        jewelSlapper = new JewelSlapper(hardwareMap, dashboard.getTelemetry());
-        intake = new Intake(hardwareMap, dashboard.getTelemetry());
-        relicRecoverer = new RelicRecoverer(hardwareMap, dashboard.getTelemetry());
-
-        dumpBed.liftDown();
-    }
-
-    @Override
-    public void init_loop() {
-        dumpBed.update();
-        intake.update();
     }
 
     @Override
@@ -81,86 +56,65 @@ public class MainTeleOp extends OpMode {
             y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
         }
 
-        drive.setVelocity(new Vector2d(x, y), omega);
+        telemetry.addData("x", x);
+        telemetry.addData("y", y);
+        telemetry.addData("omega", omega);
 
-//        if (drive.getMode() == MecanumDrive.Mode.OPEN_LOOP || drive.getMode() == MecanumDrive.Mode.OPEN_LOOP_RAMP) {
-//            drive.setVelocity(new Vector2d(x, y), omega);
-//        } else if (x != 0 && y != 0 && omega != 0) {
-//            drive.setVelocity(new Vector2d(x, y), omega);
-//        }
+        robot.drive.setVelocity(new Vector2d(x, y), omega);
 
         // dump bed
-        if (stickyGamepad1.left_bumper) {
-            if (dumpBed.isLiftDown()) {
-                dumpBed.liftUp();
+        if (gamepad1.y) {
+            robot.dumpBed.setLiftPower(DumpBed.LIFT_UP_POWER);
+        } else if (gamepad1.x) {
+            robot.dumpBed.setLiftPower(DumpBed.LIFT_DOWN_POWER);
+        } else if (stickyGamepad1.left_bumper) {
+            if (robot.dumpBed.isLiftUp()) {
+                robot.dumpBed.moveDown();
             } else {
-                dumpBed.liftDown();
+                robot.dumpBed.moveUp();
             }
+        } else if (robot.dumpBed.getMode() == DumpBed.Mode.MANUAL) {
+            robot.dumpBed.setLiftPower(0);
         }
 
         if (stickyGamepad1.right_bumper) {
-            if (dumpBed.isDumping()) {
-                dumpBed.retract();
+            if (robot.dumpBed.isDumping()) {
+                robot.dumpBed.retract();
             } else {
-                dumpBed.dump();
+                robot.dumpBed.dump();
             }
         }
 
         // intake
         if (stickyGamepad2.left_bumper) {
-            if (intake.isClosed()) {
-                intake.open();
+            if (intakeRunning) {
+                leftIntakePower = 0;
+                rightIntakePower = 0;
+                intakeRunning = false;
             } else {
-                intake.close();
+                leftIntakePower = 1;
+                rightIntakePower = 1;
+                intakeRunning = true;
+            }
+        } else if (stickyGamepad2.right_bumper) {
+            if (intakeRunning) {
+                leftIntakePower = 0;
+                rightIntakePower = 0;
+                intakeRunning = false;
+            } else {
+                leftIntakePower = -1;
+                rightIntakePower = -1;
+                intakeRunning = true;
             }
         }
 
-        if (gamepad2.left_trigger > 0.8) {
-            intake.rotateUp();
+        if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getMode() != DumpBed.Mode.MANUAL) {
+            robot.intake.setIntakePower(0, 0);
+        } else if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
+            robot.intake.setIntakePower(-gamepad2.left_stick_y, -gamepad2.right_stick_y);
         } else {
-            intake.rotateDown();
+            robot.intake.setIntakePower(leftIntakePower, rightIntakePower);
         }
-
-        if (gamepad2.right_trigger > 0.8) {
-            intake.engageFlipper();
-        } else {
-            intake.disengageFlipper();
-        }
-
-        // relic
-        if (gamepad2.right_stick_y != 0) {
-            relicRecoverer.setExtendPower(-0.25 * gamepad2.left_stick_y);
-        } else {
-            relicRecoverer.setExtendPower(0);
-        }
-
-        if (gamepad2.x) {
-            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.VERTICAL);
-        }
-
-        if (gamepad2.y) {
-            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.HORIZONTAL);
-        }
-
-        if (gamepad2.a) {
-            relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.STOW);
-        }
-
-        if (gamepad2.b) {
-            if (relicRecoverer.isFingerClosed()) {
-                relicRecoverer.openFinger();
-            } else {
-                relicRecoverer.closeFinger();
-            }
-        }
-
-        drive.update();
-        dumpBed.update();
-        intake.update();
-
-        telemetry.addData("test", Math.random());
-
-//        dashboard.getTelemetry().update();
     }
 }
 

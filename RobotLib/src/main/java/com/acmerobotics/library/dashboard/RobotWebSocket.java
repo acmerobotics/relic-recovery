@@ -13,6 +13,7 @@ import fi.iki.elonen.NanoWSD.WebSocketFrame;
 import fi.iki.elonen.NanoWSD.WebSocketFrame.CloseCode;
 
 public class RobotWebSocket extends WebSocket {
+	public static final boolean DEBUG = false;
 	
 	private RobotDashboard dashboard;
 
@@ -23,13 +24,13 @@ public class RobotWebSocket extends WebSocket {
 
 	@Override
 	protected void onOpen() {
-		Log.i(RobotDashboard.TAG, "[OPEN]\t" + this.getHandshakeRequest().getRemoteIpAddress());
+		if (DEBUG) Log.i(RobotDashboard.TAG, "[OPEN]\t" + this.getHandshakeRequest().getRemoteIpAddress());
 		dashboard.addSocket(this);
 	}
 
 	@Override
 	protected void onClose(CloseCode code, String reason, boolean initiatedByRemote) {
-		Log.i(RobotDashboard.TAG, "[CLOSE]\t" + this.getHandshakeRequest().getRemoteIpAddress());
+		if (DEBUG) Log.i(RobotDashboard.TAG, "[CLOSE]\t" + this.getHandshakeRequest().getRemoteIpAddress());
 		dashboard.removeSocket(this);
 	}
 
@@ -39,7 +40,7 @@ public class RobotWebSocket extends WebSocket {
 		if (msg.getType() == MessageType.PING) {
 			send(new Message(MessageType.PONG));
 		} else {
-			Log.i(RobotDashboard.TAG, "[RECV] " + message.getTextPayload());
+			if (DEBUG) Log.i(RobotDashboard.TAG, "[RECV] " + message.getTextPayload());
 			dashboard.onMessage(this, msg);
 		}
 	}
@@ -58,7 +59,7 @@ public class RobotWebSocket extends WebSocket {
 		try {
 			String messageStr = RobotDashboard.GSON.toJson(message);
 			if (message.getType() != MessageType.PONG) {
-				Log.i(RobotDashboard.TAG, "[SENT] " + messageStr);
+				if (DEBUG) Log.i(RobotDashboard.TAG, "[SENT] " + messageStr);
 			}
 			send(messageStr);
 		} catch (IOException e) {

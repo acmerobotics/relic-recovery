@@ -14,7 +14,6 @@ public class OpModeConfiguration {
     public static final String PREF_BALANCING_STONE = "balancing_stone";
     public static final String PREF_MATCH_TYPE = "match_type";
     public static final String PREF_MATCH_NUMBER = "match_number";
-    public static final String PREF_AUTO_HEADING = "auto_heading";
     public static final String PREF_AUTO_TRANSITION = "auto_transition";
 
     public static final String NO_AUTO_TRANSITION = "None";
@@ -73,15 +72,6 @@ public class OpModeConfiguration {
 
     public void setMatchNumber(int num) {
         editor.putInt(PREF_MATCH_NUMBER, num);
-        editor.commit();
-    }
-
-    public double getAutoHeading() {
-        return preferences.getFloat(PREF_AUTO_HEADING, 0);
-    }
-
-    public void setAutoHeading(double heading) {
-        editor.putFloat(PREF_AUTO_HEADING, (float) heading);
         editor.commit();
     }
 

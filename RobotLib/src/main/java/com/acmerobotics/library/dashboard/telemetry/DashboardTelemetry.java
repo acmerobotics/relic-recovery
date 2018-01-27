@@ -5,51 +5,14 @@ import android.support.annotation.Nullable;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageType;
-import com.acmerobotics.library.util.TimestampedData;
-import com.qualcomm.robotcore.util.ThreadPool;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-
-/**
- * @author Ryan
- */
 
 public class DashboardTelemetry implements Telemetry {
-    private class TelemetryUpdateThread implements Runnable {
-        private Message telemetryMessageToSend;
-        private double lastMessageTimestamp;
-
-        @Override
-        public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
-                double currentTime = TimestampedData.getCurrentTime();
-                double timeSinceLastTransmission = currentTime - lastMessageTimestamp;
-                if (telemetryMessageToSend != null && timeSinceLastTransmission >= (msTransmissionInterval / 1000.0)) {
-                    synchronized (this) {
-                        dashboard.sendAll(telemetryMessageToSend);
-                        lastMessageTimestamp = currentTime;
-                        telemetryMessageToSend = null;
-                    }
-                } else {
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        }
-
-        public synchronized void queueMessage(Message message) {
-            telemetryMessageToSend = message;
-        }
-    }
-
     public class LogImpl implements Log {
         private transient int capacity = 9;
         private DisplayOrder displayOrder;
@@ -226,14 +189,9 @@ public class DashboardTelemetry implements Telemetry {
     protected transient int msTransmissionInterval;
     protected String captionValueSeparator;
     protected String itemSeparator;
-    private transient ExecutorService updateExecutorService;
-    private TelemetryUpdateThread updateThread;
 
     public DashboardTelemetry(RobotDashboard dashboard) {
         this.dashboard = dashboard;
-        updateThread = new TelemetryUpdateThread();
-        updateExecutorService = ThreadPool.newSingleThreadExecutor("dashboard telemetry update");
-        updateExecutorService.submit(updateThread);
         resetTelemetryForOpMode();
     }
 
@@ -244,6 +202,7 @@ public class DashboardTelemetry implements Telemetry {
         this.msTransmissionInterval = 250;
         this.captionValueSeparator = " : ";
         this.itemSeparator = " | ";
+        update();
     }
 
     @Override
@@ -398,13 +357,5 @@ public class DashboardTelemetry implements Telemetry {
     @Override
     public synchronized Log log() {
         return this.log;
-    }
-
-    public void stop() {
-        if (updateExecutorService != null) {
-            updateExecutorService.shutdownNow();
-            updateExecutorService = null;
-            updateThread = null;
-        }
     }
 }

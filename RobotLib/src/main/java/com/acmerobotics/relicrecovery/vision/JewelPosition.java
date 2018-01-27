@@ -1,12 +1,11 @@
 package com.acmerobotics.relicrecovery.vision;
 
-/**
- * @author Ryan
- */
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
+
 public enum JewelPosition {
-    RED_BLUE("Red / Blue"),
-    BLUE_RED("Blue / Red"),
-    UNKNOWN("Unknown");
+    RED_BLUE("Red / Blue", AllianceColor.RED, AllianceColor.BLUE),
+    BLUE_RED("Blue / Red", AllianceColor.BLUE, AllianceColor.RED),
+    UNKNOWN("Unknown", null, null);
 
     // this is a weird workaround; avoids self-reference errors
     static {
@@ -16,14 +15,25 @@ public enum JewelPosition {
     }
 
     private JewelPosition opp;
+    private AllianceColor leftColor, rightColor;
     private String str;
 
-    JewelPosition(String str) {
+    JewelPosition(String str, AllianceColor leftColor, AllianceColor rightColor) {
         this.str = str;
+        this.leftColor = leftColor;
+        this.rightColor = rightColor;
     }
 
     public JewelPosition opposite() {
         return opp;
+    }
+
+    public AllianceColor leftColor() {
+        return leftColor;
+    }
+
+    public AllianceColor rightColor() {
+        return rightColor;
     }
 
     @Override

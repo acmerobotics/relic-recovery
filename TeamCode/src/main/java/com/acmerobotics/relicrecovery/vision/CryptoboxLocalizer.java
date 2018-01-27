@@ -18,10 +18,6 @@ import java.util.List;
 import static com.acmerobotics.relicrecovery.vision.CryptoboxTracker.ACTUAL_RAIL_GAP;
 import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanRailGap;
 
-/**
- * @author Ryan
- */
-
 @Config
 public class CryptoboxLocalizer implements CryptoboxTracker.Listener {
     public static int HORIZONTAL_OFFSET = -3;

@@ -8,10 +8,6 @@ import org.opencv.core.Rect;
 import org.opencv.core.Rect2d;
 import org.opencv.core.Scalar;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
-
 @Config
 public class FixedJewelTracker extends Tracker {
     public static final String TAG = "FixedJewelTracker";

@@ -4,10 +4,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- * @author Ryan
- */
-
 public class PIDControllerTest {
 
     @Test

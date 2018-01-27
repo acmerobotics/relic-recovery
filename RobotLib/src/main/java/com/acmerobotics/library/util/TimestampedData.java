@@ -1,8 +1,5 @@
 package com.acmerobotics.library.util;
 
-/**
- * @author Ryan
- */
 public class TimestampedData<T> {
     public final T data;
     /** timestamp in seconds on the System#nanoTime() timescale */

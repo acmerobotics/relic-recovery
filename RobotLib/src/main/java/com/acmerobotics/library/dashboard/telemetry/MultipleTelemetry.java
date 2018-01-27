@@ -9,10 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * @author Ryan
- */
-
 public class MultipleTelemetry implements Telemetry {
     public class MultipleItem implements Item {
         private List<Item> items;

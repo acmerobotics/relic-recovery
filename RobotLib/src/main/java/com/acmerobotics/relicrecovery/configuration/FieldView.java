@@ -12,11 +12,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.acmerobotics.library.R;
-import com.acmerobotics.library.localization.Pose2d;
-
-/**
- * Created by ryanbrott on 11/12/17.
- */
+import com.acmerobotics.library.localization.Vector2d;
 
 public class FieldView extends View {
     private Bitmap fieldBitmap;
@@ -55,9 +51,9 @@ public class FieldView extends View {
 
         if (configuration != null) {
             BalancingStone balancingStone = configuration.getBalancingStone();
-            Pose2d pose = balancingStone.getPose();
-            canvas.drawCircle((float) scale(pose.y(), 72, -72, 0, canvas.getWidth()),
-                    (float) scale(pose.x(), 72, -72, 0, canvas.getHeight()), 10, paint);
+            Vector2d position = balancingStone.getPosition();
+            canvas.drawCircle((float) scale(position.y(), 72, -72, 0, canvas.getWidth()),
+                    (float) scale(position.x(), 72, -72, 0, canvas.getHeight()), 10, paint);
         }
     }
 

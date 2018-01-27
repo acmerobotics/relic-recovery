@@ -11,10 +11,6 @@ import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 import java.util.Locale;
 
-/**
- * Created by ryanbrott on 11/5/17.
- */
-
 public class PointTurn implements PathSegment {
     private Pose2d initialPose;
     private double angle;
@@ -60,5 +56,9 @@ public class PointTurn implements PathSegment {
     @Override
     public Pose2d getPoseAcceleration(double time) {
         return new Pose2d(new Vector2d(0, 0), profile.get(time).a);
+    }
+
+    public double getAngle() {
+        return angle;
     }
 }

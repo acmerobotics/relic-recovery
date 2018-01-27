@@ -1,9 +1,5 @@
 package com.acmerobotics.library.dashboard.config.options;
 
-/**
- * Created by ryanbrott on 10/13/17.
- */
-
 public enum OptionType {
     BOOLEAN("boolean"),
     INT("int"),

@@ -31,7 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Created by ryanbrott on 12/24/17.
  * https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_feature2d/py_feature_homography/py_feature_homography.html#py-feature-homography
  */
 

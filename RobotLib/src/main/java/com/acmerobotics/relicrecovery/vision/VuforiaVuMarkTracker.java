@@ -6,10 +6,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.opencv.core.Mat;
 
-/**
- * Created by ryanbrott on 12/24/17.
- */
-
 public class VuforiaVuMarkTracker extends Tracker {
     private boolean initialized = false;
     private VuforiaTrackables relicTrackables;

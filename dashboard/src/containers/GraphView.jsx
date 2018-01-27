@@ -32,10 +32,12 @@ class GraphView extends Component {
   handleDocumentKeydown(evt) {
     console.log(evt.code);
     if (!this.state.graphing && (evt.code === 'Enter' || evt.code === 'NumpadEnter')) {
+      this.props.onChange(true);
       this.setState({
         graphing: true,
       });
     } else if (this.state.graphing && evt.code === 'Escape') {
+      this.props.onChange(false);
       this.setState({
         graphing: false,
       });
@@ -43,6 +45,7 @@ class GraphView extends Component {
   }
 
   handleClick() {
+    this.props.onChange(!this.state.graphing);
     this.setState({
       graphing: !this.state.graphing,
     });
@@ -88,7 +91,8 @@ const itemPropType = PropTypes.shape({
 
 GraphView.propTypes = {
   timestamp: PropTypes.number.isRequired,
-  items: PropTypes.arrayOf(itemPropType)
+  items: PropTypes.arrayOf(itemPropType),
+  onChange: PropTypes.func.isRequired
 };
 
 const mapStateToProps = ({ telemetry }) => ({

@@ -7,9 +7,6 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
 public class OverlayView extends View {
     private List<Tracker> trackers;
     private int imageHeight, imageWidth;
@@ -68,6 +65,8 @@ public class OverlayView extends View {
         // draw
         CanvasOverlay overlay = new CanvasOverlay(canvas);
         for (Tracker tracker : trackers) {
+            if (!tracker.isEnabled()) continue;
+
             canvas.save();
 
             overlay.setScalingFactor(1);

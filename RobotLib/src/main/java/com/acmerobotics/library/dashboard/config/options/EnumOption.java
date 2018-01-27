@@ -7,10 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-/**
- * Created by ryanbrott on 10/25/17.
- */
-
 public class EnumOption extends Option {
     private ValueProvider<Enum> provider;
 

@@ -6,10 +6,6 @@ import java.lang.reflect.Field;
 
 import static com.acmerobotics.library.dashboard.RobotDashboard.TAG;
 
-/**
- * Created by ryanbrott on 10/13/17.
- */
-
 public class FieldProvider<T> implements ValueProvider<T> {
     private Field field;
     private Object parent;
