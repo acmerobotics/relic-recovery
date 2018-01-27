@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes;
+package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
@@ -13,10 +13,6 @@ import com.qualcomm.robotcore.util.MovingStatistics;
 import org.firstinspires.ftc.robotcore.external.Func;
 
 import java.util.Iterator;
-
-/**
- * Created by ryanbrott on 1/2/18.
- */
 
 @TeleOp(name = "Expansion Hub Benchmark")
 public class ExpansionHubBenchmark extends LinearOpMode {

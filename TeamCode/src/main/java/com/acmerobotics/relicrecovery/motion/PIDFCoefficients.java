@@ -2,10 +2,6 @@ package com.acmerobotics.relicrecovery.motion;
 
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
-/**
- * @author Ryan
- */
-
 public class PIDFCoefficients extends PIDCoefficients {
     public double v, a;
 

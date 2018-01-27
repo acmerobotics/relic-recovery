@@ -13,13 +13,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Ryan
- */
-
 @Config
 public class AutoPaths {
-    public static double STONE_CORRECTION = 3; // in
+    /** used to artificially adjust the balancing stone location */
+    public static double STONE_CORRECTION = -2.5; // in
+
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
     public static final Map<RelicRecoveryVuMark, Integer> vuMarkMap;
@@ -29,43 +27,167 @@ public class AutoPaths {
         vuMarkMap.put(RelicRecoveryVuMark.LEFT, 1);
         vuMarkMap.put(RelicRecoveryVuMark.CENTER, 0);
         vuMarkMap.put(RelicRecoveryVuMark.RIGHT, -1);
-        vuMarkMap.put(RelicRecoveryVuMark.UNKNOWN, 0);
     }
 
-    public static Path makePathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+    public static Pose2d getBalancingStonePose(BalancingStone stone) {
+        if (stone == BalancingStone.NEAR_BLUE || stone == BalancingStone.FAR_BLUE) {
+            return new Pose2d(stone.getPosition(), Math.PI);
+        } else {
+            return new Pose2d(stone.getPosition(), 0);
+        }
+    }
+
+    public static Pose2d getAdjustedBalancingStonePose(BalancingStone stone) {
+        return getBalancingStonePose(stone).added(new Pose2d(STONE_CORRECTION, 0, 0));
+    }
+
+    public static Path makeNormalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+        vuMark = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
         int vuMarkInt = vuMarkMap.get(vuMark);
+        Pose2d stonePose = getAdjustedBalancingStonePose(stone);
         switch (stone) {
             case NEAR_BLUE: {
-                return new PathBuilder(new Pose2d(48, -48, Math.PI))
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION + CRYPTO_COL_WIDTH * vuMarkInt, -48))
+                double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(stonePose)
+                        .lineTo(new Vector2d(cryptoboxX, -48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION + CRYPTO_COL_WIDTH * vuMarkInt, -58))
+                        .lineTo(new Vector2d(cryptoboxX, -57))
                         .build();
             }
             case FAR_BLUE: {
-                return new PathBuilder(new Pose2d(-24, -48, Math.PI))
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, -48))
+                double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(stonePose)
+                        .lineTo(new Vector2d(-48, -48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, -36 - CRYPTO_COL_WIDTH * vuMarkInt))
+                        .lineTo(new Vector2d(-48, cryptoboxY))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(-58 + STONE_CORRECTION, -36 - CRYPTO_COL_WIDTH  * vuMarkInt))
+                        .lineTo(new Vector2d(-57, cryptoboxY))
                         .build();
             }
             case FAR_RED: {
-                return new PathBuilder(new Pose2d(-24, 48, Math.PI))
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, 48))
+                double cryptoboxY = 36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(stonePose)
+                        .lineTo(new Vector2d(-48, 48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(-48 + STONE_CORRECTION, 36 - CRYPTO_COL_WIDTH * vuMarkInt))
+                        .lineTo(new Vector2d(-48, cryptoboxY))
                         .turn(Math.PI / 2)
-                        .lineTo(new Vector2d(-58 + STONE_CORRECTION, 36 - CRYPTO_COL_WIDTH  * vuMarkInt))
+                        .lineTo(new Vector2d(-57, cryptoboxY))
                         .build();
             }
             case NEAR_RED: {
-                return new PathBuilder(new Pose2d(48, 48, 0))
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION - CRYPTO_COL_WIDTH * vuMarkInt, 48))
+                double cryptoboxX = 12 - CRYPTO_COL_WIDTH * vuMarkInt;
+                return new PathBuilder(stonePose)
+                        .lineTo(new Vector2d(cryptoboxX, 48))
                         .turn(-Math.PI / 2)
-                        .lineTo(new Vector2d(12 + STONE_CORRECTION - CRYPTO_COL_WIDTH * vuMarkInt, 58))
+                        .lineTo(new Vector2d(cryptoboxX, 57))
                         .build();
+            }
+        }
+        return new Path(Collections.emptyList());
+    }
+
+    public static Path makeDiagonalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
+        vuMark = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.RIGHT : vuMark;
+        int vuMarkInt = vuMarkMap.get(vuMark);
+        Pose2d stonePose = getAdjustedBalancingStonePose(stone);
+        switch (stone) {
+            case NEAR_BLUE: {
+                double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX - 18, -48))
+                            .turn(-Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX - 8, -58))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 4 + 10 / Math.sqrt(3), -48))
+                            .turn(-2 * Math.PI / 3)
+                            .lineTo(new Vector2d(cryptoboxX + 4, -58))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 18, -48))
+                            .turn(-3 * Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX + 8, -58))
+                            .build();
+                }
+                break;
+            }
+            case FAR_BLUE: {
+                double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, -48))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 14))
+                            .turn(-3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 8))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, -48))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 14))
+                            .turn(3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, -48))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 14))
+                            .turn(3 * Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
+                            .build();
+                }
+                break;
+            }
+            case NEAR_RED: {
+                double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 18, 48))
+                            .turn(-Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX + 8, 58))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX + 4 + 10 / Math.sqrt(3), 48))
+                            .turn(-Math.PI / 3)
+                            .lineTo(new Vector2d(cryptoboxX + 4, 58))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(cryptoboxX - 18, 48))
+                            .turn(-3 * Math.PI / 4)
+                            .lineTo(new Vector2d(cryptoboxX - 8, 58))
+                            .build();
+                }
+                break;
+            }
+            case FAR_RED: {
+                double cryptoboxY = 36 - CRYPTO_COL_WIDTH * vuMarkInt;
+                if (vuMark == RelicRecoveryVuMark.LEFT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, 48))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 14))
+                            .turn(Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 8))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, 48))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 14))
+                            .turn(Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 8))
+                            .build();
+                } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
+                    return new PathBuilder(stonePose)
+                            .lineTo(new Vector2d(-52, 48))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 14))
+                            .turn(-Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
+                            .build();
+                }
+                break;
             }
         }
         return new Path(Collections.emptyList());

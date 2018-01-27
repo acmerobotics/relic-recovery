@@ -3,10 +3,6 @@ package com.acmerobotics.library.dashboard.canvas;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by ryanbrott on 8/4/17.
- */
-
 public class Canvas {
     private List<CanvasOp> ops;
 

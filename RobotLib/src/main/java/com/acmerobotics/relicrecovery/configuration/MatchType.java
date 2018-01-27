@@ -1,8 +1,5 @@
 package com.acmerobotics.relicrecovery.configuration;
 
-/**
- * Created by ryanbrott on 11/12/17.
- */
 public enum MatchType {
     PRACTICE(0),
     QUALIFYING(1),

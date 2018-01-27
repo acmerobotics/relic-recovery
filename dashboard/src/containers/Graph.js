@@ -166,7 +166,8 @@ export default class Graph {
         }
       }
     }
-    if (min === max) {
+    console.log(min, max);
+    if (Math.abs(min - max) < 1e-100) {
       return getAxisScaling(min - 1, max + 1);
     }
     return getAxisScaling(min, max);

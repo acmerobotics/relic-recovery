@@ -7,11 +7,6 @@ import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
-import com.acmerobotics.relicrecovery.path.Path;
-
-/**
- * @author Ryan
- */
 
 @Config
 public class PathFollower {
@@ -34,6 +29,10 @@ public class PathFollower {
         axialController = new PIDFController(axialCoeff);
 
         lateralController = new PIDFController(lateralCoeff);
+    }
+
+    public Path getPath() {
+        return path;
     }
 
     public double getHeadingError() {

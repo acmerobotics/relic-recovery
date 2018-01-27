@@ -154,7 +154,6 @@ public class RobotDashboard {
 
 	public void stop() {
 		server.stop();
-		telemetry.stop();
 		dashboard = null;
 	}
 }

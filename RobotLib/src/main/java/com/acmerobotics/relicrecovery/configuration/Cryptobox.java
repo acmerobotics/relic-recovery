@@ -2,10 +2,6 @@ package com.acmerobotics.relicrecovery.configuration;
 
 import com.acmerobotics.library.localization.Pose2d;
 
-/**
- * Created by ryanbrott on 11/12/17.
- */
-
 public enum Cryptobox {
     NEAR_BLUE(0, AllianceColor.BLUE, new Pose2d(12, -72, Math.PI / 2)),
     FAR_BLUE(1, AllianceColor.BLUE, new Pose2d(-72, -36, 0)),

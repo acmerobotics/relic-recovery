@@ -9,12 +9,12 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -24,7 +24,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
@@ -33,8 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Created by kelly on 9/28/2017
- *
  * Wheel layout (top view):
  *
  *        FRONT
@@ -48,13 +45,13 @@ import java.util.Map;
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
 @Config
-public class MecanumDrive {
+public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 48.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.01, 0, 0, 0.234, 0);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(0, 0, 0, 0.0185, 0);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(0, 0, 0, 0.0183, 0);
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-1, 0, 0, 0.232, 0.05);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0179, 0.0025);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0187, 0);
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -142,7 +139,7 @@ public class MecanumDrive {
 
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
-        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "rearHub"), 1);
+        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "frontHub"), 1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
@@ -171,6 +168,10 @@ public class MecanumDrive {
         resetEncoders();
 
         setHeading(0);
+    }
+
+    public PathFollower getPathFollower() {
+        return pathFollower;
     }
 
     public void enablePositionEstimation() {
@@ -346,7 +347,7 @@ public class MecanumDrive {
     }
 
     private double getRawHeading() {
-        return -getAngularOrientation().toAxesOrder(AxesOrder.XYZ).thirdAngle;
+        return getAngularOrientation().firstAngle;
     }
 
     public double getHeading() {
@@ -367,6 +368,14 @@ public class MecanumDrive {
 
     public boolean isFollowingPath() {
         return pathFollower.isFollowingPath();
+    }
+
+    public Vector2d getEstimatedPosition() {
+        return estimatedPosition;
+    }
+
+    public void setEstimatedPosition(Vector2d position) {
+        estimatedPosition = position;
     }
 
     public Pose2d getEstimatedPose() {
@@ -428,6 +437,8 @@ public class MecanumDrive {
             } else {
                 internalSetVelocity(targetVel, targetOmega);
             }
+        } else {
+            internalSetVelocity(targetVel, targetOmega);
         }
 
         switch (mode) {
@@ -472,9 +483,6 @@ public class MecanumDrive {
                     telemetryMap.put("pathLateralUpdate", pathFollower.getLateralUpdate());
                     telemetryMap.put("pathHeadingError", pathFollower.getHeadingError());
                     telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
-
-                    fieldOverlay.setStroke("#F44336");
-                    DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
                 } else {
                     stop();
                     revertMode();
@@ -489,6 +497,16 @@ public class MecanumDrive {
                 lastPowers[i] = powers[i];
             }
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
+        }
+
+        if (pathFollower.getPath() != null) {
+            fieldOverlay.setStroke("#4CAF50");
+            DrawingUtil.drawPath(fieldOverlay, pathFollower.getPath());
+        }
+
+        if (pathFollower.getPose() != null) {
+            fieldOverlay.setStroke("#F44336");
+            DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
         }
 
         fieldOverlay.setStroke("#3F51B5");

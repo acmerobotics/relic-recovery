@@ -1,9 +1,5 @@
 package com.acmerobotics.library.dashboard.message;
 
-/**
- * @author Ryan
- */
-
 public class Message {
     private MessageType type;
     private Object data;

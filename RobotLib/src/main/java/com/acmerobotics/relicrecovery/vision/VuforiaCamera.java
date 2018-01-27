@@ -22,10 +22,6 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
-
 public class VuforiaCamera extends VisionCamera {
     public static final String TAG = "VuforiaCamera";
 
@@ -177,10 +173,6 @@ public class VuforiaCamera extends VisionCamera {
     public Properties getProperties() {
         return new VuforiaProperties();
     }
-
-    /**
-     * @author Ryan
-     */
 
     private class VuforiaProperties implements Properties {
         @Override

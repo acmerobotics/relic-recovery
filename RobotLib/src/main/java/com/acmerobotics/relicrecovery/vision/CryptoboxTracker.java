@@ -20,10 +20,6 @@ import java.util.List;
 
 import static com.acmerobotics.relicrecovery.vision.OldCryptoboxTracker.getMeanRailGap;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
-
 @Config
 public class CryptoboxTracker extends Tracker {
     public interface Listener {

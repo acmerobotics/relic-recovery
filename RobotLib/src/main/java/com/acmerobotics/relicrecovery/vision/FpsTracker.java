@@ -8,10 +8,6 @@ import org.opencv.core.Scalar;
 
 import java.util.Locale;
 
-/**
- * Created by ryanbrott on 9/23/17.
- */
-
 public class FpsTracker extends Tracker {
     private ExponentialSmoother smoother;
     private double lastTimestamp, avgTimeDelta;

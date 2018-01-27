@@ -7,10 +7,6 @@ import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by ryanbrott on 10/13/17.
- */
-
 public class Configuration {
     private Map<String, Option> options;
 

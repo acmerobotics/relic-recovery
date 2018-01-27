@@ -12,10 +12,6 @@ import org.opencv.imgproc.Imgproc;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by ryanbrott on 10/27/17.
- */
-
 public class MatOverlay implements Overlay {
     public static final int FONT = Core.FONT_HERSHEY_DUPLEX;
     public static final int TEXT_THICKNESS = 4;

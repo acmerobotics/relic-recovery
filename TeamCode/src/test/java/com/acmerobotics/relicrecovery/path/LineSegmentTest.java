@@ -6,10 +6,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by ryanbrott on 11/14/17.
- */
-
 public class LineSegmentTest {
 
     @Test

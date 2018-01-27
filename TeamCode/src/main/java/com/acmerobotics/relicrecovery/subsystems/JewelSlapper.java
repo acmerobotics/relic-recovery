@@ -5,18 +5,17 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-/**
- * Created by ryanbrott on 1/9/18.
- */
-
 public class JewelSlapper extends Subsystem {
+    public static final double DEPLOYER_UP_POSITION = 0.07;
+    public static final double DEPLOYER_DOWN_POSITION = 0.63;
+
     private Telemetry telemetry;
 
     public enum Position {
-        LEFT(1),
-        CENTER(0.75),
-        RIGHT(0.43),
-        STOW(0);
+        LEFT(0.4),
+        CENTER(0.59),
+        RIGHT(0.73),
+        STOW(0.87);
 
         private double servoPos;
 
@@ -31,7 +30,7 @@ public class JewelSlapper extends Subsystem {
 
     private Servo jewelDeployer, jewelSlapper;
 
-    private Position position;
+    private Position position = Position.STOW;
     private boolean deployed;
 
     public JewelSlapper(HardwareMap map, Telemetry telemetry) {
@@ -40,12 +39,13 @@ public class JewelSlapper extends Subsystem {
         jewelDeployer = map.servo.get("jewelDeployer");
         jewelSlapper = map.servo.get("jewelSlapper");
 
+        deployed = true;
         stowArmAndSlapper();
     }
 
     public void deployArmAndSlapper() {
         if (!deployed) {
-            jewelDeployer.setPosition(0.77);
+            jewelDeployer.setPosition(DEPLOYER_DOWN_POSITION);
             setSlapperPosition(Position.CENTER);
             deployed = true;
         }
@@ -53,7 +53,7 @@ public class JewelSlapper extends Subsystem {
 
     public void stowArmAndSlapper() {
         if (deployed) {
-            jewelDeployer.setPosition(0.01);
+            jewelDeployer.setPosition(DEPLOYER_UP_POSITION);
             setSlapperPosition(Position.STOW);
             deployed = false;
         }
@@ -72,6 +72,7 @@ public class JewelSlapper extends Subsystem {
 
     @Override
     public void update() {
-
+        telemetry.addData("jewelSlapperDeployed", deployed);
+        telemetry.addData("jewelSlapperPosition", position);
     }
 }

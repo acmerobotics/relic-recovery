@@ -2,11 +2,6 @@ package com.acmerobotics.library.localization;
 
 import java.util.Locale;
 
-/**
- * Created by kelly on 9/28/2017.
- *
- */
-
 public class Pose2d {
 
     private final Vector2d pos;

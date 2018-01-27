@@ -24,7 +24,7 @@ class MultipleCheckbox extends React.Component {
 
   render() {
     return (
-      <table style={{ overflow: 'scroll' }}>
+      <table>
         <tbody>
           {
             this.props.arr

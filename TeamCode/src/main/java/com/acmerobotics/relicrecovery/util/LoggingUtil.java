@@ -10,10 +10,6 @@ import org.firstinspires.ftc.teamcode.R;
 
 import java.io.File;
 
-/**
- * @author Ryan
- */
-
 public class LoggingUtil {
     public static File getLogRoot(OpMode opMode) {
         String dirName = opMode.hardwareMap.appContext.getResources().getString(R.string.log_root);

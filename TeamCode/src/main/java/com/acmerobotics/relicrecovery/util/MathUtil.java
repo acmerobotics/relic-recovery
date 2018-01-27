@@ -1,9 +1,5 @@
 package com.acmerobotics.relicrecovery.util;
 
-/**
- * @author kellyrm
- */
-
 public class MathUtil {
 
     //Static class

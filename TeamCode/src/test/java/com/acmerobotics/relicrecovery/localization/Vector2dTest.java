@@ -1,16 +1,11 @@
 package com.acmerobotics.relicrecovery.localization;
 
-
 import com.acmerobotics.library.localization.Vector2d;
 
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-
-/**
- * @author Ryan
- */
 
 public class Vector2dTest {
 

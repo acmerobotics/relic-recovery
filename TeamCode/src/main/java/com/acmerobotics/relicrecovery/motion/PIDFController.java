@@ -5,10 +5,6 @@ import com.qualcomm.robotcore.util.Range;
 
 import java.util.Locale;
 
-/**
- * @author Ryan
- */
-
 public class PIDFController {
     private PIDController controller;
     private PIDFCoefficients coeff;

@@ -4,10 +4,6 @@ import com.acmerobotics.library.dashboard.config.ValueProvider;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-/**
- * Created by ryanbrott on 10/25/17.
- */
-
 public class IntOption extends Option {
     private ValueProvider<Integer> provider;
 

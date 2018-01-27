@@ -14,10 +14,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.File;
 
-/**
- * @author Ryan
- */
-
 @Config
 @TeleOp(name = "Drive Velocity Characterization")
 public class DriveVelocityCharacterization extends LinearOpMode {
