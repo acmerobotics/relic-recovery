@@ -73,6 +73,8 @@ public class MainTeleOp extends OpMode {
             } else {
                 robot.dumpBed.moveUp();
             }
+        } else if (robot.dumpBed.getMode() == DumpBed.Mode.MANUAL) {
+            robot.dumpBed.setLiftPower(0);
         }
 
         if (stickyGamepad1.right_bumper) {

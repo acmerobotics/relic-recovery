@@ -119,23 +119,23 @@ public class AutoPaths {
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(-52, -48))
-                            .lineTo(new Vector2d(-52, cryptoboxY + 12))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 14))
                             .turn(-3 * Math.PI / 4)
-                            .lineTo(new Vector2d(-58, cryptoboxY + 6))
+                            .lineTo(new Vector2d(-58, cryptoboxY + 8))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(-52, -48))
-                            .lineTo(new Vector2d(-52, cryptoboxY - 9))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 14))
                             .turn(3 * Math.PI / 4)
-                            .lineTo(new Vector2d(-58, cryptoboxY - 3))
+                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(-52, -48))
-                            .lineTo(new Vector2d(-52, cryptoboxY - 12))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 14))
                             .turn(3 * Math.PI / 4)
-                            .lineTo(new Vector2d(-58, cryptoboxY - 6))
+                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
                             .build();
                 }
                 break;
@@ -168,23 +168,23 @@ public class AutoPaths {
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(-52, 48))
-                            .lineTo(new Vector2d(-52, cryptoboxY - 12))
-                            .turn(-3 * Math.PI / 4)
-                            .lineTo(new Vector2d(-58, cryptoboxY - 6))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 14))
+                            .turn(Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 8))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(-52, 48))
-                            .lineTo(new Vector2d(-52, cryptoboxY + 9))
-                            .turn(3 * Math.PI / 4)
-                            .lineTo(new Vector2d(-58, cryptoboxY + 3))
+                            .lineTo(new Vector2d(-52, cryptoboxY + 14))
+                            .turn(Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY + 8))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(-52, 48))
-                            .lineTo(new Vector2d(-52, cryptoboxY + 12))
-                            .turn(3 * Math.PI / 4)
-                            .lineTo(new Vector2d(-58, cryptoboxY + 6))
+                            .lineTo(new Vector2d(-52, cryptoboxY - 14))
+                            .turn(-Math.PI / 4)
+                            .lineTo(new Vector2d(-58, cryptoboxY - 8))
                             .build();
                 }
                 break;

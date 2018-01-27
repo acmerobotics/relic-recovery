@@ -6,13 +6,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class JewelSlapper extends Subsystem {
+    public static final double DEPLOYER_UP_POSITION = 0.07;
+    public static final double DEPLOYER_DOWN_POSITION = 0.63;
+
     private Telemetry telemetry;
 
     public enum Position {
-        LEFT(0),
-        CENTER(0.53),
-        RIGHT(1),
-        STOW(1);
+        LEFT(0.4),
+        CENTER(0.59),
+        RIGHT(0.73),
+        STOW(0.87);
 
         private double servoPos;
 
@@ -36,12 +39,13 @@ public class JewelSlapper extends Subsystem {
         jewelDeployer = map.servo.get("jewelDeployer");
         jewelSlapper = map.servo.get("jewelSlapper");
 
+        deployed = true;
         stowArmAndSlapper();
     }
 
     public void deployArmAndSlapper() {
         if (!deployed) {
-            jewelDeployer.setPosition(0.62);
+            jewelDeployer.setPosition(DEPLOYER_DOWN_POSITION);
             setSlapperPosition(Position.CENTER);
             deployed = true;
         }
@@ -49,7 +53,7 @@ public class JewelSlapper extends Subsystem {
 
     public void stowArmAndSlapper() {
         if (deployed) {
-            jewelDeployer.setPosition(0.07);
+            jewelDeployer.setPosition(DEPLOYER_UP_POSITION);
             setSlapperPosition(Position.STOW);
             deployed = false;
         }
