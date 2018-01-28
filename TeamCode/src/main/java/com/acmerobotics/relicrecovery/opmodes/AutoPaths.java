@@ -141,7 +141,7 @@ public class AutoPaths {
                 break;
             }
             case NEAR_RED: {
-                double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
+                double cryptoboxX = 12 - CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX + 18, 48))
