@@ -61,7 +61,7 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
 
     @Override
     public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted() && serverSocket != null) {
             if (socket != null) {
                 try {
                     Message message = Message.read(inputStream);
@@ -100,6 +100,15 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
         if (executorService != null) {
             executorService.shutdownNow();
             executorService = null;
+        }
+
+        if (socket != null) {
+            try {
+                socket.close();
+                socket = null;
+            } catch (IOException e) {
+                Log.w(TAG, e);
+            }
         }
 
         if (serverSocket != null) {
