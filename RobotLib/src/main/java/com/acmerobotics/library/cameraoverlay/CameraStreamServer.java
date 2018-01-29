@@ -64,12 +64,6 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
         while (!Thread.currentThread().isInterrupted()) {
             if (socket != null) {
                 try {
-                    if (socket.isClosed()) {
-                        Log.i(TAG, "disconnect, attempting to reconnect");
-                        serverSocket = null;
-                        continue;
-                    }
-
                     Message message = Message.read(inputStream);
                     if (message instanceof PingCommand) {
                         outputStream.write(new PongResponse().toByteArray());
@@ -85,16 +79,18 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (IOException e) {
-
+                    Log.w(TAG, "process command failed -- reconnecting");
+                    socket = null;
                 }
             } else {
                 try {
                     socket = serverSocket.accept();
+                    socket.setSoTimeout(1000);
                     inputStream = socket.getInputStream();
                     outputStream = socket.getOutputStream();
-                    Log.i(TAG, "got connection from " + socket.getRemoteSocketAddress());
+                    Log.i(TAG, "connected to " + socket.getRemoteSocketAddress());
                 } catch (IOException e) {
-                    Log.w(TAG, e);
+                    Log.w(TAG, "accept failed -- " + e.getMessage());
                 }
             }
         }
