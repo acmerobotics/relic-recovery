@@ -58,11 +58,6 @@ public class FpsVision extends OpMode {
     }
 
     @Override
-    public void start() {
-        streamServer.start();
-    }
-
-    @Override
     public void loop() {
 
     }

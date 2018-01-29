@@ -3,6 +3,11 @@ package com.acmerobotics.library.cameraoverlay;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.acmerobotics.library.cameraoverlay.message.Message;
+import com.acmerobotics.library.cameraoverlay.message.PingCommand;
+import com.acmerobotics.library.cameraoverlay.message.PongResponse;
+import com.acmerobotics.library.cameraoverlay.message.ReceiveFrameResponse;
+import com.acmerobotics.library.cameraoverlay.message.RequestFrameCommand;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.qualcomm.robotcore.util.ThreadPool;
@@ -10,30 +15,27 @@ import com.qualcomm.robotcore.util.ThreadPool;
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 
 public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notifications {
+    public static final String TAG = "CameraStreamServer";
     public static final int PORT = 9000;
-    public static final int BLOCK_SIZE = 1024;
-    public static final int CAPACITY = 2;
-    public static final int QUALITY = 50;
+    public static final int CAPACITY = 1;
 
     private ServerSocket serverSocket;
     private BlockingQueue<Bitmap> queue;
     private Socket socket;
+    private InputStream inputStream;
     private OutputStream outputStream;
     private ExecutorService executorService;
     private OpModeManagerImpl opModeManager;
-    private volatile boolean started;
 
     public CameraStreamServer() {
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(AppUtil.getInstance().getActivity());
@@ -43,16 +45,12 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
         try {
             serverSocket = new ServerSocket(PORT);
         } catch (IOException e) {
-            Log.w("CameraStreamServer", e);
+            Log.w(TAG, e);
         }
         queue = new ArrayBlockingQueue<>(CAPACITY);
 
         executorService = ThreadPool.newSingleThreadExecutor("camera stream server");
         executorService.submit(this);
-    }
-
-    public void start() {
-        started = true;
     }
 
     public void send(Bitmap bitmap) {
@@ -67,62 +65,36 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
             if (socket != null) {
                 try {
                     if (socket.isClosed()) {
-                        Log.i("CameraStreamServer", "disconnect, attempting to reconnect");
+                        Log.i(TAG, "disconnect, attempting to reconnect");
                         serverSocket = null;
                         continue;
                     }
 
-                    if (!started) {
-                        Log.i("CameraStreamServer", "waiting for start");
-                        Thread.sleep(1000);
-                        continue;
-                    }
-
-                    // compress bitmap to JPEG
-                    Bitmap bitmap = queue.take();
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, QUALITY, baos);
-
-                    Log.i("CameraStreamServer", "compressed bitmap");
-
-                    // create message bytes
-                    byte[] imageBytes = baos.toByteArray();
-                    ByteBuffer header = ByteBuffer.allocate(4);
-                    header.order(ByteOrder.LITTLE_ENDIAN);
-                    header.putInt(imageBytes.length);
-
-                    Log.i("CameraStreamServer", "preparing to send " + imageBytes.length + " bytes");
-
-                    Log.i("CameraStreamServer", socket.isOutputShutdown() ? "output shutdown" : "output ready");
-
-                    // send message
-                    outputStream.write(header.array());
-
-                    Log.i("CameraStreamServer", "wrote header");
-
-                    int offset = 0;
-                    while (offset < imageBytes.length) {
-                        int bytesToSend = Math.min(BLOCK_SIZE, imageBytes.length - offset);
-                        outputStream.write(imageBytes, offset, bytesToSend);
+                    Message message = Message.read(inputStream);
+                    if (message instanceof PingCommand) {
+                        outputStream.write(new PongResponse().toByteArray());
                         outputStream.flush();
-
-                        Log.i("CameraStreamServer", "wrote " + bytesToSend + " bytes");
-
-                        offset += BLOCK_SIZE;
+                    } else if (message instanceof RequestFrameCommand) {
+                        ReceiveFrameResponse response = new ReceiveFrameResponse();
+                        response.set(queue.take());
+                        outputStream.write(response.toByteArray());
+                        outputStream.flush();
+                    } else {
+                        Log.w(TAG, "ignoring " + message.getClass().getSimpleName());
                     }
-                    outputStream.flush();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (IOException e) {
-                    Log.w("CameraStreamServer", e);
+
                 }
             } else {
                 try {
                     socket = serverSocket.accept();
+                    inputStream = socket.getInputStream();
                     outputStream = socket.getOutputStream();
-                    Log.i("CameraStreamServer", "got connection from " + socket.getRemoteSocketAddress());
+                    Log.i(TAG, "got connection from " + socket.getRemoteSocketAddress());
                 } catch (IOException e) {
-                    Log.w("CameraStreamServer", e);
+                    Log.w(TAG, e);
                 }
             }
         }
@@ -139,7 +111,7 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
                 serverSocket.close();
                 serverSocket = null;
             } catch (IOException e) {
-                Log.w("CameraStreamServer", e);
+                Log.w(TAG, e);
             }
         }
     }
