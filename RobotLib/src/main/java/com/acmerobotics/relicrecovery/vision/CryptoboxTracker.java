@@ -26,6 +26,8 @@ public class CryptoboxTracker extends Tracker {
         void onCryptoboxDetection(List<Double> rails, double timestamp);
     }
 
+    public static double ROTATION_ANGLE = Math.PI / 12;
+
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
@@ -65,6 +67,28 @@ public class CryptoboxTracker extends Tracker {
     public CryptoboxTracker(AllianceColor color) {
         this.color = color;
         listeners = new ArrayList<>();
+    }
+
+    private static void rotateZ(Mat src, Mat dst, double angle) {
+        angle /= src.height();
+
+        Mat M0 = new Mat(3, 3, CvType.CV_32F);
+        M0.put(0, 0, 1, 0, -src.width() / 2);
+        M0.put(1, 0, 0, 1, -src.height() / 2);
+        M0.put(2, 0, 0, 0, 1);
+
+        Mat M1 = new Mat(3, 3, CvType.CV_32F);
+        M1.put(0, 0, 1, 0, 0);
+        M1.put(1, 0, 0, Math.cos(angle), Math.sin(angle));
+        M1.put(2, 0, 0, -Math.sin(angle), Math.cos(angle));
+
+        Mat zeros = Mat.zeros(3, 3, CvType.CV_32F);
+        Mat M = new Mat(3, 3, CvType.CV_32F);
+        Mat temp = new Mat(3, 3, CvType.CV_32F);
+        Core.gemm(M0.inv(), M1, 1, zeros, 0, temp);
+        Core.gemm(temp, M0, 1, zeros, 0, M);
+
+        Imgproc.warpPerspective(src, dst, M, src.size());
     }
 
     @Override
@@ -114,6 +138,8 @@ public class CryptoboxTracker extends Tracker {
         }
 
         Imgproc.resize(frame, resized, new Size(resizedWidth, resizedHeight));
+
+        rotateZ(resized, resized, ROTATION_ANGLE);
 
         Imgproc.GaussianBlur(resized, resized, new Size(5, 5), 0);
 
