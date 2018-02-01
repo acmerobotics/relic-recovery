@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.drive;
+package com.acmerobotics.relicrecovery.vision;
 
 import android.util.Log;
 
@@ -8,8 +8,6 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
-import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
 
 import java.util.ArrayList;
 import java.util.Collections;
