@@ -26,7 +26,7 @@ public class CryptoboxTracker extends Tracker {
         void onCryptoboxDetection(List<Double> rails, double timestamp);
     }
 
-    public static double ROTATION_ANGLE = Math.PI / 12;
+    public static double ROTATION_ANGLE = Math.PI / 6;
 
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
@@ -53,7 +53,7 @@ public class CryptoboxTracker extends Tracker {
 
     private double resizedWidth, resizedHeight;
     private Mat resized, hsv, hsvMask, hsvMaskOpen, hsvMaskClose, gray, grayMask, grayCombined, grayMaskOpen, grayMaskClose;
-    private Mat hierarchy, openKernel, hsvCloseKernel, tapeCloseKernel;
+    private Mat hierarchy, openKernel, hsvCloseKernel, tapeCloseKernel, transform;
     private int openKernelSize, hsvCloseKernelWidth, hsvCloseKernelHeight, tapeCloseKernelWidth, tapeCloseKernelHeight;
     private AllianceColor color;
 
@@ -67,28 +67,6 @@ public class CryptoboxTracker extends Tracker {
     public CryptoboxTracker(AllianceColor color) {
         this.color = color;
         listeners = new ArrayList<>();
-    }
-
-    private static void rotateZ(Mat src, Mat dst, double angle) {
-        angle /= src.height();
-
-        Mat M0 = new Mat(3, 3, CvType.CV_32F);
-        M0.put(0, 0, 1, 0, -src.width() / 2);
-        M0.put(1, 0, 0, 1, -src.height() / 2);
-        M0.put(2, 0, 0, 0, 1);
-
-        Mat M1 = new Mat(3, 3, CvType.CV_32F);
-        M1.put(0, 0, 1, 0, 0);
-        M1.put(1, 0, 0, Math.cos(angle), Math.sin(angle));
-        M1.put(2, 0, 0, -Math.sin(angle), Math.cos(angle));
-
-        Mat zeros = Mat.zeros(3, 3, CvType.CV_32F);
-        Mat M = new Mat(3, 3, CvType.CV_32F);
-        Mat temp = new Mat(3, 3, CvType.CV_32F);
-        Core.gemm(M0.inv(), M1, 1, zeros, 0, temp);
-        Core.gemm(temp, M0, 1, zeros, 0, M);
-
-        Imgproc.warpPerspective(src, dst, M, src.size());
     }
 
     @Override
@@ -139,7 +117,9 @@ public class CryptoboxTracker extends Tracker {
 
         Imgproc.resize(frame, resized, new Size(resizedWidth, resizedHeight));
 
-        rotateZ(resized, resized, ROTATION_ANGLE);
+        transform = VisionUtil.getZRotationMatrix(resized, ROTATION_ANGLE);
+
+        Imgproc.warpPerspective(resized, resized, transform, resized.size());
 
         Imgproc.GaussianBlur(resized, resized, new Size(5, 5), 0);
 
@@ -237,7 +217,7 @@ public class CryptoboxTracker extends Tracker {
             do {
                 lastRailSize = rails.size();
                 rails = VisionUtil.nonMaximumSuppression(rails, 0.75 * getMeanRailGap(rails));
-            } while (lastRailSize != rails.size());
+            } while (lastRailSize != rails.size() && rails.size() >= 2);
         }
 
         synchronized (this) {
@@ -252,7 +232,6 @@ public class CryptoboxTracker extends Tracker {
                 }
             }
         }
-
     }
 
     @Override
@@ -260,16 +239,19 @@ public class CryptoboxTracker extends Tracker {
         if (latestRails != null) {
             overlay.setScalingFactor(imageWidth / resizedWidth);
 
+            Mat transformInv = transform.inv();
+
             for (double rail : latestRails) {
-                overlay.strokeLine(new Point(rail, 0), new Point(rail, resizedHeight), new Scalar(255, 255, 255), 3);
+                overlay.strokeLine(VisionUtil.transformPoint(new Point(rail, 0), transformInv),
+                        VisionUtil.transformPoint(new Point(rail, resizedHeight), transformInv), new Scalar(255, 255, 255), 3);
             }
 
-            for (Point point : latestRejectedPoints) {
+            for (Point point : VisionUtil.transformPoints(latestRejectedPoints, transformInv)) {
                 overlay.fillCircle(point, 13, new Scalar(0, 0, 0));
                 overlay.fillCircle(point, 10, new Scalar(255, 255, 0));
             }
 
-            for (Point point : latestAcceptedPoints) {
+            for (Point point : VisionUtil.transformPoints(latestAcceptedPoints, transformInv)) {
                 overlay.fillCircle(point, 13, new Scalar(0, 0, 0));
                 overlay.fillCircle(point, 10, new Scalar(0, 255, 255));
             }
