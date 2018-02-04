@@ -13,16 +13,16 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @Config
 @TeleOp
 public class AxialFFTuner extends LinearOpMode {
-    public static double LOWER_BOUND = 0, UPPER_BOUND = 0.5;
+    public static double LOWER_BOUND = 0, UPPER_BOUND = 0.005;
     public static double DISTANCE = 60; // in
 
     /**
      * The search confidence codifies how fast the search window homes in on the solution. This
      * value should be in the range (0, 1] where 1 indicates a true binary search.
      */
-    public static double SEARCH_CONFIDENCE = 1;
+    public static double SEARCH_CONFIDENCE = 0.7;
 
-    public static int TRIALS = 3;
+    public static int TRIALS = 5;
 
     private Robot robot;
     private PathFollower pathFollower;
@@ -41,12 +41,13 @@ public class AxialFFTuner extends LinearOpMode {
 
         waitForStart();
 
-        telemetry.clear();
+        telemetry.log().clear();
+        telemetry.update();
 
         double lowerBound = LOWER_BOUND, upperBound = UPPER_BOUND;
 
         while (opModeIsActive()) {
-            double value = (LOWER_BOUND + UPPER_BOUND) / 2;
+            double value = (lowerBound + upperBound) / 2;
 
             double meanError = 0;
             for (int i = 0; i < TRIALS && opModeIsActive(); i++) {
@@ -71,7 +72,7 @@ public class AxialFFTuner extends LinearOpMode {
     /**
      * Complete a single motion with the provided coefficient and measure its accuracy
      * @param coefficient axial K_a coefficient to test
-     * @return the mean error for the movement, positive indicates the coefficient is too high
+     * @return the mean error for the movement, positive indicates the coefficient is too low
      */
     public double testCoefficient(double coefficient) {
         MecanumDrive.AXIAL_PID.a = coefficient;
@@ -96,12 +97,13 @@ public class AxialFFTuner extends LinearOpMode {
             // If axial K_a is too high, then the error will be positive in when acceleration is
             // positive and negative when acceleration is negative. Thus we use the sign of the
             // acceleration to make sure all the errors have matching signs.
-            errorSum += Math.signum(pathFollower.getPoseAcceleration().x()) * rawAxialError;
+            if (pathFollower.getPoseAcceleration() == null) continue;
+            errorSum += -Math.signum(pathFollower.getPoseAcceleration().x()) * rawAxialError;
             numErrors++;
             sleep(25);
         }
 
-        errorSum *= Math.signum(shouldTravelForward ? 1 : -1);
+        errorSum *= shouldTravelForward ? 1 : -1;
 
         shouldTravelForward = !shouldTravelForward;
 

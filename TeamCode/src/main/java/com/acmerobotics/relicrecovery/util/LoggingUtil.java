@@ -18,7 +18,7 @@ public class LoggingUtil {
         return dir;
     }
 
-    public static File getLogFile(OpMode opMode, OpModeConfiguration configuration) {
+    private static String getLogBaseName(OpMode opMode, OpModeConfiguration configuration) {
         MatchType matchType = configuration.getMatchType();
         String filenameSuffix;
         if (matchType == MatchType.PRACTICE) {
@@ -26,13 +26,15 @@ public class LoggingUtil {
         } else {
             filenameSuffix = matchType + "-" + configuration.getMatchNumber();
         }
-        String filename = opMode.getClass().getSimpleName() + "-" + filenameSuffix + ".csv";
-        return new File(getLogRoot(opMode), filename);
+        return opMode.getClass().getSimpleName() + "-" + filenameSuffix;
     }
 
-    public static File getImageDir(OpMode opMode) {
-        String dirName = opMode.getClass().getSimpleName() + "-images-" + System.currentTimeMillis();
-        File dir = new File(getLogRoot(opMode), dirName);
+    public static File getLogFile(OpMode opMode, OpModeConfiguration configuration) {
+        return new File(getLogRoot(opMode), getLogBaseName(opMode, configuration) + ".csv");
+    }
+
+    public static File getLogDir(OpMode opMode, OpModeConfiguration configuration) {
+        File dir = new File(getLogRoot(opMode), getLogBaseName(opMode, configuration));
         dir.mkdirs();
         return dir;
     }

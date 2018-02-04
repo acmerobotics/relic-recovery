@@ -54,7 +54,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
 
         listeners = new ArrayList<>();
 
-        File logRoot = LoggingUtil.getLogRoot(opMode);
+        File logRoot = LoggingUtil.getLogDir(opMode, config);
 
         robotTelemetry = new CSVLoggingTelemetry(new File(logRoot, "Robot.csv"));
 
