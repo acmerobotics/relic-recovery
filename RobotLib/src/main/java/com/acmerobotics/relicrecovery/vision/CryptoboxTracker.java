@@ -26,7 +26,7 @@ public class CryptoboxTracker extends Tracker {
         void onCryptoboxDetection(List<Double> rails, double timestamp);
     }
 
-    public static double ROTATION_ANGLE = Math.PI / 6;
+    public static double ROTATION_ANGLE = Math.PI / 12;
 
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;

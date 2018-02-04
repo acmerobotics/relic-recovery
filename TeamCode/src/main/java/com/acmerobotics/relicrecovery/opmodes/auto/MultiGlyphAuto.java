@@ -48,13 +48,11 @@ public class MultiGlyphAuto extends AutoOpMode {
 
         robot.intake.setIntakePower(1);
 
-        followPathSync(new PathBuilder(initialPose)
+        followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI))
                 .turn(-Math.PI / 4)
                 .lineTo(new Vector2d(12, -12))
-                .lineTo(new Vector2d(6, -6))
-                .lineTo(new Vector2d(12, -12))
                 .turn(-Math.PI / 4)
-                .lineTo(new Vector2d(12, -48))
+                .lineTo(new Vector2d(12, -46))
                 .build());
 
         robot.intake.setIntakePower(0);
@@ -65,45 +63,52 @@ public class MultiGlyphAuto extends AutoOpMode {
             cryptoTracker.disable();
         }
 
-        followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI / 2))
-                .lineTo(new Vector2d(12, -58))
+        followPathSync(new PathBuilder(new Pose2d(12, -44, Math.PI / 2))
+                .lineTo(new Vector2d(12, -54))
                 .build());
 
         robot.dumpBed.dump();
         sleep(1000);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -58, Math.PI / 2))
-                .lineTo(new Vector2d(12, -48))
+        followPathSync(new PathBuilder(new Pose2d(12, -54, Math.PI / 2))
+                .lineTo(new Vector2d(12, -46))
                 .build());
 
         robot.dumpBed.retract();
 
+        robot.intake.setIntakePower(1);
+
         followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI / 2))
                 .lineTo(new Vector2d(12, -12))
-                .turn(Math.PI / 4)
-                .lineTo(new Vector2d(18, -6))
-                .lineTo(new Vector2d(12, -12))
                 .turn(-Math.PI / 4)
-                .lineTo(new Vector2d(12, -48))
+                .forward(9)
+                .back(9)
+                .turn(Math.PI / 4)
+                .lineTo(new Vector2d(12, -36))
                 .build());
 
         robot.intake.setIntakePower(0);
 
         if (VISION) {
+            robot.phoneSwivel.pointAtCryptobox();
+            sleep(500);
             cryptoTracker.enable();
             sleep(1000);
             cryptoTracker.disable();
+            robot.phoneSwivel.pointAtJewel();
+            sleep(500);
         }
 
-        followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI / 2))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -58))
+        followPathSync(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -36))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54))
                 .build());
 
         robot.dumpBed.dump();
         sleep(1000);
 
-        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -58, Math.PI / 2))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -52))
+        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54, Math.PI / 2))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -46))
                 .build());
 
         robot.dumpBed.retract();
