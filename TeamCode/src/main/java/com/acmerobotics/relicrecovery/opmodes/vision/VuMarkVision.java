@@ -31,6 +31,7 @@ package com.acmerobotics.relicrecovery.opmodes.vision;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -48,6 +49,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefau
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.R;
 
+@Disabled
 @TeleOp(name = "VuMark Vision", group = "vision")
 public class VuMarkVision extends LinearOpMode {
     public static final String TAG = "VuMarkVision";
