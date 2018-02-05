@@ -8,15 +8,20 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
+import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
+import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -24,6 +29,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
@@ -53,6 +59,10 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0182, 0.004);
     public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0185, 0.004);
 
+    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients();
+    public static double COLUMN_ALIGN_TARGET_DISTANCE = 0;
+    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
+
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0, 0, 0);
 
     public static double RAMP_MAX_ACCEL = 25;
@@ -60,7 +70,8 @@ public class MecanumDrive extends Subsystem {
     public enum Mode {
         OPEN_LOOP,
         OPEN_LOOP_RAMP,
-        FOLLOW_PATH
+        FOLLOW_PATH,
+        COLUMN_ALIGN
     }
 
     public static final String[] MOTOR_NAMES = {"frontLeft", "rearLeft", "rearRight", "frontRight"};
@@ -89,6 +100,14 @@ public class MecanumDrive extends Subsystem {
 
     private BNO055IMU imu;
 
+    private MaxSonarEZ1UltrasonicSensor frontUltrasonic;
+    private ExponentialSmoother frontUltrasonicSmoother;
+    private boolean useUltrasonicFeedback;
+
+    private LynxI2cColorRangeSensor sideColorDistance;
+    private ExponentialSmoother sideDistanceSmoother;
+    private PIDController columnAlignController;
+
     private boolean useCachedOrientation;
     private Orientation cachedOrientation;
     private double headingOffset;
@@ -105,7 +124,7 @@ public class MecanumDrive extends Subsystem {
     private Mode mode = Mode.OPEN_LOOP;
     private Mode lastMode;
 
-    private double[] powers, targetPowers, lastPowers;
+    private double[] powers, targetPowers;
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
@@ -122,7 +141,10 @@ public class MecanumDrive extends Subsystem {
             MOTOR_NAMES[0] + "Rotation",
             MOTOR_NAMES[1] + "Rotation",
             MOTOR_NAMES[2] + "Rotation",
-            MOTOR_NAMES[3] + "Rotation"
+            MOTOR_NAMES[3] + "Rotation",
+            "frontUltrasonicDistance",
+            "columnAlignError",
+            "columnAlignUpdate"
     };
 
     private Telemetry telemetry;
@@ -144,6 +166,9 @@ public class MecanumDrive extends Subsystem {
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
+        frontUltrasonic = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("frontUltrasonic"));
+        sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
+
         powers = new double[4];
         targetPowers = new double[4];
         encoderOffsets = new int[4];
@@ -161,9 +186,9 @@ public class MecanumDrive extends Subsystem {
 
         estimatedPosition = new Vector2d(0, 0);
 
-        lastPowers = new double[4];
-
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
+
+        columnAlignController = new PIDController(COLUMN_ALIGN_PID);
 
         resetEncoders();
 
@@ -197,6 +222,15 @@ public class MecanumDrive extends Subsystem {
 
     public void setTargetHeading(double heading) {
         this.maintainHeadingController.setSetpoint(heading);
+    }
+
+    public void enableUltrasonicFeedback() {
+        frontUltrasonicSmoother.reset();
+        useUltrasonicFeedback = true;
+    }
+
+    public void disableUltrasonicFeedback() {
+        useUltrasonicFeedback = false;
     }
 
     public boolean getMaintainHeading() {
@@ -391,6 +425,13 @@ public class MecanumDrive extends Subsystem {
         useCachedOrientation = false;
     }
 
+    public void alignWithColumn() {
+        setMode(Mode.COLUMN_ALIGN);
+        columnAlignController.reset();
+        columnAlignController.setSetpoint(COLUMN_ALIGN_TARGET_DISTANCE);
+        sideDistanceSmoother.reset();
+    }
+
     public void update() {
         invalidateHeading();
 
@@ -412,6 +453,35 @@ public class MecanumDrive extends Subsystem {
                     Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
 
                     estimatedPosition = estimatedPosition.added(fieldPoseDelta);
+
+                    if (useUltrasonicFeedback) {
+                        Cryptobox closestCryptobox = null;
+                        double closestDistance = Double.POSITIVE_INFINITY;
+                        for (Cryptobox cryptobox : Cryptobox.values()) {
+                            double distance = Vector2d.distance(cryptobox.getPosition(), estimatedPosition);
+                            if (distance < closestDistance) {
+                                closestCryptobox = cryptobox;
+                                closestDistance = distance;
+                            }
+                        }
+                        double frontUltrasonicDistance = frontUltrasonicSmoother.update(
+                                frontUltrasonic.getDistance(DistanceUnit.INCH));
+                        telemetryMap.put("frontUltrasonicDistance", frontUltrasonicDistance);
+                        if (frontUltrasonicDistance > frontUltrasonic.getMinDistance(DistanceUnit.INCH)) {
+                            switch (closestCryptobox) {
+                                case NEAR_BLUE:
+                                    estimatedPosition = new Vector2d(estimatedPosition.x(), -72 + AutoPaths.CRYPTO_COL_DEPTH + frontUltrasonicDistance);
+                                    break;
+                                case NEAR_RED:
+                                    estimatedPosition = new Vector2d(estimatedPosition.x(), 72 - AutoPaths.CRYPTO_COL_DEPTH - frontUltrasonicDistance);
+                                    break;
+                                case FAR_BLUE:
+                                case FAR_RED:
+                                    estimatedPosition = new Vector2d(-72 + AutoPaths.CRYPTO_COL_DEPTH + frontUltrasonicDistance, estimatedPosition.y());
+                                    break;
+                            }
+                        }
+                    }
                 }
                 lastRotations = rotations;
 
@@ -489,13 +559,25 @@ public class MecanumDrive extends Subsystem {
                 }
                 powers = targetPowers;
                 break;
+            case COLUMN_ALIGN:
+                double distanceToColumn = sideDistanceSmoother.update(
+                        sideColorDistance.getDistance(DistanceUnit.INCH));
+                double distanceError = columnAlignController.getError(distanceToColumn);
+                if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
+                    double lateralUpdate = columnAlignController.update(distanceError);
+                    telemetryMap.put("columnAlignError", distanceError);
+                    telemetryMap.put("columnAlignUpdate", lateralUpdate);
+                    internalSetVelocity(new Vector2d(0, lateralUpdate), 0);
+                    powers = targetPowers;
+                } else {
+                    stop();
+                    revertMode();
+                }
+                break;
         }
 
         for (int i = 0; i < 4; i++) {
-            if (lastPowers[i] != powers[i]) {
-                motors[i].setPower(powers[i]);
-                lastPowers[i] = powers[i];
-            }
+            motors[i].setPower(powers[i]);
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
         }
 

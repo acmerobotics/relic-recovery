@@ -15,8 +15,7 @@
             <!--<LynxColorSensor name="frontIntakeColorDistance" port="2" bus="0" />-->
             <!--<LynxColorSensor name="rearIntakeColorDistance" port="3" bus="0" />-->
         </LynxModule>
-        <LynxModule name="rearHub" port="2
-">
+        <LynxModule name="rearHub" port="2">
             <NeveRest20Gearmotor name="intakeLeft" port="0" />
             <NeveRest20Gearmotor name="intakeRight" port="1" />
             <NeveRest20Gearmotor name="dumpLift" port="2" />
@@ -26,6 +25,8 @@
             <Servo name="dumpRelease" port="2" />
             <Servo name="phoneSwivel" port="3" />
             <DigitalDevice name="dumpLiftMagneticTouch" port="1" />
+            <AnalogDevice name="frontUltrasonic" port="1" />
+            <!-- additional color distance sensor requires configuration -->
         </LynxModule>
     </LynxUsbDevice>
 </Robot>

@@ -19,6 +19,7 @@ public class AutoPaths {
     public static double STONE_CORRECTION = -1; // -2.5; // in
 
     public static double CRYPTO_COL_WIDTH = 7.5; // in
+    public static double CRYPTO_COL_DEPTH = 0; // in
 
     public static final Map<RelicRecoveryVuMark, Integer> vuMarkMap;
 
