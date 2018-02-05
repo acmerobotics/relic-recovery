@@ -5,9 +5,11 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
+import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -18,10 +20,13 @@ public class MultiGlyphAuto extends AutoOpMode {
     public static boolean VISION = false;
 
     private CryptoboxLocalizer cryptoLocalizer;
+    private UltrasonicLocalizer ultrasonicLocalizer;
     private CryptoboxTracker cryptoTracker;
 
     @Override
     protected void setup() {
+        ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive, MecanumDrive.DISTANCE_SMOOTHER_COEFF);
+        robot.drive.setLocalizer(ultrasonicLocalizer);
         robot.drive.setEstimatedPosition(BalancingStone.NEAR_BLUE.getPosition());
 
         if (VISION) {
@@ -61,7 +66,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .build());
 
         robot.intake.setIntakePower(0);
-        robot.drive.enableUltrasonicFeedback();
+        ultrasonicLocalizer.enableUltrasonicFeedback();
 
         if (VISION) {
             cryptoTracker.enable();
@@ -73,7 +78,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(12, -54))
                 .build());
 
-        robot.drive.disableUltrasonicFeedback();
+        ultrasonicLocalizer.disableUltrasonicFeedback();
         alignWithColumnSync();
 
 //        robot.dumpBed.dump();
@@ -102,7 +107,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .build());
 
         robot.intake.setIntakePower(0);
-        robot.drive.enableUltrasonicFeedback();
+        ultrasonicLocalizer.enableUltrasonicFeedback();
 
         if (VISION) {
             robot.phoneSwivel.pointAtCryptobox();
@@ -119,7 +124,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54))
                 .build());
 
-        robot.drive.disableUltrasonicFeedback();
+        ultrasonicLocalizer.disableUltrasonicFeedback();
         alignWithColumnSync();
 
 //        robot.dumpBed.dump();

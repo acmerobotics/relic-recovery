@@ -30,6 +30,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     @Override
     public final void runOpMode() throws InterruptedException {
         robot = new Robot(this);
+        robot.drive.enablePositionEstimation();
         robot.start();
 
 //        camera = new VuforiaCamera();

@@ -1,7 +1,5 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
-import android.util.Log;
-
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
@@ -10,13 +8,13 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
+import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
+import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
-import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
@@ -101,9 +99,7 @@ public class MecanumDrive extends Subsystem {
 
     private BNO055IMU imu;
 
-    private MaxSonarEZ1UltrasonicSensor frontDistance;
-    private ExponentialSmoother frontDistanceSmoother;
-    private boolean useUltrasonicFeedback;
+    private MaxSonarEZ1UltrasonicSensor ultrasonic;
 
     private LynxI2cColorRangeSensor sideColorDistance;
     private ExponentialSmoother sideDistanceSmoother;
@@ -114,10 +110,11 @@ public class MecanumDrive extends Subsystem {
     private double headingOffset;
 
     private boolean positionEstimationEnabled;
-    private double[] lastRotations;
-    private Vector2d estimatedPosition;
+    private Pose2d estimatedPose;
 
     private PathFollower pathFollower;
+
+    private Localizer localizer;
 
     private PIDController maintainHeadingController;
     private boolean maintainHeading;
@@ -167,7 +164,7 @@ public class MecanumDrive extends Subsystem {
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
-        frontDistance = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("frontUltrasonic"));
+        ultrasonic = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("frontUltrasonic"));
         sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
 
         powers = new double[4];
@@ -182,16 +179,25 @@ public class MecanumDrive extends Subsystem {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
+        localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(new Pose2d(0, 0, 0));
 
         pathFollower = new PathFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
 
-        frontDistanceSmoother = new ExponentialSmoother(DISTANCE_SMOOTHER_COEFF);
         sideDistanceSmoother = new ExponentialSmoother(DISTANCE_SMOOTHER_COEFF);
 
         resetEncoders();
+    }
+
+    public Localizer getLocalizer() {
+        return localizer;
+    }
+
+    public void setLocalizer(Localizer localizer) {
+        this.localizer = localizer;
+        localizer.setEstimatedPosition(estimatedPose.pos());
     }
 
     public PathFollower getPathFollower() {
@@ -221,15 +227,6 @@ public class MecanumDrive extends Subsystem {
 
     public void setTargetHeading(double heading) {
         this.maintainHeadingController.setSetpoint(heading);
-    }
-
-    public void enableUltrasonicFeedback() {
-        frontDistanceSmoother.reset();
-        useUltrasonicFeedback = true;
-    }
-
-    public void disableUltrasonicFeedback() {
-        useUltrasonicFeedback = false;
     }
 
     public boolean getMaintainHeading() {
@@ -393,7 +390,7 @@ public class MecanumDrive extends Subsystem {
 
     public void followPath(Path path) {
         if (!positionEstimationEnabled) {
-            Log.i("MecanumDrive", "Following path without position estimation enabled");
+            throw new IllegalStateException("Position estimation must be enable for path following");
         }
         pathFollower.follow(path);
         setMode(Mode.FOLLOW_PATH);
@@ -404,19 +401,20 @@ public class MecanumDrive extends Subsystem {
     }
 
     public Vector2d getEstimatedPosition() {
-        return estimatedPosition;
+        return estimatedPose.pos();
     }
 
     public void setEstimatedPosition(Vector2d position) {
-        estimatedPosition = position;
+        estimatedPose = new Pose2d(position, estimatedPose.heading());
+        localizer.setEstimatedPosition(position);
     }
 
     public Pose2d getEstimatedPose() {
-        return new Pose2d(estimatedPosition, getHeading());
+        return estimatedPose;
     }
 
     public void setEstimatedPose(Pose2d pose) {
-        estimatedPosition = pose.pos();
+        setEstimatedPosition(pose.pos());
         setHeading(pose.heading());
     }
 
@@ -431,83 +429,41 @@ public class MecanumDrive extends Subsystem {
         sideDistanceSmoother.reset();
     }
 
+    public double getUltrasonicDistance(DistanceUnit unit) {
+        return ultrasonic.getDistance(unit);
+    }
+
+    public double getMinUltrasonicDistance(DistanceUnit unit) {
+        return ultrasonic.getMinDistance(unit);
+    }
+
     public void update() {
         invalidateOrientation();
 
         telemetryMap.put("driveMode", mode);
+        telemetryMap.put("positionEstimationEnabled", positionEstimationEnabled);
+        telemetryMap.put("maintainHeading", maintainHeading);
 
-        if (positionEstimationEnabled || mode == Mode.FOLLOW_PATH || maintainHeading) {
+        // position estimation
+        if (positionEstimationEnabled) {
+            estimatedPose = new Pose2d(localizer.update(), getHeading());
+        }
+
+        // maintain heading
+        if (maintainHeading) {
             double heading = getHeading();
-
-            // position estimation
-            if (positionEstimationEnabled || mode == Mode.FOLLOW_PATH) {
-                double[] rotations = getMotorRotations();
-                if (lastRotations != null) {
-                    double[] rotationDeltas = new double[4];
-                    for (int i = 0; i < 4; i++) {
-                        rotationDeltas[i] = rotations[i] - lastRotations[i];
-                    }
-
-                    Vector2d robotPoseDelta = MecanumDrive.getPoseDelta(rotationDeltas).pos();
-                    Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
-
-                    estimatedPosition = estimatedPosition.added(fieldPoseDelta);
-
-                    if (useUltrasonicFeedback) {
-                        Cryptobox closestCryptobox = null;
-                        double closestDistance = Double.POSITIVE_INFINITY;
-                        for (Cryptobox cryptobox : Cryptobox.values()) {
-                            double distance = Vector2d.distance(cryptobox.getPosition(), estimatedPosition);
-                            if (distance < closestDistance) {
-                                closestCryptobox = cryptobox;
-                                closestDistance = distance;
-                            }
-                        }
-                        double frontUltrasonicDistance = frontDistanceSmoother.update(
-                                frontDistance.getDistance(DistanceUnit.INCH));
-                        if (frontUltrasonicDistance > frontDistance.getMinDistance(DistanceUnit.INCH)) {
-                            switch (closestCryptobox) {
-                                case NEAR_BLUE:
-                                    estimatedPosition = new Vector2d(estimatedPosition.x(), -72 + AutoPaths.CRYPTO_COL_DEPTH + frontUltrasonicDistance);
-                                    break;
-                                case NEAR_RED:
-                                    estimatedPosition = new Vector2d(estimatedPosition.x(), 72 - AutoPaths.CRYPTO_COL_DEPTH - frontUltrasonicDistance);
-                                    break;
-                                case FAR_BLUE:
-                                case FAR_RED:
-                                    estimatedPosition = new Vector2d(-72 + AutoPaths.CRYPTO_COL_DEPTH + frontUltrasonicDistance, estimatedPosition.y());
-                                    break;
-                            }
-                        }
-
-                        telemetryMap.put("frontUltrasonicDistance", frontUltrasonicDistance);
-                    }
-                }
-                lastRotations = rotations;
-
-                for (int i = 0; i < 4; i++) {
-                    telemetryMap.put(MOTOR_NAMES[i] + "Rotation", rotations[i]);
-                }
-                telemetryMap.put("driveHeading", getHeading());
-            }
-
-            // maintain heading
-            if (maintainHeading) {
-                double headingError = maintainHeadingController.getError(heading);
-                double headingUpdate = 0;
-                if (Math.abs(targetOmega) > 0) {
-                    maintainHeadingController.setSetpoint(heading);
-                    internalSetVelocity(targetVel, targetOmega);
-                } else {
-                    headingUpdate = maintainHeadingController.update(headingError);
-                    internalSetVelocity(targetVel, headingUpdate);
-                }
-
-                telemetryMap.put("maintainHeadingError", headingError);
-                telemetryMap.put("maintainHeadingUpdate", headingUpdate);
-            } else {
+            double headingError = maintainHeadingController.getError(heading);
+            double headingUpdate = 0;
+            if (Math.abs(targetOmega) > 0) {
+                maintainHeadingController.setSetpoint(heading);
                 internalSetVelocity(targetVel, targetOmega);
+            } else {
+                headingUpdate = maintainHeadingController.update(headingError);
+                internalSetVelocity(targetVel, headingUpdate);
             }
+
+            telemetryMap.put("maintainHeadingError", headingError);
+            telemetryMap.put("maintainHeadingUpdate", headingUpdate);
         } else {
             internalSetVelocity(targetVel, targetOmega);
         }
@@ -583,6 +539,10 @@ public class MecanumDrive extends Subsystem {
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
         }
 
+        telemetryMap.put("estimatedX", estimatedPose.x());
+        telemetryMap.put("estimatedY", estimatedPose.y());
+        telemetryMap.put("estimatedHeading", estimatedPose.heading());
+
         if (pathFollower.getPath() != null) {
             fieldOverlay.setStroke("#4CAF50");
             DrawingUtil.drawPath(fieldOverlay, pathFollower.getPath());
@@ -594,7 +554,7 @@ public class MecanumDrive extends Subsystem {
         }
 
         fieldOverlay.setStroke("#3F51B5");
-        DrawingUtil.drawMecanumRobot(fieldOverlay, getEstimatedPose());
+        DrawingUtil.drawMecanumRobot(fieldOverlay, estimatedPose);
 
         for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
             telemetry.addData(entry.getKey(), entry.getValue());
