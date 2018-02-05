@@ -1,7 +1,6 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -15,9 +14,9 @@ public class RelicRecoverer extends Subsystem {
     private Telemetry telemetry;
 
     public enum WristPosition {
-        STOW(0.93),
-        VERTICAL(0.5),
-        HORIZONTAL(0);
+        STOW(0.04),
+        UP(1),
+        DOWN(0.5);
 
         private double position;
 
@@ -33,15 +32,10 @@ public class RelicRecoverer extends Subsystem {
     private DcMotor relicExtend;
     private Servo relicWrist, relicFinger;
 
-    private boolean fingerClosed;
-
-    private WristPosition wristPosition;
-
     public RelicRecoverer(HardwareMap map, Telemetry telemetry) {
         this.telemetry = telemetry;
 
         relicExtend = map.dcMotor.get("relicExtend");
-        relicExtend.setDirection(DcMotorSimple.Direction.REVERSE);
 
         relicWrist = map.servo.get("relicWrist");
         relicFinger = map.servo.get("relicFinger");
@@ -55,28 +49,15 @@ public class RelicRecoverer extends Subsystem {
     }
 
     public void setWristPosition(WristPosition position) {
-        if (wristPosition != position) {
-            relicWrist.setPosition(position.getServoPosition());
-            wristPosition = position;
-        }
+        relicWrist.setPosition(position.getServoPosition());
     }
 
     public void closeFinger() {
-        if (!fingerClosed) {
-            relicFinger.setPosition(0);
-            fingerClosed = true;
-        }
+        relicFinger.setPosition(0.61);
     }
 
     public void openFinger() {
-        if (fingerClosed) {
-            relicFinger.setPosition(0.5);
-            fingerClosed = false;
-        }
-    }
-
-    public boolean isFingerClosed() {
-        return fingerClosed;
+        relicFinger.setPosition(0.35);
     }
 
     @Override

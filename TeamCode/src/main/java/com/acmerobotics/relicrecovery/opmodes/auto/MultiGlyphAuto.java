@@ -51,8 +51,13 @@ public class MultiGlyphAuto extends AutoOpMode {
         followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI))
                 .turn(-Math.PI / 4)
                 .lineTo(new Vector2d(12, -12))
+                .build());
+
+        robot.intake.setIntakePower(-1);
+
+        followPathSync(new PathBuilder(new Pose2d(12, -12, 3 * Math.PI / 4))
                 .turn(-Math.PI / 4)
-                .lineTo(new Vector2d(12, -46))
+                .lineTo(new Vector2d(12, -44))
                 .build());
 
         robot.intake.setIntakePower(0);
@@ -67,23 +72,28 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(12, -54))
                 .build());
 
-        robot.dumpBed.dump();
+//        robot.dumpBed.dump();
         sleep(1000);
 
         followPathSync(new PathBuilder(new Pose2d(12, -54, Math.PI / 2))
-                .lineTo(new Vector2d(12, -46))
+                .lineTo(new Vector2d(12, -44))
                 .build());
 
-        robot.dumpBed.retract();
+//        robot.dumpBed.retract();
 
         robot.intake.setIntakePower(1);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI / 2))
+        followPathSync(new PathBuilder(new Pose2d(12, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12, -12))
                 .turn(-Math.PI / 4)
                 .forward(9)
                 .back(9)
                 .turn(Math.PI / 4)
+                .build());
+
+        robot.intake.setIntakePower(-1);
+
+        followPathSync(new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .lineTo(new Vector2d(12, -36))
                 .build());
 
@@ -104,13 +114,13 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54))
                 .build());
 
-        robot.dumpBed.dump();
+//        robot.dumpBed.dump();
         sleep(1000);
 
         followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54, Math.PI / 2))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -46))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44))
                 .build());
 
-        robot.dumpBed.retract();
+//        robot.dumpBed.retract();
     }
 }

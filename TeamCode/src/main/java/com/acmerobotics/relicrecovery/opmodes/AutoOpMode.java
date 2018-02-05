@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.relicrecovery.configuration.MatchType;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
@@ -30,12 +31,12 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot = new Robot(this);
         robot.start();
 
-        camera = new VuforiaCamera();
-        jewelTracker = new DynamicJewelTracker();
-        vuMarkTracker = new VuforiaVuMarkTracker();
-        camera.addTracker(jewelTracker);
-        camera.addTracker(vuMarkTracker);
-        camera.initialize();
+//        camera = new VuforiaCamera();
+//        jewelTracker = new DynamicJewelTracker();
+//        vuMarkTracker = new VuforiaVuMarkTracker();
+//        camera.addTracker(jewelTracker);
+//        camera.addTracker(vuMarkTracker);
+//        camera.initialize();
 
         String autoTransition = robot.config.getAutoTransition();
         if (!autoTransition.equals(OpModeConfiguration.NO_AUTO_TRANSITION)) {
@@ -53,7 +54,9 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     private void displayInitTelemetry() {
         telemetry.addData("matchType", robot.config.getMatchType());
-        telemetry.addData("matchNumber", robot.config.getMatchNumber());
+        if (robot.config.getMatchType() != MatchType.PRACTICE) {
+            telemetry.addData("matchNumber", robot.config.getMatchNumber());
+        }
         telemetry.addData("delay", robot.config.getDelay());
         telemetry.addData("allianceColor", robot.config.getAllianceColor());
         telemetry.addData("balancingStone", robot.config.getBalancingStone());
