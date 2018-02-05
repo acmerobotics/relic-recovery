@@ -57,7 +57,7 @@ public class CryptoboxLocalizer implements CryptoboxTracker.Listener {
     }
 
     public static Vector2d getFieldPositionFromCryptoRelativePosition(Cryptobox cryptobox, Vector2d cryptoRelPos) {
-        Vector2d cryptoPos = cryptobox.getPose().pos();
+        Vector2d cryptoPos = cryptobox.getPosition();
         switch (cryptobox) {
             case NEAR_BLUE:
                 return new Vector2d(cryptoPos.x() - cryptoRelPos.y(), cryptoPos.y() + cryptoRelPos.x());

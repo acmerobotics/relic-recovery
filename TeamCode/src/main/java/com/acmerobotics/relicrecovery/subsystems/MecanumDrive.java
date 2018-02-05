@@ -62,6 +62,7 @@ public class MecanumDrive extends Subsystem {
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients();
     public static double COLUMN_ALIGN_TARGET_DISTANCE = 0;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
+    public static double DISTANCE_SMOOTHER_COEFF = 0.02;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0, 0, 0);
 
@@ -100,8 +101,8 @@ public class MecanumDrive extends Subsystem {
 
     private BNO055IMU imu;
 
-    private MaxSonarEZ1UltrasonicSensor frontUltrasonic;
-    private ExponentialSmoother frontUltrasonicSmoother;
+    private MaxSonarEZ1UltrasonicSensor frontDistance;
+    private ExponentialSmoother frontDistanceSmoother;
     private boolean useUltrasonicFeedback;
 
     private LynxI2cColorRangeSensor sideColorDistance;
@@ -142,7 +143,7 @@ public class MecanumDrive extends Subsystem {
             MOTOR_NAMES[1] + "Rotation",
             MOTOR_NAMES[2] + "Rotation",
             MOTOR_NAMES[3] + "Rotation",
-            "frontUltrasonicDistance",
+            "ultrasonicDistance",
             "columnAlignError",
             "columnAlignUpdate"
     };
@@ -161,12 +162,12 @@ public class MecanumDrive extends Subsystem {
 
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
-        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(map.get(LynxModule.class, "frontHub"), 1);
+        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "frontHub"), 1);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
-        frontUltrasonic = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("frontUltrasonic"));
+        frontDistance = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("frontUltrasonic"));
         sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
 
         powers = new double[4];
@@ -178,21 +179,19 @@ public class MecanumDrive extends Subsystem {
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
-
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
+        setEstimatedPose(new Pose2d(0, 0, 0));
+
         pathFollower = new PathFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
-
-        estimatedPosition = new Vector2d(0, 0);
-
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
-
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
 
-        resetEncoders();
+        frontDistanceSmoother = new ExponentialSmoother(DISTANCE_SMOOTHER_COEFF);
+        sideDistanceSmoother = new ExponentialSmoother(DISTANCE_SMOOTHER_COEFF);
 
-        setHeading(0);
+        resetEncoders();
     }
 
     public PathFollower getPathFollower() {
@@ -225,7 +224,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void enableUltrasonicFeedback() {
-        frontUltrasonicSmoother.reset();
+        frontDistanceSmoother.reset();
         useUltrasonicFeedback = true;
     }
 
@@ -421,7 +420,7 @@ public class MecanumDrive extends Subsystem {
         setHeading(pose.heading());
     }
 
-    private void invalidateHeading() {
+    private void invalidateOrientation() {
         useCachedOrientation = false;
     }
 
@@ -433,7 +432,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void update() {
-        invalidateHeading();
+        invalidateOrientation();
 
         telemetryMap.put("driveMode", mode);
 
@@ -464,10 +463,9 @@ public class MecanumDrive extends Subsystem {
                                 closestDistance = distance;
                             }
                         }
-                        double frontUltrasonicDistance = frontUltrasonicSmoother.update(
-                                frontUltrasonic.getDistance(DistanceUnit.INCH));
-                        telemetryMap.put("frontUltrasonicDistance", frontUltrasonicDistance);
-                        if (frontUltrasonicDistance > frontUltrasonic.getMinDistance(DistanceUnit.INCH)) {
+                        double frontUltrasonicDistance = frontDistanceSmoother.update(
+                                frontDistance.getDistance(DistanceUnit.INCH));
+                        if (frontUltrasonicDistance > frontDistance.getMinDistance(DistanceUnit.INCH)) {
                             switch (closestCryptobox) {
                                 case NEAR_BLUE:
                                     estimatedPosition = new Vector2d(estimatedPosition.x(), -72 + AutoPaths.CRYPTO_COL_DEPTH + frontUltrasonicDistance);
@@ -481,6 +479,8 @@ public class MecanumDrive extends Subsystem {
                                     break;
                             }
                         }
+
+                        telemetryMap.put("frontUltrasonicDistance", frontUltrasonicDistance);
                     }
                 }
                 lastRotations = rotations;
@@ -502,6 +502,7 @@ public class MecanumDrive extends Subsystem {
                     headingUpdate = maintainHeadingController.update(headingError);
                     internalSetVelocity(targetVel, headingUpdate);
                 }
+
                 telemetryMap.put("maintainHeadingError", headingError);
                 telemetryMap.put("maintainHeadingUpdate", headingUpdate);
             } else {
@@ -565,10 +566,11 @@ public class MecanumDrive extends Subsystem {
                 double distanceError = columnAlignController.getError(distanceToColumn);
                 if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
                     double lateralUpdate = columnAlignController.update(distanceError);
-                    telemetryMap.put("columnAlignError", distanceError);
-                    telemetryMap.put("columnAlignUpdate", lateralUpdate);
                     internalSetVelocity(new Vector2d(0, lateralUpdate), 0);
                     powers = targetPowers;
+
+                    telemetryMap.put("columnAlignError", distanceError);
+                    telemetryMap.put("columnAlignUpdate", lateralUpdate);
                 } else {
                     stop();
                     revertMode();
