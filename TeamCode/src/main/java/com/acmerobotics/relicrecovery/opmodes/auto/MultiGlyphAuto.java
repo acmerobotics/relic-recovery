@@ -61,6 +61,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .build());
 
         robot.intake.setIntakePower(0);
+        robot.drive.enableUltrasonicFeedback();
 
         if (VISION) {
             cryptoTracker.enable();
@@ -71,6 +72,9 @@ public class MultiGlyphAuto extends AutoOpMode {
         followPathSync(new PathBuilder(new Pose2d(12, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12, -54))
                 .build());
+
+        robot.drive.disableUltrasonicFeedback();
+        alignWithColumnSync();
 
 //        robot.dumpBed.dump();
         sleep(1000);
@@ -98,6 +102,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .build());
 
         robot.intake.setIntakePower(0);
+        robot.drive.enableUltrasonicFeedback();
 
         if (VISION) {
             robot.phoneSwivel.pointAtCryptobox();
@@ -113,6 +118,9 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -36))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54))
                 .build());
+
+        robot.drive.disableUltrasonicFeedback();
+        alignWithColumnSync();
 
 //        robot.dumpBed.dump();
         sleep(1000);

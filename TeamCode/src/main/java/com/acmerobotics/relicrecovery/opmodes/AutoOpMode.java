@@ -5,6 +5,7 @@ import com.acmerobotics.relicrecovery.configuration.MatchType;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
@@ -106,6 +107,13 @@ public abstract class AutoOpMode extends LinearOpMode {
     protected void followPathSync(Path path) {
         robot.drive.followPath(path);
         while (opModeIsActive() && robot.drive.isFollowingPath()) {
+            sleep(5);
+        }
+    }
+
+    protected void alignWithColumnSync() {
+        robot.drive.alignWithColumn();
+        while (opModeIsActive() && robot.drive.getMode() == MecanumDrive.Mode.COLUMN_ALIGN) {
             sleep(5);
         }
     }
