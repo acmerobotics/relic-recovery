@@ -19,7 +19,7 @@ public class UltrasonicTest extends OpMode {
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, RobotDashboard.getInstance().getTelemetry());
-        ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(hardwareMap.analogInput.get("frontUltrasonic"));
+        ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(hardwareMap.analogInput.get("ultrasonic"));
         smoothers = new ExponentialSmoother[SMOOTHING_RATIOS.length];
         for (int i = 0; i < smoothers.length; i++) {
             smoothers[i] = new ExponentialSmoother(SMOOTHING_RATIOS[i]);

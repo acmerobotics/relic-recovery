@@ -28,6 +28,7 @@ public class DeadReckoningLocalizer implements Localizer {
 
             estimatedPosition = estimatedPosition.added(fieldPoseDelta);
         }
+        lastRotations = rotations;
         return estimatedPosition;
     }
 
