@@ -1,23 +1,27 @@
 package com.acmerobotics.relicrecovery.localization;
 
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
-import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+@Config
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
-    public static final double SENSOR_OFFSET = 8.5; // in
+    public static double MOUNTING_OFFSET = 11; // in
+    public static double EMPTY_COLUMN_OFFSET = 2; // in
+    public static double SMOOTHING_COEFF = 0.7;
 
     private boolean useUltrasonicFeedback;
     private ExponentialSmoother ultrasonicSmoother;
+    private double ultrasonicDistance;
 
-    public UltrasonicLocalizer(MecanumDrive drive, double smoothingCoeff) {
+    public UltrasonicLocalizer(MecanumDrive drive) {
         super(drive);
 
-        ultrasonicSmoother = new ExponentialSmoother(smoothingCoeff);
+        ultrasonicSmoother = new ExponentialSmoother(SMOOTHING_COEFF);
     }
 
     public void enableUltrasonicFeedback() {
@@ -43,23 +47,27 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                     closestDistance = distance;
                 }
             }
-            double ultrasonicDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
+            ultrasonicDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
             if (ultrasonicDistance > drive.getMinUltrasonicDistance(DistanceUnit.INCH)) {
                 switch (closestCryptobox) {
                     case NEAR_BLUE:
-                        estimatedPosition = new Vector2d(estimatedPosition.x(), -72 + AutoPaths.CRYPTO_COL_DEPTH + ultrasonicDistance + SENSOR_OFFSET);
+                        estimatedPosition = new Vector2d(estimatedPosition.x(), -72 + EMPTY_COLUMN_OFFSET + ultrasonicDistance + MOUNTING_OFFSET);
                         break;
                     case NEAR_RED:
-                        estimatedPosition = new Vector2d(estimatedPosition.x(), 72 - AutoPaths.CRYPTO_COL_DEPTH - ultrasonicDistance - SENSOR_OFFSET);
+                        estimatedPosition = new Vector2d(estimatedPosition.x(), 72 - EMPTY_COLUMN_OFFSET - ultrasonicDistance - MOUNTING_OFFSET);
                         break;
                     case FAR_BLUE:
                     case FAR_RED:
-                        estimatedPosition = new Vector2d(-72 + AutoPaths.CRYPTO_COL_DEPTH + ultrasonicDistance + SENSOR_OFFSET, estimatedPosition.y());
+                        estimatedPosition = new Vector2d(-72 + EMPTY_COLUMN_OFFSET + ultrasonicDistance + MOUNTING_OFFSET, estimatedPosition.y());
                         break;
                 }
             }
         }
 
         return estimatedPosition;
+    }
+
+    public double getUltrasonicDistance(DistanceUnit unit) {
+        return unit.fromInches(ultrasonicDistance);
     }
 }

@@ -29,7 +29,7 @@ public class MaxSonarEZ1UltrasonicSensor implements UltrasonicSensor, DistanceSe
     }
 
     public double getMinDistance(DistanceUnit unit) {
-        return unit.fromInches(6);
+        return unit.fromInches(8);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class MaxSonarEZ1UltrasonicSensor implements UltrasonicSensor, DistanceSe
         if (logicLevel == LogicLevel.V5) {
             return voltage * 512.0 / input.getMaxVoltage();
         } else {
-            return voltage * 256.0 / input.getMaxVoltage();
+            return voltage * 1024.0 / input.getMaxVoltage();
         }
     }
 

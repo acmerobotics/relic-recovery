@@ -9,7 +9,6 @@ import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -25,7 +24,7 @@ public class MultiGlyphAuto extends AutoOpMode {
 
     @Override
     protected void setup() {
-        ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive, MecanumDrive.DISTANCE_SMOOTHER_COEFF);
+        ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive);
         robot.drive.setLocalizer(ultrasonicLocalizer);
         robot.drive.setEstimatedPosition(BalancingStone.NEAR_BLUE.getPosition());
 
@@ -81,14 +80,14 @@ public class MultiGlyphAuto extends AutoOpMode {
         ultrasonicLocalizer.disableUltrasonicFeedback();
         alignWithColumnSync();
 
-//        robot.dumpBed.dump();
+        robot.dumpBed.dump();
         sleep(1000);
 
         followPathSync(new PathBuilder(new Pose2d(12, -54, Math.PI / 2))
                 .lineTo(new Vector2d(12, -44))
                 .build());
 
-//        robot.dumpBed.retract();
+        robot.dumpBed.retract();
 
         robot.intake.setIntakePower(1);
 
@@ -127,13 +126,13 @@ public class MultiGlyphAuto extends AutoOpMode {
         ultrasonicLocalizer.disableUltrasonicFeedback();
         alignWithColumnSync();
 
-//        robot.dumpBed.dump();
+        robot.dumpBed.dump();
         sleep(1000);
 
         followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44))
                 .build());
 
-//        robot.dumpBed.retract();
+        robot.dumpBed.retract();
     }
 }

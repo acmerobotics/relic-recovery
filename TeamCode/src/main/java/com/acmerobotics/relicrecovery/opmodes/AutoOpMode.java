@@ -51,6 +51,10 @@ public abstract class AutoOpMode extends LinearOpMode {
 
         waitForStart();
 
+        if (isStopRequested()) {
+            return;
+        }
+
         run();
     }
 

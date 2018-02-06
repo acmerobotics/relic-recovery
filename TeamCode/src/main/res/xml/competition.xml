@@ -13,7 +13,7 @@
             <Servo name="relicFinger" port="3" />
             <AnalogInput name="ultrasonic" port="1" />
             <AdafruitBNO055IMU name="imu" port="0" bus="1" />
-            <!--<LynxColorSensor name="sideColorDistance" port="0" bus="2" />-->
+            <LynxColorSensor name="sideColorDistance" port="0" bus="2" />
         </LynxModule>
         <LynxModule name="rearHub" port="2">
             <NeveRest20Gearmotor name="intakeLeft" port="0" />

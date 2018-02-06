@@ -50,8 +50,8 @@ import java.util.Map;
  */
 @Config
 public class MecanumDrive extends Subsystem {
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 48.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(48.0, 96.0, 96.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(4.0, 8.0, 8.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
     public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-1, 0, 0, 0.232, 0.04);
     public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0182, 0.004);
@@ -60,14 +60,13 @@ public class MecanumDrive extends Subsystem {
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(0.06, 0, 0.04);
     public static double COLUMN_ALIGN_TARGET_DISTANCE = 3.5;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
-    public static double DISTANCE_SMOOTHER_COEFF = 0.1;
+    public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0, 0, 0);
 
     public static double RAMP_MAX_ACCEL = 25;
 
     public enum Mode {
-        STOPPED,
         OPEN_LOOP,
         OPEN_LOOP_RAMP,
         FOLLOW_PATH,
@@ -120,8 +119,7 @@ public class MecanumDrive extends Subsystem {
     private PIDController maintainHeadingController;
     private boolean maintainHeading;
 
-    private Mode mode = Mode.STOPPED;
-    private Mode lastMode = Mode.STOPPED;
+    private Mode mode = Mode.OPEN_LOOP;
 
     private double[] powers, targetPowers;
     private Vector2d targetVel = new Vector2d(0, 0);
@@ -141,7 +139,6 @@ public class MecanumDrive extends Subsystem {
             MOTOR_NAMES[1] + "Rotation",
             MOTOR_NAMES[2] + "Rotation",
             MOTOR_NAMES[3] + "Rotation",
-            "ultrasonicDistance",
             "sideDistance",
             "columnAlignError",
             "columnAlignUpdate"
@@ -167,7 +164,7 @@ public class MecanumDrive extends Subsystem {
         imu.initialize(parameters);
 
         ultrasonic = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonic"));
-//        sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
+        sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
 
         powers = new double[4];
         targetPowers = new double[4];
@@ -188,7 +185,7 @@ public class MecanumDrive extends Subsystem {
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
 
-        sideDistanceSmoother = new ExponentialSmoother(DISTANCE_SMOOTHER_COEFF);
+        sideDistanceSmoother = new ExponentialSmoother(SIDE_DISTANCE_SMOOTHING_COEFF);
 
         resetEncoders();
     }
@@ -236,12 +233,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     private void setMode(Mode mode) {
-        this.lastMode = this.mode;
         this.mode = mode;
-    }
-
-    private void revertMode() {
-        this.mode = this.lastMode;
     }
 
     public Mode getMode() {
@@ -292,11 +284,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void stop() {
-        for (int i = 0; i < 4; i++) {
-            targetPowers[i] = 0;
-            powers[i] = 0;
-        }
-        setMode(Mode.STOPPED);
+        setVelocity(new Vector2d(0, 0), 0);
     }
 
     /**
@@ -444,14 +432,14 @@ public class MecanumDrive extends Subsystem {
     }
 
     public double getSideDistance(DistanceUnit unit) {
-        return sideColorDistance.getDistance(unit);
+        double sideDistance = sideColorDistance.getDistance(unit);
+        return Double.isNaN(sideDistance) ? unit.fromCm(20) : sideDistance;
     }
 
     public void update() {
         invalidateOrientation();
 
         telemetryMap.put("driveMode", mode);
-        telemetryMap.put("lastDriveMode", lastMode);
         telemetryMap.put("positionEstimationEnabled", positionEstimationEnabled);
         telemetryMap.put("maintainHeading", maintainHeading);
 
@@ -523,7 +511,6 @@ public class MecanumDrive extends Subsystem {
                     telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
                 } else {
                     stop();
-                    revertMode();
                 }
                 powers = targetPowers;
                 break;
@@ -542,11 +529,8 @@ public class MecanumDrive extends Subsystem {
                     telemetryMap.put("columnAlignUpdate", lateralUpdate);
                 } else {
                     stop();
-                    revertMode();
                 }
                 powers = targetPowers;
-                break;
-            case STOPPED:
                 break;
         }
 

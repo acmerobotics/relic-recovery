@@ -12,7 +12,7 @@ public enum Cryptobox {
     private AllianceColor allianceColor;
     private Vector2d pos;
 
-    Cryptobox(int i, AllianceColor color, Vector2d pose) {
+    Cryptobox(int i, AllianceColor color, Vector2d pos) {
         this.index = i;
         this.allianceColor = color;
         this.pos = pos;
