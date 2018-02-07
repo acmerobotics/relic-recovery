@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
     public static double MOUNTING_OFFSET = 11; // in
     public static double EMPTY_COLUMN_OFFSET = 2; // in
-    public static double SMOOTHING_COEFF = 0.7;
+    public static double SMOOTHING_COEFF = 1;
 
     private boolean useUltrasonicFeedback;
     private ExponentialSmoother ultrasonicSmoother;

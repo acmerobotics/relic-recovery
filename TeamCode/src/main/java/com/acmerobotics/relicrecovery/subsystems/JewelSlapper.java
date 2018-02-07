@@ -1,36 +1,33 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import com.acmerobotics.library.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+@Config
 public class JewelSlapper extends Subsystem {
-    public static final double DEPLOYER_UP_POSITION = 0;
-    public static final double DEPLOYER_DOWN_POSITION = 0.63;
+    public static double DEPLOYER_UP_POSITION = 0;
+    public static double DEPLOYER_DOWN_POSITION = 0.63;
+
+    public static double SLAPPER_LEFT_POSITION = 0;
+    public static double SLAPPER_CENTER_POSITION = 0.59;
+    public static double SLAPPER_RIGHT_POSITION = 1;
+    public static double SLAPPER_STOW_POSITION = 0.87;
 
     private Telemetry telemetry;
 
-    public enum Position {
-        LEFT(0),
-        CENTER(0.59),
-        RIGHT(1),
-        STOW(0.87);
-
-        private double servoPos;
-
-        Position(double servoPos) {
-            this.servoPos = servoPos;
-        }
-
-        public double getServoPosition() {
-            return servoPos;
-        }
+    public enum SlapperPosition {
+        LEFT,
+        CENTER,
+        RIGHT,
+        STOW
     }
 
     private Servo jewelDeployer, jewelSlapper;
 
-    private Position position;
+    private SlapperPosition slapperPosition;
     private boolean deployed;
 
     public JewelSlapper(HardwareMap map, Telemetry telemetry) {
@@ -39,40 +36,51 @@ public class JewelSlapper extends Subsystem {
         jewelDeployer = map.servo.get("jewelDeployer");
         jewelSlapper = map.servo.get("jewelSlapper");
 
-        deployed = true;
         stowArmAndSlapper();
     }
 
     public void deployArmAndSlapper() {
-        if (!deployed) {
-            jewelDeployer.setPosition(DEPLOYER_DOWN_POSITION);
-            setSlapperPosition(Position.CENTER);
-            deployed = true;
-        }
+        setSlapperPosition(SlapperPosition.CENTER);
+        deployed = true;
     }
 
     public void stowArmAndSlapper() {
-        if (deployed) {
-            jewelDeployer.setPosition(DEPLOYER_UP_POSITION);
-            setSlapperPosition(Position.STOW);
-            deployed = false;
-        }
+        setSlapperPosition(SlapperPosition.STOW);
+        deployed = false;
     }
 
-    public Position getPosition() {
-        return position;
+    public SlapperPosition getSlapperPosition() {
+        return slapperPosition;
     }
 
-    public void setSlapperPosition(Position position) {
-        if (this.position != position) {
-            jewelSlapper.setPosition(position.getServoPosition());
-            this.position = position;
-        }
+    public void setSlapperPosition(SlapperPosition slapperPosition) {
+        this.slapperPosition = slapperPosition;
     }
 
     @Override
     public void update() {
         telemetry.addData("jewelSlapperDeployed", deployed);
-        telemetry.addData("jewelSlapperPosition", position);
+        telemetry.addData("jewelSlapperPosition", slapperPosition);
+
+        if (deployed) {
+            jewelDeployer.setPosition(DEPLOYER_DOWN_POSITION);
+        } else {
+            jewelDeployer.setPosition(DEPLOYER_UP_POSITION);
+        }
+
+        switch (slapperPosition) {
+            case LEFT:
+                jewelSlapper.setPosition(SLAPPER_LEFT_POSITION);
+                break;
+            case CENTER:
+                jewelSlapper.setPosition(SLAPPER_CENTER_POSITION);
+                break;
+            case RIGHT:
+                jewelSlapper.setPosition(SLAPPER_RIGHT_POSITION);
+                break;
+            case STOW:
+                jewelSlapper.setPosition(SLAPPER_STOW_POSITION);
+                break;
+        }
     }
 }

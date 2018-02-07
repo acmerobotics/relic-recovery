@@ -93,10 +93,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         if (jewelPosition != JewelPosition.UNKNOWN) {
             if (robot.config.getAllianceColor() == jewelPosition.rightColor()) {
                 // remove left
-                robot.jewelSlapper.setSlapperPosition(JewelSlapper.Position.LEFT);
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
             } else {
                 // remove right
-                robot.jewelSlapper.setSlapperPosition(JewelSlapper.Position.RIGHT);
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
             }
         }
 

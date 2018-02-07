@@ -13,6 +13,8 @@ import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 @Config
 @Autonomous
 public class MultiGlyphAuto extends AutoOpMode {
@@ -25,6 +27,10 @@ public class MultiGlyphAuto extends AutoOpMode {
     @Override
     protected void setup() {
         ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive);
+        robot.addListener(() -> {
+            robot.dashboard.getTelemetry().addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
+            telemetry.addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
+        });
         robot.drive.setLocalizer(ultrasonicLocalizer);
         robot.drive.setEstimatedPosition(BalancingStone.NEAR_BLUE.getPosition());
 
