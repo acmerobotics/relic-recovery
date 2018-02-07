@@ -71,6 +71,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .build());
 
         robot.intake.setIntakePower(0);
+        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.WALL);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
         if (VISION) {
@@ -112,6 +113,7 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .build());
 
         robot.intake.setIntakePower(0);
+        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
         if (VISION) {
