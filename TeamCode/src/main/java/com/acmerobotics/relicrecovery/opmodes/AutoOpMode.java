@@ -1,9 +1,11 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.relicrecovery.configuration.MatchType;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
@@ -28,14 +30,15 @@ public abstract class AutoOpMode extends LinearOpMode {
     @Override
     public final void runOpMode() throws InterruptedException {
         robot = new Robot(this);
+        robot.drive.enablePositionEstimation();
         robot.start();
 
-        camera = new VuforiaCamera();
-        jewelTracker = new DynamicJewelTracker();
-        vuMarkTracker = new VuforiaVuMarkTracker();
-        camera.addTracker(jewelTracker);
-        camera.addTracker(vuMarkTracker);
-        camera.initialize();
+//        camera = new VuforiaCamera();
+//        jewelTracker = new DynamicJewelTracker();
+//        vuMarkTracker = new VuforiaVuMarkTracker();
+//        camera.addTracker(jewelTracker);
+//        camera.addTracker(vuMarkTracker);
+//        camera.initialize();
 
         String autoTransition = robot.config.getAutoTransition();
         if (!autoTransition.equals(OpModeConfiguration.NO_AUTO_TRANSITION)) {
@@ -48,12 +51,18 @@ public abstract class AutoOpMode extends LinearOpMode {
 
         waitForStart();
 
+        if (isStopRequested()) {
+            return;
+        }
+
         run();
     }
 
     private void displayInitTelemetry() {
         telemetry.addData("matchType", robot.config.getMatchType());
-        telemetry.addData("matchNumber", robot.config.getMatchNumber());
+        if (robot.config.getMatchType() != MatchType.PRACTICE) {
+            telemetry.addData("matchNumber", robot.config.getMatchNumber());
+        }
         telemetry.addData("delay", robot.config.getDelay());
         telemetry.addData("allianceColor", robot.config.getAllianceColor());
         telemetry.addData("balancingStone", robot.config.getBalancingStone());
@@ -65,7 +74,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
-        robot.jewelSlapper.deployArmAndSlapper();
+        robot.jewelSlapper.lowerArmAndSlapper();
 
         sleep(1500);
 
@@ -84,10 +93,10 @@ public abstract class AutoOpMode extends LinearOpMode {
         if (jewelPosition != JewelPosition.UNKNOWN) {
             if (robot.config.getAllianceColor() == jewelPosition.rightColor()) {
                 // remove left
-                robot.jewelSlapper.setSlapperPosition(JewelSlapper.Position.LEFT);
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
             } else {
                 // remove right
-                robot.jewelSlapper.setSlapperPosition(JewelSlapper.Position.RIGHT);
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
             }
         }
 
@@ -102,8 +111,21 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     protected void followPathSync(Path path) {
         robot.drive.followPath(path);
+        waitForPathFollower();
+    }
+
+    protected void waitForPathFollower() {
         while (opModeIsActive() && robot.drive.isFollowingPath()) {
             sleep(5);
         }
+    }
+
+    protected void alignWithColumnSync() {
+//        robot.drive.enableHeadingCorrection();
+        robot.drive.alignWithColumn();
+        while (opModeIsActive() && robot.drive.getMode() == MecanumDrive.Mode.COLUMN_ALIGN) {
+            sleep(5);
+        }
+//        robot.drive.disableHeadingCorrection();
     }
 }

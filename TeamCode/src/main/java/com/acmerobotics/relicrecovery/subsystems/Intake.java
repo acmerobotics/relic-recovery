@@ -18,6 +18,10 @@ public class Intake extends Subsystem {
         rightIntake = map.dcMotor.get("intakeRight");
     }
 
+    public void setIntakePower(double intakePower) {
+        setIntakePower(intakePower, intakePower);
+    }
+
     public void setIntakePower(double leftIntakePower, double rightIntakePower) {
         this.leftIntakePower = leftIntakePower;
         this.rightIntakePower = rightIntakePower;
