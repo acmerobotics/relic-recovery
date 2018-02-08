@@ -7,7 +7,7 @@
             <NeveRest20Gearmotor name="rearLeft" port="1" />
             <NeveRest20Gearmotor name="rearRight" port="2" />
             <NeveRest20Gearmotor name="frontRight" port="3" />
-            <Servo name="jewelDeployer" port="0" />
+            <Servo name="jewelArm" port="0" />
             <Servo name="jewelSlapper" port="1" />
             <Servo name="relicWrist" port="2" />
             <Servo name="relicFinger" port="3" />

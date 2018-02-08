@@ -74,7 +74,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
-        robot.jewelSlapper.deployArmAndSlapper();
+        robot.jewelSlapper.lowerArmAndSlapper();
 
         sleep(1500);
 
@@ -111,15 +111,21 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     protected void followPathSync(Path path) {
         robot.drive.followPath(path);
+        waitForPathFollower();
+    }
+
+    protected void waitForPathFollower() {
         while (opModeIsActive() && robot.drive.isFollowingPath()) {
             sleep(5);
         }
     }
 
     protected void alignWithColumnSync() {
+//        robot.drive.enableHeadingCorrection();
         robot.drive.alignWithColumn();
         while (opModeIsActive() && robot.drive.getMode() == MecanumDrive.Mode.COLUMN_ALIGN) {
             sleep(5);
         }
+//        robot.drive.disableHeadingCorrection();
     }
 }

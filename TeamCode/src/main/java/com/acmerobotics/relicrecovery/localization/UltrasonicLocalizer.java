@@ -10,8 +10,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
-    public static double MOUNTING_OFFSET = 11; // in
-    public static double SMOOTHING_COEFF = 1;
+    public static double MOUNTING_OFFSET = 1.5; // in
+    public static double SMOOTHING_COEFF = 0.4;
 
     // all offsets are measured in reference to the wall
     public static double WALL_OFFSET = 0;

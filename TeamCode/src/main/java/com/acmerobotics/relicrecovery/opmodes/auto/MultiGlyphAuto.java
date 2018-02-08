@@ -3,14 +3,13 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
+import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
-import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
-import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
+import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -18,11 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 @Autonomous
 public class MultiGlyphAuto extends AutoOpMode {
-    public static boolean VISION = false;
-
-    private CryptoboxLocalizer cryptoLocalizer;
     private UltrasonicLocalizer ultrasonicLocalizer;
-    private CryptoboxTracker cryptoTracker;
 
     @Override
     protected void setup() {
@@ -33,18 +28,6 @@ public class MultiGlyphAuto extends AutoOpMode {
         });
         robot.drive.setLocalizer(ultrasonicLocalizer);
         robot.drive.setEstimatedPosition(BalancingStone.NEAR_BLUE.getPosition());
-
-        if (VISION) {
-            cryptoTracker = new CryptoboxTracker(AllianceColor.BLUE);
-            cryptoTracker.disable();
-            cryptoLocalizer = new CryptoboxLocalizer(cryptoTracker, camera.getProperties(), robot.drive);
-            cryptoLocalizer.addListener((pos, timestamp) -> {
-                if (pos != null && Vector2d.distance(pos, robot.drive.getEstimatedPosition()) < 16) {
-                    robot.drive.setEstimatedPosition(pos);
-                }
-            });
-            camera.addTracker(cryptoTracker);
-        }
     }
 
     @Override
@@ -61,83 +44,92 @@ public class MultiGlyphAuto extends AutoOpMode {
         followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI))
                 .turn(-Math.PI / 4)
                 .lineTo(new Vector2d(12, -12))
+                .turn(-Math.PI / 4)
                 .build());
+
+        Path pitToCrypto1 = new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
+                .lineTo(new Vector2d(12, -44))
+                .build();
+
+        robot.drive.followPath(pitToCrypto1);
+
+        sleep((int) (1000 * 0.5 * pitToCrypto1.duration()));
 
         robot.intake.setIntakePower(-1);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -12, 3 * Math.PI / 4))
-                .turn(-Math.PI / 4)
-                .lineTo(new Vector2d(12, -44))
-                .build());
+        waitForPathFollower();
 
         robot.intake.setIntakePower(0);
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+
+        sleep(500);
+
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.WALL);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
-        if (VISION) {
-            cryptoTracker.enable();
-            sleep(1000);
-            cryptoTracker.disable();
-        }
-
         followPathSync(new PathBuilder(new Pose2d(12, -44, Math.PI / 2))
-                .lineTo(new Vector2d(12, -54))
+                .lineTo(new Vector2d(12, -57))
                 .build());
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         alignWithColumnSync();
 
         robot.dumpBed.dump();
-        sleep(1000);
+        sleep(500);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -54, Math.PI / 2))
-                .lineTo(new Vector2d(12, -44))
-                .build());
+        Path cryptoToPit1 = new PathBuilder(new Pose2d(12, -57, Math.PI / 2))
+                .lineTo(new Vector2d(12, -12))
+                .build();
+        robot.drive.followPath(cryptoToPit1);
+
+        sleep((int) (1000 * 0.5 * cryptoToPit1.duration()));
 
         robot.dumpBed.retract();
-
         robot.intake.setIntakePower(1);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -44, Math.PI / 2))
-                .lineTo(new Vector2d(12, -12))
+        waitForPathFollower();
+
+        followPathSync(new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .turn(-Math.PI / 4)
-                .forward(9)
-                .back(9)
+                .forward(18)
+                .back(18)
                 .turn(Math.PI / 4)
                 .build());
 
+        Path pitToCrypto2 = new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
+                .lineTo(new Vector2d(12, -36))
+                .build();
+
+        robot.drive.followPath(pitToCrypto2);
+
+        sleep((int) (1000 * 0.5 * pitToCrypto2.duration()));
+
         robot.intake.setIntakePower(-1);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
-                .lineTo(new Vector2d(12, -36))
-                .build());
+        waitForPathFollower();
 
         robot.intake.setIntakePower(0);
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+
+        sleep(500);
+
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
-        if (VISION) {
-            robot.phoneSwivel.pointAtCryptobox();
-            sleep(500);
-            cryptoTracker.enable();
-            sleep(1000);
-            cryptoTracker.disable();
-            robot.phoneSwivel.pointAtJewel();
-            sleep(500);
-        }
-
         followPathSync(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -36))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57))
                 .build());
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         alignWithColumnSync();
 
         robot.dumpBed.dump();
         sleep(1000);
 
-        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -54, Math.PI / 2))
+        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44))
                 .build());
 

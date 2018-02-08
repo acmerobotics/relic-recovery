@@ -50,8 +50,8 @@ import java.util.Map;
  */
 @Config
 public class MecanumDrive extends Subsystem {
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(48.0, 96.0, 96.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(4.0, 8.0, 8.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(48.0, 96.0, 128.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(4.0, 8.0, 16.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
     public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-1, 0, 0, 0.232, 0.04);
     public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0182, 0.004);
@@ -62,7 +62,7 @@ public class MecanumDrive extends Subsystem {
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
     public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
 
-    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 
     public static double RAMP_MAX_ACCEL = 25;
 

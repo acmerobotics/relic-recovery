@@ -8,8 +8,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class JewelSlapper extends Subsystem {
-    public static double DEPLOYER_UP_POSITION = 0;
-    public static double DEPLOYER_DOWN_POSITION = 0.63;
+    public static double ARM_UP_POSITION = 0;
+    public static double ARM_HALFWAY_POSITION = 0.35;
+    public static double ARM_DOWN_POSITION = 0.63;
 
     public static double SLAPPER_LEFT_POSITION = 0;
     public static double SLAPPER_CENTER_POSITION = 0.59;
@@ -18,6 +19,12 @@ public class JewelSlapper extends Subsystem {
 
     private Telemetry telemetry;
 
+    public enum ArmPosition {
+        UP,
+        HALFWAY,
+        DOWN
+    }
+
     public enum SlapperPosition {
         LEFT,
         CENTER,
@@ -25,47 +32,53 @@ public class JewelSlapper extends Subsystem {
         STOW
     }
 
-    private Servo jewelDeployer, jewelSlapper;
+    private Servo jewelArm, jewelSlapper;
 
     private SlapperPosition slapperPosition;
-    private boolean deployed;
+    private ArmPosition armPosition;
 
     public JewelSlapper(HardwareMap map, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        jewelDeployer = map.servo.get("jewelDeployer");
+        jewelArm = map.servo.get("jewelArm");
         jewelSlapper = map.servo.get("jewelSlapper");
 
         stowArmAndSlapper();
     }
 
-    public void deployArmAndSlapper() {
+    public void lowerArmAndSlapper() {
         setSlapperPosition(SlapperPosition.CENTER);
-        deployed = true;
+        setArmPosition(ArmPosition.DOWN);
     }
 
     public void stowArmAndSlapper() {
         setSlapperPosition(SlapperPosition.STOW);
-        deployed = false;
-    }
-
-    public SlapperPosition getSlapperPosition() {
-        return slapperPosition;
+        setArmPosition(ArmPosition.UP);
     }
 
     public void setSlapperPosition(SlapperPosition slapperPosition) {
         this.slapperPosition = slapperPosition;
     }
 
+    public void setArmPosition(ArmPosition armPosition) {
+        this.armPosition = armPosition;
+    }
+
     @Override
     public void update() {
-        telemetry.addData("jewelSlapperDeployed", deployed);
+        telemetry.addData("jewelArmPosition", armPosition);
         telemetry.addData("jewelSlapperPosition", slapperPosition);
 
-        if (deployed) {
-            jewelDeployer.setPosition(DEPLOYER_DOWN_POSITION);
-        } else {
-            jewelDeployer.setPosition(DEPLOYER_UP_POSITION);
+        switch (armPosition) {
+            case UP:
+                jewelArm.setPosition(ARM_UP_POSITION);
+                break;
+            case HALFWAY:
+                jewelArm.setPosition(ARM_HALFWAY_POSITION);
+                break;
+            case DOWN:
+                jewelSlapper.setPosition(ARM_DOWN_POSITION);
+                break;
         }
 
         switch (slapperPosition) {
