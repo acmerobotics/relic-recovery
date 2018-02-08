@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
+import com.acmerobotics.library.cameraoverlay.CameraStreamServer;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.MatchType;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
@@ -7,7 +8,7 @@ import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
-import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
+import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VuforiaVuMarkTracker;
@@ -21,8 +22,10 @@ public abstract class AutoOpMode extends LinearOpMode {
     protected Robot robot;
 
     protected VuforiaCamera camera;
-    protected DynamicJewelTracker jewelTracker;
+    protected FixedJewelTracker jewelTracker;
     protected VuforiaVuMarkTracker vuMarkTracker;
+
+    private CameraStreamServer streamServer;
 
     protected abstract void setup();
     protected abstract void run();
@@ -33,12 +36,15 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot.drive.enablePositionEstimation();
         robot.start();
 
-//        camera = new VuforiaCamera();
-//        jewelTracker = new DynamicJewelTracker();
-//        vuMarkTracker = new VuforiaVuMarkTracker();
-//        camera.addTracker(jewelTracker);
-//        camera.addTracker(vuMarkTracker);
-//        camera.initialize();
+        streamServer = new CameraStreamServer();
+
+        camera = new VuforiaCamera();
+        jewelTracker = new FixedJewelTracker();
+        vuMarkTracker = new VuforiaVuMarkTracker();
+        camera.addTracker(jewelTracker);
+        camera.addTracker(vuMarkTracker);
+        camera.addTracker(streamServer.getTracker());
+        camera.initialize();
 
         String autoTransition = robot.config.getAutoTransition();
         if (!autoTransition.equals(OpModeConfiguration.NO_AUTO_TRANSITION)) {
@@ -50,6 +56,8 @@ public abstract class AutoOpMode extends LinearOpMode {
         displayInitTelemetry();
 
         waitForStart();
+
+        streamServer.stop();
 
         if (isStopRequested()) {
             return;
