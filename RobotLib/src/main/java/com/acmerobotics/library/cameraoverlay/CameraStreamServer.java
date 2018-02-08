@@ -8,12 +8,19 @@ import com.acmerobotics.library.cameraoverlay.message.PingCommand;
 import com.acmerobotics.library.cameraoverlay.message.PongResponse;
 import com.acmerobotics.library.cameraoverlay.message.ReceiveFrameResponse;
 import com.acmerobotics.library.cameraoverlay.message.RequestFrameCommand;
+import com.acmerobotics.relicrecovery.vision.MatOverlay;
+import com.acmerobotics.relicrecovery.vision.Overlay;
+import com.acmerobotics.relicrecovery.vision.Tracker;
+import com.acmerobotics.relicrecovery.vision.VisionCamera;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.qualcomm.robotcore.util.ThreadPool;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +44,39 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
     private ExecutorService executorService;
     private OpModeManagerImpl opModeManager;
 
+    private Bitmap bitmap;
+    private Mat temp, rgba;
+    private VisionCamera camera;
+    private Tracker tracker = new Tracker() {
+        @Override
+        public void init(VisionCamera camera) {
+            CameraStreamServer.this.camera = camera;
+        }
+
+        @Override
+        public void processFrame(Mat frame, double timestamp) {
+            if (bitmap == null) {
+                bitmap = Bitmap.createBitmap(frame.width(), frame.height(), Bitmap.Config.ARGB_8888);
+                temp = new Mat();
+                rgba = new Mat();
+            }
+            frame.copyTo(temp);
+            MatOverlay overlay = new MatOverlay(temp);
+            for (Tracker tracker : camera.getTrackers()) {
+                if (this == tracker) break;
+                tracker.drawOverlay(overlay, temp.cols(), temp.rows(), true);
+            }
+            Imgproc.cvtColor(temp, rgba, Imgproc.COLOR_BGR2RGBA);
+            Utils.matToBitmap(rgba, bitmap);
+            send(bitmap);
+        }
+
+        @Override
+        public void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
+
+        }
+    };
+
     public CameraStreamServer() {
         opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(AppUtil.getInstance().getActivity());
         if (opModeManager != null) {
@@ -51,6 +91,10 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
 
         executorService = ThreadPool.newSingleThreadExecutor("camera stream server");
         executorService.submit(this);
+    }
+
+    public Tracker getTracker() {
+        return tracker;
     }
 
     public void send(Bitmap bitmap) {
@@ -119,6 +163,11 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
                 Log.w(TAG, e);
             }
         }
+
+        if (tracker != null) {
+            tracker.disable();
+            tracker = null;
+        }
     }
 
     @Override
@@ -134,6 +183,7 @@ public class CameraStreamServer implements Runnable, OpModeManagerNotifier.Notif
     @Override
     public void onOpModePostStop(OpMode opMode) {
         stop();
+
         if (opModeManager != null) {
             opModeManager.unregisterListener(this);
             opModeManager = null;

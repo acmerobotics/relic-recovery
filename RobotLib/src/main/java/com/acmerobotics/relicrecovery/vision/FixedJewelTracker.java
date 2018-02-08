@@ -111,4 +111,8 @@ public class FixedJewelTracker extends Tracker {
     public synchronized double getRightRed() {
         return rightRed;
     }
+
+    public synchronized JewelPosition getJewelPosition() {
+        return leftBlue > rightBlue ? JewelPosition.BLUE_RED : JewelPosition.RED_BLUE;
+    }
 }

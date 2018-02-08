@@ -98,6 +98,10 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
         }
     }
 
+    public List<Tracker> getTrackers() {
+        return trackers;
+    }
+
     protected void onFrame(Mat frame, double timestamp) {
         synchronized (trackers) {
             for (Tracker tracker : trackers) {
