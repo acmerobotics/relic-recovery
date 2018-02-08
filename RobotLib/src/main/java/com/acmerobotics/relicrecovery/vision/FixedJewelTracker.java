@@ -4,50 +4,48 @@ import com.acmerobotics.library.dashboard.config.Config;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
-import org.opencv.core.Rect2d;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 
 @Config
 public class FixedJewelTracker extends Tracker {
     public static final String TAG = "FixedJewelTracker";
 
-    public static final float JEWEL_PLATFORM_ASPECT_RATIO = 2.6f; // width/height
+    public static Point LEFT_CENTER = new Point(0, 0);
+    public static Point RIGHT_CENTER = new Point(0, 0);
 
-    public static Rect2d LEFT_JEWEL_RECT = new Rect2d(0.5 - JEWEL_PLATFORM_ASPECT_RATIO * 0.125, 0.375, 0.25, 0.25);
-    public static Rect2d RIGHT_JEWEL_RECT = new Rect2d(0.25 + JEWEL_PLATFORM_ASPECT_RATIO * 0.125, 0.375, 0.25, 0.25);
+    public static int LEFT_RADIUS = 0;
+    public static int RIGHT_RADIUS = 0;
 
     public static double COLOR_THRESHOLD = 0.7;
 
-    private Rect scaledLeftJewelRect, scaledRightJewelRect;
     private double leftRed, leftBlue, rightRed, rightBlue;
+    private Mat leftMask, rightMask, left, right;
 
     @Override
     public void init(VisionCamera camera) {
-
+        leftMask = new Mat();
+        rightMask = new Mat();
+        left = new Mat();
+        right = new Mat();
     }
 
     @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
         int imageWidth = frame.width(), imageHeight = frame.height();
-        scaledLeftJewelRect = new Rect(
-                (int) (imageWidth * LEFT_JEWEL_RECT.x),
-                (int) (imageHeight * LEFT_JEWEL_RECT.y),
-                (int) (imageWidth * LEFT_JEWEL_RECT.width),
-                (int) (imageHeight * LEFT_JEWEL_RECT.height)
-        );
-        scaledRightJewelRect = new Rect(
-                (int) (imageWidth * RIGHT_JEWEL_RECT.x),
-                (int) (imageHeight * RIGHT_JEWEL_RECT.y),
-                (int) (imageWidth * RIGHT_JEWEL_RECT.width),
-                (int) (imageHeight * RIGHT_JEWEL_RECT.height)
-        );
 
-        Mat leftJewelCropped = frame.submat(scaledLeftJewelRect);
-        Mat rightJewelCropped = frame.submat(scaledRightJewelRect);
+        leftMask.setTo(new Scalar(0, 0, 0));
+        rightMask.setTo(new Scalar(0, 0, 0));
 
-        Scalar leftJewelTotalColor = Core.sumElems(leftJewelCropped);
-        Scalar rightJewelTotalColor = Core.sumElems(rightJewelCropped);
+        Imgproc.circle(leftMask, LEFT_CENTER, LEFT_RADIUS, new Scalar(255, 255, 255), Core.FILLED);
+        Imgproc.circle(rightMask, RIGHT_CENTER, RIGHT_RADIUS, new Scalar(255, 255, 255), Core.FILLED);
+
+        Core.bitwise_and(leftMask, frame, left);
+        Core.bitwise_and(rightMask, frame, right);
+
+        Scalar leftJewelTotalColor = Core.sumElems(left);
+        Scalar rightJewelTotalColor = Core.sumElems(right);
 
         leftBlue = leftJewelTotalColor.val[0];
         leftRed = leftJewelTotalColor.val[2];
@@ -76,27 +74,25 @@ public class FixedJewelTracker extends Tracker {
 
     @Override
     public synchronized void drawOverlay(Overlay overlay, int imageWidth, int imageHeight, boolean debug) {
-        if (scaledLeftJewelRect != null) {
-            Scalar leftColor;
-            if (leftBlue > COLOR_THRESHOLD) {
-                leftColor = new Scalar(255, 0, 0);
-            } else if (leftRed > COLOR_THRESHOLD) {
-                leftColor = new Scalar(0, 0, 255);
-            } else {
-                leftColor = new Scalar(0, 255, 0);
-            }
-            overlay.strokeRect(scaledLeftJewelRect, leftColor, 5);
-
-            Scalar rightColor;
-            if (rightBlue > COLOR_THRESHOLD) {
-                rightColor = new Scalar(255, 0, 0);
-            } else if (rightRed > COLOR_THRESHOLD) {
-                rightColor = new Scalar(0, 0, 255);
-            } else {
-                rightColor = new Scalar(0, 255, 0);
-            }
-            overlay.strokeRect(scaledRightJewelRect, rightColor, 5);
+        Scalar leftColor;
+        if (leftBlue > COLOR_THRESHOLD) {
+            leftColor = new Scalar(255, 0, 0);
+        } else if (leftRed > COLOR_THRESHOLD) {
+            leftColor = new Scalar(0, 0, 255);
+        } else {
+            leftColor = new Scalar(0, 255, 0);
         }
+        overlay.strokeCircle(LEFT_CENTER, LEFT_RADIUS, leftColor, 5);
+
+        Scalar rightColor;
+        if (rightBlue > COLOR_THRESHOLD) {
+            rightColor = new Scalar(255, 0, 0);
+        } else if (rightRed > COLOR_THRESHOLD) {
+            rightColor = new Scalar(0, 0, 255);
+        } else {
+            rightColor = new Scalar(0, 255, 0);
+        }
+        overlay.strokeCircle(RIGHT_CENTER, RIGHT_RADIUS, rightColor, 5);
     }
 
 
