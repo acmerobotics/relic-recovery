@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.hardware;
 
+import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxI2cDeviceSynchV1;
@@ -15,8 +16,12 @@ public class LynxOptimizedI2cSensorFactory {
                 new LynxI2cDeviceSynchV1(AppUtil.getDefContext(), module, bus), true);
     }
 
-    public static LynxEmbeddedIMU createLynxBNO055IMU(LynxModule module, int bus) {
+    public static LynxEmbeddedIMU createLynxEmbeddedIMU(LynxModule module, int bus) {
         return new LynxEmbeddedIMU(createLynxI2cDeviceSync(module, bus));
+    }
+
+    public static AdafruitBNO055IMU createLynxAdafruitBNO055IMU(LynxModule module, int bus) {
+        return new AdafruitBNO055IMU(createLynxI2cDeviceSync(module, bus));
     }
 
     public static LynxI2cColorRangeSensor createLynxI2cColorRangeSensor(LynxModule module, int bus) {

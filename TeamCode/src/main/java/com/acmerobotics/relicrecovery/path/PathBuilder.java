@@ -28,6 +28,28 @@ public class PathBuilder {
         return this;
     }
 
+    public PathBuilder forward(double distance) {
+        return lineTo(currentPose.pos().added(new Vector2d(
+                distance * Math.cos(currentPose.heading()),
+                distance * Math.sin(currentPose.heading())
+        )));
+    }
+
+    public PathBuilder back(double distance) {
+        return forward(-distance);
+    }
+
+    public PathBuilder strafeLeft(double distance) {
+        return lineTo(currentPose.pos().added(new Vector2d(
+                distance * Math.cos(currentPose.heading() + Math.PI / 2),
+                distance * Math.sin(currentPose.heading() + Math.PI / 2)
+        )));
+    }
+
+    public PathBuilder strafeRight(double distance) {
+        return strafeLeft(-distance);
+    }
+
     public Path build() {
         return new Path(segments);
     }

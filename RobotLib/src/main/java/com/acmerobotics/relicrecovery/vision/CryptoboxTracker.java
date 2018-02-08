@@ -26,6 +26,8 @@ public class CryptoboxTracker extends Tracker {
         void onCryptoboxDetection(List<Double> rails, double timestamp);
     }
 
+    public static double ROTATION_ANGLE = Math.PI / 12;
+
     // red HSV range
     public static int RED_LOWER_HUE = 170, RED_LOWER_SAT = 80, RED_LOWER_VALUE = 0;
     public static int RED_UPPER_HUE = 7, RED_UPPER_SAT = 255, RED_UPPER_VALUE = 255;
@@ -51,7 +53,7 @@ public class CryptoboxTracker extends Tracker {
 
     private double resizedWidth, resizedHeight;
     private Mat resized, hsv, hsvMask, hsvMaskOpen, hsvMaskClose, gray, grayMask, grayCombined, grayMaskOpen, grayMaskClose;
-    private Mat hierarchy, openKernel, hsvCloseKernel, tapeCloseKernel;
+    private Mat hierarchy, openKernel, hsvCloseKernel, tapeCloseKernel, transform;
     private int openKernelSize, hsvCloseKernelWidth, hsvCloseKernelHeight, tapeCloseKernelWidth, tapeCloseKernelHeight;
     private AllianceColor color;
 
@@ -114,6 +116,10 @@ public class CryptoboxTracker extends Tracker {
         }
 
         Imgproc.resize(frame, resized, new Size(resizedWidth, resizedHeight));
+
+        transform = VisionUtil.getZRotationMatrix(resized, ROTATION_ANGLE);
+
+        Imgproc.warpPerspective(resized, resized, transform, resized.size());
 
         Imgproc.GaussianBlur(resized, resized, new Size(5, 5), 0);
 
@@ -211,7 +217,7 @@ public class CryptoboxTracker extends Tracker {
             do {
                 lastRailSize = rails.size();
                 rails = VisionUtil.nonMaximumSuppression(rails, 0.75 * getMeanRailGap(rails));
-            } while (lastRailSize != rails.size());
+            } while (lastRailSize != rails.size() && rails.size() >= 2);
         }
 
         synchronized (this) {
@@ -226,7 +232,6 @@ public class CryptoboxTracker extends Tracker {
                 }
             }
         }
-
     }
 
     @Override
@@ -234,16 +239,19 @@ public class CryptoboxTracker extends Tracker {
         if (latestRails != null) {
             overlay.setScalingFactor(imageWidth / resizedWidth);
 
+            Mat transformInv = transform.inv();
+
             for (double rail : latestRails) {
-                overlay.strokeLine(new Point(rail, 0), new Point(rail, resizedHeight), new Scalar(255, 255, 255), 3);
+                overlay.strokeLine(VisionUtil.transformPoint(new Point(rail, 0), transformInv),
+                        VisionUtil.transformPoint(new Point(rail, resizedHeight), transformInv), new Scalar(255, 255, 255), 3);
             }
 
-            for (Point point : latestRejectedPoints) {
+            for (Point point : VisionUtil.transformPoints(latestRejectedPoints, transformInv)) {
                 overlay.fillCircle(point, 13, new Scalar(0, 0, 0));
                 overlay.fillCircle(point, 10, new Scalar(255, 255, 0));
             }
 
-            for (Point point : latestAcceptedPoints) {
+            for (Point point : VisionUtil.transformPoints(latestAcceptedPoints, transformInv)) {
                 overlay.fillCircle(point, 13, new Scalar(0, 0, 0));
                 overlay.fillCircle(point, 10, new Scalar(0, 255, 255));
             }

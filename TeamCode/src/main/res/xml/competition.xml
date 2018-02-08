@@ -7,16 +7,15 @@
             <NeveRest20Gearmotor name="rearLeft" port="1" />
             <NeveRest20Gearmotor name="rearRight" port="2" />
             <NeveRest20Gearmotor name="frontRight" port="3" />
-            <Servo name="jewelDeployer" port="0" />
+            <Servo name="jewelArm" port="0" />
             <Servo name="jewelSlapper" port="1" />
             <Servo name="relicWrist" port="2" />
             <Servo name="relicFinger" port="3" />
-            <AdafruitBNO055IMU name="imu" port="1" bus="0" />
-            <!--<LynxColorSensor name="frontIntakeColorDistance" port="2" bus="0" />-->
-            <!--<LynxColorSensor name="rearIntakeColorDistance" port="3" bus="0" />-->
+            <AnalogInput name="ultrasonic" port="1" />
+            <AdafruitBNO055IMU name="imu" port="0" bus="1" />
+            <LynxColorSensor name="sideColorDistance" port="0" bus="2" />
         </LynxModule>
-        <LynxModule name="rearHub" port="2
-">
+        <LynxModule name="rearHub" port="2">
             <NeveRest20Gearmotor name="intakeLeft" port="0" />
             <NeveRest20Gearmotor name="intakeRight" port="1" />
             <NeveRest20Gearmotor name="dumpLift" port="2" />

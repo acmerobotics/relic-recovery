@@ -5,9 +5,11 @@ import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.FpsTracker;
 import com.acmerobotics.relicrecovery.vision.OpenCVCamera;
 import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+@Disabled
 @TeleOp(name = "Cryptobox Vision", group = "vision")
 public class CryptoboxVision extends OpMode {
     private VisionCamera camera;

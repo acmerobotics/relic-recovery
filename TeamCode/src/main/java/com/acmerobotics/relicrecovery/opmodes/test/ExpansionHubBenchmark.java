@@ -5,6 +5,7 @@ import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.Func;
 
 import java.util.Iterator;
 
+@Disabled
 @TeleOp(name = "Expansion Hub Benchmark")
 public class ExpansionHubBenchmark extends LinearOpMode {
     public static final int TRIALS = 250;
@@ -37,7 +39,7 @@ public class ExpansionHubBenchmark extends LinearOpMode {
         imu.close();
 
         // IMU (optimized) test
-        imu = LynxOptimizedI2cSensorFactory.createLynxBNO055IMU(module, 0);
+        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(module, 0);
         imu.initialize(new BNO055IMU.Parameters());
         telemetry.addLine("IMU (optimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
         telemetry.update();

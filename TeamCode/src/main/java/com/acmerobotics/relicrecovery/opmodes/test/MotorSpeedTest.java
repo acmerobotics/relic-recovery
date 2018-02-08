@@ -3,10 +3,12 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+@Disabled
 @TeleOp
 public class MotorSpeedTest extends LinearOpMode {
     @Override

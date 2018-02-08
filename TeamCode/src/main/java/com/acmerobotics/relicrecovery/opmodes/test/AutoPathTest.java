@@ -6,11 +6,13 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
+@Disabled
 @TeleOp
 public class AutoPathTest extends OpMode {
     private RobotDashboard dashboard;

@@ -29,4 +29,8 @@ public class ExponentialSmoother {
         return avg;
     }
 
+    public void reset() {
+        hasUpdated = false;
+    }
+
 }
