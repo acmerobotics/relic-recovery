@@ -137,7 +137,7 @@ public class MecanumDrive extends Subsystem {
     private TelemetryEx telemetry;
     private TelemetryData telemetryData;
 
-    private class TelemetryData {
+    public class TelemetryData {
         public Mode driveMode;
 
         public double frontLeftPower;

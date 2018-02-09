@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -11,9 +12,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 @Config
 public class DumpBed extends Subsystem {
     public static final double LIFT_HEIGHT = 10.75;
@@ -23,7 +21,7 @@ public class DumpBed extends Subsystem {
     public static PIDCoefficients LIFT_PID = new PIDCoefficients(-2, 0, 0);
 
     public static double LIFT_UP_POWER = 1;
-    public static double LIFT_DOWN_POWER = -0.4;
+    public static double LIFT_DOWN_POWER = -0.7;
     public static double LIFT_CALIBRATION_POWER = -0.2;
 
     public static double BED_INTERMEDIATE_ROTATION = 0.5;
@@ -46,7 +44,7 @@ public class DumpBed extends Subsystem {
 
     private DcMotor liftMotor;
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
-    private DigitalChannel liftMagneticTouch;
+    private DigitalChannel liftHallEffectSensor;
 
     private boolean liftDumping, releaseEngaged, liftUp, skipFirstRead, calibrated, missedSensor, movingDownToSensor;
     private double dumpRotation, manualLiftPower;
@@ -54,22 +52,28 @@ public class DumpBed extends Subsystem {
 
     private PIDController pidController;
 
-    public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
-            "dumpMagneticState",
-            "dumpLiftHeight",
-            "dumpLiftHeightError",
-            "dumpLiftPower"
-    };
+    private TelemetryEx telemetry;
+    private TelemetryData telemetryData;
 
-    private Telemetry telemetry;
-    private LinkedHashMap<String, Object> telemetryMap;
+    public class TelemetryData {
+        public Mode dumpMode;
+        public boolean dumpLiftDumping;
+        public boolean dumpReleaseEngaged;
+        public double dumpRotation;
+        public boolean dumpLiftUp;
+        public boolean dumpSkipFirstRead;
+
+        public double dumpLiftPower;
+
+        public boolean dumpHallEffectState;
+
+        public double dumpLiftHeight;
+        public double dumpLiftError;
+    }
 
     public DumpBed(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = telemetry;
-        telemetryMap = new LinkedHashMap<>();
-        for (String key : CONDITIONAL_TELEMETRY_KEYS) {
-            telemetryMap.put(key, 0);
-        }
+        this.telemetry = new TelemetryEx(telemetry);
+        this.telemetryData = new TelemetryData();
 
         pidController = new PIDController(LIFT_PID);
 
@@ -80,8 +84,8 @@ public class DumpBed extends Subsystem {
         dumpRotateRight = map.servo.get("dumpRotateRight");
         dumpRelease = map.servo.get("dumpRelease");
 
-        liftMagneticTouch = map.digitalChannel.get("dumpLiftMagneticTouch");
-        liftMagneticTouch.setMode(DigitalChannel.Mode.INPUT);
+        liftHallEffectSensor = map.digitalChannel.get("dumpLiftMagneticTouch");
+        liftHallEffectSensor.setMode(DigitalChannel.Mode.INPUT);
 
         engageRelease();
         setDumpRotation(0);
@@ -141,7 +145,7 @@ public class DumpBed extends Subsystem {
             mode = Mode.MOVE_UP;
             missedSensor = false;
             liftUp = true;
-            skipFirstRead = !liftMagneticTouch.getState();
+            skipFirstRead = !liftHallEffectSensor.getState();
         }
     }
 
@@ -151,7 +155,7 @@ public class DumpBed extends Subsystem {
             mode = Mode.MOVE_DOWN;
             missedSensor = false;
             liftUp = false;
-            skipFirstRead = !liftMagneticTouch.getState();
+            skipFirstRead = !liftHallEffectSensor.getState();
 
             if (isDumping()) {
                 retract();
@@ -209,12 +213,12 @@ public class DumpBed extends Subsystem {
     }
 
     public void update() {
-        telemetryMap.put("dumpMode", mode);
-        telemetryMap.put("dumpLiftDumping", liftDumping);
-        telemetryMap.put("dumpReleaseEngaged", releaseEngaged);
-        telemetryMap.put("dumpRotation", dumpRotation);
-        telemetryMap.put("dumpLiftUp", liftUp);
-        telemetryMap.put("dumpSkipFirstRead", skipFirstRead);
+        telemetryData.dumpMode = mode;
+        telemetryData.dumpLiftDumping = liftDumping;
+        telemetryData.dumpReleaseEngaged = releaseEngaged;
+        telemetryData.dumpRotation = dumpRotation;
+        telemetryData.dumpLiftUp = liftUp;
+        telemetryData.dumpSkipFirstRead = skipFirstRead;
 
         double liftPower = 0;
 
@@ -224,18 +228,20 @@ public class DumpBed extends Subsystem {
                 break;
             case PID: {
                 double liftHeight = getLiftHeight();
-                telemetryMap.put("dumpLiftHeight", liftHeight);
                 double error = pidController.getError(liftHeight);
-                telemetryMap.put("dumpLiftHeightError", error);
                 liftPower = pidController.update(error);
+
+                telemetryData.dumpLiftHeight = liftHeight;
+                telemetryData.dumpLiftError = error;
 
                 break;
             }
             case MOVE_UP: {
-                boolean magneticState = !liftMagneticTouch.getState();
-                telemetryMap.put("dumpMagneticState", magneticState);
+                boolean hallEffectState = !liftHallEffectSensor.getState();
                 double liftHeight = getLiftHeight();
-                telemetryMap.put("dumpLiftHeight", liftHeight);
+
+                telemetryData.dumpHallEffectState = hallEffectState;
+                telemetryData.dumpLiftHeight = liftHeight;
 
                 if (!liftDumping) {
                     setDumpRotation(BED_INTERMEDIATE_ROTATION);
@@ -246,7 +252,7 @@ public class DumpBed extends Subsystem {
                     movingDownToSensor = true;
                 }
 
-                if (magneticState && !skipFirstRead) {
+                if (hallEffectState && !skipFirstRead) {
                     mode = Mode.PID;
                     setLiftHeight(LIFT_HEIGHT);
                     pidController.reset();
@@ -271,24 +277,25 @@ public class DumpBed extends Subsystem {
                     liftPower = LIFT_UP_POWER;
                 }
 
-                if (!magneticState && skipFirstRead) {
+                if (!hallEffectState && skipFirstRead) {
                     skipFirstRead = false;
                 }
 
                 break;
             }
             case MOVE_DOWN: {
-                boolean magneticTouchPressed = !liftMagneticTouch.getState();
-                telemetryMap.put("dumpMagneticState", magneticTouchPressed);
+                boolean hallEffectState = !liftHallEffectSensor.getState();
                 double liftHeight = getLiftHeight();
-                telemetryMap.put("dumpLiftHeight", liftHeight);
+
+                telemetryData.dumpHallEffectState = hallEffectState;
+                telemetryData.dumpLiftHeight = liftHeight;
 
                 if (!missedSensor && liftHeight < -ENDPOINT_ALLOWANCE_HEIGHT) {
                     missedSensor = true;
                     movingDownToSensor = false;
                 }
 
-                if (magneticTouchPressed && !skipFirstRead) {
+                if (hallEffectState && !skipFirstRead) {
                     mode = Mode.MANUAL;
                     setLiftHeight(0);
                     if (!liftDumping) {
@@ -314,17 +321,18 @@ public class DumpBed extends Subsystem {
                     liftPower = LIFT_DOWN_POWER;
                 }
 
-                if (!magneticTouchPressed && skipFirstRead) {
+                if (!hallEffectState && skipFirstRead) {
                     skipFirstRead = false;
                 }
 
                 break;
             }
             case CALIBRATE: {
-                boolean magneticTouchPressed = !liftMagneticTouch.getState();
-                telemetryMap.put("dumpMagneticState", magneticTouchPressed);
+                boolean hallEffectState = !liftHallEffectSensor.getState();
 
-                if (magneticTouchPressed) {
+                telemetryData.dumpHallEffectState = hallEffectState;
+
+                if (hallEffectState) {
                     mode = Mode.MANUAL;
                     liftUp = false;
                     setLiftHeight(0);
@@ -337,11 +345,10 @@ public class DumpBed extends Subsystem {
             }
         }
 
-        telemetryMap.put("dumpLiftPower", liftPower);
+        telemetryData.dumpLiftPower = liftPower;
+
         liftMotor.setPower(liftPower);
 
-        for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
-            telemetry.addData(entry.getKey(), entry.getValue());
-        }
+        telemetry.addDataObject(telemetryData);
     }
 }
