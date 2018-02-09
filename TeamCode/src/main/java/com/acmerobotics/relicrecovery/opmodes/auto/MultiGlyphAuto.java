@@ -64,6 +64,7 @@ public class MultiGlyphAuto extends AutoOpMode {
 
         robot.intake.setIntakePower(0);
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+        robot.drive.extendSideSwivel();
 
         sleep(500);
 
@@ -78,6 +79,9 @@ public class MultiGlyphAuto extends AutoOpMode {
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         alignWithColumnSync();
 
+        robot.drive.setEstimatedPosition(new Vector2d(12, -57));
+
+        robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         sleep(500);
 
@@ -114,6 +118,7 @@ public class MultiGlyphAuto extends AutoOpMode {
 
         robot.intake.setIntakePower(0);
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+        robot.drive.extendSideSwivel();
 
         sleep(500);
 
@@ -129,6 +134,9 @@ public class MultiGlyphAuto extends AutoOpMode {
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         alignWithColumnSync();
 
+        robot.drive.setEstimatedPosition(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57));
+
+        robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         sleep(1000);
 

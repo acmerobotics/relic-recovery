@@ -48,6 +48,7 @@ import java.util.Collections;
  *
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
+
 @Config
 public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(48.0, 96.0, 128.0, MotionConstraints.EndBehavior.OVERSHOOT);
@@ -192,6 +193,8 @@ public class MecanumDrive extends Subsystem {
         }
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
+
+        sideSwivel = map.servo.get("sideSwivel");
 
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
