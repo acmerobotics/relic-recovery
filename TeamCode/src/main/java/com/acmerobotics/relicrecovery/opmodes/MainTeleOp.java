@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
+import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,7 +13,7 @@ public class MainTeleOp extends OpMode {
 
     private Robot robot;
 
-    private boolean halfSpeed, intakeRunning;
+    private boolean halfSpeed, intakeRunning, relicModeActive;
     private int leftIntakePower, rightIntakePower;
 
     @Override
@@ -83,35 +84,58 @@ public class MainTeleOp extends OpMode {
             }
         }
 
-        // intake
-        if (stickyGamepad2.left_bumper) {
-            if (intakeRunning) {
-                leftIntakePower = 0;
-                rightIntakePower = 0;
-                intakeRunning = false;
-            } else {
-                leftIntakePower = 1;
-                rightIntakePower = 1;
-                intakeRunning = true;
-            }
-        } else if (stickyGamepad2.right_bumper) {
-            if (intakeRunning) {
-                leftIntakePower = 0;
-                rightIntakePower = 0;
-                intakeRunning = false;
-            } else {
-                leftIntakePower = -1;
-                rightIntakePower = -1;
-                intakeRunning = true;
-            }
+        if (stickyGamepad2.b) {
+            relicModeActive = !relicModeActive;
         }
 
-        if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getMode() != DumpBed.Mode.MANUAL) {
-            robot.intake.setIntakePower(0, 0);
-        } else if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
-            robot.intake.setIntakePower(-gamepad2.left_stick_y, -gamepad2.right_stick_y);
+        if (relicModeActive) {
+            // relic
+            robot.relicRecoverer.setExtendPower(-gamepad2.left_stick_y);
+
+            if (stickyGamepad2.dpad_up) {
+                robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
+            } else if (stickyGamepad2.dpad_down) {
+                robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.DOWN);
+            } else if (stickyGamepad2.dpad_left || stickyGamepad2.dpad_right) {
+                robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.STOW);
+            }
+
+            if (stickyGamepad2.y) {
+                robot.relicRecoverer.openFinger();
+            } else if (stickyGamepad2.b) {
+                robot.relicRecoverer.closeFinger();
+            }
         } else {
-            robot.intake.setIntakePower(leftIntakePower, rightIntakePower);
+            // intake
+            if (stickyGamepad2.left_bumper) {
+                if (intakeRunning) {
+                    leftIntakePower = 0;
+                    rightIntakePower = 0;
+                    intakeRunning = false;
+                } else {
+                    leftIntakePower = 1;
+                    rightIntakePower = 1;
+                    intakeRunning = true;
+                }
+            } else if (stickyGamepad2.right_bumper) {
+                if (intakeRunning) {
+                    leftIntakePower = 0;
+                    rightIntakePower = 0;
+                    intakeRunning = false;
+                } else {
+                    leftIntakePower = -1;
+                    rightIntakePower = -1;
+                    intakeRunning = true;
+                }
+            }
+
+            if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getMode() != DumpBed.Mode.MANUAL) {
+                robot.intake.setIntakePower(0, 0);
+            } else if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
+                robot.intake.setIntakePower(-gamepad2.left_stick_y, -gamepad2.right_stick_y);
+            } else {
+                robot.intake.setIntakePower(leftIntakePower, rightIntakePower);
+            }
         }
     }
 }
