@@ -23,6 +23,7 @@ public class DumpBed extends Subsystem {
     public static double LIFT_UP_POWER = 1;
     public static double LIFT_DOWN_POWER = -0.7;
     public static double LIFT_CALIBRATION_POWER = -0.2;
+    public static double LIFT_MISSED_SENSOR_MULTIPLIER = 0.25;
 
     public static double BED_HALFWAY_ROTATION = 0.5;
 
@@ -46,7 +47,7 @@ public class DumpBed extends Subsystem {
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel liftHallEffectSensor;
 
-    private boolean bedDumping, liftUp, skipFirstRead, calibrated;
+    private boolean bedDumping, liftUp, skipFirstRead, calibrated, movingDownToSensor;
 
     private double dumpRotation, liftPower;
     private int encoderOffset;
@@ -211,23 +212,68 @@ public class DumpBed extends Subsystem {
                 telemetryData.dumpHallEffectState = hallEffectState;
                 telemetryData.dumpLiftHeight = liftHeight;
 
+                if (liftHeight <= -ENDPOINT_ALLOWANCE_HEIGHT || liftHeight >= LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
+                    liftMode = LiftMode.MISSED_SENSOR;
+                }
+
                 if (!hallEffectState && skipFirstRead) {
                     skipFirstRead = false;
                 }
 
                 if (hallEffectState && !skipFirstRead) {
                     liftPower = 0;
-                    liftMode = LiftMode.HOLD_POSITION;
 
                     double snappedHeight = liftUp ? LIFT_HEIGHT : 0;
                     setLiftHeight(snappedHeight);
 
-                    pidController.reset();
-                    pidController.setSetpoint(snappedHeight);
+                    if (liftUp) {
+                        liftMode = LiftMode.HOLD_POSITION;
+
+                        pidController.reset();
+                        pidController.setSetpoint(snappedHeight);
+                    } else {
+                        liftMode = LiftMode.MANUAL;
+                    }
                 } else if (liftUp) {
                     liftPower = LIFT_UP_POWER;
                 } else {
                     liftPower = LIFT_DOWN_POWER;
+                }
+
+                break;
+            }
+            case MISSED_SENSOR: {
+                boolean hallEffectState = isHallEffectSensorTriggered();
+                double liftHeight = getLiftHeight();
+
+                if (hallEffectState) {
+                    liftPower = 0;
+
+                    double snappedHeight = liftUp ? LIFT_HEIGHT : 0;
+                    setLiftHeight(snappedHeight);
+
+                    if (liftUp) {
+                        liftMode = LiftMode.HOLD_POSITION;
+
+                        pidController.reset();
+                        pidController.setSetpoint(snappedHeight);
+                    } else {
+                        liftMode = LiftMode.MANUAL;
+                    }
+                } else {
+                    if (liftHeight <= -ENDPOINT_ALLOWANCE_HEIGHT) {
+                        liftMode = LiftMode.MISSED_SENSOR;
+                        movingDownToSensor = false;
+                    } else if (liftHeight >= LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
+                        liftMode = LiftMode.MISSED_SENSOR;
+                        movingDownToSensor = true;
+                    }
+
+                    if (movingDownToSensor) {
+                        liftPower = LIFT_MISSED_SENSOR_MULTIPLIER * LIFT_DOWN_POWER;
+                    } else {
+                        liftPower = LIFT_MISSED_SENSOR_MULTIPLIER * LIFT_UP_POWER;
+                    }
                 }
 
                 break;
