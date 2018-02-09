@@ -10,6 +10,7 @@ import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -32,6 +33,8 @@ public class MultiGlyphAuto extends AutoOpMode {
 
     @Override
     protected void run() {
+        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
+
         Pose2d initialPose = AutoPaths.getAdjustedBalancingStonePose(BalancingStone.NEAR_BLUE);
         robot.drive.setEstimatedPose(initialPose);
 

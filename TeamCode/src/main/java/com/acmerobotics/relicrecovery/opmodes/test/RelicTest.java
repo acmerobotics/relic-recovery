@@ -23,7 +23,7 @@ public class RelicTest extends OpMode {
     public void loop() {
         stickyGamepad1.update();
 
-        robot.relicRecoverer.setExtendPower(-gamepad1.left_stick_y);
+        robot.relicRecoverer.setArmPower(-gamepad1.left_stick_y);
 
         if (stickyGamepad1.dpad_up) {
             robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);

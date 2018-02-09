@@ -25,6 +25,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -61,6 +62,9 @@ public class MecanumDrive extends Subsystem {
     public static double COLUMN_ALIGN_TARGET_DISTANCE = 3.5;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
     public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
+
+    public static double SIDE_SWIVEL_EXTEND = 0.5;
+    public static double SIDE_SWIVEL_RETRACT = 0.5;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 
@@ -100,6 +104,9 @@ public class MecanumDrive extends Subsystem {
     private BNO055IMU imu;
 
     private MaxSonarEZ1UltrasonicSensor ultrasonic;
+
+    private Servo sideSwivel;
+    private boolean sideSwivelExtended;
 
     private LynxI2cColorRangeSensor sideColorDistance;
     private ExponentialSmoother sideDistanceSmoother;
@@ -188,6 +195,7 @@ public class MecanumDrive extends Subsystem {
         sideDistanceSmoother = new ExponentialSmoother(SIDE_DISTANCE_SMOOTHING_COEFF);
 
         resetEncoders();
+        retractSideSwivel();
     }
 
     public Localizer getLocalizer() {
@@ -197,6 +205,14 @@ public class MecanumDrive extends Subsystem {
     public void setLocalizer(Localizer localizer) {
         this.localizer = localizer;
         localizer.setEstimatedPosition(estimatedPose.pos());
+    }
+
+    public void extendSideSwivel() {
+        sideSwivelExtended = true;
+    }
+
+    public void retractSideSwivel() {
+        sideSwivelExtended = false;
     }
 
     public PathFollower getPathFollower() {
@@ -538,6 +554,14 @@ public class MecanumDrive extends Subsystem {
             motors[i].setPower(powers[i]);
             telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
         }
+
+        // side swivel
+        if (sideSwivelExtended) {
+            sideSwivel.setPosition(SIDE_SWIVEL_EXTEND);
+        } else {
+            sideSwivel.setPosition(SIDE_SWIVEL_RETRACT);
+        }
+        telemetryMap.put("sideSwivelExtended", sideSwivelExtended);
 
         telemetryMap.put("estimatedX", estimatedPose.x());
         telemetryMap.put("estimatedY", estimatedPose.y());

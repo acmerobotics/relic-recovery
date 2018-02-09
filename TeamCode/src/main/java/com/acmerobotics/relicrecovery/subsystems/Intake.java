@@ -45,8 +45,8 @@ public class Intake extends Subsystem {
         leftIntake = map.dcMotor.get("intakeLeft");
         rightIntake = map.dcMotor.get("intakeRight");
 
-        frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
-        rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
+//        frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
+//        rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
     }
 
     public boolean hasFrontGlyph() {

@@ -28,6 +28,11 @@ public class MainTeleOp extends OpMode {
     }
 
     @Override
+    public void start() {
+        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
+    }
+
+    @Override
     public void loop() {
         stickyGamepad1.update();
         stickyGamepad2.update();
@@ -57,10 +62,6 @@ public class MainTeleOp extends OpMode {
             y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
         }
 
-        telemetry.addData("x", x);
-        telemetry.addData("y", y);
-        telemetry.addData("omega", omega);
-
         robot.drive.setVelocity(new Vector2d(x, y), omega);
 
         // dump bed
@@ -84,14 +85,18 @@ public class MainTeleOp extends OpMode {
             }
         }
 
-        if (stickyGamepad2.b) {
+        if (stickyGamepad1.a) {
+            robot.drive.extendSideSwivel();
+        } else if (stickyGamepad1.b) {
+            robot.drive.retractSideSwivel();
+        }
+
+        if (stickyGamepad2.right_stick_button) {
             relicModeActive = !relicModeActive;
         }
 
         if (relicModeActive) {
             // relic
-            robot.relicRecoverer.setExtendPower(-gamepad2.left_stick_y);
-
             if (stickyGamepad2.dpad_up) {
                 robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
             } else if (stickyGamepad2.dpad_down) {
@@ -104,6 +109,14 @@ public class MainTeleOp extends OpMode {
                 robot.relicRecoverer.openFinger();
             } else if (stickyGamepad2.b) {
                 robot.relicRecoverer.closeFinger();
+            }
+
+            if (gamepad2.left_stick_y != 0) {
+                robot.relicRecoverer.setArmPower(-gamepad2.left_stick_y);
+            } else if (stickyGamepad2.x) {
+                robot.relicRecoverer.setArmPosition(RelicRecoverer.MAX_EXTENSION_DISTANCE);
+            } else if (stickyGamepad2.a) {
+                robot.relicRecoverer.setArmPosition(0);
             }
         } else {
             // intake
@@ -137,6 +150,11 @@ public class MainTeleOp extends OpMode {
                 robot.intake.setIntakePower(leftIntakePower, rightIntakePower);
             }
         }
+
+        telemetry.addData("relicModeActive", relicModeActive);
+        telemetry.addData("x", x);
+        telemetry.addData("y", y);
+        telemetry.addData("omega", omega);
     }
 }
 
