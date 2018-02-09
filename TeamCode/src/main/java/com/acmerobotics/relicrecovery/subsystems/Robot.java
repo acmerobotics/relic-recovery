@@ -11,6 +11,8 @@ import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.util.LoggingUtil;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
+import com.qualcomm.robotcore.util.GlobalWarningSource;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.ThreadPool;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -21,7 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
+public class Robot implements Runnable, OpModeManagerNotifier.Notifications, GlobalWarningSource {
+    public static final String TAG = "Robot";
+
     public interface Listener {
         void onPostUpdate();
     }
@@ -39,6 +43,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
     public PhoneSwivel phoneSwivel;
 
     private List<Subsystem> subsystems;
+    private List<Subsystem> subsystemsWithProblems;
     private List<Telemetry> allTelemetry;
     private CSVLoggingTelemetry robotTelemetry;
     private OpModeManagerImpl opModeManager;
@@ -67,7 +72,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             subsystems.add(drive);
             allTelemetry.add(driveLogger);
         } catch (IllegalArgumentException e) {
-            Log.w("Robot", "skipping MecanumDrive");
+            Log.w(TAG, "skipping MecanumDrive");
         }
 
         try {
@@ -76,7 +81,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             subsystems.add(intake);
             allTelemetry.add(intakeLogger);
         } catch (IllegalArgumentException e) {
-            Log.w("Robot", "skipping Intake");
+            Log.w(TAG, "skipping Intake");
         }
 
         try {
@@ -85,7 +90,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             subsystems.add(dumpBed);
             allTelemetry.add(dumpBedLogger);
         } catch (IllegalArgumentException e) {
-            Log.w("Robot", "skipping DumpBed");
+            Log.w(TAG, "skipping DumpBed");
         }
 
         try {
@@ -94,7 +99,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             subsystems.add(jewelSlapper);
             allTelemetry.add(jewelSlapperLogger);
         } catch (IllegalArgumentException e) {
-            Log.w("Robot", "skipping JewelSlapper");
+            Log.w(TAG, "skipping JewelSlapper");
         }
 
         try {
@@ -103,14 +108,14 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             subsystems.add(relicRecoverer);
             allTelemetry.add(relicRecovererLogger);
         } catch (IllegalArgumentException e) {
-            Log.w("Robot", "skipping RelicRecoverer");
+            Log.w(TAG, "skipping RelicRecoverer");
         }
 
         try {
             phoneSwivel = new PhoneSwivel(opMode.hardwareMap);
             subsystems.add(phoneSwivel);
         } catch (IllegalArgumentException e) {
-            Log.w("Robot", "skipping PhoneSwivel");
+            Log.w(TAG, "skipping PhoneSwivel");
         }
 
         allTelemetry.add(dashboard.getTelemetry());
@@ -122,6 +127,9 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
         }
 
         updateExecutor = ThreadPool.newSingleThreadExecutor("robot subsystem updater");
+
+        subsystemsWithProblems = new ArrayList<>();
+        RobotLog.registerGlobalWarningSource(this);
     }
 
     public void addListener(Listener listener) {
@@ -142,7 +150,20 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
                 double startTimestamp = TimestampedData.getCurrentTime();
                 for (Subsystem subsystem : subsystems) {
                     if (subsystem == null) continue;
-                    subsystem.update();
+                    try {
+                        subsystem.update();
+                        synchronized (subsystemsWithProblems) {
+                            if (subsystemsWithProblems.contains(subsystem)) {
+                                subsystemsWithProblems.remove(subsystem);
+                            }
+                        }
+                    } catch (Throwable t) {
+                        Log.w(TAG, "Subsystem update failed for " + subsystem.getClass().getSimpleName() + ": " + t.getMessage());
+                        Log.w(TAG, t);
+                        synchronized (subsystemsWithProblems) {
+                            subsystemsWithProblems.add(subsystem);
+                        }
+                    }
                 }
                 for (Listener listener : listeners) {
                     listener.onPostUpdate();
@@ -157,7 +178,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
                 robotTelemetry.addData("telemetryUpdateTime", postTelemetryUpdateTimestamp - postSubsystemUpdateTimestamp);
                 robotTelemetry.update();
             } catch (Throwable t) {
-                Log.wtf("Robot", t);
+                Log.wtf(TAG, t);
             }
         }
     }
@@ -167,6 +188,8 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
             updateExecutor.shutdownNow();
             updateExecutor = null;
         }
+
+        RobotLog.unregisterGlobalWarningSource(this);
     }
 
     @Override
@@ -185,6 +208,34 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications {
         if (opModeManager != null) {
             opModeManager.unregisterListener(this);
             opModeManager = null;
+        }
+    }
+
+    @Override
+    public String getGlobalWarning() {
+        List<String> warnings = new ArrayList<>();
+        synchronized (subsystemsWithProblems) {
+            for (Subsystem subsystem : subsystemsWithProblems) {
+                warnings.add("Problem with " + subsystem.getClass().getSimpleName());
+            }
+        }
+        return RobotLog.combineGlobalWarnings(warnings);
+    }
+
+    @Override
+    public void suppressGlobalWarning(boolean suppress) {
+
+    }
+
+    @Override
+    public boolean setGlobalWarning(String warning) {
+        return false;
+    }
+
+    @Override
+    public void clearGlobalWarning() {
+        synchronized (subsystemsWithProblems) {
+            subsystemsWithProblems.clear();
         }
     }
 }
