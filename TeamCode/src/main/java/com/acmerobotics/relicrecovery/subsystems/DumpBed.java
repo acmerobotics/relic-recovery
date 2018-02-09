@@ -14,9 +14,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class DumpBed extends Subsystem {
-    public static final double LIFT_HEIGHT = 10.75;
-    public static final double ENDPOINT_ALLOWANCE_HEIGHT = 0.25;
-    public static final double PULLEY_RADIUS = 0.717;
+    public static double LIFT_HEIGHT = 10.75;
+    public static double ENDPOINT_ALLOWANCE_HEIGHT = 0.25;
+    public static double PULLEY_RADIUS = 0.717;
 
     public static PIDCoefficients LIFT_PID = new PIDCoefficients(-2, 0, 0);
 
@@ -24,7 +24,7 @@ public class DumpBed extends Subsystem {
     public static double LIFT_DOWN_POWER = -0.7;
     public static double LIFT_CALIBRATION_POWER = -0.2;
 
-    public static double BED_INTERMEDIATE_ROTATION = 0.5;
+    public static double BED_HALFWAY_ROTATION = 0.5;
 
     public static double LEFT_ROTATE_DOWN_POS = 0.5;
     public static double LEFT_ROTATE_UP_POS = 0;
@@ -32,22 +32,23 @@ public class DumpBed extends Subsystem {
     public static double RELEASE_ENGAGE_POS = 0.61;
     public static double RELEASE_DISENGAGE_POS = 0.11;
 
-    public enum Mode {
+    public enum LiftMode {
         MANUAL,
-        PID,
-        MOVE_DOWN,
-        MOVE_UP,
+        HOLD_POSITION,
+        MOVE_TO_POSITION,
+        MISSED_SENSOR,
         CALIBRATE
     }
 
-    private Mode mode = Mode.MANUAL;
+    private LiftMode liftMode = LiftMode.MANUAL;
 
     private DcMotor liftMotor;
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel liftHallEffectSensor;
 
-    private boolean liftDumping, releaseEngaged, liftUp, skipFirstRead, calibrated, missedSensor, movingDownToSensor;
-    private double dumpRotation, manualLiftPower;
+    private boolean bedDumping, liftUp, skipFirstRead, calibrated;
+
+    private double dumpRotation, liftPower;
     private int encoderOffset;
 
     private PIDController pidController;
@@ -56,9 +57,8 @@ public class DumpBed extends Subsystem {
     private TelemetryData telemetryData;
 
     public class TelemetryData {
-        public Mode dumpMode;
+        public LiftMode dumpLiftMode;
         public boolean dumpLiftDumping;
-        public boolean dumpReleaseEngaged;
         public double dumpRotation;
         public boolean dumpLiftUp;
         public boolean dumpSkipFirstRead;
@@ -87,13 +87,16 @@ public class DumpBed extends Subsystem {
         liftHallEffectSensor = map.digitalChannel.get("dumpLiftMagneticTouch");
         liftHallEffectSensor.setMode(DigitalChannel.Mode.INPUT);
 
-        engageRelease();
-        setDumpRotation(0);
+        retract();
         calibrate();
     }
+    
+    private boolean isHallEffectSensorTriggered() { 
+        return !liftHallEffectSensor.getState();
+    }
 
-    public Mode getMode() {
-        return mode;
+    public LiftMode getLiftMode() {
+        return liftMode;
     }
 
     public int getEncoderPosition() {
@@ -121,14 +124,12 @@ public class DumpBed extends Subsystem {
     }
 
     public void calibrate() {
-        if (!calibrated) {
-            mode = Mode.CALIBRATE;
-        }
+        liftMode = LiftMode.CALIBRATE;
     }
 
     public void setLiftPower(double power) {
-        manualLiftPower = power;
-        mode = Mode.MANUAL;
+        liftPower = power;
+        liftMode = LiftMode.MANUAL;
     }
 
     public double getLiftHeight() {
@@ -142,24 +143,18 @@ public class DumpBed extends Subsystem {
     public void moveUp() {
         if (!calibrated) return;
         if (!liftUp) {
-            mode = Mode.MOVE_UP;
-            missedSensor = false;
+            liftMode = LiftMode.MOVE_TO_POSITION;
             liftUp = true;
-            skipFirstRead = !liftHallEffectSensor.getState();
+            skipFirstRead = isHallEffectSensorTriggered();
         }
     }
 
     public void moveDown() {
         if (!calibrated) return;
         if (liftUp) {
-            mode = Mode.MOVE_DOWN;
-            missedSensor = false;
+            liftMode = LiftMode.MOVE_TO_POSITION;
             liftUp = false;
-            skipFirstRead = !liftHallEffectSensor.getState();
-
-            if (isDumping()) {
-                retract();
-            }
+            skipFirstRead = isHallEffectSensorTriggered();
         }
     }
 
@@ -167,66 +162,39 @@ public class DumpBed extends Subsystem {
         return liftUp;
     }
 
-    private void setDumpRotation(double rot) {
+    private void setBedRotation(double rot) {
         double servoPosition = LEFT_ROTATE_DOWN_POS + rot * (LEFT_ROTATE_UP_POS - LEFT_ROTATE_DOWN_POS);
         dumpRotateLeft.setPosition(servoPosition);
         dumpRotateRight.setPosition(1 - servoPosition);
         this.dumpRotation = rot;
     }
 
-    private void engageRelease() {
-        if (!releaseEngaged) {
-            dumpRelease.setPosition(RELEASE_ENGAGE_POS);
-            releaseEngaged = true;
-        }
-    }
-
-    private void disengageRelease() {
-        if (releaseEngaged) {
-            dumpRelease.setPosition(RELEASE_DISENGAGE_POS);
-            releaseEngaged = false;
-        }
-    }
-
     public boolean isDumping() {
-        return liftDumping;
+        return bedDumping;
     }
 
     public void dump() {
-        if (!liftDumping) {
-            liftDumping = true;
-            setDumpRotation(1);
-            disengageRelease();
-        }
+        bedDumping = true;
     }
 
     public void retract() {
-        if (liftDumping) {
-            liftDumping = false;
-            if (liftUp) {
-                setDumpRotation(BED_INTERMEDIATE_ROTATION);
-            } else {
-                setDumpRotation(0);
-            }
-            engageRelease();
-        }
+        bedDumping = false;
     }
 
     public void update() {
-        telemetryData.dumpMode = mode;
-        telemetryData.dumpLiftDumping = liftDumping;
-        telemetryData.dumpReleaseEngaged = releaseEngaged;
+        telemetryData.dumpLiftMode = liftMode;
+        telemetryData.dumpLiftDumping = bedDumping;
         telemetryData.dumpRotation = dumpRotation;
         telemetryData.dumpLiftUp = liftUp;
         telemetryData.dumpSkipFirstRead = skipFirstRead;
 
         double liftPower = 0;
 
-        switch (mode) {
+        switch (liftMode) {
             case MANUAL:
-                liftPower = this.manualLiftPower;
+                liftPower = this.liftPower;
                 break;
-            case PID: {
+            case HOLD_POSITION: {
                 double liftHeight = getLiftHeight();
                 double error = pidController.getError(liftHeight);
                 liftPower = pidController.update(error);
@@ -236,104 +204,41 @@ public class DumpBed extends Subsystem {
 
                 break;
             }
-            case MOVE_UP: {
-                boolean hallEffectState = !liftHallEffectSensor.getState();
+            case MOVE_TO_POSITION: {
+                boolean hallEffectState = isHallEffectSensorTriggered();
                 double liftHeight = getLiftHeight();
 
                 telemetryData.dumpHallEffectState = hallEffectState;
                 telemetryData.dumpLiftHeight = liftHeight;
-
-                if (!liftDumping) {
-                    setDumpRotation(BED_INTERMEDIATE_ROTATION);
-                }
-
-                if (!missedSensor && liftHeight > LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
-                    missedSensor = true;
-                    movingDownToSensor = true;
-                }
-
-                if (hallEffectState && !skipFirstRead) {
-                    mode = Mode.PID;
-                    setLiftHeight(LIFT_HEIGHT);
-                    pidController.reset();
-                    pidController.setSetpoint(LIFT_HEIGHT);
-                } else if (missedSensor && movingDownToSensor) {
-                    if (liftHeight < LIFT_HEIGHT - ENDPOINT_ALLOWANCE_HEIGHT) {
-                        movingDownToSensor = false;
-                        liftPower = LIFT_UP_POWER;
-                    } else {
-                        movingDownToSensor = true;
-                        liftPower = LIFT_DOWN_POWER;
-                    }
-                } else if (missedSensor && !movingDownToSensor) {
-                    if (liftHeight > LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
-                        movingDownToSensor = true;
-                        liftPower = LIFT_DOWN_POWER;
-                    } else {
-                        movingDownToSensor = false;
-                        liftPower = LIFT_UP_POWER;
-                    }
-                }  else {
-                    liftPower = LIFT_UP_POWER;
-                }
 
                 if (!hallEffectState && skipFirstRead) {
                     skipFirstRead = false;
                 }
 
-                break;
-            }
-            case MOVE_DOWN: {
-                boolean hallEffectState = !liftHallEffectSensor.getState();
-                double liftHeight = getLiftHeight();
-
-                telemetryData.dumpHallEffectState = hallEffectState;
-                telemetryData.dumpLiftHeight = liftHeight;
-
-                if (!missedSensor && liftHeight < -ENDPOINT_ALLOWANCE_HEIGHT) {
-                    missedSensor = true;
-                    movingDownToSensor = false;
-                }
-
                 if (hallEffectState && !skipFirstRead) {
-                    mode = Mode.MANUAL;
-                    setLiftHeight(0);
-                    if (!liftDumping) {
-                        setDumpRotation(0);
-                    }
-                } else if (missedSensor && movingDownToSensor) {
-                    if (liftHeight < -ENDPOINT_ALLOWANCE_HEIGHT) {
-                        movingDownToSensor = false;
-                        liftPower = LIFT_UP_POWER;
-                    } else {
-                        movingDownToSensor = true;
-                        liftPower = LIFT_DOWN_POWER;
-                    }
-                } else if (missedSensor && !movingDownToSensor) {
-                    if (liftHeight > ENDPOINT_ALLOWANCE_HEIGHT) {
-                        movingDownToSensor = true;
-                        liftPower = LIFT_DOWN_POWER;
-                    } else {
-                        movingDownToSensor = false;
-                        liftPower = LIFT_UP_POWER;
-                    }
+                    liftPower = 0;
+                    liftMode = LiftMode.HOLD_POSITION;
+
+                    double snappedHeight = liftUp ? LIFT_HEIGHT : 0;
+                    setLiftHeight(snappedHeight);
+
+                    pidController.reset();
+                    pidController.setSetpoint(snappedHeight);
+                } else if (liftUp) {
+                    liftPower = LIFT_UP_POWER;
                 } else {
                     liftPower = LIFT_DOWN_POWER;
-                }
-
-                if (!hallEffectState && skipFirstRead) {
-                    skipFirstRead = false;
                 }
 
                 break;
             }
             case CALIBRATE: {
-                boolean hallEffectState = !liftHallEffectSensor.getState();
+                boolean hallEffectState = isHallEffectSensorTriggered();
 
                 telemetryData.dumpHallEffectState = hallEffectState;
 
                 if (hallEffectState) {
-                    mode = Mode.MANUAL;
+                    liftMode = LiftMode.MANUAL;
                     liftUp = false;
                     setLiftHeight(0);
                     calibrated = true;
@@ -348,6 +253,17 @@ public class DumpBed extends Subsystem {
         telemetryData.dumpLiftPower = liftPower;
 
         liftMotor.setPower(liftPower);
+
+        if (bedDumping) {
+            setBedRotation(1);
+            dumpRelease.setPosition(RELEASE_DISENGAGE_POS);
+        } else if (liftUp) {
+            setBedRotation(BED_HALFWAY_ROTATION);
+            dumpRelease.setPosition(RELEASE_ENGAGE_POS);
+        } else {
+            setBedRotation(0);
+            dumpRelease.setPosition(RELEASE_ENGAGE_POS);
+        }
 
         telemetry.addDataObject(telemetryData);
     }

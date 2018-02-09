@@ -73,7 +73,7 @@ public class MainTeleOp extends OpMode {
             robot.dumpBed.moveUp();
         } else if (stickyGamepad2.dpad_down) {
             robot.dumpBed.moveDown();
-        } else if (robot.dumpBed.getMode() == DumpBed.Mode.MANUAL) {
+        } else if (robot.dumpBed.getLiftMode() == DumpBed.LiftMode.MANUAL) {
             robot.dumpBed.setLiftPower(0);
         }
 
@@ -142,7 +142,7 @@ public class MainTeleOp extends OpMode {
                 }
             }
 
-            if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getMode() != DumpBed.Mode.MANUAL) {
+            if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getLiftMode() != DumpBed.LiftMode.MANUAL) {
                 robot.intake.setIntakePower(0, 0);
             } else if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
                 robot.intake.setIntakePower(-gamepad2.left_stick_y, -gamepad2.right_stick_y);
