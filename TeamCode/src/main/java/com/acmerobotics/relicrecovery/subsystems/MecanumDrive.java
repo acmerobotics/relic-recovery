@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.subsystems;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -33,8 +34,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Wheel layout (top view):
@@ -132,36 +131,45 @@ public class MecanumDrive extends Subsystem {
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
-    public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
-            "pathAxialError",
-            "pathAxialUpdate",
-            "pathLateralError",
-            "pathLateralUpdate",
-            "pathHeadingError",
-            "pathHeadingUpdate",
-            "maintainHeadingError",
-            "maintainHeadingUpdate",
-            "driveHeading",
-            MOTOR_NAMES[0] + "Rotation",
-            MOTOR_NAMES[1] + "Rotation",
-            MOTOR_NAMES[2] + "Rotation",
-            MOTOR_NAMES[3] + "Rotation",
-            "sideDistance",
-            "columnAlignError",
-            "columnAlignUpdate"
-    };
-
-    private Telemetry telemetry;
-    private LinkedHashMap<String, Object> telemetryMap;
-
     private Canvas fieldOverlay;
 
+    private TelemetryEx telemetry;
+    private TelemetryData telemetryData;
+
+    private class TelemetryData {
+        public Mode driveMode;
+
+        public double frontLeftPower;
+        public double rearLeftPower;
+        public double rearRightPower;
+        public double frontRightPower;
+
+        public boolean positionEstimationEnabled;
+        public double estimatedX;
+        public double estimatedY;
+        public double estimatedHeading;
+
+        public boolean maintainHeading;
+        public double maintainHeadingError;
+        public double maintainHeadingUpdate;
+
+        public double pathAxialError;
+        public double pathAxialUpdate;
+        public double pathLateralError;
+        public double pathLateralUpdate;
+        public double pathHeadingError;
+        public double pathHeadingUpdate;
+
+        public double sideDistance;
+        public double columnAlignError;
+        public double columnAlignUpdate;
+
+        public boolean sideSwivelExtended;
+    }
+
     public MecanumDrive(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = telemetry;
-        telemetryMap = new LinkedHashMap<>();
-        for (String key : CONDITIONAL_TELEMETRY_KEYS) {
-            telemetryMap.put(key, 0);
-        }
+        this.telemetry = new TelemetryEx(telemetry);
+        this.telemetryData = new TelemetryData();
 
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
@@ -455,9 +463,9 @@ public class MecanumDrive extends Subsystem {
     public void update() {
         invalidateOrientation();
 
-        telemetryMap.put("driveMode", mode);
-        telemetryMap.put("positionEstimationEnabled", positionEstimationEnabled);
-        telemetryMap.put("maintainHeading", maintainHeading);
+        telemetryData.driveMode = mode;
+        telemetryData.positionEstimationEnabled = positionEstimationEnabled;
+        telemetryData.maintainHeading = maintainHeading;
 
         // position estimation
         if (positionEstimationEnabled) {
@@ -477,8 +485,8 @@ public class MecanumDrive extends Subsystem {
                 internalSetVelocity(targetVel, headingUpdate);
             }
 
-            telemetryMap.put("maintainHeadingError", headingError);
-            telemetryMap.put("maintainHeadingUpdate", headingUpdate);
+            telemetryData.maintainHeadingError = headingError;
+            telemetryData.maintainHeadingUpdate = headingUpdate;
         } else {
             internalSetVelocity(targetVel, targetOmega);
         }
@@ -519,12 +527,12 @@ public class MecanumDrive extends Subsystem {
                     Pose2d update = pathFollower.update(estimatedPose);
                     internalSetVelocity(update.pos(), update.heading());
 
-                    telemetryMap.put("pathAxialError", pathFollower.getAxialError());
-                    telemetryMap.put("pathAxialUpdate", pathFollower.getAxialUpdate());
-                    telemetryMap.put("pathLateralError", pathFollower.getLateralError());
-                    telemetryMap.put("pathLateralUpdate", pathFollower.getLateralUpdate());
-                    telemetryMap.put("pathHeadingError", pathFollower.getHeadingError());
-                    telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
+                    telemetryData.pathAxialError = pathFollower.getAxialError();
+                    telemetryData.pathAxialUpdate = pathFollower.getAxialUpdate();
+                    telemetryData.pathLateralError = pathFollower.getLateralError();
+                    telemetryData.pathLateralUpdate = pathFollower.getLateralUpdate();
+                    telemetryData.pathHeadingError = pathFollower.getHeadingError();
+                    telemetryData.pathHeadingUpdate = pathFollower.getHeadingUpdate();
                 } else {
                     stop();
                 }
@@ -535,14 +543,14 @@ public class MecanumDrive extends Subsystem {
                         sideColorDistance.getDistance(DistanceUnit.INCH));
                 double distanceError = columnAlignController.getError(sideDistance);
 
-                telemetryMap.put("sideDistance", sideDistance);
-                telemetryMap.put("columnAlignError", distanceError);
+                telemetryData.sideDistance = sideDistance;
+                telemetryData.columnAlignError = distanceError;
 
                 if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
                     double lateralUpdate = columnAlignController.update(distanceError);
                     internalSetVelocity(new Vector2d(0, lateralUpdate), 0);
 
-                    telemetryMap.put("columnAlignUpdate", lateralUpdate);
+                    telemetryData.columnAlignUpdate = lateralUpdate;
                 } else {
                     stop();
                 }
@@ -552,8 +560,12 @@ public class MecanumDrive extends Subsystem {
 
         for (int i = 0; i < 4; i++) {
             motors[i].setPower(powers[i]);
-            telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
         }
+
+        telemetryData.frontLeftPower = powers[0];
+        telemetryData.rearLeftPower = powers[1];
+        telemetryData.rearRightPower = powers[2];
+        telemetryData.frontRightPower = powers[3];
 
         // side swivel
         if (sideSwivelExtended) {
@@ -561,11 +573,11 @@ public class MecanumDrive extends Subsystem {
         } else {
             sideSwivel.setPosition(SIDE_SWIVEL_RETRACT);
         }
-        telemetryMap.put("sideSwivelExtended", sideSwivelExtended);
+        telemetryData.sideSwivelExtended = sideSwivelExtended;
 
-        telemetryMap.put("estimatedX", estimatedPose.x());
-        telemetryMap.put("estimatedY", estimatedPose.y());
-        telemetryMap.put("estimatedHeading", estimatedPose.heading());
+        telemetryData.estimatedX = estimatedPose.x();
+        telemetryData.estimatedY = estimatedPose.y();
+        telemetryData.estimatedHeading = estimatedPose.heading();
 
         if (pathFollower.getPath() != null) {
             fieldOverlay.setStroke("#4CAF50");
@@ -580,8 +592,6 @@ public class MecanumDrive extends Subsystem {
         fieldOverlay.setStroke("#3F51B5");
         DrawingUtil.drawMecanumRobot(fieldOverlay, estimatedPose);
 
-        for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
-            telemetry.addData(entry.getKey(), entry.getValue());
-        }
+        telemetry.addDataObject(telemetryData);
     }
 }
