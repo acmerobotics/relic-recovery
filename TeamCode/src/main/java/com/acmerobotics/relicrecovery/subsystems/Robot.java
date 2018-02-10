@@ -21,6 +21,7 @@ import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 public class Robot implements Runnable, OpModeManagerNotifier.Notifications, GlobalWarningSource {
@@ -44,6 +45,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
 
     private List<Subsystem> subsystems;
     private List<Subsystem> subsystemsWithProblems;
+    private List<CountDownLatch> cycleLatches;
     private List<Telemetry> allTelemetry;
     private CSVLoggingTelemetry robotTelemetry;
     private OpModeManagerImpl opModeManager;
@@ -130,6 +132,8 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
 
         subsystemsWithProblems = new ArrayList<>();
         RobotLog.registerGlobalWarningSource(this);
+
+        cycleLatches = new ArrayList<>();
     }
 
     public void addListener(Listener listener) {
@@ -177,6 +181,18 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
                 robotTelemetry.addData("subsystemUpdateTime", postSubsystemUpdateTimestamp - startTimestamp);
                 robotTelemetry.addData("telemetryUpdateTime", postTelemetryUpdateTimestamp - postSubsystemUpdateTimestamp);
                 robotTelemetry.update();
+                synchronized (cycleLatches) {
+                    int i = 0;
+                    while (i < cycleLatches.size()) {
+                        CountDownLatch latch = cycleLatches.get(i);
+                        latch.countDown();
+                        if (latch.getCount() > 0) {
+                            cycleLatches.remove(i);
+                        } else {
+                            i++;
+                        }
+                    }
+                }
             } catch (Throwable t) {
                 Log.wtf(TAG, t);
             }
@@ -190,6 +206,30 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
         }
 
         RobotLog.unregisterGlobalWarningSource(this);
+    }
+
+    public void waitForNextCycle() {
+        CountDownLatch latch = new CountDownLatch(1);
+        synchronized (cycleLatches) {
+            cycleLatches.add(latch);
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public void waitOneFullCycle() {
+        CountDownLatch latch = new CountDownLatch(2);
+        synchronized (cycleLatches) {
+            cycleLatches.add(latch);
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     @Override
