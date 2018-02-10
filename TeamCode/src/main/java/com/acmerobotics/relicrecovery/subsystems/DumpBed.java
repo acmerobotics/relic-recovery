@@ -21,14 +21,14 @@ public class DumpBed extends Subsystem {
     public static PIDCoefficients LIFT_PID = new PIDCoefficients(-2, 0, 0);
 
     public static double LIFT_UP_POWER = 1;
-    public static double LIFT_DOWN_POWER = -0.7;
+    public static double LIFT_DOWN_POWER = -0.4;
     public static double LIFT_CALIBRATION_POWER = -0.2;
     public static double LIFT_MISSED_SENSOR_MULTIPLIER = 0.25;
 
     public static double BED_HALFWAY_ROTATION = 0.5;
 
-    public static double LEFT_ROTATE_DOWN_POS = 0.5;
-    public static double LEFT_ROTATE_UP_POS = 0;
+    public static double LEFT_ROTATE_DOWN_POS = 0.35;
+    public static double LEFT_ROTATE_UP_POS = 0.8;
 
     public static double RELEASE_ENGAGE_POS = 0.61;
     public static double RELEASE_DISENGAGE_POS = 0.11;
@@ -80,6 +80,7 @@ public class DumpBed extends Subsystem {
 
         liftMotor = map.dcMotor.get("dumpLift");
         liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         dumpRotateLeft = map.servo.get("dumpRotateLeft");
         dumpRotateRight = map.servo.get("dumpRotateRight");
@@ -207,14 +208,14 @@ public class DumpBed extends Subsystem {
             }
             case MOVE_TO_POSITION: {
                 boolean hallEffectState = isHallEffectSensorTriggered();
-                double liftHeight = getLiftHeight();
+//                double liftHeight = getLiftHeight();
 
                 telemetryData.dumpHallEffectState = hallEffectState;
-                telemetryData.dumpLiftHeight = liftHeight;
+//                telemetryData.dumpLiftHeight = liftHeight;
 
-                if (liftHeight <= -ENDPOINT_ALLOWANCE_HEIGHT || liftHeight >= LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
-                    liftMode = LiftMode.MISSED_SENSOR;
-                }
+//                if (liftHeight <= -ENDPOINT_ALLOWANCE_HEIGHT || liftHeight >= LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
+//                    liftMode = LiftMode.MISSED_SENSOR;
+//                }
 
                 if (!hallEffectState && skipFirstRead) {
                     skipFirstRead = false;

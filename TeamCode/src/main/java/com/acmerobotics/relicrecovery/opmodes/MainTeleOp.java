@@ -19,17 +19,13 @@ public class MainTeleOp extends OpMode {
     @Override
     public void init() {
         robot = new Robot(this);
+        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
         robot.start();
 
         stickyGamepad1 = new StickyGamepad(gamepad1);
         stickyGamepad2 = new StickyGamepad(gamepad2);
 
         telemetry.setMsTransmissionInterval(50);
-    }
-
-    @Override
-    public void start() {
-        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
     }
 
     @Override
@@ -63,19 +59,6 @@ public class MainTeleOp extends OpMode {
         }
 
         robot.drive.setVelocity(new Vector2d(x, y), omega);
-
-        // dump bed
-        if (gamepad2.y) {
-            robot.dumpBed.setLiftPower(DumpBed.LIFT_UP_POWER);
-        } else if (gamepad2.x) {
-            robot.dumpBed.setLiftPower(DumpBed.LIFT_DOWN_POWER);
-        } else if (stickyGamepad2.dpad_up) {
-            robot.dumpBed.moveUp();
-        } else if (stickyGamepad2.dpad_down) {
-            robot.dumpBed.moveDown();
-        } else if (robot.dumpBed.getLiftMode() == DumpBed.LiftMode.MANUAL) {
-            robot.dumpBed.setLiftPower(0);
-        }
 
         if (stickyGamepad1.right_bumper) {
             if (robot.dumpBed.isDumping()) {
@@ -118,6 +101,9 @@ public class MainTeleOp extends OpMode {
             } else if (stickyGamepad2.a) {
                 robot.relicRecoverer.setArmPosition(0);
             }
+
+            // intake
+            robot.intake.setIntakePower(0);
         } else {
             // intake
             if (stickyGamepad2.left_bumper) {
@@ -142,6 +128,19 @@ public class MainTeleOp extends OpMode {
                 }
             }
 
+            // dump bed
+            if (gamepad2.y) {
+                robot.dumpBed.setLiftPower(DumpBed.LIFT_UP_POWER);
+            } else if (gamepad2.x) {
+                robot.dumpBed.setLiftPower(DumpBed.LIFT_DOWN_POWER);
+            } else if (stickyGamepad2.dpad_up) {
+                robot.dumpBed.moveUp();
+            } else if (stickyGamepad2.dpad_down) {
+                robot.dumpBed.moveDown();
+            } else if (robot.dumpBed.getLiftMode() == DumpBed.LiftMode.MANUAL) {
+                robot.dumpBed.setLiftPower(0);
+            }
+
             if (robot.dumpBed.isDumping() || robot.dumpBed.isLiftUp() || robot.dumpBed.getLiftMode() != DumpBed.LiftMode.MANUAL) {
                 robot.intake.setIntakePower(0, 0);
             } else if (gamepad2.left_stick_y != 0 || gamepad2.right_stick_y != 0) {
@@ -149,6 +148,9 @@ public class MainTeleOp extends OpMode {
             } else {
                 robot.intake.setIntakePower(leftIntakePower, rightIntakePower);
             }
+
+            // relic
+            robot.relicRecoverer.setArmPower(0);
         }
 
         telemetry.addData("relicModeActive", relicModeActive);

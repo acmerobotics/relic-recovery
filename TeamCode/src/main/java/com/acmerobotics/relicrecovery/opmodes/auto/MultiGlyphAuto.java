@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
@@ -33,6 +34,8 @@ public class MultiGlyphAuto extends AutoOpMode {
 
     @Override
     protected void run() {
+        double startTime = TimestampedData.getCurrentTime();
+
         robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
 
         Pose2d initialPose = AutoPaths.getAdjustedBalancingStonePose(BalancingStone.NEAR_BLUE);
@@ -72,20 +75,20 @@ public class MultiGlyphAuto extends AutoOpMode {
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
         followPathSync(new PathBuilder(new Pose2d(12, -44, Math.PI / 2))
-                .lineTo(new Vector2d(12, -57))
+                .lineTo(new Vector2d(12, -56))
                 .build());
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         alignWithColumnSync();
 
-        robot.drive.setEstimatedPosition(new Vector2d(12, -57));
+        robot.drive.setEstimatedPosition(new Vector2d(12, -56));
 
         robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         sleep(500);
 
-        Path cryptoToPit1 = new PathBuilder(new Pose2d(12, -57, Math.PI / 2))
+        Path cryptoToPit1 = new PathBuilder(new Pose2d(12, -56, Math.PI / 2))
                 .lineTo(new Vector2d(12, -12))
                 .build();
         robot.drive.followPath(cryptoToPit1);
@@ -127,23 +130,29 @@ public class MultiGlyphAuto extends AutoOpMode {
 
         followPathSync(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -36))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56))
                 .build());
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         alignWithColumnSync();
 
-        robot.drive.setEstimatedPosition(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57));
+        robot.drive.setEstimatedPosition(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56));
 
         robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         sleep(1000);
 
-        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57, Math.PI / 2))
+        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44))
                 .build());
 
         robot.dumpBed.retract();
+        robot.drive.retractSideSwivel();
+
+        telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
+        telemetry.update();
+
+        while (opModeIsActive());
     }
 }
