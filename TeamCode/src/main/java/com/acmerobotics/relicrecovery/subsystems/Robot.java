@@ -8,7 +8,7 @@ import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
-import com.acmerobotics.relicrecovery.util.LoggingUtil;
+import com.acmerobotics.library.util.LoggingUtil;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.qualcomm.robotcore.util.GlobalWarningSource;

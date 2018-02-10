@@ -68,5 +68,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   </integer-array>
 
   <string name="packageName">@string/packageNameRobotController</string>
+    <string name="clear_logs_menu_item">Clear Logs</string>
+    <string name="confirmClearLogsMessage">This will permanently delete all log files!</string>
+    <string name="confirmClearLogsTitle">Clear logs?</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="clearLogsToast">Logs Cleared</string>
 
 </resources>

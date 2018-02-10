@@ -33,6 +33,7 @@ package org.firstinspires.ftc.robotcontroller.internal;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -55,9 +56,11 @@ import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.acmerobotics.relicrecovery.configuration.OpModeConfigurationActivity;
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.util.LoggingUtil;
+import com.acmerobotics.relicrecovery.configuration.OpModeConfigurationActivity;
 import com.google.blocks.ftcrobotcontroller.BlocksActivity;
 import com.google.blocks.ftcrobotcontroller.ProgrammingModeActivity;
 import com.google.blocks.ftcrobotcontroller.ProgrammingModeControllerImpl;
@@ -498,6 +501,18 @@ public class FtcRobotControllerActivity extends Activity
     }
     else if (id == R.id.action_configure_opmode) {
       startActivity(new Intent(this, OpModeConfigurationActivity.class));
+    }
+    else if (id == R.id.action_clear_logs) {
+      AlertDialog dialog = new AlertDialog.Builder(this)
+              .setMessage(R.string.confirmClearLogsMessage)
+              .setTitle(R.string.confirmClearLogsTitle)
+              .setPositiveButton(R.string.clear, (dialogInterface, dialogId) -> {
+                LoggingUtil.clearLogs(this);
+                Toast.makeText(this, R.string.clearLogsToast, Toast.LENGTH_SHORT).show();
+              })
+              .setNegativeButton(R.string.cancel, (dialogInterface, dialogId) -> {})
+              .create();
+      dialog.show();
     }
     else if (id == R.id.action_configure_robot) {
       EditParameters parameters = new EditParameters();
