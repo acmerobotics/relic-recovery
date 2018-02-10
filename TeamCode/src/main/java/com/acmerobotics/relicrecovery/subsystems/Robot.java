@@ -186,7 +186,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
                     while (i < cycleLatches.size()) {
                         CountDownLatch latch = cycleLatches.get(i);
                         latch.countDown();
-                        if (latch.getCount() > 0) {
+                        if (latch.getCount() == 0) {
                             cycleLatches.remove(i);
                         } else {
                             i++;

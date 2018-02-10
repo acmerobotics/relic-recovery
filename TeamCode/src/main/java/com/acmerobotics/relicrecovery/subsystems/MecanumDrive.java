@@ -542,8 +542,7 @@ public class MecanumDrive extends Subsystem {
                 powers = targetPowers;
                 break;
             case COLUMN_ALIGN:
-                double sideDistance = sideDistanceSmoother.update(
-                        sideColorDistance.getDistance(DistanceUnit.INCH));
+                double sideDistance = sideDistanceSmoother.update(getSideDistance(DistanceUnit.INCH));
                 double distanceError = columnAlignController.getError(sideDistance);
 
                 telemetryData.sideDistance = sideDistance;
