@@ -278,4 +278,12 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
             subsystemsWithProblems.clear();
         }
     }
+
+    public void sleep(double seconds) {
+        try {
+            Thread.sleep(Math.round(1000 * seconds));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }

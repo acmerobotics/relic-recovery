@@ -41,17 +41,19 @@ public class FourGlyphAuto extends AutoOpMode {
         Pose2d initialPose = AutoPaths.getAdjustedBalancingStonePose(BalancingStone.NEAR_BLUE);
         robot.drive.setEstimatedPose(initialPose);
 
-        followPathSync(new PathBuilder(initialPose)
+        robot.drive.followPath(new PathBuilder(initialPose)
                 .lineTo(new Vector2d(12, -48))
                 .build());
+        robot.drive.waitForPathFollower();
 
         robot.intake.setIntakePower(1);
 
-        followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI))
+        robot.drive.followPath(new PathBuilder(new Pose2d(12, -48, Math.PI))
                 .turn(-Math.PI / 4)
                 .lineTo(new Vector2d(12, -12))
                 .turn(-Math.PI / 4)
                 .build());
+        robot.drive.waitForPathFollower();
 //        followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI / 2))
 //                .lineTo(new Vector2d(12, -12))
 //                .build());
@@ -68,7 +70,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
         robot.drive.extendSideSwivel();
 
-        waitForPathFollower();
+        robot.drive.waitForPathFollower();
 
         robot.intake.setIntakePower(0);
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.WALL);
@@ -77,15 +79,17 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
 
 //        Pose2d estimatedPose = robot.drive.getEstimatedPose();
-        followPathSync(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
+        robot.drive.followPath(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
                 .lineTo(new Vector2d(12, -56))
                 .build());
+        robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         robot.drive.enableHeadingCorrection(Math.PI / 2);
 
-        alignWithColumnSync();
+        robot.drive.alignWithColumn();
+        robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(new Vector2d(12, -56));
@@ -104,14 +108,15 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.dumpBed.retract();
         robot.intake.setIntakePower(1);
 
-        waitForPathFollower();
+        robot.drive.waitForPathFollower();
 
-        followPathSync(new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
+        robot.drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .turn(-Math.PI / 4)
                 .forward(18)
                 .back(18)
                 .turn(Math.PI / 4)
                 .build());
+        robot.drive.waitForPathFollower();
 
         Path pitToCrypto2 = new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .lineTo(new Vector2d(12, -36))
@@ -125,7 +130,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
         robot.drive.extendSideSwivel();
 
-        waitForPathFollower();
+        robot.drive.waitForPathFollower();
 
         robot.intake.setIntakePower(0);
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
@@ -134,16 +139,18 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
 
 //        estimatedPose = robot.drive.getEstimatedPose();
-        followPathSync(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
+        robot.drive.followPath(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -36))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56))
                 .build());
+        robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
         robot.drive.enableHeadingCorrection(Math.PI / 2);
 
-        alignWithColumnSync();
+        robot.drive.alignWithColumn();
+        robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56));
@@ -152,9 +159,10 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         sleep(500);
 
-        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56, Math.PI / 2))
+        robot.drive.followPath(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -48))
                 .build());
+        robot.drive.waitForPathFollower();
 
         robot.dumpBed.retract();
         robot.drive.retractSideSwivel();

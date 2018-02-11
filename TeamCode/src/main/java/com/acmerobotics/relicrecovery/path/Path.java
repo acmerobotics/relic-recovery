@@ -118,4 +118,12 @@ public class Path {
         }
         return null;
     }
+
+    public Pose2d start() {
+        return getPose(0);
+    }
+
+    public Pose2d end() {
+        return getPose(duration());
+    }
 }

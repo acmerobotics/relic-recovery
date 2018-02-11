@@ -13,7 +13,8 @@ public class ColumnAlignTest extends AutoOpMode {
 
     @Override
     protected void run() {
-        alignWithColumnSync();
+        robot.drive.alignWithColumn();
+        robot.drive.waitForColumnAlign();
 
         sleep(500);
 

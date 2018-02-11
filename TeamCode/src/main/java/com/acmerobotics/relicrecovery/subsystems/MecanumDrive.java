@@ -15,6 +15,7 @@ import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
+import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
@@ -418,6 +419,16 @@ public class MecanumDrive extends Subsystem {
         return pathFollower.isFollowingPath();
     }
 
+    public void waitForPathFollower() {
+        while (!Thread.currentThread().isInterrupted() && mode == Mode.FOLLOW_PATH) {
+            try {
+                Thread.sleep(AutoOpMode.POLL_INTERVAL);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
     public Vector2d getEstimatedPosition() {
         return estimatedPose.pos();
     }
@@ -445,6 +456,16 @@ public class MecanumDrive extends Subsystem {
         columnAlignController.setSetpoint(COLUMN_ALIGN_TARGET_DISTANCE);
         sideDistanceSmoother.reset();
         setMode(Mode.COLUMN_ALIGN);
+    }
+
+    public void waitForColumnAlign() {
+        while (!Thread.currentThread().isInterrupted() && mode == Mode.COLUMN_ALIGN) {
+            try {
+                Thread.sleep(AutoOpMode.POLL_INTERVAL);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     public double getUltrasonicDistance(DistanceUnit unit) {
