@@ -8,7 +8,6 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
-import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
@@ -51,15 +50,15 @@ import java.util.Collections;
 
 @Config
 public class MecanumDrive extends Subsystem {
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(48.0, 96.0, 128.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(4.0, 8.0, 16.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 60.0, 120.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
     public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-1, 0, 0, 0.232, 0.04);
     public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0182, 0.004);
     public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0185, 0.004);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.04);
-    public static double COLUMN_ALIGN_TARGET_DISTANCE = 6;
+    public static double COLUMN_ALIGN_TARGET_DISTANCE = 5;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
     public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
 
@@ -68,11 +67,8 @@ public class MecanumDrive extends Subsystem {
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 
-    public static double RAMP_MAX_ACCEL = 25;
-
     public enum Mode {
         OPEN_LOOP,
-        OPEN_LOOP_RAMP,
         FOLLOW_PATH,
         COLUMN_ALIGN
     }
@@ -98,8 +94,6 @@ public class MecanumDrive extends Subsystem {
      * units in encoder ticks; solely intended for internal use
      */
     private int[] encoderOffsets;
-
-    private double lastTimestamp;
 
     private BNO055IMU imu;
 
@@ -128,7 +122,7 @@ public class MecanumDrive extends Subsystem {
 
     private Mode mode = Mode.OPEN_LOOP;
 
-    private double[] powers, targetPowers;
+    private double[] powers;
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
@@ -183,7 +177,6 @@ public class MecanumDrive extends Subsystem {
         sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
 
         powers = new double[4];
-        targetPowers = new double[4];
         encoderOffsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
@@ -201,6 +194,8 @@ public class MecanumDrive extends Subsystem {
 
         pathFollower = new PathFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
+        maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
+
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
 
         sideDistanceSmoother = new ExponentialSmoother(SIDE_DISTANCE_SMOOTHING_COEFF);
@@ -243,7 +238,12 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void enableHeadingCorrection() {
+        enableHeadingCorrection(getHeading());
+    }
+
+    public void enableHeadingCorrection(double desiredHeading) {
         maintainHeading = true;
+        this.maintainHeadingController.setSetpoint(desiredHeading);
         this.maintainHeadingController.reset();
     }
 
@@ -271,14 +271,14 @@ public class MecanumDrive extends Subsystem {
         headingOffset = -getRawHeading() + heading;
     }
 
-    public void setVelocity(Vector2d vel, double omega, boolean ramp) {
-        this.targetVel = vel;
-        this.targetOmega = omega;
-        setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
+    public void setVelocity(Vector2d vel, double omega) {
+        internalSetVelocity(vel, omega);
+        mode = Mode.OPEN_LOOP;
     }
 
-    public void setVelocity(Vector2d vel, double omega) {
-        setVelocity(vel, omega, false);
+    private void internalSetVelocity(Vector2d vel, double omega) {
+        this.targetVel = vel;
+        this.targetOmega = omega;
     }
 
     /**
@@ -291,22 +291,19 @@ public class MecanumDrive extends Subsystem {
      *       [1,  1,  K]
      *
      * [W] = [V][R]
-     *
-     * @param vel
-     * @param omega
      */
     // removed K's to circumvent scaling issues
-    private void internalSetVelocity(Vector2d vel, double omega) {
-        targetPowers[0] = vel.x() - vel.y() - omega;
-        targetPowers[1] = vel.x() + vel.y() - omega;
-        targetPowers[2] = vel.x() - vel.y() + omega;
-        targetPowers[3] = vel.x() + vel.y() + omega;
+    private void updatePowers() {
+        powers[0] = targetVel.x() - targetVel.y() - targetOmega;
+        powers[1] = targetVel.x() + targetVel.y() - targetOmega;
+        powers[2] = targetVel.x() - targetVel.y() + targetOmega;
+        powers[3] = targetVel.x() + targetVel.y() + targetOmega;
 
-        double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
-                Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
+        double max = Collections.max(Arrays.asList(1.0, Math.abs(powers[0]),
+                Math.abs(powers[1]), Math.abs(powers[2]), Math.abs(powers[3])));
 
         for (int i = 0; i < 4; i++) {
-            targetPowers[i] /= max;
+            powers[i] /= max;
         }
     }
 
@@ -475,54 +472,8 @@ public class MecanumDrive extends Subsystem {
             estimatedPose = new Pose2d(localizer.update(), getHeading());
         }
 
-        // maintain heading
-        if (maintainHeading) {
-            double heading = getHeading();
-            double headingError = maintainHeadingController.getError(heading);
-            double headingUpdate = 0;
-            if (Math.abs(targetOmega) > 0) {
-                maintainHeadingController.setSetpoint(heading);
-                internalSetVelocity(targetVel, targetOmega);
-            } else {
-                headingUpdate = maintainHeadingController.update(headingError);
-                internalSetVelocity(targetVel, headingUpdate);
-            }
-
-            telemetryData.maintainHeadingError = headingError;
-            telemetryData.maintainHeadingUpdate = headingUpdate;
-        } else {
-            internalSetVelocity(targetVel, targetOmega);
-        }
-
         switch (mode) {
             case OPEN_LOOP:
-                powers = targetPowers;
-                break;
-            case OPEN_LOOP_RAMP:
-                double[] powerDeltas = new double[4];
-                double maxDesiredAbsPowerDelta = 0;
-                for (int i = 0; i < 4; i++) {
-                    powerDeltas[i] = (targetPowers[i] - powers[i]);
-                    double desiredAbsPowerDelta = Math.abs(powerDeltas[i]);
-                    if (desiredAbsPowerDelta > maxDesiredAbsPowerDelta) {
-                        maxDesiredAbsPowerDelta = desiredAbsPowerDelta;
-                    }
-                }
-
-                double timestamp = TimestampedData.getCurrentTime();
-                double dt = timestamp - lastTimestamp;
-                lastTimestamp = timestamp;
-
-                double maxAbsPowerDelta = RAMP_MAX_ACCEL * (dt / 1000.0);
-                double multiplier;
-                if (maxDesiredAbsPowerDelta > maxAbsPowerDelta) {
-                    multiplier = maxAbsPowerDelta / maxDesiredAbsPowerDelta;
-                } else {
-                    multiplier = 1;
-                }
-                for (int i = 0; i < 4; i++) {
-                    powers[i] += powerDeltas[i] * multiplier;
-                }
                 break;
             case FOLLOW_PATH:
                 if (pathFollower.isFollowingPath()) {
@@ -539,7 +490,6 @@ public class MecanumDrive extends Subsystem {
                 } else {
                     stop();
                 }
-                powers = targetPowers;
                 break;
             case COLUMN_ALIGN:
                 double sideDistance = sideDistanceSmoother.update(getSideDistance(DistanceUnit.INCH));
@@ -556,9 +506,23 @@ public class MecanumDrive extends Subsystem {
                 } else {
                     stop();
                 }
-                powers = targetPowers;
                 break;
         }
+
+        // maintain heading
+        if (maintainHeading) {
+            double heading = getHeading();
+            double headingError = maintainHeadingController.getError(heading);
+            double headingUpdate = maintainHeadingController.update(headingError);
+            internalSetVelocity(targetVel, headingUpdate);
+
+            telemetryData.maintainHeadingError = headingError;
+            telemetryData.maintainHeadingUpdate = headingUpdate;
+        } else {
+            internalSetVelocity(targetVel, targetOmega);
+        }
+
+        updatePowers();
 
         for (int i = 0; i < 4; i++) {
             motors[i].setPower(powers[i]);

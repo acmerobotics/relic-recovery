@@ -40,7 +40,6 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
     }
 
     public void enableUltrasonicFeedback() {
-        ultrasonicSmoother.reset();
         useUltrasonicFeedback = true;
     }
 
@@ -51,6 +50,8 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
     @Override
     public Vector2d update() {
         Vector2d estimatedPosition = super.update();
+
+        ultrasonicDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
 
         if (useUltrasonicFeedback) {
             Cryptobox closestCryptobox = Cryptobox.NEAR_BLUE;
@@ -78,7 +79,6 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                     targetOffset = 0;
             }
 
-            ultrasonicDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
             if (ultrasonicDistance > drive.getMinUltrasonicDistance(DistanceUnit.INCH)) {
                 switch (closestCryptobox) {
                     case NEAR_BLUE:

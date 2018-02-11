@@ -129,11 +129,9 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     protected void alignWithColumnSync() {
-//        robot.drive.enableHeadingCorrection();
         robot.drive.alignWithColumn();
         while (opModeIsActive() && robot.drive.getMode() == MecanumDrive.Mode.COLUMN_ALIGN) {
             sleep(5);
         }
-//        robot.drive.disableHeadingCorrection();
     }
 }

@@ -20,7 +20,7 @@ import java.util.Map;
 public class RelicRecoverer extends Subsystem {
     public static double WRIST_STOW_POSITION = 0.04;
     public static double WRIST_UP_POSITION = 1;
-    public static double WRIST_DOWN_POSITION = 0.4;
+    public static double WRIST_DOWN_POSITION = 0.5;
 
     public static double FINGER_CLOSE_POSITION = 0.61;
     public static double FINGER_OPEN_POSITION = 0.35;

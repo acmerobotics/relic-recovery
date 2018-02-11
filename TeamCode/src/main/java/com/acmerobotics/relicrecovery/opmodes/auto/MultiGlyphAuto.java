@@ -52,6 +52,9 @@ public class MultiGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(12, -12))
                 .turn(-Math.PI / 4)
                 .build());
+//        followPathSync(new PathBuilder(new Pose2d(12, -48, Math.PI / 2))
+//                .lineTo(new Vector2d(12, -12))
+//                .build());
 
         Path pitToCrypto1 = new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .lineTo(new Vector2d(12, -36))
@@ -73,27 +76,30 @@ public class MultiGlyphAuto extends AutoOpMode {
 
         robot.waitOneFullCycle();
 
-        Pose2d estimatedPose = robot.drive.getEstimatedPose();
-        followPathSync(new PathBuilder(new Pose2d(estimatedPose.x(), estimatedPose.y(), Math.PI / 2))
-                .lineTo(new Vector2d(12, -57))
+//        Pose2d estimatedPose = robot.drive.getEstimatedPose();
+        followPathSync(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
+                .lineTo(new Vector2d(12, -56))
                 .build());
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
+        robot.drive.enableHeadingCorrection(Math.PI / 2);
+
         alignWithColumnSync();
 
-        robot.drive.setEstimatedPosition(new Vector2d(12, -57));
+        robot.drive.disableHeadingCorrection();
+        robot.drive.setEstimatedPosition(new Vector2d(12, -56));
 
         robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         sleep(500);
 
-        Path cryptoToPit1 = new PathBuilder(new Pose2d(12, -57, Math.PI / 2))
+        Path cryptoToPit1 = new PathBuilder(new Pose2d(12, -56, Math.PI / 2))
                 .lineTo(new Vector2d(12, -12))
                 .build();
         robot.drive.followPath(cryptoToPit1);
 
-        sleep((int) (1000 * 0.5 * cryptoToPit1.duration()));
+        sleep((int) (1000 * 0.25 * cryptoToPit1.duration()));
 
         robot.dumpBed.retract();
         robot.intake.setIntakePower(1);
@@ -127,23 +133,26 @@ public class MultiGlyphAuto extends AutoOpMode {
 
         robot.waitOneFullCycle();
 
-        estimatedPose = robot.drive.getEstimatedPose();
-        followPathSync(new PathBuilder(new Pose2d(estimatedPose.x(), estimatedPose.y(), Math.PI / 2))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, estimatedPose.y()))
-                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57))
+//        estimatedPose = robot.drive.getEstimatedPose();
+        followPathSync(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -36))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56))
                 .build());
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
+        robot.drive.enableHeadingCorrection(Math.PI / 2);
+
         alignWithColumnSync();
 
-        robot.drive.setEstimatedPosition(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57));
+        robot.drive.disableHeadingCorrection();
+        robot.drive.setEstimatedPosition(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56));
 
         robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         sleep(500);
 
-        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -57, Math.PI / 2))
+        followPathSync(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -48))
                 .build());
 

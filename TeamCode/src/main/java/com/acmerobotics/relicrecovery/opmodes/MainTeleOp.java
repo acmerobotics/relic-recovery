@@ -13,7 +13,7 @@ public class MainTeleOp extends OpMode {
 
     private Robot robot;
 
-    private boolean halfSpeed, intakeRunning, relicModeActive;
+    private boolean intakeRunning, relicModeActive, slowMode, superSlowMode, maintainHeading;
     private int leftIntakePower, rightIntakePower;
 
     @Override
@@ -35,7 +35,12 @@ public class MainTeleOp extends OpMode {
 
         // drive
         if (stickyGamepad1.b) {
-            halfSpeed = !halfSpeed;
+            slowMode = !slowMode;
+            superSlowMode = false;
+        } else if ((gamepad1.left_bumper && stickyGamepad1.right_bumper) ||
+                (stickyGamepad1.left_bumper && gamepad1.right_bumper)) {
+            superSlowMode = !superSlowMode;
+            slowMode = false;
         }
 
         double x, y = 0, omega;
@@ -48,7 +53,11 @@ public class MainTeleOp extends OpMode {
 
         omega = -gamepad1.right_stick_x;
 
-        if (halfSpeed) {
+        if (superSlowMode) {
+            x *= 0.25;
+            y *= 0.25;
+            omega *= 0.25;
+        } else if (slowMode) {
             x *= 0.5;
             y *= 0.5;
             omega *= 0.5;
@@ -69,9 +78,12 @@ public class MainTeleOp extends OpMode {
         }
 
         if (stickyGamepad1.a) {
-            robot.drive.extendSideSwivel();
-        } else if (stickyGamepad1.b) {
-            robot.drive.retractSideSwivel();
+            maintainHeading = !maintainHeading;
+            if (maintainHeading) {
+                robot.drive.enableHeadingCorrection();
+            } else {
+                robot.drive.disableHeadingCorrection();
+            }
         }
 
         if (stickyGamepad2.right_stick_button) {
@@ -154,9 +166,7 @@ public class MainTeleOp extends OpMode {
         }
 
         telemetry.addData("relicModeActive", relicModeActive);
-        telemetry.addData("x", x);
-        telemetry.addData("y", y);
-        telemetry.addData("omega", omega);
+        telemetry.addData("maintainHeading", maintainHeading);
     }
 }
 
