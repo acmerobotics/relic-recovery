@@ -20,13 +20,16 @@ public class AutoPaths {
 
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
-    public static final Map<RelicRecoveryVuMark, Integer> vuMarkMap;
+    public static Vector2d ORTHOGONAL_SCORING_OFFSET = new Vector2d(16, 0);
+    public static Vector2d DIAGONAL_SCORING_OFFSET = new Vector2d(14, 8);
+
+    public static final Map<RelicRecoveryVuMark, Integer> VUMARK_MAP;
 
     static {
-        vuMarkMap = new HashMap<>();
-        vuMarkMap.put(RelicRecoveryVuMark.LEFT, 1);
-        vuMarkMap.put(RelicRecoveryVuMark.CENTER, 0);
-        vuMarkMap.put(RelicRecoveryVuMark.RIGHT, -1);
+        VUMARK_MAP = new HashMap<>();
+        VUMARK_MAP.put(RelicRecoveryVuMark.LEFT, 1);
+        VUMARK_MAP.put(RelicRecoveryVuMark.CENTER, 0);
+        VUMARK_MAP.put(RelicRecoveryVuMark.RIGHT, -1);
     }
 
     public static Pose2d getBalancingStonePose(BalancingStone stone) {
@@ -43,7 +46,7 @@ public class AutoPaths {
 
     public static Path makeNormalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
         vuMark = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
-        int vuMarkInt = vuMarkMap.get(vuMark);
+        int vuMarkInt = VUMARK_MAP.get(vuMark);
         Pose2d stonePose = getAdjustedBalancingStonePose(stone);
         switch (stone) {
             case NEAR_BLUE: {
@@ -88,7 +91,7 @@ public class AutoPaths {
 
     public static Path makeDiagonalPathToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {
         vuMark = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.RIGHT : vuMark;
-        int vuMarkInt = vuMarkMap.get(vuMark);
+        int vuMarkInt = VUMARK_MAP.get(vuMark);
         Pose2d stonePose = getAdjustedBalancingStonePose(stone);
         switch (stone) {
             case NEAR_BLUE: {

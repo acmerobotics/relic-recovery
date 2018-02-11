@@ -1,6 +1,5 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
-import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
@@ -13,12 +12,13 @@ import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Config
-@Autonomous
-public class MultiGlyphAuto extends AutoOpMode {
+@Disabled
+@Autonomous(name = "4 Glyph Auto")
+public class FourGlyphAuto extends AutoOpMode {
     private UltrasonicLocalizer ultrasonicLocalizer;
 
     @Override
