@@ -16,11 +16,4 @@ public class Angle {
         return angle;
     }
 
-    public static double inferiorNorm(double angle) {
-        while (Math.abs(angle) > Math.PI) {
-            angle -= Math.signum(angle) * TAU;
-        }
-        return angle;
-    }
-
 }

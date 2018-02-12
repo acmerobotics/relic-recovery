@@ -22,6 +22,7 @@ public class Path {
         }
     }
 
+    @Deprecated
     public static Path createFromPoses(List<Pose2d> poses) {
         List<PathSegment> segments = new ArrayList<>();
         double heading = poses.get(0).heading();
@@ -120,10 +121,10 @@ public class Path {
     }
 
     public Pose2d start() {
-        return getPose(0);
+        return segments.get(0).start();
     }
 
     public Pose2d end() {
-        return getPose(duration() - 1e-5);
+        return segments.get(segments.size() - 1).end();
     }
 }

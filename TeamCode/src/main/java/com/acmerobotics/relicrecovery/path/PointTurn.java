@@ -58,6 +58,16 @@ public class PointTurn implements PathSegment {
         return new Pose2d(new Vector2d(0, 0), profile.get(time).a);
     }
 
+    @Override
+    public Pose2d start() {
+        return new Pose2d(initialPose.pos(), Angle.norm(profile.start().x));
+    }
+
+    @Override
+    public Pose2d end() {
+        return new Pose2d(initialPose.pos(), Angle.norm(profile.end().x));
+    }
+
     public double getAngle() {
         return angle;
     }

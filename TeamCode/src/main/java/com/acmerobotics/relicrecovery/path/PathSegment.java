@@ -18,4 +18,8 @@ public interface PathSegment {
 
     /** @return the pose acceleration at time t in seconds */
     Pose2d getPoseAcceleration(double time);
+
+    Pose2d start();
+
+    Pose2d end();
 }

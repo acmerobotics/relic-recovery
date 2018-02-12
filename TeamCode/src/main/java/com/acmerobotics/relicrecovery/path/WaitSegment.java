@@ -30,4 +30,14 @@ public class WaitSegment implements PathSegment {
     public Pose2d getPoseAcceleration(double time) {
         return new Pose2d(0, 0, 0);
     }
+
+    @Override
+    public Pose2d start() {
+        return pose;
+    }
+
+    @Override
+    public Pose2d end() {
+        return pose;
+    }
 }
