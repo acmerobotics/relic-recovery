@@ -4,6 +4,7 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
+import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 
@@ -38,6 +39,23 @@ public class AutoPaths {
         } else {
             return new Pose2d(stone.getPosition(), 0);
         }
+    }
+
+    public static Vector2d getCryptoboxColumnPosition(Cryptobox cryptobox, RelicRecoveryVuMark column) {
+        if (column == RelicRecoveryVuMark.UNKNOWN) {
+            throw new IllegalArgumentException("Column may not be UNKNOWN");
+        }
+        int columnInt = VUMARK_MAP.get(column);
+        switch (cryptobox) {
+            case NEAR_BLUE:
+                return cryptobox.getPosition().added(new Vector2d(columnInt * CRYPTO_COL_WIDTH, 0));
+            case NEAR_RED:
+                return cryptobox.getPosition().added(new Vector2d(-columnInt * CRYPTO_COL_WIDTH, 0));
+            case FAR_BLUE:
+            case FAR_RED:
+                return cryptobox.getPosition().added(new Vector2d(0, -columnInt * CRYPTO_COL_WIDTH));
+        }
+        throw new UnsupportedOperationException(cryptobox + " is not a supported cryptobox");
     }
 
     public static Pose2d getAdjustedBalancingStonePose(BalancingStone stone) {
