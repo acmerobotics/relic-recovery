@@ -37,8 +37,7 @@ public class MainTeleOp extends OpMode {
         if (stickyGamepad1.b) {
             slowMode = !slowMode;
             superSlowMode = false;
-        } else if ((gamepad1.left_bumper && stickyGamepad1.right_bumper) ||
-                (stickyGamepad1.left_bumper && gamepad1.right_bumper)) {
+        } else if (stickyGamepad1.left_bumper) {
             superSlowMode = !superSlowMode;
             slowMode = false;
         }

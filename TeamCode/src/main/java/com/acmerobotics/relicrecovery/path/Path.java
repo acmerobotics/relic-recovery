@@ -124,6 +124,6 @@ public class Path {
     }
 
     public Pose2d end() {
-        return getPose(duration());
+        return getPose(duration() - 1e-5);
     }
 }

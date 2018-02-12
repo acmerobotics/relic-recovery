@@ -15,8 +15,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
 public class DumpBed extends Subsystem {
     public static double LIFT_HEIGHT = 10.75;
-    public static double ENDPOINT_ALLOWANCE_HEIGHT = 0.25;
-    public static double PULLEY_RADIUS = 0.717;
+    public static double LIFT_ENDPOINT_ALLOWANCE_HEIGHT = 0.25;
+    public static double LIFT_PULLEY_RADIUS = 0.717;
 
     public static PIDCoefficients LIFT_PID = new PIDCoefficients(-2, 0, 0);
 
@@ -27,11 +27,13 @@ public class DumpBed extends Subsystem {
 
     public static double BED_HALFWAY_ROTATION = 0.5;
 
-    public static double LEFT_ROTATE_DOWN_POS = 0.25;
-    public static double LEFT_ROTATE_UP_POS = 0.8;
+    public static double BED_LEFT_DOWN_POSITION = 0.46;
+    public static double BED_RIGHT_DOWN_POSITION = 0.55;
+    public static double BED_LEFT_UP_POSITION = 0.96;
+    public static double BED_RIGHT_UP_POSITION = 0;
 
-    public static double RELEASE_ENGAGE_POS = 0.61;
-    public static double RELEASE_DISENGAGE_POS = 0.11;
+    public static double BED_RELEASE_ENGAGE_POSITION = 0.61;
+    public static double BED_RELEASE_DISENGAGE_POSITION = 0.11;
 
     public enum LiftMode {
         MANUAL,
@@ -111,14 +113,14 @@ public class DumpBed extends Subsystem {
 
     private int inchesToTicks(double inches) {
         double ticksPerRev = liftMotor.getMotorType().getTicksPerRev();
-        double circumference = 2 * Math.PI * PULLEY_RADIUS;
+        double circumference = 2 * Math.PI * LIFT_PULLEY_RADIUS;
         return (int) Math.round(inches * ticksPerRev / circumference);
     }
 
     private double ticksToInches(int ticks) {
         double ticksPerRev = liftMotor.getMotorType().getTicksPerRev();
         double revs = ticks / ticksPerRev;
-        return 2 * Math.PI * PULLEY_RADIUS * revs;
+        return 2 * Math.PI * LIFT_PULLEY_RADIUS * revs;
     }
 
     public boolean isCalibrated() {
@@ -165,9 +167,10 @@ public class DumpBed extends Subsystem {
     }
 
     private void setBedRotation(double rot) {
-        double servoPosition = LEFT_ROTATE_DOWN_POS + rot * (LEFT_ROTATE_UP_POS - LEFT_ROTATE_DOWN_POS);
-        dumpRotateLeft.setPosition(servoPosition);
-        dumpRotateRight.setPosition(1 - servoPosition);
+        double leftPosition = BED_LEFT_DOWN_POSITION + (BED_LEFT_UP_POSITION - BED_LEFT_DOWN_POSITION) * rot;
+        double rightPosition = BED_RIGHT_DOWN_POSITION + (BED_RIGHT_UP_POSITION - BED_RIGHT_DOWN_POSITION) * rot;
+        dumpRotateLeft.setPosition(leftPosition);
+        dumpRotateRight.setPosition(rightPosition);
         this.dumpRotation = rot;
     }
 
@@ -213,7 +216,7 @@ public class DumpBed extends Subsystem {
                 telemetryData.dumpHallEffectState = hallEffectState;
 //                telemetryData.dumpLiftHeight = liftHeight;
 
-//                if (liftHeight <= -ENDPOINT_ALLOWANCE_HEIGHT || liftHeight >= LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
+//                if (liftHeight <= -LIFT_ENDPOINT_ALLOWANCE_HEIGHT || liftHeight >= LIFT_HEIGHT + LIFT_ENDPOINT_ALLOWANCE_HEIGHT) {
 //                    liftMode = LiftMode.MISSED_SENSOR;
 //                }
 
@@ -262,10 +265,10 @@ public class DumpBed extends Subsystem {
                         liftMode = LiftMode.MANUAL;
                     }
                 } else {
-                    if (liftHeight <= -ENDPOINT_ALLOWANCE_HEIGHT) {
+                    if (liftHeight <= -LIFT_ENDPOINT_ALLOWANCE_HEIGHT) {
                         liftMode = LiftMode.MISSED_SENSOR;
                         movingDownToSensor = false;
-                    } else if (liftHeight >= LIFT_HEIGHT + ENDPOINT_ALLOWANCE_HEIGHT) {
+                    } else if (liftHeight >= LIFT_HEIGHT + LIFT_ENDPOINT_ALLOWANCE_HEIGHT) {
                         liftMode = LiftMode.MISSED_SENSOR;
                         movingDownToSensor = true;
                     }
@@ -303,13 +306,13 @@ public class DumpBed extends Subsystem {
 
         if (bedDumping) {
             setBedRotation(1);
-            dumpRelease.setPosition(RELEASE_DISENGAGE_POS);
+            dumpRelease.setPosition(BED_RELEASE_DISENGAGE_POSITION);
         } else if (liftUp) {
             setBedRotation(BED_HALFWAY_ROTATION);
-            dumpRelease.setPosition(RELEASE_ENGAGE_POS);
+            dumpRelease.setPosition(BED_RELEASE_ENGAGE_POSITION);
         } else {
             setBedRotation(0);
-            dumpRelease.setPosition(RELEASE_ENGAGE_POS);
+            dumpRelease.setPosition(BED_RELEASE_ENGAGE_POSITION);
         }
 
         telemetry.addDataObject(telemetryData);

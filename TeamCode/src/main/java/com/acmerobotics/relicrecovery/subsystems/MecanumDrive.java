@@ -59,12 +59,12 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0185, 0.004);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.04);
-    public static double COLUMN_ALIGN_TARGET_DISTANCE = 5;
+    public static double COLUMN_ALIGN_TARGET_DISTANCE = 4.75;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
     public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
 
-    public static double SIDE_SWIVEL_EXTEND = 0.4;
-    public static double SIDE_SWIVEL_RETRACT = 0.9;
+    public static double SIDE_SWIVEL_EXTEND = 0.72;
+    public static double SIDE_SWIVEL_RETRACT = 0.22;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 

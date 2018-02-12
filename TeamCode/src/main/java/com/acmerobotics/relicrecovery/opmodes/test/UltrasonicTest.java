@@ -1,7 +1,5 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
@@ -21,27 +19,28 @@ public class UltrasonicTest extends OpMode {
 
     @Override
     public void init() {
-        telemetry = new MultipleTelemetry(telemetry, RobotDashboard.getInstance().getTelemetry());
         ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(hardwareMap.analogInput.get("ultrasonic"));
         smoothers = new ExponentialSmoother[SMOOTHING_RATIOS.length];
         for (int i = 0; i < smoothers.length; i++) {
             smoothers[i] = new ExponentialSmoother(SMOOTHING_RATIOS[i]);
         }
         robot = new Robot(this);
-        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+        robot.addListener(() -> {
+            double distance = ultrasonicSensor.getDistance(DistanceUnit.INCH);
+            for (int i = 0; i < smoothers.length; i++) {
+                robot.dashboard.getTelemetry().addData("distance" + i, smoothers[i].update(distance));
+            }
+        });
         robot.start();
     }
 
     @Override
+    public void start() {
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+    }
+
+    @Override
     public void loop() {
-        double distance = ultrasonicSensor.getDistance(DistanceUnit.INCH);
-        for (int i = 0; i < smoothers.length; i++) {
-            telemetry.addData("distance" + i, smoothers[i].update(distance));
-        }
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
     }
 }

@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 
 @Config
 public class Intake extends Subsystem {
-    public static double GLYPH_PRESENCE_THRESHOLD = 1; // in
+    public static double GLYPH_PRESENCE_THRESHOLD = 2.5; // in (theoretically, might actually be cm)
 
     public enum Mode {
         AUTO,
@@ -45,16 +45,8 @@ public class Intake extends Subsystem {
         leftIntake = map.dcMotor.get("intakeLeft");
         rightIntake = map.dcMotor.get("intakeRight");
 
-//        frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
-//        rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
-    }
-
-    public boolean hasFrontGlyph() {
-        return frontColorDistance.getDistance(DistanceUnit.INCH) <= GLYPH_PRESENCE_THRESHOLD;
-    }
-
-    public boolean hasRearGlyph() {
-        return rearColorDistance.getDistance(DistanceUnit.INCH) <= GLYPH_PRESENCE_THRESHOLD;
+        frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
+        rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
     }
 
     public void setIntakePower(double intakePower) {
@@ -79,20 +71,28 @@ public class Intake extends Subsystem {
 
         switch (mode) {
             case AUTO:
-                boolean hasFrontGlyph = hasFrontGlyph();
-                boolean hasRearGlyph = hasRearGlyph();
+                double frontDistance = frontColorDistance.getDistance(DistanceUnit.INCH);
+                double rearDistance = rearColorDistance.getDistance(DistanceUnit.INCH);
+
+                frontDistance = Double.isNaN(frontDistance) ? 20 : frontDistance;
+                rearDistance = Double.isNaN(rearDistance) ? 20 : rearDistance;
+
+                boolean hasFrontGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
+                boolean hasRearGlyph = rearDistance <= GLYPH_PRESENCE_THRESHOLD;
                 int glyphCount = (hasFrontGlyph ? 1 : 0) + (hasRearGlyph ? 1 : 0);
 
+                telemetry.addData("intakeFrontDistance", frontDistance);
+                telemetry.addData("intakeRearDistance", rearDistance);
                 telemetry.addData("intakeHasFrontGlyph", hasFrontGlyph);
                 telemetry.addData("intakeHasRearGlyph", hasRearGlyph);
                 telemetry.addData("intakeGlyphCount", glyphCount);
 
-                if (glyphCount < 2) {
-                    leftIntakePower = 1;
-                    rightIntakePower = 1;
-                } else {
-                    setIntakePower(-1, -1);
-                }
+//                if (glyphCount < 2) {
+//                    leftIntakePower = 1;
+//                    rightIntakePower = 1;
+//                } else {
+//                    setIntakePower(-1, -1);
+//                }
 
                 break;
             case MANUAL:
