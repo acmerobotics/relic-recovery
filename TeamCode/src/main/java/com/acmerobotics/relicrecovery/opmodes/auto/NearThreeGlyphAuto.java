@@ -104,11 +104,12 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         Pose2d pitPose = cryptoToPit.end();
         Path pitToCrypto = new PathBuilder(pitPose)
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36))
-                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 48))
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
                 .build();
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
         robot.drive.setEstimatedPose(stoneToCrypto.start());
+        robot.drive.extendSideSwivel();
         robot.drive.followPath(stoneToCrypto);
         robot.drive.waitForPathFollower();
 

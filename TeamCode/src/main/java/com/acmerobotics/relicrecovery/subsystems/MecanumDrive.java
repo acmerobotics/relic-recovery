@@ -52,7 +52,7 @@ import java.util.Collections;
 @Config
 public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 60.0, 120.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 4.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 8.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
     public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-1, 0, 0, 0.232, 0.04);
     public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0182, 0.004);
@@ -477,8 +477,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public double getSideDistance(DistanceUnit unit) {
-        double sideDistance = sideColorDistance.getDistance(unit);
-        return Double.isNaN(sideDistance) ? unit.fromCm(20) : sideDistance;
+        return sideColorDistance.getDistance(unit);
     }
 
     public void update() {
@@ -513,20 +512,27 @@ public class MecanumDrive extends Subsystem {
                 }
                 break;
             case COLUMN_ALIGN:
-                double sideDistance = sideDistanceSmoother.update(getSideDistance(DistanceUnit.INCH));
-                double distanceError = columnAlignController.getError(sideDistance);
+                double rawSideDistance = getSideDistance(DistanceUnit.INCH);
 
-                telemetryData.sideDistance = sideDistance;
-                telemetryData.columnAlignError = distanceError;
+                if (Double.isNaN(rawSideDistance)) {
+                    double sideDistance = sideDistanceSmoother.update(getSideDistance(DistanceUnit.INCH));
+                    double distanceError = columnAlignController.getError(sideDistance);
 
-                if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
-                    double lateralUpdate = columnAlignController.update(distanceError);
-                    internalSetVelocity(new Vector2d(0, lateralUpdate), 0);
+                    telemetryData.sideDistance = sideDistance;
+                    telemetryData.columnAlignError = distanceError;
 
-                    telemetryData.columnAlignUpdate = lateralUpdate;
+                    if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
+                        double lateralUpdate = columnAlignController.update(distanceError);
+                        internalSetVelocity(new Vector2d(0, lateralUpdate), 0);
+
+                        telemetryData.columnAlignUpdate = lateralUpdate;
+                    } else {
+                        stop();
+                    }
                 } else {
                     stop();
                 }
+
                 break;
         }
 
