@@ -13,7 +13,7 @@ public class MainTeleOp extends OpMode {
 
     private Robot robot;
 
-    private boolean intakeRunning, relicModeActive, slowMode, superSlowMode, maintainHeading;
+    private boolean intakeRunning, relicModeActive, slowMode, superSlowMode; // , maintainHeading;
     private int leftIntakePower, rightIntakePower;
 
     @Override
@@ -76,14 +76,14 @@ public class MainTeleOp extends OpMode {
             }
         }
 
-        if (stickyGamepad1.a) {
-            maintainHeading = !maintainHeading;
-            if (maintainHeading) {
-                robot.drive.enableHeadingCorrection();
-            } else {
-                robot.drive.disableHeadingCorrection();
-            }
-        }
+//        if (stickyGamepad1.a) {
+//            maintainHeading = !maintainHeading;
+//            if (maintainHeading) {
+//                robot.drive.enableHeadingCorrection();
+//            } else {
+//                robot.drive.disableHeadingCorrection();
+//            }
+//        }
 
         if (stickyGamepad2.right_stick_button) {
             relicModeActive = !relicModeActive;
@@ -95,8 +95,6 @@ public class MainTeleOp extends OpMode {
                 robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
             } else if (stickyGamepad2.dpad_down) {
                 robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.DOWN);
-            } else if (stickyGamepad2.dpad_left || stickyGamepad2.dpad_right) {
-                robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.STOW);
             }
 
             if (stickyGamepad2.y) {
@@ -165,7 +163,7 @@ public class MainTeleOp extends OpMode {
         }
 
         telemetry.addData("relicModeActive", relicModeActive);
-        telemetry.addData("maintainHeading", maintainHeading);
+//        telemetry.addData("maintainHeading", maintainHeading);
     }
 }
 

@@ -1,9 +1,11 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+@Disabled
 @TeleOp
 public class AutoIntakeTest extends OpMode {
     @Override

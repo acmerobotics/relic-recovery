@@ -11,9 +11,11 @@ import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.acmerobotics.relicrecovery.vision.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+@Disabled
 @TeleOp
 public class CryptoPositionTest extends LinearOpMode {
     private Vector2d visionPosition;
