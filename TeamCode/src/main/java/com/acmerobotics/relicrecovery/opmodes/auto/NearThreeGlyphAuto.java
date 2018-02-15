@@ -14,6 +14,7 @@ import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -128,13 +129,23 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.drive.followPath(cryptoToPit);
         robot.sleep(0.2 * cryptoToPit.duration());
         robot.dumpBed.retract();
-        robot.intake.setIntakePower(1);
+        robot.intake.autoIntake();
         robot.drive.waitForPathFollower();
 
+        if (robot.intake.getMode() == Intake.Mode.AUTO) {
+            // we still didn't get enough glyphs; let's forage a little more
+            robot.drive.followPath(new PathBuilder(cryptoToPit.end())
+                    .forward(12 * Math.sqrt(2))
+                    .back(12 * Math.sqrt(2))
+                    .build());
+            robot.drive.waitForPathFollower();
+        }
+
         robot.drive.followPath(pitToCrypto);
-        robot.sleep(0.5 * pitToCrypto.duration());
+        robot.sleep(0.2 * pitToCrypto.duration());
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
-//        robot.intake.setIntakePower(-1);
+        robot.intake.setIntakePower(-0.4);
+        robot.sleep(0.75);
         robot.intake.setIntakePower(0);
         robot.drive.waitForPathFollower();
 

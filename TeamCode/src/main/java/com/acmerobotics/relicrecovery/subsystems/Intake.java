@@ -51,6 +51,10 @@ public class Intake extends Subsystem {
         rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
     }
 
+    public Mode getMode() {
+        return mode;
+    }
+
     public void setIntakePower(double intakePower) {
         setIntakePower(intakePower, intakePower);
     }
@@ -93,7 +97,9 @@ public class Intake extends Subsystem {
                     leftIntakePower = 1;
                     rightIntakePower = 1;
                 } else {
-                    setIntakePower(-1, -1);
+                    leftIntakePower = 0;
+                    rightIntakePower = 0;
+                    mode = Mode.MANUAL;
                 }
 
                 break;
