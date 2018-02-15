@@ -1,11 +1,16 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
+import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous
-public class MoveTest extends AutoOpMode {
+@Config
+public class StrafeTest extends AutoOpMode {
+    public static double DISTANCE = AutoPaths.CRYPTO_COL_WIDTH;
+
     @Override
     protected void setup() {
 
@@ -14,7 +19,7 @@ public class MoveTest extends AutoOpMode {
     @Override
     protected void run() {
         robot.drive.followPath(new PathBuilder(robot.drive.getEstimatedPose())
-                .forward(48)
+                .strafeLeft(DISTANCE)
                 .build());
         robot.drive.waitForPathFollower();
 

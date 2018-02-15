@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Config
 public class RelicRecoverer extends Subsystem {
-    public static double WRIST_STOW_POSITION = 0.04;
+    public static double WRIST_STOW_POSITION = 0.2;
     public static double WRIST_UP_POSITION = 1;
     public static double WRIST_DOWN_POSITION = 0.5;
 

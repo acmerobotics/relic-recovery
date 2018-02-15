@@ -14,6 +14,8 @@ import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -75,13 +77,15 @@ public class NearThreeGlyphAuto extends AutoOpMode {
     protected void run() {
         double startTime = TimestampedData.getCurrentTime();
 
+        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
+
         int yMultiplier = crypto.getAllianceColor() == AllianceColor.BLUE ? -1 : 1;
 
         // jewel logic here
         RelicRecoveryVuMark firstColumn = VUMARK;
         RelicRecoveryVuMark secondColumn = COLUMN_TRANSITION.get(firstColumn);
 
-        Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(stone).added(new Pose2d(0, -2));
+        Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(stone);
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
 
@@ -101,7 +105,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         Pose2d pitPose = cryptoToPit.end();
         Path pitToCrypto = new PathBuilder(pitPose)
-                .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 36))
+//                .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 36))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36))
                 .build();
 
@@ -121,42 +125,42 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         robot.sleep(1);
 
-//        robot.drive.followPath(cryptoToPit);
-//        robot.sleep(0.2 * cryptoToPit.duration());
-//        robot.dumpBed.retract();
-//        robot.intake.setIntakePower(1);
-//        robot.drive.waitForPathFollower();
-//
-//        robot.drive.followPath(pitToCrypto);
-//        robot.sleep(0.5 * pitToCrypto.duration());
-//        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
-////        robot.intake.setIntakePower(-1);
-//        robot.intake.setIntakePower(0);
-//        robot.drive.waitForPathFollower();
-//
-//        ultrasonicLocalizer.setTarget(ultrasonicTarget);
-//        ultrasonicLocalizer.enableUltrasonicFeedback();
-//
-//        robot.drive.extendSideSwivel();
-//        robot.drive.followPath(finalApproach);
-//        robot.drive.waitForPathFollower();
-//
-//        ultrasonicLocalizer.disableUltrasonicFeedback();
-//
-//        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
-//
-//        robot.drive.alignWithColumn();
-//        robot.drive.waitForColumnAlign();
-//
-//        robot.drive.retractSideSwivel();
-//        robot.dumpBed.dump();
-//        robot.sleep(1);
-//        robot.drive.followPath(new PathBuilder(pitToCrypto.end())
-//                .forward(6)
-//                .build());
-//        robot.drive.waitForPathFollower();
-//        robot.dumpBed.retract();
-//        robot.sleep(0.5);
+        robot.drive.followPath(cryptoToPit);
+        robot.sleep(0.2 * cryptoToPit.duration());
+        robot.dumpBed.retract();
+        robot.intake.setIntakePower(1);
+        robot.drive.waitForPathFollower();
+
+        robot.drive.followPath(pitToCrypto);
+        robot.sleep(0.5 * pitToCrypto.duration());
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+//        robot.intake.setIntakePower(-1);
+        robot.intake.setIntakePower(0);
+        robot.drive.waitForPathFollower();
+
+        ultrasonicLocalizer.setTarget(ultrasonicTarget);
+        ultrasonicLocalizer.enableUltrasonicFeedback();
+
+        robot.drive.extendSideSwivel();
+        robot.drive.followPath(finalApproach);
+        robot.drive.waitForPathFollower();
+
+        ultrasonicLocalizer.disableUltrasonicFeedback();
+
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
+
+        robot.drive.alignWithColumn();
+        robot.drive.waitForColumnAlign();
+
+        robot.drive.retractSideSwivel();
+        robot.dumpBed.dump();
+        robot.sleep(1);
+        robot.drive.followPath(new PathBuilder(finalApproach.end())
+                .forward(6)
+                .build());
+        robot.drive.waitForPathFollower();
+        robot.dumpBed.retract();
+        robot.sleep(0.5);
 
         telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
         telemetry.update();

@@ -27,6 +27,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -51,20 +52,20 @@ import java.util.Collections;
 
 @Config
 public class MecanumDrive extends Subsystem {
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 48.0, 72.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 6.0, 6.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 60.0, 90.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 6.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.02, 0, 0, 0.237, 0.055);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0182, 0.004);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0185, 0.004);
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.02, 0, 0, 0.237, 0.07);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0184, 0.004);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0189, 0.008);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
-    public static double COLUMN_ALIGN_TARGET_DISTANCE = 5.5;
+    public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
     public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
 
-    public static double SIDE_SWIVEL_EXTEND = 0.63;
-    public static double SIDE_SWIVEL_RETRACT = 0.1;
+    public static double SIDE_SWIVEL_EXTEND = 0.5;
+    public static double SIDE_SWIVEL_RETRACT = 0;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 
@@ -198,6 +199,7 @@ public class MecanumDrive extends Subsystem {
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
+        columnAlignController.setOutputBounds(-0.2, 0.2);
 
         sideDistanceSmoother = new ExponentialSmoother(SIDE_DISTANCE_SMOOTHING_COEFF);
 
@@ -513,10 +515,7 @@ public class MecanumDrive extends Subsystem {
                 break;
             case COLUMN_ALIGN:
                 double rawSideDistance = getSideDistance(DistanceUnit.INCH);
-
-                if (Double.isNaN(rawSideDistance)) {
-                    rawSideDistance = 12;
-                }
+                rawSideDistance = Double.isNaN(rawSideDistance) ? 10 : Range.clip(rawSideDistance, -10, 10);
 
                 double sideDistance = sideDistanceSmoother.update(rawSideDistance);
                 double distanceError = columnAlignController.getError(sideDistance);

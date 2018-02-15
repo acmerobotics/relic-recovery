@@ -40,6 +40,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
     }
 
     public void enableUltrasonicFeedback() {
+        ultrasonicSmoother.reset();
         useUltrasonicFeedback = true;
     }
 

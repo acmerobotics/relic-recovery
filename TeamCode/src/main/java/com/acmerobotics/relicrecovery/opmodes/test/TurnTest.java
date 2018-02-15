@@ -5,7 +5,7 @@ import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 @Autonomous
-public class MoveTest extends AutoOpMode {
+public class TurnTest extends AutoOpMode {
     @Override
     protected void setup() {
 
@@ -14,11 +14,11 @@ public class MoveTest extends AutoOpMode {
     @Override
     protected void run() {
         robot.drive.followPath(new PathBuilder(robot.drive.getEstimatedPose())
-                .forward(48)
+                .turn(Math.PI / 2)
                 .build());
         robot.drive.waitForPathFollower();
 
-        telemetry.addData("estimatedPose", robot.drive.getEstimatedPose());
+        telemetry.addData("heading", robot.drive.getHeading());
         telemetry.update();
 
         while (opModeIsActive());

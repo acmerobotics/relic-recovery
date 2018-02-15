@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
 public class JewelSlapper extends Subsystem {
     public static double ARM_UP_POSITION = 0;
-    public static double ARM_HALFWAY_POSITION = 0.54;
+    public static double ARM_HALFWAY_POSITION = 0.4;
     public static double ARM_DOWN_POSITION = 0.63;
 
     public static double SLAPPER_LEFT_POSITION = 0;

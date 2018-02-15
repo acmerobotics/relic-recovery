@@ -17,12 +17,9 @@ import java.util.Map;
 @Config
 public class AutoPaths {
     /** used to artificially adjust the balancing stone location. */
-    public static double STONE_CORRECTION = 0.5; // in
+    public static double STONE_CORRECTION = 0; // in
 
     public static double CRYPTO_COL_WIDTH = 7.5; // in
-
-    public static Vector2d ORTHOGONAL_SCORING_OFFSET = new Vector2d(16, 0);
-    public static Vector2d DIAGONAL_SCORING_OFFSET = new Vector2d(14, 8);
 
     public static final Map<RelicRecoveryVuMark, Integer> VUMARK_MAP;
 
