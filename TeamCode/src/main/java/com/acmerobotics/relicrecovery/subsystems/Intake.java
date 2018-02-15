@@ -1,14 +1,13 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-import java.util.LinkedHashMap;
 
 @Config
 public class Intake extends Subsystem {
@@ -26,21 +25,24 @@ public class Intake extends Subsystem {
 
     private LynxI2cColorRangeSensor frontColorDistance, rearColorDistance;
 
-    public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
-            "intakeHasFrontGlyph",
-            "intakeHasRearGlyph",
-            "intakeGlyphCount"
-    };
+    private TelemetryEx telemetry;
+    private TelemetryData telemetryData;
 
-    private Telemetry telemetry;
-    private LinkedHashMap<String, Object> telemetryMap;
+    public class TelemetryData {
+        public Mode intakeMode;
+        public double leftIntakePower;
+        public double rightIntakePower;
+
+        public double intakeFrontDistance;
+        public double intakeRearDistance;
+        public boolean intakeHasFrontGlyph;
+        public boolean intakeHasRearGlyph;
+        public int intakeGlyphCount;
+    }
 
     public Intake(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = telemetry;
-        telemetryMap = new LinkedHashMap<>();
-        for (String key : CONDITIONAL_TELEMETRY_KEYS) {
-            telemetryMap.put(key, 0);
-        }
+        this.telemetry = new TelemetryEx(telemetry);
+        this.telemetryData = new TelemetryData();
 
         leftIntake = map.dcMotor.get("intakeLeft");
         rightIntake = map.dcMotor.get("intakeRight");
@@ -65,9 +67,9 @@ public class Intake extends Subsystem {
 
     @Override
     public void update() {
-        telemetry.addData("intakeMode", mode);
-        telemetry.addData("leftIntakePower", leftIntakePower);
-        telemetry.addData("rightIntakePower", rightIntakePower);
+        telemetryData.intakeMode = mode;
+        telemetryData.leftIntakePower = leftIntakePower;
+        telemetryData.rightIntakePower = rightIntakePower;
 
         switch (mode) {
             case AUTO:
@@ -81,18 +83,18 @@ public class Intake extends Subsystem {
                 boolean hasRearGlyph = rearDistance <= GLYPH_PRESENCE_THRESHOLD;
                 int glyphCount = (hasFrontGlyph ? 1 : 0) + (hasRearGlyph ? 1 : 0);
 
-                telemetry.addData("intakeFrontDistance", frontDistance);
-                telemetry.addData("intakeRearDistance", rearDistance);
-                telemetry.addData("intakeHasFrontGlyph", hasFrontGlyph);
-                telemetry.addData("intakeHasRearGlyph", hasRearGlyph);
-                telemetry.addData("intakeGlyphCount", glyphCount);
+                telemetryData.intakeFrontDistance = frontDistance;
+                telemetryData.intakeRearDistance = rearDistance;
+                telemetryData.intakeHasFrontGlyph = hasFrontGlyph;
+                telemetryData.intakeHasRearGlyph = hasRearGlyph;
+                telemetryData.intakeGlyphCount = glyphCount;
 
-//                if (glyphCount < 2) {
-//                    leftIntakePower = 1;
-//                    rightIntakePower = 1;
-//                } else {
-//                    setIntakePower(-1, -1);
-//                }
+                if (glyphCount < 2) {
+                    leftIntakePower = 1;
+                    rightIntakePower = 1;
+                } else {
+                    setIntakePower(-1, -1);
+                }
 
                 break;
             case MANUAL:
@@ -101,5 +103,7 @@ public class Intake extends Subsystem {
 
         leftIntake.setPower(leftIntakePower);
         rightIntake.setPower(rightIntakePower);
+
+        telemetry.addDataObject(telemetryData);
     }
 }
