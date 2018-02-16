@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
+    public static final double DEADZONE = 0.06;
+    
     private StickyGamepad stickyGamepad1, stickyGamepad2;
 
     private Robot robot;
@@ -32,6 +34,16 @@ public class MainTeleOp extends OpMode {
     public void loop() {
         stickyGamepad1.update();
         stickyGamepad2.update();
+        
+        if (Math.abs(gamepad1.left_stick_x) < DEADZONE) gamepad1.left_stick_x = 0;
+        if (Math.abs(gamepad1.left_stick_y) < DEADZONE) gamepad1.left_stick_y = 0;
+        if (Math.abs(gamepad1.right_stick_x) < DEADZONE) gamepad1.right_stick_x = 0;
+        if (Math.abs(gamepad1.right_stick_y) < DEADZONE) gamepad1.right_stick_y = 0;
+        
+        if (Math.abs(gamepad2.left_stick_x) < DEADZONE) gamepad2.left_stick_x = 0;
+        if (Math.abs(gamepad2.left_stick_y) < DEADZONE) gamepad2.left_stick_y = 0;
+        if (Math.abs(gamepad2.right_stick_x) < DEADZONE) gamepad2.right_stick_x = 0;
+        if (Math.abs(gamepad2.right_stick_y) < DEADZONE) gamepad2.right_stick_y = 0;
 
         // drive
         if (stickyGamepad1.b) {
