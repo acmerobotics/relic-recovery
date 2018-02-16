@@ -10,6 +10,7 @@ import com.acmerobotics.relicrecovery.motion.PIDFController;
 
 @Config
 public class PathFollower {
+    public static double NOMINAL_POWER = 0;
 
     private PIDFController headingController, axialController;
     private PIDFController lateralController;
@@ -96,7 +97,7 @@ public class PathFollower {
      * Update the drive controls
      * @param estimatedPose current robot pose
      * @param timestamp current time in seconds
-     * @return true if the path is finished
+     * @return the desired velocity
      */
     public Pose2d update(Pose2d estimatedPose, double timestamp) {
         double time = timestamp - pathStartTimestamp;
@@ -133,6 +134,18 @@ public class PathFollower {
         MotionState lateralState = new MotionState(pose.y(), robotVelocity.y(), robotAcceleration.y(), 0, 0);
         lateralController.setSetpoint(lateralState);
         lateralUpdate = lateralController.update(lateralError, time);
+
+        if (Math.abs(axialUpdate) < NOMINAL_POWER) {
+            axialUpdate = 0;
+        }
+
+        if (Math.abs(lateralUpdate) < NOMINAL_POWER) {
+            lateralUpdate = 0;
+        }
+
+        if (Math.abs(headingUpdate) < NOMINAL_POWER) {
+            headingUpdate = 0;
+        }
 
         return new Pose2d(axialUpdate, lateralUpdate, headingUpdate);
     }
