@@ -91,21 +91,21 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         robot.jewelSlapper.lowerArmAndSlapper();
 
-        sleep(750);
+        robot.sleep(0.75);
 
         boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
 
         if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            sleep(500);
+            robot.sleep(0.5);
             robot.jewelSlapper.stowArmAndSlapper();
         } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            sleep(500);
+            robot.sleep(0.5);
             robot.jewelSlapper.stowArmAndSlapper();
         } else {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
-            sleep(500);
+            robot.sleep(0.5);
         }
 
         RelicRecoveryVuMark firstColumn = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
@@ -124,20 +124,17 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         Pose2d cryptoPose = stoneToCrypto.end();
         Path cryptoToPit = new PathBuilder(cryptoPose)
                 .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 48))
-                .turn(Math.PI / 4)
+                .turn(-Math.PI / 4)
                 .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 12))
                 .build();
 
         Pose2d pitPose = cryptoToPit.end();
         Path pitToCrypto = new PathBuilder(pitPose)
 //                .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 36))
-                .turn(-Math.PI / 4)
+                .turn(Math.PI / 4)
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36))
                 .build();
 
-        Path finalApproach = new PathBuilder(pitToCrypto.end())
-                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
-                .build();
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
         MecanumDrive.HEADING_PID.p /= 2;
@@ -183,6 +180,12 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         ultrasonicLocalizer.setTarget(ultrasonicTarget);
         ultrasonicLocalizer.enableUltrasonicFeedback();
+
+        robot.waitOneFullCycle();
+
+        Path finalApproach = new PathBuilder(robot.drive.getEstimatedPose())
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
+                .build();
 
         robot.drive.extendSideSwivel();
         robot.drive.followPath(finalApproach);
