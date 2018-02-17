@@ -37,13 +37,13 @@ public abstract class AutoOpMode extends LinearOpMode {
 
         streamServer = new CameraStreamServer();
 
-//        camera = new VuforiaCamera();
-//        jewelTracker = new FixedJewelTracker();
-//        vuMarkTracker = new VuforiaVuMarkTracker();
-//        camera.addTracker(jewelTracker);
-//        camera.addTracker(vuMarkTracker);
-//        camera.addTracker(streamServer.getTracker());
-//        camera.initialize();
+        camera = new VuforiaCamera();
+        jewelTracker = new FixedJewelTracker();
+        vuMarkTracker = new VuforiaVuMarkTracker();
+        camera.addTracker(jewelTracker);
+        camera.addTracker(vuMarkTracker);
+        camera.addTracker(streamServer.getTracker());
+        camera.initialize();
 
         String autoTransition = robot.config.getAutoTransition();
         if (!autoTransition.equals(OpModeConfiguration.NO_AUTO_TRANSITION)) {

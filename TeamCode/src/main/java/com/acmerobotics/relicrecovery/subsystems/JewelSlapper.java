@@ -8,14 +8,15 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class JewelSlapper extends Subsystem {
-    public static double ARM_UP_POSITION = 0;
-    public static double ARM_HALFWAY_POSITION = 0.4;
-    public static double ARM_DOWN_POSITION = 0.63;
+    public static double ARM_UP_POSITION = 0.15;
+    public static double ARM_HALFWAY_POSITION = 0.7;
+    public static double ARM_DOWN_POSITION = 0.85;
 
-    public static double SLAPPER_LEFT_POSITION = 0;
+    public static double SLAPPER_LEFT_POSITION = 0.7;
+    public static double SLAPPER_PARALLEL_POSITION = 0.49;
     public static double SLAPPER_CENTER_POSITION = 0.59;
-    public static double SLAPPER_RIGHT_POSITION = 1;
-    public static double SLAPPER_STOW_POSITION = 0.87;
+    public static double SLAPPER_RIGHT_POSITION = 0.25;
+    public static double SLAPPER_STOW_POSITION = 0.09;
 
     private Telemetry telemetry;
 
@@ -29,7 +30,8 @@ public class JewelSlapper extends Subsystem {
         LEFT,
         CENTER,
         RIGHT,
-        STOW
+        STOW,
+        PARALLEL
     }
 
     private Servo jewelArm, jewelSlapper;
@@ -77,7 +79,7 @@ public class JewelSlapper extends Subsystem {
                 jewelArm.setPosition(ARM_HALFWAY_POSITION);
                 break;
             case DOWN:
-                jewelSlapper.setPosition(ARM_DOWN_POSITION);
+                jewelArm.setPosition(ARM_DOWN_POSITION);
                 break;
         }
 
@@ -93,6 +95,9 @@ public class JewelSlapper extends Subsystem {
                 break;
             case STOW:
                 jewelSlapper.setPosition(SLAPPER_STOW_POSITION);
+                break;
+            case PARALLEL:
+                jewelSlapper.setPosition(SLAPPER_PARALLEL_POSITION);
                 break;
         }
     }

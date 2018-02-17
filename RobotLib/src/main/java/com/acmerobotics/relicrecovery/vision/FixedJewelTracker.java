@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.vision;
 import com.acmerobotics.library.dashboard.config.Config;
 
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -12,11 +13,11 @@ import org.opencv.imgproc.Imgproc;
 public class FixedJewelTracker extends Tracker {
     public static final String TAG = "FixedJewelTracker";
 
-    public static Point LEFT_CENTER = new Point(0, 0);
-    public static Point RIGHT_CENTER = new Point(0, 0);
+    public static Point LEFT_CENTER = new Point(715, 560);
+    public static Point RIGHT_CENTER = new Point(1080, 550);
 
-    public static int LEFT_RADIUS = 0;
-    public static int RIGHT_RADIUS = 0;
+    public static int LEFT_RADIUS = 130;
+    public static int RIGHT_RADIUS = 125;
 
     public static double COLOR_THRESHOLD = 0.7;
 
@@ -25,8 +26,6 @@ public class FixedJewelTracker extends Tracker {
 
     @Override
     public void init(VisionCamera camera) {
-        leftMask = new Mat();
-        rightMask = new Mat();
         left = new Mat();
         right = new Mat();
     }
@@ -34,6 +33,11 @@ public class FixedJewelTracker extends Tracker {
     @Override
     public synchronized void processFrame(Mat frame, double timestamp) {
         int imageWidth = frame.width(), imageHeight = frame.height();
+
+        if (leftMask == null) {
+            leftMask = new Mat(imageHeight, imageWidth, CvType.CV_8UC3);
+            rightMask = new Mat(imageHeight, imageWidth, CvType.CV_8UC3);
+        }
 
         leftMask.setTo(new Scalar(0, 0, 0));
         rightMask.setTo(new Scalar(0, 0, 0));

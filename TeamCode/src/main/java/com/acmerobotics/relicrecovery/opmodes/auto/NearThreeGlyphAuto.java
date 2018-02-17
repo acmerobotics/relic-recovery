@@ -16,7 +16,9 @@ import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
+import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -83,7 +85,30 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         int yMultiplier = crypto.getAllianceColor() == AllianceColor.BLUE ? -1 : 1;
 
         // jewel logic here
-        RelicRecoveryVuMark firstColumn = VUMARK;
+        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
+        JewelPosition jewelPosition = jewelTracker.getJewelPosition();
+        jewelTracker.disable();
+
+        robot.jewelSlapper.lowerArmAndSlapper();
+
+        sleep(750);
+
+        boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
+
+        if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
+            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
+            sleep(500);
+            robot.jewelSlapper.stowArmAndSlapper();
+        } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
+            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
+            sleep(500);
+            robot.jewelSlapper.stowArmAndSlapper();
+        } else {
+            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
+            sleep(500);
+        }
+
+        RelicRecoveryVuMark firstColumn = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
         RelicRecoveryVuMark secondColumn = COLUMN_TRANSITION.get(firstColumn);
 
         Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(stone);
@@ -115,15 +140,19 @@ public class NearThreeGlyphAuto extends AutoOpMode {
                 .build();
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
+        MecanumDrive.HEADING_PID.p /= 2;
         robot.drive.setEstimatedPose(stoneToCrypto.start());
         robot.drive.extendSideSwivel();
         robot.drive.followPath(stoneToCrypto);
+        robot.sleep(0.5);
+        robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
+        MecanumDrive.HEADING_PID.p *= 2;
 
-        robot.drive.alignWithColumn();
-        robot.drive.waitForColumnAlign();
-
-        robot.drive.setEstimatedPosition(stoneToCrypto.end().pos());
+//        robot.drive.alignWithColumn();
+//        robot.drive.waitForColumnAlign();
+//
+//        robot.drive.setEstimatedPosition(stoneToCrypto.end().pos());
 
         robot.dumpBed.dump();
         robot.sleep(1);
