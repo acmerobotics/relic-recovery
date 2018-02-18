@@ -30,6 +30,8 @@ import java.util.Map;
 @Config
 @Autonomous(name = "3 Glyph Auto (Near)")
 public class NearThreeGlyphAuto extends AutoOpMode {
+    public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.LEFT;
+
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
     static {
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.LEFT, RelicRecoveryVuMark.CENTER);
@@ -83,7 +85,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         int yMultiplier = crypto.getAllianceColor() == AllianceColor.BLUE ? -1 : 1;
 
         // jewel logic here
-        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = VUMARK; // vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
@@ -115,34 +117,33 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         Path stoneToCrypto = new PathBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
-                .turn(-Math.PI / 2 * yMultiplier)
+                .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
                 .build();
 
         Pose2d cryptoPose = stoneToCrypto.end();
         Path cryptoToPit = new PathBuilder(cryptoPose)
                 .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 48))
-                .turn(-Math.PI / 4)
+                .turn(yMultiplier * Math.PI / 4)
                 .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 12))
                 .build();
 
         Pose2d pitPose = cryptoToPit.end();
         Path pitToCrypto = new PathBuilder(pitPose)
-//                .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 36))
-                .turn(Math.PI / 4)
+                .turn(yMultiplier * -Math.PI / 4)
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36))
                 .build();
 
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
-        MecanumDrive.HEADING_PID.p /= 2;
+        double headingP = MecanumDrive.HEADING_PID.p;
+        MecanumDrive.HEADING_PID.p = 0;
         robot.drive.setEstimatedPose(stoneToCrypto.start());
-        robot.drive.extendSideSwivel();
         robot.drive.followPath(stoneToCrypto);
         robot.sleep(0.5);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
-        MecanumDrive.HEADING_PID.p *= 2;
+        MecanumDrive.HEADING_PID.p = headingP;
 
 //        robot.drive.alignWithColumn();
 //        robot.drive.waitForColumnAlign();

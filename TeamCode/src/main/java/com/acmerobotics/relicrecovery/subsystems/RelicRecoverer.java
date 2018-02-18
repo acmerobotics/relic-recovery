@@ -117,6 +117,10 @@ public class RelicRecoverer extends Subsystem {
         fingerClosed = false;
     }
 
+    public ArmMode getArmMode() {
+        return armMode;
+    }
+
     @Override
     public void update() {
         telemetryMap.put("relicWristPosition", wristPosition);

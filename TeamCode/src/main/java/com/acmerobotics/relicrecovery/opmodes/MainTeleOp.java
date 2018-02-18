@@ -9,8 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "TeleOp", group = "teleop")
 public class MainTeleOp extends OpMode {
-    public static final double DEADZONE = 0.06;
-    
     private StickyGamepad stickyGamepad1, stickyGamepad2;
 
     private Robot robot;
@@ -34,16 +32,6 @@ public class MainTeleOp extends OpMode {
     public void loop() {
         stickyGamepad1.update();
         stickyGamepad2.update();
-        
-        if (Math.abs(gamepad1.left_stick_x) < DEADZONE) gamepad1.left_stick_x = 0;
-        if (Math.abs(gamepad1.left_stick_y) < DEADZONE) gamepad1.left_stick_y = 0;
-        if (Math.abs(gamepad1.right_stick_x) < DEADZONE) gamepad1.right_stick_x = 0;
-        if (Math.abs(gamepad1.right_stick_y) < DEADZONE) gamepad1.right_stick_y = 0;
-        
-        if (Math.abs(gamepad2.left_stick_x) < DEADZONE) gamepad2.left_stick_x = 0;
-        if (Math.abs(gamepad2.left_stick_y) < DEADZONE) gamepad2.left_stick_y = 0;
-        if (Math.abs(gamepad2.right_stick_x) < DEADZONE) gamepad2.right_stick_x = 0;
-        if (Math.abs(gamepad2.right_stick_y) < DEADZONE) gamepad2.right_stick_y = 0;
 
         // drive
         if (stickyGamepad1.b) {
@@ -115,12 +103,12 @@ public class MainTeleOp extends OpMode {
                 robot.relicRecoverer.closeFinger();
             }
 
-            if (gamepad2.left_stick_y != 0) {
-                robot.relicRecoverer.setArmPower(-gamepad2.left_stick_y);
-            } else if (stickyGamepad2.x) {
+            if (stickyGamepad2.x) {
                 robot.relicRecoverer.setArmPosition(RelicRecoverer.MAX_EXTENSION_DISTANCE);
             } else if (stickyGamepad2.a) {
                 robot.relicRecoverer.setArmPosition(0);
+            } else if (gamepad2.left_stick_y != 0 || robot.relicRecoverer.getArmMode() == RelicRecoverer.ArmMode.MANUAL) {
+                robot.relicRecoverer.setArmPower(-gamepad2.left_stick_y);
             }
 
             // intake

@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@Autonomous(name = "3 Glyph Auto (Near)")
+@Autonomous(name = "3 Glyph Auto (Far)")
 public class FarThreeGlyphAuto extends AutoOpMode {
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
     static {
@@ -116,7 +116,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(-48, stonePose.y()))
                 .turn(robot.config.getAllianceColor() == AllianceColor.BLUE ? Math.PI : 0)
                 .lineTo(new Vector2d(-48, firstColumnPosition.y()))
-                .lineTo(new Vector2d(-56, firstColumnPosition.y()))
+                .lineTo(new Vector2d(-57, firstColumnPosition.y()))
                 .build();
 
         Pose2d cryptoPose = stoneToCrypto.end();
@@ -134,14 +134,14 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
-        MecanumDrive.HEADING_PID.p /= 2;
+        double headingP = MecanumDrive.HEADING_PID.p;
+        MecanumDrive.HEADING_PID.p = 0;
         robot.drive.setEstimatedPose(stoneToCrypto.start());
-        robot.drive.extendSideSwivel();
         robot.drive.followPath(stoneToCrypto);
         robot.sleep(0.5);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
-        MecanumDrive.HEADING_PID.p *= 2;
+        MecanumDrive.HEADING_PID.p = headingP;
 
 //        robot.drive.alignWithColumn();
 //        robot.drive.waitForColumnAlign();
@@ -173,7 +173,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
 
         Path finalApproach = new PathBuilder(robot.drive.getEstimatedPose())
-                .lineTo(new Vector2d(-56, secondColumnPosition.y()))
+                .lineTo(new Vector2d(-57, secondColumnPosition.y()))
                 .build();
 
         robot.drive.extendSideSwivel();

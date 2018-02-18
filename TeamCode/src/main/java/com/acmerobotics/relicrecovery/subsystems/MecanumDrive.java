@@ -55,7 +55,7 @@ public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 60.0, 90.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 6.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.02, 0, 0, 0.237, 0.07);
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
     public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0184, 0.004);
     public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0189, 0.008);
 
