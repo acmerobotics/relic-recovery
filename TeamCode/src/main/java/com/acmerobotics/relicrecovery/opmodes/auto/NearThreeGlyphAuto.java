@@ -16,7 +16,6 @@ import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -30,8 +29,6 @@ import java.util.Map;
 @Config
 @Autonomous(name = "3 Glyph Auto (Near)")
 public class NearThreeGlyphAuto extends AutoOpMode {
-    public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.LEFT;
-
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
     static {
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.LEFT, RelicRecoveryVuMark.CENTER);
@@ -85,7 +82,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         int yMultiplier = crypto.getAllianceColor() == AllianceColor.BLUE ? -1 : 1;
 
         // jewel logic here
-        RelicRecoveryVuMark vuMark = VUMARK; // vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
@@ -99,10 +96,12 @@ public class NearThreeGlyphAuto extends AutoOpMode {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
             robot.sleep(0.5);
             robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
         } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
             robot.sleep(0.5);
             robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
         } else {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
             robot.sleep(0.5);
@@ -118,7 +117,8 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         Path stoneToCrypto = new PathBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turn(-Math.PI / 2)
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
+                .waitFor(1)
                 .build();
 
         Pose2d cryptoPose = stoneToCrypto.end();
@@ -136,14 +136,11 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
-        double headingP = MecanumDrive.HEADING_PID.p;
-        MecanumDrive.HEADING_PID.p = 0;
         robot.drive.setEstimatedPose(stoneToCrypto.start());
         robot.drive.followPath(stoneToCrypto);
-        robot.sleep(0.5);
+        robot.sleep(0.75);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
-        MecanumDrive.HEADING_PID.p = headingP;
 
 //        robot.drive.alignWithColumn();
 //        robot.drive.waitForColumnAlign();
@@ -183,7 +180,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
 
         Path finalApproach = new PathBuilder(robot.drive.getEstimatedPose())
-                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 57))
                 .build();
 
         robot.drive.extendSideSwivel();
@@ -194,8 +191,10 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
 
+        robot.drive.enableHeadingCorrection(yMultiplier * -Math.PI / 2);
         robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
+        robot.drive.disableHeadingCorrection();
 
         robot.drive.setEstimatedPosition(finalApproach.end().pos());
 
@@ -209,9 +208,9 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.dumpBed.retract();
         robot.sleep(0.5);
 
-        telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
-        telemetry.update();
-
-        while (opModeIsActive());
+//        telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
+//        telemetry.update();
+//
+//        while (opModeIsActive());
     }
 }

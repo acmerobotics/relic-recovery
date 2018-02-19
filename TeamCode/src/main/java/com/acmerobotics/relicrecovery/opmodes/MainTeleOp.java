@@ -26,6 +26,7 @@ public class MainTeleOp extends OpMode {
         stickyGamepad2 = new StickyGamepad(gamepad2);
 
         telemetry.setMsTransmissionInterval(50);
+        telemetry.addLine("Ready");
     }
 
     @Override

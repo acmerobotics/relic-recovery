@@ -96,10 +96,12 @@ public class FarThreeGlyphAuto extends AutoOpMode {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
             robot.sleep(0.5);
             robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
         } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
             robot.sleep(0.5);
             robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
         } else {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
             robot.sleep(0.5);

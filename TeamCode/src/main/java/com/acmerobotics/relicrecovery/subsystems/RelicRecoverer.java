@@ -22,8 +22,8 @@ public class RelicRecoverer extends Subsystem {
     public static double WRIST_UP_POSITION = 1;
     public static double WRIST_DOWN_POSITION = 0.5;
 
-    public static double FINGER_CLOSE_POSITION = 0.61;
-    public static double FINGER_OPEN_POSITION = 0.35;
+    public static double FINGER_CLOSE_POSITION = 0.9;
+    public static double FINGER_OPEN_POSITION = 0.6;
 
     public static double ARM_PULLEY_RADIUS = 1.367; // in
     public static double MAX_EXTENSION_DISTANCE = 38;

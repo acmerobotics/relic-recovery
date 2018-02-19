@@ -17,7 +17,7 @@ import java.util.Map;
 @Config
 public class AutoPaths {
     /** used to artificially adjust the balancing stone location. */
-    public static double STONE_CORRECTION = 0; // in
+    public static double STONE_CORRECTION = 0.75; // in
 
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
