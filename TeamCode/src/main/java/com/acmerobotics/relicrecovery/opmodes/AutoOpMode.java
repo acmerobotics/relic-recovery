@@ -4,9 +4,7 @@ import com.acmerobotics.library.cameraoverlay.CameraStreamServer;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.MatchType;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
-import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
@@ -17,7 +15,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 public abstract class AutoOpMode extends LinearOpMode {
-    public static final double PICTOGRAPH_READ_TIMEOUT = 5;
+    public static final double PICTOGRAPH_READ_TIMEOUT = 5; // seconds
+    public static final long POLL_INTERVAL = 5; // ms
 
     protected Robot robot;
 
@@ -56,6 +55,9 @@ public abstract class AutoOpMode extends LinearOpMode {
         displayInitTelemetry();
 
         waitForStart();
+
+        telemetry.clearAll();
+        telemetry.update();
 
         streamServer.stop();
 
@@ -115,25 +117,5 @@ public abstract class AutoOpMode extends LinearOpMode {
         sleep(1500);
 
         return vuMark;
-    }
-
-    protected void followPathSync(Path path) {
-        robot.drive.followPath(path);
-        waitForPathFollower();
-    }
-
-    protected void waitForPathFollower() {
-        while (opModeIsActive() && robot.drive.isFollowingPath()) {
-            sleep(5);
-        }
-    }
-
-    protected void alignWithColumnSync() {
-//        robot.drive.enableHeadingCorrection();
-        robot.drive.alignWithColumn();
-        while (opModeIsActive() && robot.drive.getMode() == MecanumDrive.Mode.COLUMN_ALIGN) {
-            sleep(5);
-        }
-//        robot.drive.disableHeadingCorrection();
     }
 }

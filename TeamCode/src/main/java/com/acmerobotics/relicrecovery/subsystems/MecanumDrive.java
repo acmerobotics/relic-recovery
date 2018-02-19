@@ -3,11 +3,11 @@ package com.acmerobotics.relicrecovery.subsystems;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
-import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
@@ -15,6 +15,7 @@ import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
+import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
@@ -25,6 +26,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -32,8 +35,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Wheel layout (top view):
@@ -48,27 +49,28 @@ import java.util.Map;
  *
  * the paper: http://www.chiefdelphi.com/media/papers/download/2722 (see doc/Mecanum_Kinematic_Analysis_100531.pdf)
  */
+
 @Config
 public class MecanumDrive extends Subsystem {
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(48.0, 96.0, 128.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(4.0, 8.0, 16.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 60.0, 90.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 6.0, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-1, 0, 0, 0.232, 0.04);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0182, 0.004);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0185, 0.004);
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0184, 0.004);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0189, 0.008);
 
-    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(0.06, 0, 0.04);
-    public static double COLUMN_ALIGN_TARGET_DISTANCE = 3.5;
+    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
+    public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
     public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
 
-    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
+    public static double SIDE_SWIVEL_EXTEND = 0.08;
+    public static double SIDE_SWIVEL_RETRACT = 0.59;
 
-    public static double RAMP_MAX_ACCEL = 25;
+    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 
     public enum Mode {
         OPEN_LOOP,
-        OPEN_LOOP_RAMP,
         FOLLOW_PATH,
         COLUMN_ALIGN
     }
@@ -95,11 +97,12 @@ public class MecanumDrive extends Subsystem {
      */
     private int[] encoderOffsets;
 
-    private double lastTimestamp;
-
     private BNO055IMU imu;
 
     private MaxSonarEZ1UltrasonicSensor ultrasonic;
+
+    private Servo sideSwivel;
+    private boolean sideSwivelExtended;
 
     private LynxI2cColorRangeSensor sideColorDistance;
     private ExponentialSmoother sideDistanceSmoother;
@@ -121,40 +124,49 @@ public class MecanumDrive extends Subsystem {
 
     private Mode mode = Mode.OPEN_LOOP;
 
-    private double[] powers, targetPowers;
+    private double[] powers;
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
-    public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
-            "pathAxialError",
-            "pathAxialUpdate",
-            "pathLateralError",
-            "pathLateralUpdate",
-            "pathHeadingError",
-            "pathHeadingUpdate",
-            "maintainHeadingError",
-            "maintainHeadingUpdate",
-            "driveHeading",
-            MOTOR_NAMES[0] + "Rotation",
-            MOTOR_NAMES[1] + "Rotation",
-            MOTOR_NAMES[2] + "Rotation",
-            MOTOR_NAMES[3] + "Rotation",
-            "sideDistance",
-            "columnAlignError",
-            "columnAlignUpdate"
-    };
-
-    private Telemetry telemetry;
-    private LinkedHashMap<String, Object> telemetryMap;
-
     private Canvas fieldOverlay;
 
+    private TelemetryEx telemetry;
+    private TelemetryData telemetryData;
+
+    public class TelemetryData {
+        public Mode driveMode;
+
+        public double frontLeftPower;
+        public double rearLeftPower;
+        public double rearRightPower;
+        public double frontRightPower;
+
+        public boolean positionEstimationEnabled;
+        public double estimatedX;
+        public double estimatedY;
+        public double estimatedHeading;
+
+        public boolean maintainHeading;
+        public double maintainHeadingError;
+        public double maintainHeadingUpdate;
+
+        public double pathAxialError;
+        public double pathAxialUpdate;
+        public double pathLateralError;
+        public double pathLateralUpdate;
+        public double pathHeadingError;
+        public double pathHeadingUpdate;
+
+        public double sideDistance;
+        public double columnAlignError;
+        public double columnAlignUpdate;
+
+        public boolean sideSwivelExtended;
+    }
+
     public MecanumDrive(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = telemetry;
-        telemetryMap = new LinkedHashMap<>();
-        for (String key : CONDITIONAL_TELEMETRY_KEYS) {
-            telemetryMap.put(key, 0);
-        }
+        this.telemetry = new TelemetryEx(telemetry);
+        this.telemetryData = new TelemetryData();
 
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
@@ -167,7 +179,6 @@ public class MecanumDrive extends Subsystem {
         sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
 
         powers = new double[4];
-        targetPowers = new double[4];
         encoderOffsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
@@ -178,16 +189,22 @@ public class MecanumDrive extends Subsystem {
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
 
+        sideSwivel = map.servo.get("sideSwivel");
+
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
 
         pathFollower = new PathFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
+        maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
+
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
+        columnAlignController.setOutputBounds(-0.2, 0.2);
 
         sideDistanceSmoother = new ExponentialSmoother(SIDE_DISTANCE_SMOOTHING_COEFF);
 
         resetEncoders();
+        retractSideSwivel();
     }
 
     public Localizer getLocalizer() {
@@ -197,6 +214,14 @@ public class MecanumDrive extends Subsystem {
     public void setLocalizer(Localizer localizer) {
         this.localizer = localizer;
         localizer.setEstimatedPosition(estimatedPose.pos());
+    }
+
+    public void extendSideSwivel() {
+        sideSwivelExtended = true;
+    }
+
+    public void retractSideSwivel() {
+        sideSwivelExtended = false;
     }
 
     public PathFollower getPathFollower() {
@@ -216,7 +241,12 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void enableHeadingCorrection() {
+        enableHeadingCorrection(getHeading());
+    }
+
+    public void enableHeadingCorrection(double desiredHeading) {
         maintainHeading = true;
+        this.maintainHeadingController.setSetpoint(desiredHeading);
         this.maintainHeadingController.reset();
     }
 
@@ -244,14 +274,14 @@ public class MecanumDrive extends Subsystem {
         headingOffset = -getRawHeading() + heading;
     }
 
-    public void setVelocity(Vector2d vel, double omega, boolean ramp) {
-        this.targetVel = vel;
-        this.targetOmega = omega;
-        setMode(ramp ? Mode.OPEN_LOOP_RAMP : Mode.OPEN_LOOP);
+    public void setVelocity(Vector2d vel, double omega) {
+        internalSetVelocity(vel, omega);
+        mode = Mode.OPEN_LOOP;
     }
 
-    public void setVelocity(Vector2d vel, double omega) {
-        setVelocity(vel, omega, false);
+    private void internalSetVelocity(Vector2d vel, double omega) {
+        this.targetVel = vel;
+        this.targetOmega = omega;
     }
 
     /**
@@ -264,22 +294,19 @@ public class MecanumDrive extends Subsystem {
      *       [1,  1,  K]
      *
      * [W] = [V][R]
-     *
-     * @param vel
-     * @param omega
      */
     // removed K's to circumvent scaling issues
-    private void internalSetVelocity(Vector2d vel, double omega) {
-        targetPowers[0] = vel.x() - vel.y() - omega;
-        targetPowers[1] = vel.x() + vel.y() - omega;
-        targetPowers[2] = vel.x() - vel.y() + omega;
-        targetPowers[3] = vel.x() + vel.y() + omega;
+    private void updatePowers() {
+        powers[0] = targetVel.x() - targetVel.y() - targetOmega;
+        powers[1] = targetVel.x() + targetVel.y() - targetOmega;
+        powers[2] = targetVel.x() - targetVel.y() + targetOmega;
+        powers[3] = targetVel.x() + targetVel.y() + targetOmega;
 
-        double max = Collections.max(Arrays.asList(1.0, Math.abs(targetPowers[0]),
-                Math.abs(targetPowers[1]), Math.abs(targetPowers[2]), Math.abs(targetPowers[3])));
+        double max = Collections.max(Arrays.asList(1.0, Math.abs(powers[0]),
+                Math.abs(powers[1]), Math.abs(powers[2]), Math.abs(powers[3])));
 
         for (int i = 0; i < 4; i++) {
-            targetPowers[i] /= max;
+            powers[i] /= max;
         }
     }
 
@@ -394,6 +421,16 @@ public class MecanumDrive extends Subsystem {
         return pathFollower.isFollowingPath();
     }
 
+    public void waitForPathFollower() {
+        while (!Thread.currentThread().isInterrupted() && mode == Mode.FOLLOW_PATH) {
+            try {
+                Thread.sleep(AutoOpMode.POLL_INTERVAL);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
     public Vector2d getEstimatedPosition() {
         return estimatedPose.pos();
     }
@@ -423,6 +460,16 @@ public class MecanumDrive extends Subsystem {
         setMode(Mode.COLUMN_ALIGN);
     }
 
+    public void waitForColumnAlign() {
+        while (!Thread.currentThread().isInterrupted() && mode == Mode.COLUMN_ALIGN) {
+            try {
+                Thread.sleep(AutoOpMode.POLL_INTERVAL);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
     public double getUltrasonicDistance(DistanceUnit unit) {
         return ultrasonic.getDistance(unit);
     }
@@ -432,70 +479,23 @@ public class MecanumDrive extends Subsystem {
     }
 
     public double getSideDistance(DistanceUnit unit) {
-        double sideDistance = sideColorDistance.getDistance(unit);
-        return Double.isNaN(sideDistance) ? unit.fromCm(20) : sideDistance;
+        return sideColorDistance.getDistance(unit);
     }
 
     public void update() {
         invalidateOrientation();
 
-        telemetryMap.put("driveMode", mode);
-        telemetryMap.put("positionEstimationEnabled", positionEstimationEnabled);
-        telemetryMap.put("maintainHeading", maintainHeading);
+        telemetryData.driveMode = mode;
+        telemetryData.positionEstimationEnabled = positionEstimationEnabled;
+        telemetryData.maintainHeading = maintainHeading;
 
         // position estimation
         if (positionEstimationEnabled) {
             estimatedPose = new Pose2d(localizer.update(), getHeading());
         }
 
-        // maintain heading
-        if (maintainHeading) {
-            double heading = getHeading();
-            double headingError = maintainHeadingController.getError(heading);
-            double headingUpdate = 0;
-            if (Math.abs(targetOmega) > 0) {
-                maintainHeadingController.setSetpoint(heading);
-                internalSetVelocity(targetVel, targetOmega);
-            } else {
-                headingUpdate = maintainHeadingController.update(headingError);
-                internalSetVelocity(targetVel, headingUpdate);
-            }
-
-            telemetryMap.put("maintainHeadingError", headingError);
-            telemetryMap.put("maintainHeadingUpdate", headingUpdate);
-        } else {
-            internalSetVelocity(targetVel, targetOmega);
-        }
-
         switch (mode) {
             case OPEN_LOOP:
-                powers = targetPowers;
-                break;
-            case OPEN_LOOP_RAMP:
-                double[] powerDeltas = new double[4];
-                double maxDesiredAbsPowerDelta = 0;
-                for (int i = 0; i < 4; i++) {
-                    powerDeltas[i] = (targetPowers[i] - powers[i]);
-                    double desiredAbsPowerDelta = Math.abs(powerDeltas[i]);
-                    if (desiredAbsPowerDelta > maxDesiredAbsPowerDelta) {
-                        maxDesiredAbsPowerDelta = desiredAbsPowerDelta;
-                    }
-                }
-
-                double timestamp = TimestampedData.getCurrentTime();
-                double dt = timestamp - lastTimestamp;
-                lastTimestamp = timestamp;
-
-                double maxAbsPowerDelta = RAMP_MAX_ACCEL * (dt / 1000.0);
-                double multiplier;
-                if (maxDesiredAbsPowerDelta > maxAbsPowerDelta) {
-                    multiplier = maxAbsPowerDelta / maxDesiredAbsPowerDelta;
-                } else {
-                    multiplier = 1;
-                }
-                for (int i = 0; i < 4; i++) {
-                    powers[i] += powerDeltas[i] * multiplier;
-                }
                 break;
             case FOLLOW_PATH:
                 if (pathFollower.isFollowingPath()) {
@@ -503,45 +503,73 @@ public class MecanumDrive extends Subsystem {
                     Pose2d update = pathFollower.update(estimatedPose);
                     internalSetVelocity(update.pos(), update.heading());
 
-                    telemetryMap.put("pathAxialError", pathFollower.getAxialError());
-                    telemetryMap.put("pathAxialUpdate", pathFollower.getAxialUpdate());
-                    telemetryMap.put("pathLateralError", pathFollower.getLateralError());
-                    telemetryMap.put("pathLateralUpdate", pathFollower.getLateralUpdate());
-                    telemetryMap.put("pathHeadingError", pathFollower.getHeadingError());
-                    telemetryMap.put("pathHeadingUpdate", pathFollower.getHeadingUpdate());
+                    telemetryData.pathAxialError = pathFollower.getAxialError();
+                    telemetryData.pathAxialUpdate = pathFollower.getAxialUpdate();
+                    telemetryData.pathLateralError = pathFollower.getLateralError();
+                    telemetryData.pathLateralUpdate = pathFollower.getLateralUpdate();
+                    telemetryData.pathHeadingError = pathFollower.getHeadingError();
+                    telemetryData.pathHeadingUpdate = pathFollower.getHeadingUpdate();
                 } else {
                     stop();
                 }
-                powers = targetPowers;
                 break;
             case COLUMN_ALIGN:
-                double sideDistance = sideDistanceSmoother.update(
-                        sideColorDistance.getDistance(DistanceUnit.INCH));
+                double rawSideDistance = getSideDistance(DistanceUnit.INCH);
+                rawSideDistance = Double.isNaN(rawSideDistance) ? 10 : Range.clip(rawSideDistance, -10, 10);
+
+                double sideDistance = sideDistanceSmoother.update(rawSideDistance);
                 double distanceError = columnAlignController.getError(sideDistance);
 
-                telemetryMap.put("sideDistance", sideDistance);
-                telemetryMap.put("columnAlignError", distanceError);
+                telemetryData.sideDistance = sideDistance;
+                telemetryData.columnAlignError = distanceError;
 
                 if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
                     double lateralUpdate = columnAlignController.update(distanceError);
                     internalSetVelocity(new Vector2d(0, lateralUpdate), 0);
 
-                    telemetryMap.put("columnAlignUpdate", lateralUpdate);
+                    telemetryData.columnAlignUpdate = lateralUpdate;
                 } else {
                     stop();
                 }
-                powers = targetPowers;
+
                 break;
         }
 
-        for (int i = 0; i < 4; i++) {
-            motors[i].setPower(powers[i]);
-            telemetryMap.put(MOTOR_NAMES[i] + "Power", powers[i]);
+        // maintain heading
+        if (maintainHeading) {
+            double heading = getHeading();
+            double headingError = maintainHeadingController.getError(heading);
+            double headingUpdate = maintainHeadingController.update(headingError);
+            internalSetVelocity(targetVel, headingUpdate);
+
+            telemetryData.maintainHeadingError = headingError;
+            telemetryData.maintainHeadingUpdate = headingUpdate;
+        } else {
+            internalSetVelocity(targetVel, targetOmega);
         }
 
-        telemetryMap.put("estimatedX", estimatedPose.x());
-        telemetryMap.put("estimatedY", estimatedPose.y());
-        telemetryMap.put("estimatedHeading", estimatedPose.heading());
+        updatePowers();
+
+        for (int i = 0; i < 4; i++) {
+            motors[i].setPower(powers[i]);
+        }
+
+        telemetryData.frontLeftPower = powers[0];
+        telemetryData.rearLeftPower = powers[1];
+        telemetryData.rearRightPower = powers[2];
+        telemetryData.frontRightPower = powers[3];
+
+        // side swivel
+        if (sideSwivelExtended) {
+            sideSwivel.setPosition(SIDE_SWIVEL_EXTEND);
+        } else {
+            sideSwivel.setPosition(SIDE_SWIVEL_RETRACT);
+        }
+        telemetryData.sideSwivelExtended = sideSwivelExtended;
+
+        telemetryData.estimatedX = estimatedPose.x();
+        telemetryData.estimatedY = estimatedPose.y();
+        telemetryData.estimatedHeading = estimatedPose.heading();
 
         if (pathFollower.getPath() != null) {
             fieldOverlay.setStroke("#4CAF50");
@@ -556,8 +584,6 @@ public class MecanumDrive extends Subsystem {
         fieldOverlay.setStroke("#3F51B5");
         DrawingUtil.drawMecanumRobot(fieldOverlay, estimatedPose);
 
-        for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
-            telemetry.addData(entry.getKey(), entry.getValue());
-        }
+        telemetry.addDataObject(telemetryData);
     }
 }

@@ -23,7 +23,7 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
     public static final String TAG = "VisionCamera";
 
     public static class Parameters {
-        @IdRes public int cameraMonitorViewId = 0x7f060024; // org.firstinspires.ftc.teamcode.R.id.cameraMonitorViewId
+        @IdRes public int cameraMonitorViewId = 0x7f060025;
         public VuforiaLocalizer.CameraDirection cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
     }
 

@@ -8,12 +8,13 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class ColumnAlignTest extends AutoOpMode {
     @Override
     protected void setup() {
-
+        robot.drive.extendSideSwivel();
     }
 
     @Override
     protected void run() {
-        alignWithColumnSync();
+        robot.drive.alignWithColumn();
+        robot.drive.waitForColumnAlign();
 
         sleep(500);
 

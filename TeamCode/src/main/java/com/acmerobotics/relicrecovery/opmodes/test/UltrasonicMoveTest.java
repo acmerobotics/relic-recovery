@@ -27,11 +27,10 @@ public class UltrasonicMoveTest extends AutoOpMode {
 
     @Override
     protected void run() {
-        followPathSync(new PathBuilder(new Pose2d(12, -24, Math.PI / 2))
+        robot.drive.followPath(new PathBuilder(new Pose2d(12, -24, Math.PI / 2))
                 .lineTo(new Vector2d(12, -54))
                 .build());
-
-        alignWithColumnSync();
+        robot.drive.waitForPathFollower();
 
         sleep(500);
 

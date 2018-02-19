@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
-    public static double MOUNTING_OFFSET = 1.5; // in
+    public static double MOUNTING_OFFSET = 0.5; // in, positive is towards the back
     public static double SMOOTHING_COEFF = 0.4;
 
     // all offsets are measured in reference to the wall
@@ -52,6 +52,8 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
     public Vector2d update() {
         Vector2d estimatedPosition = super.update();
 
+        ultrasonicDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
+
         if (useUltrasonicFeedback) {
             Cryptobox closestCryptobox = Cryptobox.NEAR_BLUE;
             double closestDistance = Double.POSITIVE_INFINITY;
@@ -78,7 +80,6 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                     targetOffset = 0;
             }
 
-            ultrasonicDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
             if (ultrasonicDistance > drive.getMinUltrasonicDistance(DistanceUnit.INCH)) {
                 switch (closestCryptobox) {
                     case NEAR_BLUE:
@@ -89,7 +90,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                         break;
                     case FAR_BLUE:
                     case FAR_RED:
-                        estimatedPosition = new Vector2d(-72 + EMPTY_COLUMN_OFFSET + targetOffset + MOUNTING_OFFSET, estimatedPosition.y());
+                        estimatedPosition = new Vector2d(-72 + targetOffset + ultrasonicDistance + MOUNTING_OFFSET, estimatedPosition.y());
                         break;
                 }
             }

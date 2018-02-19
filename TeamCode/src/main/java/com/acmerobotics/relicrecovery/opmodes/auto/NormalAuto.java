@@ -22,7 +22,8 @@ public class NormalAuto extends AutoOpMode {
         RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
 
         Path path = AutoPaths.makeNormalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
-        followPathSync(path);
+        robot.drive.followPath(path);
+        robot.drive.waitForPathFollower();
 
         robot.dumpBed.dump();
         sleep(1000);

@@ -52,6 +52,8 @@ public class AxialFFTuner extends LinearOpMode {
             double meanError = 0;
             for (int i = 0; i < TRIALS && opModeIsActive(); i++) {
                 meanError += testCoefficient(value);
+
+                sleep(500);
             }
             meanError /= TRIALS;
 

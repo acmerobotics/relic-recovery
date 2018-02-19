@@ -3,9 +3,11 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 import com.acmerobotics.relicrecovery.opmodes.StickyGamepad;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+@Disabled
 @TeleOp
 public class RelicTest extends OpMode {
     private Robot robot;
@@ -23,7 +25,7 @@ public class RelicTest extends OpMode {
     public void loop() {
         stickyGamepad1.update();
 
-        robot.relicRecoverer.setExtendPower(-gamepad1.left_stick_y);
+        robot.relicRecoverer.setArmPower(-gamepad1.left_stick_y);
 
         if (stickyGamepad1.dpad_up) {
             robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);

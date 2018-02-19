@@ -21,11 +21,12 @@ public class RandomMultiGlyphAuto extends AutoOpMode {
     protected void run() {
         robot.drive.setEstimatedPose(new Pose2d(48 + AutoPaths.STONE_CORRECTION, -48, Math.PI));
 
-        followPathSync(new PathBuilder(new Pose2d(48, -48, Math.PI))
+        robot.drive.followPath(new PathBuilder(new Pose2d(48, -48, Math.PI))
                 .lineTo(new Vector2d(12, -48))
                 .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(12, -12))
                 .build());
+        robot.drive.waitForPathFollower();
 
         while (opModeIsActive()) {
             int choice = (int) (3 * Math.random());
@@ -34,11 +35,13 @@ public class RandomMultiGlyphAuto extends AutoOpMode {
 
             sleep(1500);
 
-            followPathSync(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
+            robot.drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
+            robot.drive.waitForPathFollower();
 
             sleep(1500);
 
-            followPathSync(new PathBuilder(new Pose2d(v, Math.PI / 2)).lineTo(new Vector2d(12, -12)).build());
+            robot.drive.followPath(new PathBuilder(new Pose2d(v, Math.PI / 2)).lineTo(new Vector2d(12, -12)).build());
+            robot.drive.waitForPathFollower();
         }
     }
 }

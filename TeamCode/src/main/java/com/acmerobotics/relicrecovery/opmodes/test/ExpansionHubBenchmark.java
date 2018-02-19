@@ -31,33 +31,46 @@ public class ExpansionHubBenchmark extends LinearOpMode {
 
         waitForStart();
 
-        // IMU (unoptimized) test
-        BNO055IMU imu = hardwareMap.getAll(BNO055IMU.class).iterator().next();
-        imu.initialize(new BNO055IMU.Parameters());
-        telemetry.addLine("IMU (unoptimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
-        telemetry.update();
-        imu.close();
+        Iterator<BNO055IMU> imuIterator = hardwareMap.getAll(BNO055IMU.class).iterator();
+        if (imuIterator.hasNext()) {
+            // IMU (unoptimized) test
+            BNO055IMU imu = imuIterator.next();
+            imu.initialize(new BNO055IMU.Parameters());
+            telemetry.addLine("IMU (unoptimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
+            telemetry.update();
+            imu.close();
 
-        // IMU (optimized) test
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(module, 0);
-        imu.initialize(new BNO055IMU.Parameters());
-        telemetry.addLine("IMU (optimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
-        telemetry.update();
-        imu.close();
+            // IMU (optimized) test
+            imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(module, 0);
+            imu.initialize(new BNO055IMU.Parameters());
+            telemetry.addLine("IMU (optimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
+            telemetry.update();
+            imu.close();
+        } else {
+            telemetry.addLine("Skipping IMU test - IMU not found");
+            telemetry.update();
+        }
 
-        // Color (unoptimized test)
-        LynxI2cColorRangeSensor colorRangeSensor = hardwareMap.get(LynxI2cColorRangeSensor.class, "colorRange");
-        colorRangeSensor.initialize();
-        telemetry.addLine("Color (unoptimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
-        telemetry.update();
-        colorRangeSensor.close();
-        // Color (optimized test)
-        // TODO have this automatically detect which bus the color range sensor is plugged into
-        colorRangeSensor = LynxOptimizedI2cSensorFactory.createLynxI2cColorRangeSensor(module, 1);
-        colorRangeSensor.initialize();
-        telemetry.addLine("Color (optimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
-        telemetry.update();
-        colorRangeSensor.close();
+        Iterator<LynxI2cColorRangeSensor> colorRangeSensorIterator = hardwareMap.getAll(LynxI2cColorRangeSensor.class).iterator();
+        if (colorRangeSensorIterator.hasNext()) {
+            // Color (unoptimized test)
+            LynxI2cColorRangeSensor colorRangeSensor = colorRangeSensorIterator.next();
+            colorRangeSensor.initialize();
+            telemetry.addLine("Color (unoptimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
+            telemetry.update();
+            colorRangeSensor.close();
+
+            // Color (optimized test)
+            // TODO have this automatically detect which bus the color range sensor is plugged into
+            colorRangeSensor = LynxOptimizedI2cSensorFactory.createLynxI2cColorRangeSensor(module, 1);
+            colorRangeSensor.initialize();
+            telemetry.addLine("Color (optimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
+            telemetry.update();
+            colorRangeSensor.close();
+        } else {
+            telemetry.addLine("Skipping color range test - sensor not found");
+            telemetry.update();
+        }
 
         Iterator<DcMotor> dcMotorIterator = hardwareMap.getAll(DcMotor.class).iterator();
         if (dcMotorIterator.hasNext()) {

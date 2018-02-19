@@ -50,6 +50,11 @@ public class PathBuilder {
         return strafeLeft(-distance);
     }
 
+    public PathBuilder waitFor(double seconds) {
+        segments.add(new WaitSegment(currentPose, seconds));
+        return this;
+    }
+
     public Path build() {
         return new Path(segments);
     }
