@@ -41,13 +41,13 @@ public class ParametricMotionSegment implements PathMotionSegment {
     @Override
     public Pose2d getVelocity(double time) {
         MotionState motionState = profile.get(time);
-        return path.getVelocity(motionState.x).multiplied(motionState.v);
+        return path.getDerivative(motionState.x).multiplied(motionState.v);
     }
 
     @Override
     public Pose2d getAcceleration(double time) {
         MotionState motionState = profile.get(time);
-        return path.getAcceleration(motionState.x).multiplied(Math.pow(motionState.x, 2))
-                .added(path.getVelocity(motionState.x).multiplied(motionState.a));
+        return path.getSecondDerivative(motionState.x).multiplied(Math.pow(motionState.x, 2))
+                .added(path.getDerivative(motionState.x).multiplied(motionState.a));
     }
 }

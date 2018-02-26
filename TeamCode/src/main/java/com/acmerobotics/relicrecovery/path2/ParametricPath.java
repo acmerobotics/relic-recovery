@@ -7,6 +7,6 @@ public interface ParametricPath {
     Pose2d start();
     Pose2d end();
     Pose2d getPose(double displacement);
-    Pose2d getVelocity(double displacement);
-    Pose2d getAcceleration(double displacement);
+    Pose2d getDerivative(double displacement);
+    Pose2d getSecondDerivative(double displacement);
 }

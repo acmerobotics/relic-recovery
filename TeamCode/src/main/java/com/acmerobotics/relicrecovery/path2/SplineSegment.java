@@ -13,7 +13,7 @@ public class SplineSegment implements ParametricPath {
      */
     private double a, b, c, d, e;
     private double xOffset, yOffset, headingOffset, knotDistance;
-    private double length = 1;
+    private double length;
 
     public SplineSegment(Pose2d startPose, Pose2d endPose) {
         xOffset = startPose.x();
@@ -34,6 +34,11 @@ public class SplineSegment implements ParametricPath {
         computeLength();
     }
 
+    private double valueAt(double percentage) {
+        double x = knotDistance * percentage;
+        return (a*x + b) * (x*x*x*x) + c * (x*x*x)+ d * (x*x) + e * x;
+    }
+
     private double derivativeAt(double percentage) {
         double x = knotDistance * percentage;
         return (5*a*x + 4*b) * (x*x*x) + (3*c*x + 2*d) * x + e;
@@ -41,11 +46,25 @@ public class SplineSegment implements ParametricPath {
 
     private double secondDerivativeAt(double percentage) {
         double x = knotDistance * percentage;
-        return (20 * a * x + 12 * b) * (x*x) + 6 * c * x + 2 * d;
+        return (20*a*x + 12*b) * (x*x) + 6*c * x + 2*d;
+    }
+
+    private double thirdDerivativeAt(double percentage) {
+        double x = knotDistance * percentage;
+        return (60*a*x + 24*b) * x + 6*c;
     }
 
     private void computeLength() {
-
+        length = 0;
+        double lastIntegrand = Math.sqrt(1 + derivativeAt(0) * derivativeAt(0)) / ARC_LENGTH_SAMPLES;
+        for (int i = 1; i <= ARC_LENGTH_SAMPLES; i++) {
+            double percentage = (double) i / ARC_LENGTH_SAMPLES;
+            double dydt = derivativeAt(percentage);
+            double integrand = Math.sqrt(1 + dydt * dydt) / ARC_LENGTH_SAMPLES;
+            length += (integrand + lastIntegrand) / 2;
+            lastIntegrand = integrand;
+        }
+        length *= knotDistance;
     }
 
     @Override
@@ -67,7 +86,7 @@ public class SplineSegment implements ParametricPath {
     public Pose2d getPose(double displacement) {
         double percentage = displacement / length;
         double x = knotDistance * percentage;
-        double y = (a*x + b) * (x*x*x*x) + c * (x*x*x)+ d * (x*x) + e * x;
+        double y = valueAt(percentage);
 
         double cosHeadingOffset = Math.cos(headingOffset);
         double sinHeadingOffset = Math.sin(headingOffset);
@@ -82,12 +101,38 @@ public class SplineSegment implements ParametricPath {
     }
 
     @Override
-    public Pose2d getVelocity(double displacement) {
-        return null;
+    public Pose2d getDerivative(double displacement) {
+        double percentage = displacement / length;
+        double x = knotDistance / length;
+        double y = derivativeAt(percentage) / length;
+
+        double cosHeadingOffset = Math.cos(headingOffset);
+        double sinHeadingOffset = Math.sin(headingOffset);
+
+        double heading = Angle.norm(Math.atan(secondDerivativeAt(percentage) + headingOffset));
+
+        return new Pose2d(
+                x * cosHeadingOffset - y * sinHeadingOffset,
+                x * sinHeadingOffset + y * cosHeadingOffset,
+                heading
+        );
     }
 
     @Override
-    public Pose2d getAcceleration(double displacement) {
-        return null;
+    public Pose2d getSecondDerivative(double displacement) {
+        double percentage = displacement / length;
+        double x = 0;
+        double y = secondDerivativeAt(percentage) / length;
+
+        double cosHeadingOffset = Math.cos(headingOffset);
+        double sinHeadingOffset = Math.sin(headingOffset);
+
+        double heading = Angle.norm(Math.atan(thirdDerivativeAt(percentage) + headingOffset));
+
+        return new Pose2d(
+                x * cosHeadingOffset - y * sinHeadingOffset,
+                x * sinHeadingOffset + y * cosHeadingOffset,
+                heading
+        );
     }
 }
