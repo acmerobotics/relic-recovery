@@ -5,6 +5,11 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 
 public class SplineSegment implements ParametricPath {
+    public enum Type {
+        CUBIC_HERMITIAN,
+        QUINTIC_HERMITIAN
+    }
+
     public static int ARC_LENGTH_SAMPLES = 100000;
 
     /**
@@ -15,7 +20,7 @@ public class SplineSegment implements ParametricPath {
     private double xOffset, yOffset, headingOffset, knotDistance;
     private double length;
 
-    public SplineSegment(Pose2d startPose, Pose2d endPose) {
+    public SplineSegment(Type type, Pose2d startPose, Pose2d endPose) {
         xOffset = startPose.x();
         yOffset = startPose.y();
 
@@ -25,11 +30,19 @@ public class SplineSegment implements ParametricPath {
         double a0Delta = Math.tan(Angle.norm(startPose.heading() - headingOffset));
         double a1Delta = Math.tan(Angle.norm(endPose.heading() - headingOffset));
 
-        a = 0;
-        b = 0;
-        c = (a0Delta + a1Delta) / (knotDistance * knotDistance);
-        d = -(2 * a0Delta + a1Delta) / knotDistance;
-        e = a0Delta;
+        if (type == Type.CUBIC_HERMITIAN) {
+            a = 0;
+            b = 0;
+            c = (a0Delta + a1Delta) / (knotDistance * knotDistance);
+            d = -(2 * a0Delta + a1Delta) / knotDistance;
+            e = a0Delta;
+        } else {
+            a = -(3 * (a0Delta + a1Delta)) / (knotDistance * knotDistance * knotDistance * knotDistance);
+            b = (8 * a0Delta + 7 * a1Delta) / (knotDistance * knotDistance * knotDistance);
+            c = -(6 * a0Delta + 4 * a1Delta) / (knotDistance * knotDistance);
+            d = 0;
+            e = a0Delta;
+        }
 
         computeLength();
     }
