@@ -13,16 +13,16 @@ public class CompositePath implements ParametricPath {
     }
 
     public static CompositePath fitSpline(Pose2d... waypoints) {
-        return fitSpline(SplineSegment.Type.QUINTIC_HERMITIAN, waypoints);
+        return fitSpline(SplinePath.Type.QUINTIC_HERMITIAN, waypoints);
     }
 
-    public static CompositePath fitSpline(SplineSegment.Type type, Pose2d... waypoints) {
+    public static CompositePath fitSpline(SplinePath.Type type, Pose2d... waypoints) {
         if (waypoints.length < 2) {
             throw new IllegalArgumentException("2 waypoints are required to fit a spline");
         }
         List<ParametricPath> segments = new ArrayList<>();
         for (int i = 0; i < waypoints.length - 1; i++) {
-            segments.add(new SplineSegment(type, waypoints[i], waypoints[i + 1]));
+            segments.add(new SplinePath(type, waypoints[i], waypoints[i + 1]));
         }
         return new CompositePath(segments);
     }

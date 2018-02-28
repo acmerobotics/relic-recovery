@@ -35,7 +35,7 @@ public class AutoPathTest extends OpMode {
                 BalancingStone.FAR_BLUE, RelicRecoveryVuMark.RIGHT));
         fieldOverlay.setStroke("#F44336");
         DrawingUtil.drawMecanumRobot(fieldOverlay, new Pose2d(
-                BalancingStone.NEAR_BLUE.getPosition()));
+                BalancingStone.NEAR_BLUE.getPosition(), 0));
         dashboard.drawOverlay();
     }
 }

@@ -7,17 +7,9 @@ public class Pose2d {
     private final Vector2d pos;
     private final double heading;
 
-    public Pose2d(Vector2d pos) {
-        this(pos, 0);
-    }
-
     public Pose2d(Vector2d pos, double heading) {
         this.pos = pos;
         this.heading = Angle.norm(heading);
-    }
-
-    public Pose2d(double x, double y) {
-        this(x, y, 0);
     }
 
     public Pose2d(double x, double y, double heading) {

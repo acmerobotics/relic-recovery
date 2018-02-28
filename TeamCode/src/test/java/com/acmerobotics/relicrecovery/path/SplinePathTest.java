@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class SplineTest {
+public class SplinePathTest {
     @Ignore
     @Test
     public void testSplineGeneration() {

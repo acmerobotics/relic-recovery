@@ -4,7 +4,7 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 
-public class SplineSegment implements ParametricPath {
+public class SplinePath implements ParametricPath {
     public enum Type {
         CUBIC_HERMITIAN,
         QUINTIC_HERMITIAN
@@ -20,7 +20,7 @@ public class SplineSegment implements ParametricPath {
     private double xOffset, yOffset, headingOffset, knotDistance;
     private double length;
 
-    public SplineSegment(Type type, Pose2d startPose, Pose2d endPose) {
+    public SplinePath(Type type, Pose2d startPose, Pose2d endPose) {
         xOffset = startPose.x();
         yOffset = startPose.y();
 
