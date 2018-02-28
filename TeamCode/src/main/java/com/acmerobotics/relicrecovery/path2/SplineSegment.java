@@ -122,7 +122,7 @@ public class SplineSegment implements ParametricPath {
         double cosHeadingOffset = Math.cos(headingOffset);
         double sinHeadingOffset = Math.sin(headingOffset);
 
-        double heading = Angle.norm(Math.atan(secondDerivativeAt(percentage) + headingOffset));
+        double heading = secondDerivativeAt(percentage) / (1 + Math.pow(derivativeAt(percentage), 2));
 
         return new Pose2d(
                 x * cosHeadingOffset - y * sinHeadingOffset,
@@ -140,7 +140,12 @@ public class SplineSegment implements ParametricPath {
         double cosHeadingOffset = Math.cos(headingOffset);
         double sinHeadingOffset = Math.sin(headingOffset);
 
-        double heading = Angle.norm(Math.atan(thirdDerivativeAt(percentage) + headingOffset));
+        double deriv = derivativeAt(percentage);
+        double secondDeriv = secondDerivativeAt(percentage);
+        double thirdDeriv = thirdDerivativeAt(percentage);
+
+        double heading = (1 + deriv * deriv) * thirdDeriv - 2 * secondDeriv * secondDeriv * deriv;
+        heading /= (1 + deriv * deriv) * (1 + deriv * deriv);
 
         return new Pose2d(
                 x * cosHeadingOffset - y * sinHeadingOffset,

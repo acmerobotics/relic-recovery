@@ -23,10 +23,6 @@ public class SplineTest {
                 new Pose2d(36, 8, Math.PI / 4),
                 new Pose2d(48, 4, 3 * Math.PI / 4));
         writeParametricPath(spline, "simpleSpline");
-        System.out.println(spline.length());
-        System.out.println(spline.getPose(0.5));
-        System.out.println(spline.getDerivative(0.5));
-        System.out.println(spline.getSecondDerivative(0.5));
 
         PathMotionSegment motionSegment = new ParametricMotionSegment(spline);
         writePathMotionSegment(motionSegment, "simpleMotionSegment");
@@ -37,13 +33,16 @@ public class SplineTest {
             File outputDir = new File("./out");
             outputDir.mkdirs();
             FileWriter writer = new FileWriter(new File(outputDir,name + ".csv"));
-            writer.write("t, x, y, vx, vy, ax, ay\n");
+            writer.write("t, x, y, theta, vx, vy, omega, ax, ay, alpha\n");
             for (int i = 0; i <= 200; i++) {
                 double displacement = i / 200.0 * path.length();
                 Pose2d pose = path.getPose(displacement);
                 Pose2d velocity = path.getDerivative(displacement);
                 Pose2d acceleration = path.getSecondDerivative(displacement);
-                writer.write(String.format("%f, %f, %f, %f, %f, %f, %f\n", displacement, pose.x(), pose.y(), velocity.x(), velocity.y(), acceleration.x(), acceleration.y()));
+                writer.write(String.format("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n", displacement,
+                        pose.x(), pose.y(), pose.heading(),
+                        velocity.x(), velocity.y(), velocity.heading(),
+                        acceleration.x(), acceleration.y(), acceleration.heading()));
             }
             writer.close();
         } catch (IOException e) {
@@ -56,13 +55,16 @@ public class SplineTest {
             File outputDir = new File("./out");
             outputDir.mkdirs();
             FileWriter writer = new FileWriter(new File(outputDir,name + ".csv"));
-            writer.write("t, x, y, vx, vy, ax, ay\n");
+            writer.write("t, x, y, theta, vx, vy, omega, ax, ay, alpha\n");
             for (int i = 0; i <= 200; i++) {
                 double time = i / 200.0 * motionSegment.duration();
                 Pose2d pose = motionSegment.getPose(time);
                 Pose2d velocity = motionSegment.getVelocity(time);
                 Pose2d acceleration = motionSegment.getAcceleration(time);
-                writer.write(String.format("%f, %f, %f, %f, %f, %f, %f\n", time, pose.x(), pose.y(), velocity.x(), velocity.y(), acceleration.x(), acceleration.y()));
+                writer.write(String.format("%f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n", time,
+                        pose.x(), pose.y(), pose.heading(),
+                        velocity.x(), velocity.y(), velocity.heading(),
+                        acceleration.x(), acceleration.y(), acceleration.heading()));
 
             }
             writer.close();
