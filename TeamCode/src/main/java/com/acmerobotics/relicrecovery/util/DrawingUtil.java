@@ -3,7 +3,13 @@ package com.acmerobotics.relicrecovery.util;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.path.ParametricMotionSegment;
 import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.PathMotionSegment;
+import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
+import com.acmerobotics.relicrecovery.path.parametric.LinePath;
+import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
+import com.acmerobotics.relicrecovery.path.parametric.SplinePath;
 
 import java.util.Arrays;
 import java.util.List;
@@ -120,6 +126,25 @@ public class DrawingUtil {
 
     public static void drawPath(Canvas canvas, Path path) {
         canvas.setStrokeWidth(3);
-        // TODO: implement this for the new pathing system
+        for (PathMotionSegment motionSegment : path.segments()) {
+            if (motionSegment instanceof ParametricMotionSegment) {
+                drawParametricPath(canvas, ((ParametricMotionSegment) motionSegment).path());
+            }
+        }
+    }
+
+    public static void drawParametricPath(Canvas canvas, ParametricPath path) {
+        if (path instanceof CompositePath) {
+            for (ParametricPath subPath : ((CompositePath) path).segments()) {
+                drawParametricPath(canvas, subPath);
+            }
+        } else if (path instanceof LinePath) {
+            LinePath line = (LinePath) path;
+            canvas.strokeLine(line.start().x(), line.start().y(), line.end().x(), line.end().y());
+        } else if (path instanceof SplinePath) {
+            SplinePath spline = (SplinePath) path;
+            canvas.strokeSpline(spline.knotDistance(), spline.xOffset(), spline.yOffset(), spline.headingOffset(),
+                    spline.a(), spline.b(), spline.c(), spline.d(), spline.e());
+        }
     }
 }

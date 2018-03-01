@@ -66,4 +66,8 @@ public class ParametricMotionSegment implements PathMotionSegment {
         MotionGoal goal = new MotionGoal(goalPosition, 0);
         profile = MotionProfileGenerator.generateProfile(newStart, goal, MecanumDrive.AXIAL_CONSTRAINTS);
     }
+
+    public ParametricPath path() {
+        return path;
+    }
 }

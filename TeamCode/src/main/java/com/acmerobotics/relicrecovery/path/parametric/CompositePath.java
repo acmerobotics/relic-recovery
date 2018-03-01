@@ -100,4 +100,8 @@ public class CompositePath implements ParametricPath {
 
         return finalSegment().getSecondDerivative(finalSegment().length());
     }
+
+    public List<ParametricPath> segments() {
+        return segments;
+    }
 }

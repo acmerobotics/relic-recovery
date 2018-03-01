@@ -153,4 +153,40 @@ public class SplinePath implements ParametricPath {
                 heading
         );
     }
+
+    public double knotDistance() {
+        return knotDistance;
+    }
+
+    public double xOffset() {
+        return xOffset;
+    }
+
+    public double yOffset() {
+        return yOffset;
+    }
+
+    public double headingOffset() {
+        return headingOffset;
+    }
+
+    public double a() {
+        return a;
+    }
+
+    public double b() {
+        return b;
+    }
+
+    public double c() {
+        return c;
+    }
+
+    public double d() {
+        return d;
+    }
+
+    public double e() {
+        return e;
+    }
 }

@@ -16,6 +16,10 @@ public class Path {
         this.motionSegments = motionSegments;
     }
 
+    public List<PathMotionSegment> segments() {
+        return motionSegments;
+    }
+
     public double duration() {
         double duration = 0;
         for (PathMotionSegment motionSegment : motionSegments) {
