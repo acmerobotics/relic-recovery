@@ -4,6 +4,8 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
+import com.acmerobotics.relicrecovery.path2.PathBuilder;
+import com.acmerobotics.relicrecovery.path2.PathFollower;
 
 import org.junit.Ignore;
 import org.junit.Test;

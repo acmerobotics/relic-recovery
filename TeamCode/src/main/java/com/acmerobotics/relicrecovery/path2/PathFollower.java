@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.path;
+package com.acmerobotics.relicrecovery.path2;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
@@ -107,8 +107,8 @@ public class PathFollower {
 
         // all field coordinates
         pose = path.getPose(time);
-        poseVelocity = path.getPoseVelocity(time);
-        poseAcceleration = path.getPoseAcceleration(time);
+        poseVelocity = path.getVelocity(time);
+        poseAcceleration = path.getAcceleration(time);
 
         MotionState headingState = new MotionState(pose.heading(), poseVelocity.heading(), poseAcceleration.heading(), 0, 0);
         headingController.setSetpoint(headingState);
