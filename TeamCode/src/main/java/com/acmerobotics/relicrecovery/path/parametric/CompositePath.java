@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.path2.parametric;
+package com.acmerobotics.relicrecovery.path.parametric;
 
 import com.acmerobotics.library.localization.Pose2d;
 

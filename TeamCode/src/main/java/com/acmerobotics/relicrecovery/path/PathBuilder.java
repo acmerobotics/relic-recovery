@@ -1,12 +1,12 @@
-package com.acmerobotics.relicrecovery.path2;
+package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.path2.parametric.CompositePath;
-import com.acmerobotics.relicrecovery.path2.parametric.LinePath;
-import com.acmerobotics.relicrecovery.path2.parametric.ParametricPath;
-import com.acmerobotics.relicrecovery.path2.parametric.SplinePath;
+import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
+import com.acmerobotics.relicrecovery.path.parametric.LinePath;
+import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
+import com.acmerobotics.relicrecovery.path.parametric.SplinePath;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,11 +1,11 @@
-package com.acmerobotics.relicrecovery.path2;
+package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
 import com.acmerobotics.relicrecovery.motion.MotionProfile;
 import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
-import com.acmerobotics.relicrecovery.path2.parametric.ParametricPath;
+import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 public class ParametricMotionSegment implements PathMotionSegment {
