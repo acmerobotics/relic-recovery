@@ -1,9 +1,9 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.path2.CompositePath;
+import com.acmerobotics.relicrecovery.path2.parametric.CompositePath;
 import com.acmerobotics.relicrecovery.path2.ParametricMotionSegment;
-import com.acmerobotics.relicrecovery.path2.ParametricPath;
+import com.acmerobotics.relicrecovery.path2.parametric.ParametricPath;
 import com.acmerobotics.relicrecovery.path2.PathMotionSegment;
 
 import org.junit.Ignore;
