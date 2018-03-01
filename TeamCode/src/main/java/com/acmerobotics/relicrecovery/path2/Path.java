@@ -7,64 +7,68 @@ import java.util.List;
 
 public class Path {
     private List<PathMotionSegment> motionSegments;
-    private List<PathMotionProfile> motionProfiles;
 
     public Path() {
         this(new ArrayList<>());
     }
 
     public Path(List<PathMotionSegment> motionSegments) {
-        this.motionSegments = new ArrayList<>();
-        this.motionProfiles = new ArrayList<>();
-        for (PathMotionSegment motionSegment : motionSegments) {
-            addSegment(motionSegment);
-        }
-    }
-
-    public void addSegment(PathMotionSegment pathMotionSegment) {
-        motionSegments.add(pathMotionSegment);
-        motionProfiles.add(pathMotionSegment.profile());
+        this.motionSegments = motionSegments;
     }
 
     public double duration() {
         double duration = 0;
-        for (PathMotionProfile motionProfile : motionProfiles) {
-            duration += motionProfile.duration();
+        for (PathMotionSegment motionSegment : motionSegments) {
+            duration += motionSegment.duration();
         }
         return duration;
     }
 
-    private PathMotionProfile endProfile() {
-        return motionProfiles.get(motionProfiles.size() - 1);
+    private PathMotionSegment endSegment() {
+        return motionSegments.get(motionSegments.size() - 1);
     }
 
     public Pose2d getPose(double time) {
-        for (PathMotionProfile profile : motionProfiles) {
-            if (time <= profile.duration()) {
-                return profile.getPose(time);
+        for (PathMotionSegment motionSegment : motionSegments) {
+            if (time <= motionSegment.duration()) {
+                return motionSegment.getPose(time);
             }
-            time -= profile.duration();
+            time -= motionSegment.duration();
         }
-        return endProfile().end();
+        return endSegment().end();
     }
 
     public Pose2d getVelocity(double time) {
-        for (PathMotionProfile profile : motionProfiles) {
-            if (time <= profile.duration()) {
-                return profile.getVelocity(time);
+        for (PathMotionSegment motionSegment : motionSegments) {
+            if (time <= motionSegment.duration()) {
+                return motionSegment.getVelocity(time);
             }
-            time -= profile.duration();
+            time -= motionSegment.duration();
         }
-        return endProfile().getVelocity(endProfile().duration());
+        return endSegment().getVelocity(endSegment().duration());
     }
 
     public Pose2d getAcceleration(double time) {
-        for (PathMotionProfile profile : motionProfiles) {
-            if (time <= profile.duration()) {
-                return profile.getAcceleration(time);
+        for (PathMotionSegment motionSegment : motionSegments) {
+            if (time <= motionSegment.duration()) {
+                return motionSegment.getAcceleration(time);
             }
-            time -= profile.duration();
+            time -= motionSegment.duration();
         }
-        return endProfile().getAcceleration(endProfile().duration());
+        return endSegment().getAcceleration(endSegment().duration());
+    }
+
+    public void trimRemainingDistance(double time) {
+        for (int i = 0; i < motionSegments.size(); i++) {
+            PathMotionSegment motionSegment = motionSegments.get(i);
+            if (time <= motionSegment.duration()) {
+                motionSegment.trimRemainingDistance(time);
+                while (motionSegments.size() > i + 1) {
+                    motionSegments.remove(endSegment());
+                }
+                return;
+            }
+            time -= motionSegment.duration();
+        }
     }
 }
