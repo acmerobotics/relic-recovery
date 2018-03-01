@@ -71,4 +71,12 @@ public class Path {
             time -= motionSegment.duration();
         }
     }
+
+    public Pose2d start() {
+        return motionSegments.get(0).start();
+    }
+
+    public Pose2d end() {
+        return endSegment().end();
+    }
 }

@@ -3,9 +3,7 @@ package com.acmerobotics.relicrecovery.util;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.path.LineSegment;
 import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathSegment;
 
 import java.util.Arrays;
 import java.util.List;
@@ -122,12 +120,6 @@ public class DrawingUtil {
 
     public static void drawPath(Canvas canvas, Path path) {
         canvas.setStrokeWidth(3);
-        for (PathSegment segment : path.getSegments()) {
-            if (segment instanceof LineSegment) {
-                LineSegment lineSegment = (LineSegment) segment;
-                canvas.strokeLine(lineSegment.start().x(), lineSegment.start().y(),
-                        lineSegment.end().x(), lineSegment.end().y());
-            }
-        }
+        // TODO: implement this for the new pathing system
     }
 }
