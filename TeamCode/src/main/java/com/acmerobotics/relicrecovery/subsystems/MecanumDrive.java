@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import android.util.Log;
+
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
@@ -22,6 +24,8 @@ import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
+import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -52,12 +56,14 @@ import java.util.Collections;
 
 @Config
 public class MecanumDrive extends Subsystem {
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 60.0, 90.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 4.0, 6.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static final int IMU_PORT = 1;
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0184, 0.004);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0189, 0.008);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 16.0, 32.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 1.33, 2.67, MotionConstraints.EndBehavior.OVERSHOOT);
+
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.256, 0.126);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0177, 0.0112);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0202, 0.0138);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
     public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
@@ -97,6 +103,9 @@ public class MecanumDrive extends Subsystem {
      */
     private int[] encoderOffsets;
 
+    private boolean useCachedEncoderPositions;
+    private int[] cachedEncoderPositions;
+
     private BNO055IMU imu;
 
     private MaxSonarEZ1UltrasonicSensor ultrasonic;
@@ -127,6 +136,8 @@ public class MecanumDrive extends Subsystem {
     private double[] powers;
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
+
+    private LynxModule frontHub;
 
     private Canvas fieldOverlay;
 
@@ -170,13 +181,15 @@ public class MecanumDrive extends Subsystem {
 
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(map.get(LynxModule.class, "frontHub"), 1);
+        frontHub = map.get(LynxModule.class, "frontHub");
+        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(frontHub, IMU_PORT);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
         ultrasonic = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonic"));
         sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
+        sideSwivel = map.servo.get("sideSwivel");
 
         powers = new double[4];
         encoderOffsets = new int[4];
@@ -188,8 +201,6 @@ public class MecanumDrive extends Subsystem {
         }
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
-
-        sideSwivel = map.servo.get("sideSwivel");
 
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
@@ -339,44 +350,51 @@ public class MecanumDrive extends Subsystem {
     }
 
     private void resetEncoders() {
+        int[] positions = internalGetEncoderPositions();
         for(int i = 0; i < 4; i++) {
-            encoderOffsets[i] = -motors[i].getCurrentPosition();
+            encoderOffsets[i] = -positions[i];
         }
     }
 
     /** @return motor rotations in radians */
     public double[] getMotorRotations() {
-        double[] rotations = new double[4];
+        double[] motorRotations = new double[4];
+        int[] encoderPositions = getEncoderPositions();
         for (int i = 0; i < 4; i++) {
-            rotations[i] = getMotorRotation(i);
+            motorRotations[i] = ticksToRadians(i, encoderPositions[i]);
         }
-        return rotations;
-    }
-
-    /** @return motor rotation in radians */
-    public double getMotorRotation(int motor) {
-        return ticksToRadians(motor, getEncoderPosition(motor));
+        return motorRotations;
     }
 
     /** @return motor positions in encoder ticks */
     public int[] getEncoderPositions() {
-        return internalGetEncoderPositions();
-    }
-
-    /** @return motor position in encoder ticks */
-    public int getEncoderPosition(int motor) {
-        return internalGetEncoderPosition(motor);
-    }
-
-    private int internalGetEncoderPosition(int motor) {
-        return encoderOffsets[motor] + motors[motor].getCurrentPosition();
+        if (!useCachedEncoderPositions || cachedEncoderPositions == null) {
+            cachedEncoderPositions = internalGetEncoderPositions();
+            useCachedEncoderPositions = true;
+        }
+        return cachedEncoderPositions;
     }
 
     private int[] internalGetEncoderPositions() {
+        LynxGetBulkInputDataCommand command = new LynxGetBulkInputDataCommand(frontHub);
         int[] positions = new int[4];
-        for (int i = 0; i < 4; i++) {
-            positions[i] = internalGetEncoderPosition(i);
+        try {
+            LynxGetBulkInputDataResponse response = command.sendReceive();
+            for (int i = 0; i < 4; i++) {
+                positions[i] = response.getEncoder(i);
+            }
+            positions[2] = -positions[2];
+            positions[3] = -positions[3];
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            Log.w("MecanumDrive", e);
         }
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            s.append(positions[i] + " ");
+        }
+        System.out.println(s.toString());
         return positions;
     }
 
@@ -390,7 +408,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public Orientation getAngularOrientation() {
-        if (!useCachedOrientation) {
+        if (!useCachedOrientation || cachedOrientation == null) {
             cachedOrientation = internalGetAngularOrientation();
             useCachedOrientation = true;
         }
@@ -449,8 +467,9 @@ public class MecanumDrive extends Subsystem {
         setHeading(pose.heading());
     }
 
-    private void invalidateOrientation() {
+    private void invalidateCaches() {
         useCachedOrientation = false;
+        useCachedEncoderPositions = false;
     }
 
     public void alignWithColumn() {
@@ -483,7 +502,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void update() {
-        invalidateOrientation();
+        invalidateCaches();
 
         telemetryData.driveMode = mode;
         telemetryData.positionEstimationEnabled = positionEstimationEnabled;
