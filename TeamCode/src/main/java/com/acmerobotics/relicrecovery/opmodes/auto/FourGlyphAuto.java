@@ -7,8 +7,8 @@ import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -41,14 +41,14 @@ public class FourGlyphAuto extends AutoOpMode {
         Pose2d initialPose = AutoPaths.getAdjustedBalancingStonePose(BalancingStone.NEAR_BLUE);
         robot.drive.setEstimatedPose(initialPose);
 
-        robot.drive.followPath(new PathBuilder(initialPose)
+        robot.drive.followTrajectory(new TrajectoryBuilder(initialPose)
                 .lineTo(new Vector2d(12, -48))
                 .build());
         robot.drive.waitForPathFollower();
 
         robot.intake.setIntakePower(1);
 
-        robot.drive.followPath(new PathBuilder(new Pose2d(12, -48, Math.PI))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -48, Math.PI))
                 .turn(-Math.PI / 4)
                 .lineTo(new Vector2d(12, -12))
                 .turn(-Math.PI / 4)
@@ -58,11 +58,11 @@ public class FourGlyphAuto extends AutoOpMode {
 //                .lineTo(new Vector2d(12, -12))
 //                .build());
 
-        Path pitToCrypto1 = new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
+        Trajectory pitToCrypto1 = new TrajectoryBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .lineTo(new Vector2d(12, -36))
                 .build();
 
-        robot.drive.followPath(pitToCrypto1);
+        robot.drive.followTrajectory(pitToCrypto1);
 
         sleep((int) (1000 * 0.5 * pitToCrypto1.duration()));
 
@@ -79,7 +79,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
 
 //        Pose2d estimatedPose = robot.drive.getEstimatedPose();
-        robot.drive.followPath(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -36, Math.PI / 2))
                 .lineTo(new Vector2d(12, -56))
                 .build());
         robot.drive.waitForPathFollower();
@@ -98,10 +98,10 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         sleep(500);
 
-        Path cryptoToPit1 = new PathBuilder(new Pose2d(12, -56, Math.PI / 2))
+        Trajectory cryptoToPit1 = new TrajectoryBuilder(new Pose2d(12, -56, Math.PI / 2))
                 .lineTo(new Vector2d(12, -12))
                 .build();
-        robot.drive.followPath(cryptoToPit1);
+        robot.drive.followTrajectory(cryptoToPit1);
 
         sleep((int) (1000 * 0.25 * cryptoToPit1.duration()));
 
@@ -110,7 +110,7 @@ public class FourGlyphAuto extends AutoOpMode {
 
         robot.drive.waitForPathFollower();
 
-        robot.drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .turn(-Math.PI / 4)
                 .forward(18)
                 .back(18)
@@ -118,11 +118,11 @@ public class FourGlyphAuto extends AutoOpMode {
                 .build());
         robot.drive.waitForPathFollower();
 
-        Path pitToCrypto2 = new PathBuilder(new Pose2d(12, -12, Math.PI / 2))
+        Trajectory pitToCrypto2 = new TrajectoryBuilder(new Pose2d(12, -12, Math.PI / 2))
                 .lineTo(new Vector2d(12, -36))
                 .build();
 
-        robot.drive.followPath(pitToCrypto2);
+        robot.drive.followTrajectory(pitToCrypto2);
 
         sleep((int) (1000 * 0.5 * pitToCrypto2.duration()));
 
@@ -139,7 +139,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
 
 //        estimatedPose = robot.drive.getEstimatedPose();
-        robot.drive.followPath(new PathBuilder(new Pose2d(12, -36, Math.PI / 2))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -36, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -36))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56))
                 .build());
@@ -159,7 +159,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         sleep(500);
 
-        robot.drive.followPath(new PathBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56, Math.PI / 2))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -48))
                 .build());
         robot.drive.waitForPathFollower();

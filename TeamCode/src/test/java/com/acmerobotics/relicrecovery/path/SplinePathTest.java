@@ -22,7 +22,7 @@ public class SplinePathTest {
                 new Pose2d(48, 4, 3 * Math.PI / 4));
         writeParametricPath(spline, "simpleSpline");
 
-        PathMotionSegment motionSegment = new ParametricMotionSegment(spline);
+        TrajectorySegment motionSegment = new ParametricSegment(spline);
         writePathMotionSegment(motionSegment, "simpleMotionSegment");
     }
 
@@ -48,7 +48,7 @@ public class SplinePathTest {
         }
     }
 
-    public static void writePathMotionSegment(PathMotionSegment motionSegment, String name) {
+    public static void writePathMotionSegment(TrajectorySegment motionSegment, String name) {
         try {
             File outputDir = new File("./out");
             outputDir.mkdirs();

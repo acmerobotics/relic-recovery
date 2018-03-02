@@ -3,8 +3,8 @@ package com.acmerobotics.relicrecovery.opmodes.tuner;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
-import com.acmerobotics.relicrecovery.path.PathFollower;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -25,7 +25,7 @@ public class LateralFFTuner extends LinearOpMode {
     public static int TRIALS = 5;
 
     private Robot robot;
-    private PathFollower pathFollower;
+    private TrajectoryFollower trajectoryFollower;
     private boolean shouldTravelLeft = true;
 
     @Override
@@ -34,7 +34,7 @@ public class LateralFFTuner extends LinearOpMode {
         robot.drive.enablePositionEstimation();
         robot.start();
 
-        pathFollower = robot.drive.getPathFollower();
+        trajectoryFollower = robot.drive.getTrajectoryFollower();
 
         telemetry.log().add("Ready. Make sure to clear PID gains.");
         telemetry.update();
@@ -82,11 +82,11 @@ public class LateralFFTuner extends LinearOpMode {
         robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));
 
         if (shouldTravelLeft) {
-            robot.drive.followPath(new PathBuilder(new Pose2d(0, 0, 0))
+            robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(0, 0, 0))
                     .lineTo(new Vector2d(0, DISTANCE))
                     .build());
         } else {
-            robot.drive.followPath(new PathBuilder(new Pose2d(0, 0, 0))
+            robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(0, 0, 0))
                     .lineTo(new Vector2d(0, -DISTANCE))
                     .build());
         }
@@ -95,12 +95,12 @@ public class LateralFFTuner extends LinearOpMode {
         int numErrors = 0;
 
         while (opModeIsActive() && robot.drive.isFollowingPath()) {
-            double rawLateralError = pathFollower.getLateralError();
+            double rawLateralError = trajectoryFollower.getLateralError();
             // If axial K_a is too high, then the error will be positive in when acceleration is
             // positive and negative when acceleration is negative. Thus we use the sign of the
             // acceleration to make sure all the errors have matching signs.
-            if (pathFollower.getPoseAcceleration() == null) continue;
-            errorSum += -Math.signum(pathFollower.getPoseAcceleration().y()) * rawLateralError;
+            if (trajectoryFollower.getPoseAcceleration() == null) continue;
+            errorSum += -Math.signum(trajectoryFollower.getPoseAcceleration().y()) * rawLateralError;
             numErrors++;
             sleep(25);
         }

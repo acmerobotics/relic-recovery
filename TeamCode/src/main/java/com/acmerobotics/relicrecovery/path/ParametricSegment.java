@@ -8,11 +8,11 @@ import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
-public class ParametricMotionSegment implements PathMotionSegment {
+public class ParametricSegment implements TrajectorySegment {
     private ParametricPath path;
     private MotionProfile profile;
 
-    public ParametricMotionSegment(ParametricPath path) {
+    public ParametricSegment(ParametricPath path) {
         this.path = path;
         MotionState start = new MotionState(0, 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(path.length(), 0);

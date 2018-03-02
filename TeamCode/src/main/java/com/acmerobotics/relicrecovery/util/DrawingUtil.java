@@ -3,9 +3,9 @@ package com.acmerobotics.relicrecovery.util;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.path.ParametricMotionSegment;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathMotionSegment;
+import com.acmerobotics.relicrecovery.path.ParametricSegment;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectorySegment;
 import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
 import com.acmerobotics.relicrecovery.path.parametric.LinePath;
 import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
@@ -124,11 +124,11 @@ public class DrawingUtil {
         canvas.strokePolyline(xCoords, yCoords);
     }
 
-    public static void drawPath(Canvas canvas, Path path) {
+    public static void drawTrajectory(Canvas canvas, Trajectory trajectory) {
         canvas.setStrokeWidth(3);
-        for (PathMotionSegment motionSegment : path.segments()) {
-            if (motionSegment instanceof ParametricMotionSegment) {
-                drawParametricPath(canvas, ((ParametricMotionSegment) motionSegment).path());
+        for (TrajectorySegment motionSegment : trajectory.segments()) {
+            if (motionSegment instanceof ParametricSegment) {
+                drawParametricPath(canvas, ((ParametricSegment) motionSegment).path());
             }
         }
     }

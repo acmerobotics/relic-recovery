@@ -4,7 +4,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
@@ -21,8 +21,8 @@ public class NormalAuto extends AutoOpMode {
     protected void run() {
         RelicRecoveryVuMark vuMark = scoreJewelAndReadPictograph();
 
-        Path path = AutoPaths.makeNormalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
-        robot.drive.followPath(path);
+        Trajectory path = AutoPaths.makeNormalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
+        robot.drive.followTrajectory(path);
         robot.drive.waitForPathFollower();
 
         robot.dumpBed.dump();

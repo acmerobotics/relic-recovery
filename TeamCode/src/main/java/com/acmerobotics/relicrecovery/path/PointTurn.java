@@ -8,7 +8,7 @@ import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
-public class PointTurn implements PathMotionSegment {
+public class PointTurn implements TrajectorySegment {
     private Pose2d startPose;
     private double endHeading;
     private MotionProfile profile;

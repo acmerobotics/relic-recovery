@@ -14,24 +14,24 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class PathTest {
+public class TrajectoryTest {
     @Ignore
     @Test
     public void simulatePathFollowing() throws IOException {
-        Path path = new PathBuilder(new Pose2d(0, 0, 0))
+        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(0, 0, 0))
                 .turn(3 * Math.PI / 8)
                 .lineTo(new Vector2d(1, 1))
                 .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(2, 3))
                 .lineTo(new Vector2d(2, 5))
                 .build();
-        PathFollower follower = new PathFollower(
+        TrajectoryFollower follower = new TrajectoryFollower(
                 new PIDFCoefficients(-0.01, 0, 0, 1, 0),
                 new PIDFCoefficients(-0.1, 0, 0, 1, 0),
                 new PIDFCoefficients(-0.1, 0, 0, 1, 0));
-        follower.follow(path);
+        follower.follow(trajectory);
         double timestamp = TimestampedData.getCurrentTime();
-        Pose2d estimatedPose = path.getPose(0);
+        Pose2d estimatedPose = trajectory.getPose(0);
         File dataFile = new File("path.csv");
         FileWriter writer = new FileWriter(dataFile);
         writer.write("x,y,heading\n");
@@ -49,7 +49,7 @@ public class PathTest {
         }
         writer.close();
 
-        Pose2d endPose = path.getPose(path.duration() - 0.0001);
+        Pose2d endPose = trajectory.getPose(trajectory.duration() - 0.0001);
         assertEquals(endPose.x(), estimatedPose.x(), 0.1);
         assertEquals(endPose.y(), estimatedPose.y(), 0.1);
         assertEquals(endPose.heading(), estimatedPose.heading(), 0.1);

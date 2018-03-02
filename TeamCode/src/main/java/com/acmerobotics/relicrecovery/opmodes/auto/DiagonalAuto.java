@@ -5,7 +5,7 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Path;
+import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -46,8 +46,8 @@ public class DiagonalAuto extends AutoOpMode {
             robot.sleep(0.5);
         }
 
-        Path path = AutoPaths.makeDiagonalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
-        robot.drive.followPath(path);
+        Trajectory path = AutoPaths.makeDiagonalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
+        robot.drive.followTrajectory(path);
         robot.sleep(0.5);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();

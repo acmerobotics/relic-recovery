@@ -11,84 +11,84 @@ import com.acmerobotics.relicrecovery.path.parametric.SplinePath;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PathBuilder {
+public class TrajectoryBuilder {
     private Pose2d currentPose;
-    private List<PathMotionSegment> motionSegments;
+    private List<TrajectorySegment> motionSegments;
     private List<ParametricPath> compositeSegments;
     private boolean composite;
 
-    public PathBuilder(Pose2d pose) {
+    public TrajectoryBuilder(Pose2d pose) {
         currentPose = pose;
         motionSegments = new ArrayList<>();
         compositeSegments = new ArrayList<>();
     }
 
-    public PathBuilder lineTo(Vector2d pos) {
+    public TrajectoryBuilder lineTo(Vector2d pos) {
         Pose2d pose = new Pose2d(pos, currentPose.heading());
         ParametricPath path = new LinePath(currentPose, pose);
         if (composite) {
             compositeSegments.add(path);
         } else {
-            motionSegments.add(new ParametricMotionSegment(path));
+            motionSegments.add(new ParametricSegment(path));
         }
         currentPose = pose;
         return this;
     }
 
-    public PathBuilder turn(double angle) {
+    public TrajectoryBuilder turn(double angle) {
         return turnTo(Angle.norm(currentPose.heading() + angle));
     }
 
-    public PathBuilder turnTo(double heading) {
+    public TrajectoryBuilder turnTo(double heading) {
         PointTurn pointTurn = new PointTurn(currentPose, heading);
         motionSegments.add(pointTurn);
         currentPose = new Pose2d(currentPose.pos(), heading);
         return this;
     }
 
-    public PathBuilder forward(double distance) {
+    public TrajectoryBuilder forward(double distance) {
         return lineTo(currentPose.pos().added(new Vector2d(
                 distance * Math.cos(currentPose.heading()),
                 distance * Math.sin(currentPose.heading())
         )));
     }
 
-    public PathBuilder back(double distance) {
+    public TrajectoryBuilder back(double distance) {
         return forward(-distance);
     }
 
-    public PathBuilder strafeLeft(double distance) {
+    public TrajectoryBuilder strafeLeft(double distance) {
         return lineTo(currentPose.pos().added(new Vector2d(
                 distance * Math.cos(currentPose.heading() + Math.PI / 2),
                 distance * Math.sin(currentPose.heading() + Math.PI / 2)
         )));
     }
 
-    public PathBuilder strafeRight(double distance) {
+    public TrajectoryBuilder strafeRight(double distance) {
         return strafeLeft(-distance);
     }
 
-    public PathBuilder splineThrough(SplinePath.Type type, Pose2d... waypoints) {
+    public TrajectoryBuilder splineThrough(SplinePath.Type type, Pose2d... waypoints) {
         CompositePath spline = CompositePath.fitSpline(type, waypoints);
         if (composite) {
             compositeSegments.add(spline);
         } else {
-            motionSegments.add(new ParametricMotionSegment(spline));
+            motionSegments.add(new ParametricSegment(spline));
         }
         return this;
     }
 
-    public PathBuilder splineThrough(Pose2d... waypoints) {
+    public TrajectoryBuilder splineThrough(Pose2d... waypoints) {
         CompositePath spline = CompositePath.fitSpline(waypoints);
         if (composite) {
             compositeSegments.add(spline);
         } else {
-            motionSegments.add(new ParametricMotionSegment(spline));
+            motionSegments.add(new ParametricSegment(spline));
         }
         return this;
     }
 
-    public PathBuilder waitFor(double seconds) {
+    public TrajectoryBuilder waitFor(double seconds) {
         motionSegments.add(new WaitSegment(currentPose, seconds));
         return this;
     }
@@ -102,14 +102,14 @@ public class PathBuilder {
 
     public void closeComposite() {
         composite = false;
-        motionSegments.add(new ParametricMotionSegment(new CompositePath(compositeSegments)));
+        motionSegments.add(new ParametricSegment(new CompositePath(compositeSegments)));
         compositeSegments = new ArrayList<>();
     }
 
-    public Path build() {
+    public Trajectory build() {
         if (composite) {
             closeComposite();
         }
-        return new Path(motionSegments);
+        return new Trajectory(motionSegments);
     }
 }

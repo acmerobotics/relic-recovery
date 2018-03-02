@@ -12,8 +12,8 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
@@ -114,7 +114,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
 
-        Path stoneToCrypto = new PathBuilder(stonePose)
+        Trajectory stoneToCrypto = new TrajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(-48, stonePose.y()))
                 .turn(robot.config.getAllianceColor() == AllianceColor.BLUE ? Math.PI : 0)
                 .lineTo(new Vector2d(-48, firstColumnPosition.y()))
@@ -122,14 +122,14 @@ public class FarThreeGlyphAuto extends AutoOpMode {
                 .build();
 
         Pose2d cryptoPose = stoneToCrypto.end();
-        Path cryptoToPit = new PathBuilder(cryptoPose)
+        Trajectory cryptoToPit = new TrajectoryBuilder(cryptoPose)
                 .lineTo(new Vector2d(-48, firstColumnPosition.y()))
                 .lineTo(new Vector2d(-48, yMultiplier * 12))
                 .lineTo(new Vector2d(0, yMultiplier * 12))
                 .build();
 
         Pose2d pitPose = cryptoToPit.end();
-        Path pitToCrypto = new PathBuilder(pitPose)
+        Trajectory pitToCrypto = new TrajectoryBuilder(pitPose)
                 .lineTo(new Vector2d(-48, yMultiplier * 12))
                 .lineTo(new Vector2d(-48, secondColumnPosition.y()))
                 .build();
@@ -139,7 +139,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         double headingP = MecanumDrive.HEADING_PID.p;
         MecanumDrive.HEADING_PID.p = 0;
         robot.drive.setEstimatedPose(stoneToCrypto.start());
-        robot.drive.followPath(stoneToCrypto);
+        robot.drive.followTrajectory(stoneToCrypto);
         robot.sleep(0.5);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
@@ -153,13 +153,13 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         robot.sleep(1);
 
-        robot.drive.followPath(cryptoToPit);
+        robot.drive.followTrajectory(cryptoToPit);
         robot.sleep(0.2 * cryptoToPit.duration());
         robot.dumpBed.retract();
         robot.intake.autoIntake();
         robot.drive.waitForPathFollower();
 
-        robot.drive.followPath(pitToCrypto);
+        robot.drive.followTrajectory(pitToCrypto);
         robot.sleep(0.2 * pitToCrypto.duration());
         robot.intake.setIntakePower(-0.3);
         robot.sleep(0.75);
@@ -174,12 +174,12 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         robot.waitOneFullCycle();
 
-        Path finalApproach = new PathBuilder(robot.drive.getEstimatedPose())
+        Trajectory finalApproach = new TrajectoryBuilder(robot.drive.getEstimatedPose())
                 .lineTo(new Vector2d(-57, secondColumnPosition.y()))
                 .build();
 
         robot.drive.extendSideSwivel();
-        robot.drive.followPath(finalApproach);
+        robot.drive.followTrajectory(finalApproach);
         robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
@@ -194,7 +194,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         robot.sleep(1);
-        robot.drive.followPath(new PathBuilder(finalApproach.end())
+        robot.drive.followTrajectory(new TrajectoryBuilder(finalApproach.end())
                 .forward(6)
                 .build());
         robot.drive.waitForPathFollower();

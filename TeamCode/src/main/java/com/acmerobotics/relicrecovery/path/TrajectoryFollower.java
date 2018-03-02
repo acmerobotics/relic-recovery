@@ -9,13 +9,13 @@ import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.motion.PIDFController;
 
 @Config
-public class PathFollower {
+public class TrajectoryFollower {
     public static double NOMINAL_POWER = 0;
 
     private PIDFController headingController, axialController;
     private PIDFController lateralController;
-    private Path path;
-    private double pathStartTimestamp;
+    private Trajectory trajectory;
+    private double startTimestamp;
 
     private double headingError, headingUpdate;
     private double axialError, axialUpdate;
@@ -23,7 +23,7 @@ public class PathFollower {
 
     private Pose2d pose, poseVelocity, poseAcceleration;
 
-    public PathFollower(PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDFCoefficients lateralCoeff) {
+    public TrajectoryFollower(PIDFCoefficients headingCoeff, PIDFCoefficients axialCoeff, PIDFCoefficients lateralCoeff) {
         headingController = new PIDFController(headingCoeff);
         headingController.setInputBounds(-Math.PI, Math.PI);
 
@@ -32,8 +32,8 @@ public class PathFollower {
         lateralController = new PIDFController(lateralCoeff);
     }
 
-    public Path getPath() {
-        return path;
+    public Trajectory getTrajectory() {
+        return trajectory;
     }
 
     public double getHeadingError() {
@@ -72,9 +72,9 @@ public class PathFollower {
         return poseAcceleration;
     }
 
-    public void follow(Path path) {
-        this.path = path;
-        this.pathStartTimestamp = TimestampedData.getCurrentTime();
+    public void follow(Trajectory trajectory) {
+        this.trajectory = trajectory;
+        this.startTimestamp = TimestampedData.getCurrentTime();
 
         headingController.reset();
         axialController.reset();
@@ -86,7 +86,7 @@ public class PathFollower {
     }
 
     public boolean isFollowingPath(double timestamp) {
-        return path != null && (timestamp - pathStartTimestamp) < path.duration();
+        return trajectory != null && (timestamp - startTimestamp) < trajectory.duration();
     }
 
     public Pose2d update(Pose2d estimatedPose) {
@@ -100,15 +100,15 @@ public class PathFollower {
      * @return the desired velocity
      */
     public Pose2d update(Pose2d estimatedPose, double timestamp) {
-        double time = timestamp - pathStartTimestamp;
-        if (time > path.duration()) {
+        double time = timestamp - startTimestamp;
+        if (time > trajectory.duration()) {
             return new Pose2d(0, 0, 0);
         }
 
         // all field coordinates
-        pose = path.getPose(time);
-        poseVelocity = path.getVelocity(time);
-        poseAcceleration = path.getAcceleration(time);
+        pose = trajectory.getPose(time);
+        poseVelocity = trajectory.getVelocity(time);
+        poseAcceleration = trajectory.getAcceleration(time);
 
         MotionState headingState = new MotionState(pose.heading(), poseVelocity.heading(), poseAcceleration.heading(), 0, 0);
         headingController.setSetpoint(headingState);

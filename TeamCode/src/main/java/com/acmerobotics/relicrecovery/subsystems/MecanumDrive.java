@@ -18,8 +18,8 @@ import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathFollower;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
@@ -124,7 +124,7 @@ public class MecanumDrive extends Subsystem {
     private boolean positionEstimationEnabled;
     private Pose2d estimatedPose = new Pose2d(0, 0, 0);
 
-    private PathFollower pathFollower;
+    private TrajectoryFollower trajectoryFollower;
 
     private Localizer localizer;
 
@@ -205,7 +205,7 @@ public class MecanumDrive extends Subsystem {
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
 
-        pathFollower = new PathFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
+        trajectoryFollower = new TrajectoryFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
@@ -235,8 +235,8 @@ public class MecanumDrive extends Subsystem {
         sideSwivelExtended = false;
     }
 
-    public PathFollower getPathFollower() {
-        return pathFollower;
+    public TrajectoryFollower getTrajectoryFollower() {
+        return trajectoryFollower;
     }
 
     public void enablePositionEstimation() {
@@ -427,16 +427,16 @@ public class MecanumDrive extends Subsystem {
         setHeading(0);
     }
 
-    public void followPath(Path path) {
+    public void followTrajectory(Trajectory trajectory) {
         if (!positionEstimationEnabled) {
-            throw new IllegalStateException("SlapperPosition estimation must be enable for path following");
+            throw new IllegalStateException("Position estimation must be enable for path following");
         }
-        pathFollower.follow(path);
+        trajectoryFollower.follow(trajectory);
         setMode(Mode.FOLLOW_PATH);
     }
 
     public boolean isFollowingPath() {
-        return pathFollower.isFollowingPath();
+        return trajectoryFollower.isFollowingPath();
     }
 
     public void waitForPathFollower() {
@@ -517,17 +517,17 @@ public class MecanumDrive extends Subsystem {
             case OPEN_LOOP:
                 break;
             case FOLLOW_PATH:
-                if (pathFollower.isFollowingPath()) {
+                if (trajectoryFollower.isFollowingPath()) {
                     Pose2d estimatedPose = getEstimatedPose();
-                    Pose2d update = pathFollower.update(estimatedPose);
+                    Pose2d update = trajectoryFollower.update(estimatedPose);
                     internalSetVelocity(update.pos(), update.heading());
 
-                    telemetryData.pathAxialError = pathFollower.getAxialError();
-                    telemetryData.pathAxialUpdate = pathFollower.getAxialUpdate();
-                    telemetryData.pathLateralError = pathFollower.getLateralError();
-                    telemetryData.pathLateralUpdate = pathFollower.getLateralUpdate();
-                    telemetryData.pathHeadingError = pathFollower.getHeadingError();
-                    telemetryData.pathHeadingUpdate = pathFollower.getHeadingUpdate();
+                    telemetryData.pathAxialError = trajectoryFollower.getAxialError();
+                    telemetryData.pathAxialUpdate = trajectoryFollower.getAxialUpdate();
+                    telemetryData.pathLateralError = trajectoryFollower.getLateralError();
+                    telemetryData.pathLateralUpdate = trajectoryFollower.getLateralUpdate();
+                    telemetryData.pathHeadingError = trajectoryFollower.getHeadingError();
+                    telemetryData.pathHeadingUpdate = trajectoryFollower.getHeadingUpdate();
                 } else {
                     stop();
                 }
@@ -590,14 +590,14 @@ public class MecanumDrive extends Subsystem {
         telemetryData.estimatedY = estimatedPose.y();
         telemetryData.estimatedHeading = estimatedPose.heading();
 
-        if (pathFollower.getPath() != null) {
+        if (trajectoryFollower.getTrajectory() != null) {
             fieldOverlay.setStroke("#4CAF50");
-            DrawingUtil.drawPath(fieldOverlay, pathFollower.getPath());
+            DrawingUtil.drawTrajectory(fieldOverlay, trajectoryFollower.getTrajectory());
         }
 
-        if (pathFollower.getPose() != null) {
+        if (trajectoryFollower.getPose() != null) {
             fieldOverlay.setStroke("#F44336");
-            DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
+            DrawingUtil.drawMecanumRobot(fieldOverlay, trajectoryFollower.getPose());
         }
 
         fieldOverlay.setStroke("#3F51B5");

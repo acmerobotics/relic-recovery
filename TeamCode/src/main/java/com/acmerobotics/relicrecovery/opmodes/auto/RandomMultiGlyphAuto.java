@@ -4,7 +4,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -21,7 +21,7 @@ public class RandomMultiGlyphAuto extends AutoOpMode {
     protected void run() {
         robot.drive.setEstimatedPose(new Pose2d(48 + AutoPaths.STONE_CORRECTION, -48, Math.PI));
 
-        robot.drive.followPath(new PathBuilder(new Pose2d(48, -48, Math.PI))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(48, -48, Math.PI))
                 .lineTo(new Vector2d(12, -48))
                 .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(12, -12))
@@ -35,12 +35,12 @@ public class RandomMultiGlyphAuto extends AutoOpMode {
 
             sleep(1500);
 
-            robot.drive.followPath(new PathBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
+            robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -12, Math.PI / 2)).lineTo(v).build());
             robot.drive.waitForPathFollower();
 
             sleep(1500);
 
-            robot.drive.followPath(new PathBuilder(new Pose2d(v, Math.PI / 2)).lineTo(new Vector2d(12, -12)).build());
+            robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(v, Math.PI / 2)).lineTo(new Vector2d(12, -12)).build());
             robot.drive.waitForPathFollower();
         }
     }

@@ -12,8 +12,8 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
@@ -114,7 +114,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
 
-        Path stoneToCrypto = new PathBuilder(stonePose)
+        Trajectory stoneToCrypto = new TrajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turn(-Math.PI / 2)
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
@@ -122,14 +122,14 @@ public class NearThreeGlyphAuto extends AutoOpMode {
                 .build();
 
         Pose2d cryptoPose = stoneToCrypto.end();
-        Path cryptoToPit = new PathBuilder(cryptoPose)
+        Trajectory cryptoToPit = new TrajectoryBuilder(cryptoPose)
                 .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 48))
                 .turn(yMultiplier * Math.PI / 4)
                 .lineTo(new Vector2d(cryptoPose.x(), yMultiplier * 12))
                 .build();
 
         Pose2d pitPose = cryptoToPit.end();
-        Path pitToCrypto = new PathBuilder(pitPose)
+        Trajectory pitToCrypto = new TrajectoryBuilder(pitPose)
                 .turn(yMultiplier * -Math.PI / 4)
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36))
                 .build();
@@ -137,7 +137,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
         robot.drive.setEstimatedPose(stoneToCrypto.start());
-        robot.drive.followPath(stoneToCrypto);
+        robot.drive.followTrajectory(stoneToCrypto);
         robot.sleep(0.75);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
@@ -150,7 +150,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         robot.sleep(1);
 
-        robot.drive.followPath(cryptoToPit);
+        robot.drive.followTrajectory(cryptoToPit);
         robot.sleep(0.2 * cryptoToPit.duration());
         robot.dumpBed.retract();
         robot.intake.autoIntake();
@@ -158,14 +158,14 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         if (robot.intake.getMode() == Intake.Mode.AUTO) {
             // we still didn't get enough glyphs; let's forage a little more
-            robot.drive.followPath(new PathBuilder(cryptoToPit.end())
+            robot.drive.followTrajectory(new TrajectoryBuilder(cryptoToPit.end())
                     .forward(12 * Math.sqrt(2))
                     .back(12 * Math.sqrt(2))
                     .build());
             robot.drive.waitForPathFollower();
         }
 
-        robot.drive.followPath(pitToCrypto);
+        robot.drive.followTrajectory(pitToCrypto);
         robot.sleep(0.2 * pitToCrypto.duration());
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
         robot.intake.setIntakePower(-0.3);
@@ -179,12 +179,12 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         robot.waitOneFullCycle();
 
-        Path finalApproach = new PathBuilder(robot.drive.getEstimatedPose())
+        Trajectory finalApproach = new TrajectoryBuilder(robot.drive.getEstimatedPose())
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 57))
                 .build();
 
         robot.drive.extendSideSwivel();
-        robot.drive.followPath(finalApproach);
+        robot.drive.followTrajectory(finalApproach);
         robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
@@ -201,7 +201,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.drive.retractSideSwivel();
         robot.dumpBed.dump();
         robot.sleep(1);
-        robot.drive.followPath(new PathBuilder(finalApproach.end())
+        robot.drive.followTrajectory(new TrajectoryBuilder(finalApproach.end())
                 .forward(6)
                 .build());
         robot.drive.waitForPathFollower();

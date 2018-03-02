@@ -2,7 +2,7 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 
-public interface PathMotionSegment {
+public interface TrajectorySegment {
     double duration();
     Pose2d start();
     Pose2d end();
