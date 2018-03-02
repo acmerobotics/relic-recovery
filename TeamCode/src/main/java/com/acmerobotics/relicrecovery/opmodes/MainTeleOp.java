@@ -19,7 +19,6 @@ public class MainTeleOp extends OpMode {
     @Override
     public void init() {
         robot = new Robot(this);
-        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
         robot.start();
 
         stickyGamepad1 = new StickyGamepad(gamepad1);

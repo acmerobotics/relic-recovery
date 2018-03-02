@@ -58,20 +58,23 @@ import java.util.Collections;
 public class MecanumDrive extends Subsystem {
     public static final int IMU_PORT = 1;
 
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 16.0, 32.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 1.33, 2.67, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(36.0, 24.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.256, 0.126);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0177, 0.0112);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0202, 0.0138);
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.273, 0); // -0.5, 0.126);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.0001, 0, 0, 0.018, 0); // -0.02, 0.0112);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.0001, 0, 0, 0.0202, 0); // -0.02, 0.0138);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
     public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
-    public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
 
-    public static double SIDE_SWIVEL_EXTEND = 0.08;
-    public static double SIDE_SWIVEL_RETRACT = 0.59;
+    public static double PROXIMITY_SMOOTHING_COEFF = 0.1;
+    public static double PROXIMITY_SWIVEL_EXTEND = 0.08;
+    public static double PROXIMITY_SWIVEL_RETRACT = 0.59;
+
+    public static double ULTRASONIC_SWIVEL_EXTEND = 0.2;
+    public static double ULTRASONIC_SWIVEL_RETRACT = 0.7;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 
@@ -108,13 +111,16 @@ public class MecanumDrive extends Subsystem {
 
     private BNO055IMU imu;
 
-    private MaxSonarEZ1UltrasonicSensor ultrasonic;
+    private MaxSonarEZ1UltrasonicSensor ultrasonicSensor;
 
-    private Servo sideSwivel;
-    private boolean sideSwivelExtended;
+    private Servo proximitySwivel;
+    private boolean proximitySwivelExtended;
 
-    private LynxI2cColorRangeSensor sideColorDistance;
-    private ExponentialSmoother sideDistanceSmoother;
+    private Servo ultrasonicSwivel;
+    private boolean ultrasonicSwivelExtended;
+
+    private LynxI2cColorRangeSensor proximitySensor;
+    private ExponentialSmoother proximitySmoother;
     private PIDController columnAlignController;
 
     private boolean useCachedOrientation;
@@ -168,11 +174,12 @@ public class MecanumDrive extends Subsystem {
         public double pathHeadingError;
         public double pathHeadingUpdate;
 
-        public double sideDistance;
+        public double proximityDistance;
         public double columnAlignError;
         public double columnAlignUpdate;
 
-        public boolean sideSwivelExtended;
+        public boolean proximitySwivelExtended;
+        public boolean ultrasonicSwivelExtended;
     }
 
     public MecanumDrive(HardwareMap map, Telemetry telemetry) {
@@ -187,9 +194,11 @@ public class MecanumDrive extends Subsystem {
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
-        ultrasonic = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonic"));
-        sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
-        sideSwivel = map.servo.get("sideSwivel");
+        proximitySensor = map.get(LynxI2cColorRangeSensor.class, "proximitySensor");
+        proximitySwivel = map.servo.get("proximitySwivel");
+
+        ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonicSensor"));
+        ultrasonicSwivel = map.servo.get("ultrasonicSwivel");
 
         powers = new double[4];
         encoderOffsets = new int[4];
@@ -212,10 +221,11 @@ public class MecanumDrive extends Subsystem {
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
         columnAlignController.setOutputBounds(-0.2, 0.2);
 
-        sideDistanceSmoother = new ExponentialSmoother(SIDE_DISTANCE_SMOOTHING_COEFF);
+        proximitySmoother = new ExponentialSmoother(PROXIMITY_SMOOTHING_COEFF);
 
         resetEncoders();
-        retractSideSwivel();
+        retractProximitySwivel();
+        retractUltrasonicSwivel();
     }
 
     public Localizer getLocalizer() {
@@ -227,12 +237,20 @@ public class MecanumDrive extends Subsystem {
         localizer.setEstimatedPosition(estimatedPose.pos());
     }
 
-    public void extendSideSwivel() {
-        sideSwivelExtended = true;
+    public void extendProximitySwivel() {
+        proximitySwivelExtended = true;
     }
 
-    public void retractSideSwivel() {
-        sideSwivelExtended = false;
+    public void retractProximitySwivel() {
+        proximitySwivelExtended = false;
+    }
+
+    public void extendUltrasonicSwivel() {
+        ultrasonicSwivelExtended = true;
+    }
+
+    public void retractUltrasonicSwivel() {
+        ultrasonicSwivelExtended = false;
     }
 
     public PathFollower getPathFollower() {
@@ -370,6 +388,9 @@ public class MecanumDrive extends Subsystem {
     public int[] getEncoderPositions() {
         if (!useCachedEncoderPositions || cachedEncoderPositions == null) {
             cachedEncoderPositions = internalGetEncoderPositions();
+            for (int i = 0; i < 4; i++) {
+                cachedEncoderPositions[i] += encoderOffsets[i];
+            }
             useCachedEncoderPositions = true;
         }
         return cachedEncoderPositions;
@@ -475,7 +496,7 @@ public class MecanumDrive extends Subsystem {
     public void alignWithColumn() {
         columnAlignController.reset();
         columnAlignController.setSetpoint(COLUMN_ALIGN_TARGET_DISTANCE);
-        sideDistanceSmoother.reset();
+        proximitySmoother.reset();
         setMode(Mode.COLUMN_ALIGN);
     }
 
@@ -490,15 +511,15 @@ public class MecanumDrive extends Subsystem {
     }
 
     public double getUltrasonicDistance(DistanceUnit unit) {
-        return ultrasonic.getDistance(unit);
+        return ultrasonicSensor.getDistance(unit);
     }
 
     public double getMinUltrasonicDistance(DistanceUnit unit) {
-        return ultrasonic.getMinDistance(unit);
+        return ultrasonicSensor.getMinDistance(unit);
     }
 
     public double getSideDistance(DistanceUnit unit) {
-        return sideColorDistance.getDistance(unit);
+        return proximitySensor.getDistance(unit);
     }
 
     public void update() {
@@ -536,10 +557,10 @@ public class MecanumDrive extends Subsystem {
                 double rawSideDistance = getSideDistance(DistanceUnit.INCH);
                 rawSideDistance = Double.isNaN(rawSideDistance) ? 10 : Range.clip(rawSideDistance, -10, 10);
 
-                double sideDistance = sideDistanceSmoother.update(rawSideDistance);
+                double sideDistance = proximitySmoother.update(rawSideDistance);
                 double distanceError = columnAlignController.getError(sideDistance);
 
-                telemetryData.sideDistance = sideDistance;
+                telemetryData.proximityDistance = sideDistance;
                 telemetryData.columnAlignError = distanceError;
 
                 if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
@@ -578,13 +599,20 @@ public class MecanumDrive extends Subsystem {
         telemetryData.rearRightPower = powers[2];
         telemetryData.frontRightPower = powers[3];
 
-        // side swivel
-        if (sideSwivelExtended) {
-            sideSwivel.setPosition(SIDE_SWIVEL_EXTEND);
+        // proximity swivel
+        if (proximitySwivelExtended) {
+            proximitySwivel.setPosition(PROXIMITY_SWIVEL_EXTEND);
         } else {
-            sideSwivel.setPosition(SIDE_SWIVEL_RETRACT);
+            proximitySwivel.setPosition(PROXIMITY_SWIVEL_RETRACT);
         }
-        telemetryData.sideSwivelExtended = sideSwivelExtended;
+        telemetryData.proximitySwivelExtended = proximitySwivelExtended;
+
+        if (ultrasonicSwivelExtended) {
+            ultrasonicSwivel.setPosition(ULTRASONIC_SWIVEL_EXTEND);
+        } else {
+            ultrasonicSwivel.setPosition(ULTRASONIC_SWIVEL_RETRACT);
+        }
+        telemetryData.ultrasonicSwivelExtended = ultrasonicSwivelExtended;
 
         telemetryData.estimatedX = estimatedPose.x();
         telemetryData.estimatedY = estimatedPose.y();

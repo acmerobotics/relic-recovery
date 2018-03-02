@@ -1,16 +1,15 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Created by ryanbrott on 1/11/18.
@@ -18,15 +17,15 @@ import java.util.Map;
 
 @Config
 public class RelicRecoverer extends Subsystem {
-    public static double WRIST_STOW_POSITION = 0.2;
-    public static double WRIST_UP_POSITION = 1;
-    public static double WRIST_DOWN_POSITION = 0.5;
+    public static double WRIST_STOW_POSITION = 0.36;
+    public static double WRIST_UP_POSITION = 0.9;
+    public static double WRIST_DOWN_POSITION = 0.36;
 
-    public static double FINGER_CLOSE_POSITION = 0.9;
-    public static double FINGER_OPEN_POSITION = 0.6;
+    public static double FINGER_CLOSE_POSITION = 0;
+    public static double FINGER_OPEN_POSITION = 0.45;
 
-    public static double ARM_PULLEY_RADIUS = 1.367; // in
-    public static double MAX_EXTENSION_DISTANCE = 38;
+    public static double ARM_PULLEY_RADIUS = 2.734; // in
+    public static double MAX_EXTENSION_DISTANCE = 46;
     public static PIDCoefficients ARM_PID = new PIDCoefficients(-1.5, 0, -0.02);
 
     public enum ArmMode {
@@ -39,14 +38,6 @@ public class RelicRecoverer extends Subsystem {
         UP,
         DOWN
     }
-
-    public static final String[] CONDITIONAL_TELEMETRY_KEYS = {
-            "relicArmPosition",
-            "relicArmError"
-    };
-
-    private Telemetry telemetry;
-    private LinkedHashMap<String, Object> telemetryMap;
 
     private DcMotor relicArm;
     private Servo relicWrist, relicFinger;
@@ -61,14 +52,24 @@ public class RelicRecoverer extends Subsystem {
 
     private ArmMode armMode = ArmMode.MANUAL;
 
+    private TelemetryEx telemetry;
+    private TelemetryData telemetryData;
+
+    private class TelemetryData {
+        public WristPosition relicWristPosition;
+        public boolean relicFingerClosed;
+        public ArmMode relicArmMode;
+        public double relicArmPower;
+        public double relicArmPosition;
+        public double relicArmError;
+    }
+
     public RelicRecoverer(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = telemetry;
-        telemetryMap = new LinkedHashMap<>();
-        for (String key : CONDITIONAL_TELEMETRY_KEYS) {
-            telemetryMap.put(key, 0);
-        }
+        this.telemetry = new TelemetryEx(telemetry);
+        telemetryData = new TelemetryData();
 
         relicArm = map.dcMotor.get("relicArm");
+        relicArm.setDirection(DcMotorSimple.Direction.REVERSE);
 
         relicWrist = map.servo.get("relicWrist");
         relicFinger = map.servo.get("relicFinger");
@@ -76,7 +77,7 @@ public class RelicRecoverer extends Subsystem {
         armController = new PIDController(ARM_PID);
 
         setWristPosition(WristPosition.STOW);
-        closeFinger();
+        openFinger();
         resetEncoder();
     }
 
@@ -123,8 +124,8 @@ public class RelicRecoverer extends Subsystem {
 
     @Override
     public void update() {
-        telemetryMap.put("relicWristPosition", wristPosition);
-        telemetryMap.put("relicFingerClosed", fingerClosed);
+        telemetryData.relicWristPosition = wristPosition;
+        telemetryData.relicFingerClosed = fingerClosed;
 
         switch (armMode) {
             case MANUAL:
@@ -134,16 +135,16 @@ public class RelicRecoverer extends Subsystem {
                 double armError = armController.getError(armPosition);
                 armPower = armController.update(armError);
 
-                telemetryMap.put("relicArmPosition", armPosition);
-                telemetryMap.put("relicArmError", armError);
+                telemetryData.relicArmPosition = armPosition;
+                telemetryData.relicArmError = armError;
 
                 break;
         }
 
         relicArm.setPower(armPower);
 
-        telemetryMap.put("relicArmMode", armMode);
-        telemetryMap.put("relicArmPower", armPower);
+        telemetryData.relicArmMode = armMode;
+        telemetryData.relicArmPower = armPower;
 
         switch (wristPosition) {
             case STOW:
@@ -163,8 +164,6 @@ public class RelicRecoverer extends Subsystem {
             relicFinger.setPosition(FINGER_OPEN_POSITION);
         }
 
-        for (Map.Entry<String, Object> entry : telemetryMap.entrySet()) {
-            telemetry.addData(entry.getKey(), entry.getValue());
-        }
+        telemetry.addDataObject(telemetryData);
     }
 }

@@ -68,7 +68,7 @@ public class FourGlyphAuto extends AutoOpMode {
 
         robot.intake.setIntakePower(-1);
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
-        robot.drive.extendSideSwivel();
+        robot.drive.extendProximitySwivel();
 
         robot.drive.waitForPathFollower();
 
@@ -94,7 +94,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(new Vector2d(12, -56));
 
-        robot.drive.retractSideSwivel();
+        robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         sleep(500);
 
@@ -128,7 +128,7 @@ public class FourGlyphAuto extends AutoOpMode {
 
         robot.intake.setIntakePower(-1);
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
-        robot.drive.extendSideSwivel();
+        robot.drive.extendProximitySwivel();
 
         robot.drive.waitForPathFollower();
 
@@ -155,7 +155,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56));
 
-        robot.drive.retractSideSwivel();
+        robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         sleep(500);
 
@@ -165,7 +165,7 @@ public class FourGlyphAuto extends AutoOpMode {
         robot.drive.waitForPathFollower();
 
         robot.dumpBed.retract();
-        robot.drive.retractSideSwivel();
+        robot.drive.retractProximitySwivel();
 
         telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
         telemetry.update();

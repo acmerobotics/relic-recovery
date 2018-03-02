@@ -14,13 +14,13 @@ public class SideDistanceTest extends OpMode {
     @Override
     public void init() {
         robot = new Robot(this);
-        robot.drive.extendSideSwivel();
+        robot.drive.extendProximitySwivel();
         robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
         robot.start();
     }
 
     @Override
     public void loop() {
-        telemetry.addData("sideDistance", robot.drive.getSideDistance(DistanceUnit.INCH));
+        telemetry.addData("proximityDistance", robot.drive.getSideDistance(DistanceUnit.INCH));
     }
 }

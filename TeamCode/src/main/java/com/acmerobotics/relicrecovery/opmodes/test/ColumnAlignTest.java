@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class ColumnAlignTest extends AutoOpMode {
     @Override
     protected void setup() {
-        robot.drive.extendSideSwivel();
+        robot.drive.extendProximitySwivel();
     }
 
     @Override

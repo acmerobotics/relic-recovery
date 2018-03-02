@@ -178,7 +178,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(-57, secondColumnPosition.y()))
                 .build();
 
-        robot.drive.extendSideSwivel();
+        robot.drive.extendProximitySwivel();
         robot.drive.followPath(finalApproach);
         robot.drive.waitForPathFollower();
 
@@ -191,7 +191,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         robot.drive.setEstimatedPosition(finalApproach.end().pos());
 
-        robot.drive.retractSideSwivel();
+        robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         robot.sleep(1);
         robot.drive.followPath(new PathBuilder(finalApproach.end())

@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @Config
 @TeleOp
 public class HeadingFFTuner extends LinearOpMode {
-    public static double LOWER_BOUND = 0, UPPER_BOUND = 0.5;
-    public static double ANGLE = Math.PI; // rad
+    public static double LOWER_BOUND = 0, UPPER_BOUND = 0.1;
+    public static double ANGLE = Math.PI / 2; // rad
 
     /**
      * The search confidence codifies how fast the search window homes in on the solution. This
@@ -83,20 +83,21 @@ public class HeadingFFTuner extends LinearOpMode {
                 .turn(ANGLE)
                 .build());
 
-        double errorSum = 0;
-        int numErrors = 0;
+//        double errorSum = 0;
+//        int numErrors = 0;
 
-        while (opModeIsActive() && robot.drive.isFollowingPath()) {
-            double rawHeadingError = pathFollower.getHeadingError();
-            // If axial K_a is too high, then the error will be positive in when acceleration is
-            // positive and negative when acceleration is negative. Thus we use the sign of the
-            // acceleration to make sure all the errors have matching signs.
-            if (pathFollower.getPoseAcceleration() == null) continue;
-            errorSum += -Math.signum(pathFollower.getPoseAcceleration().heading()) * rawHeadingError;
-            numErrors++;
-            sleep(25);
+        while (!isStopRequested() && robot.drive.isFollowingPath()) {
+//            double rawHeadingError = pathFollower.getHeadingError();
+//            // If axial K_a is too high, then the error will be positive in when acceleration is
+//            // positive and negative when acceleration is negative. Thus we use the sign of the
+//            // acceleration to make sure all the errors have matching signs.
+//            if (pathFollower.getPoseAcceleration() == null) continue;
+//            errorSum += -Math.signum(pathFollower.getPoseAcceleration().heading()) * rawHeadingError;
+//            numErrors++;
+//            sleep(25);
         }
 
-        return errorSum / numErrors;
+//        return errorSum / numErrors;
+        return pathFollower.getHeadingError();
     }
 }
