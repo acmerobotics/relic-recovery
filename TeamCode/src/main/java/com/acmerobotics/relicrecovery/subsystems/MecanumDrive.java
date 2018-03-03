@@ -58,23 +58,23 @@ import java.util.Collections;
 public class MecanumDrive extends Subsystem {
     public static final int IMU_PORT = 1;
 
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(36.0, 24.0, 48.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.273, 0); // -0.5, 0.126);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.0001, 0, 0, 0.018, 0); // -0.02, 0.0112);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.0001, 0, 0, 0.0202, 0); // -0.02, 0.0138);
+    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
+    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.004);
+    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
     public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
 
-    public static double PROXIMITY_SMOOTHING_COEFF = 0.1;
-    public static double PROXIMITY_SWIVEL_EXTEND = 0.08;
-    public static double PROXIMITY_SWIVEL_RETRACT = 0.59;
+    public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
+    public static double PROXIMITY_SWIVEL_EXTEND = 0;
+    public static double PROXIMITY_SWIVEL_RETRACT = 0.6;
 
     public static double ULTRASONIC_SWIVEL_EXTEND = 0.2;
-    public static double ULTRASONIC_SWIVEL_RETRACT = 0.7;
+    public static double ULTRASONIC_SWIVEL_RETRACT = 0.75;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 

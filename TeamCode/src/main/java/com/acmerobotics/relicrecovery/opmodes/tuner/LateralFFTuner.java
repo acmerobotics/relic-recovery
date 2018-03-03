@@ -91,24 +91,26 @@ public class LateralFFTuner extends LinearOpMode {
                     .build());
         }
 
-        double errorSum = 0;
-        int numErrors = 0;
+//        double errorSum = 0;
+//        int numErrors = 0;
 
         while (opModeIsActive() && robot.drive.isFollowingPath()) {
-            double rawLateralError = pathFollower.getLateralError();
-            // If axial K_a is too high, then the error will be positive in when acceleration is
-            // positive and negative when acceleration is negative. Thus we use the sign of the
-            // acceleration to make sure all the errors have matching signs.
-            if (pathFollower.getPoseAcceleration() == null) continue;
-            errorSum += -Math.signum(pathFollower.getPoseAcceleration().y()) * rawLateralError;
-            numErrors++;
-            sleep(25);
+//            double rawLateralError = pathFollower.getLateralError();
+//            // If axial K_a is too high, then the error will be positive in when acceleration is
+//            // positive and negative when acceleration is negative. Thus we use the sign of the
+//            // acceleration to make sure all the errors have matching signs.
+//            if (pathFollower.getPoseAcceleration() == null) continue;
+//            errorSum += -Math.signum(pathFollower.getPoseAcceleration().y()) * rawLateralError;
+//            numErrors++;
+//            sleep(25);
         }
 
-        errorSum *= Math.signum(shouldTravelLeft ? 1 : -1);
+//        errorSum *= Math.signum(shouldTravelLeft ? 1 : -1);
 
         shouldTravelLeft = !shouldTravelLeft;
 
-        return errorSum / numErrors;
+//        return errorSum / numErrors;
+
+        return -(shouldTravelLeft ? 1 : -1) * pathFollower.getLateralError();
     }
 }

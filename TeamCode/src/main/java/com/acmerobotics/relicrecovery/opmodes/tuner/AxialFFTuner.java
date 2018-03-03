@@ -91,24 +91,26 @@ public class AxialFFTuner extends LinearOpMode {
                     .build());
         }
 
-        double errorSum = 0;
-        int numErrors = 0;
+//        double errorSum = 0;
+//        int numErrors = 0;
 
         while (opModeIsActive() && robot.drive.isFollowingPath()) {
-            double rawAxialError = pathFollower.getAxialError();
-            // If axial K_a is too high, then the error will be positive in when acceleration is
-            // positive and negative when acceleration is negative. Thus we use the sign of the
-            // acceleration to make sure all the errors have matching signs.
-            if (pathFollower.getPoseAcceleration() == null) continue;
-            errorSum += -Math.signum(pathFollower.getPoseAcceleration().x()) * rawAxialError;
-            numErrors++;
-            sleep(25);
+//            double rawAxialError = pathFollower.getAxialError();
+//            // If axial K_a is too high, then the error will be positive in when acceleration is
+//            // positive and negative when acceleration is negative. Thus we use the sign of the
+//            // acceleration to make sure all the errors have matching signs.
+//            if (pathFollower.getPoseAcceleration() == null) continue;
+//            errorSum += -Math.signum(pathFollower.getPoseAcceleration().x()) * rawAxialError;
+//            numErrors++;
+//            sleep(25);
         }
 
-        errorSum *= shouldTravelForward ? 1 : -1;
+//        errorSum *= shouldTravelForward ? 1 : -1;
 
         shouldTravelForward = !shouldTravelForward;
 
-        return errorSum / numErrors;
+//        return errorSum / numErrors;
+
+        return -(shouldTravelForward ? 1 : -1) * pathFollower.getAxialError();
     }
 }

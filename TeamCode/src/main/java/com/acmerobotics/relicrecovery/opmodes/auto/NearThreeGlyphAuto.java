@@ -107,7 +107,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         Path stoneToCrypto = new PathBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turn(-Math.PI / 2)
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
+//                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
                 .build();
 
         Pose2d cryptoPose = stoneToCrypto.end();

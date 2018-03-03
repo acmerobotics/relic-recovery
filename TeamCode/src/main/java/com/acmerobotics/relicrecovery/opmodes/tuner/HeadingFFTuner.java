@@ -98,6 +98,6 @@ public class HeadingFFTuner extends LinearOpMode {
         }
 
 //        return errorSum / numErrors;
-        return pathFollower.getHeadingError();
+        return -pathFollower.getHeadingError();
     }
 }
