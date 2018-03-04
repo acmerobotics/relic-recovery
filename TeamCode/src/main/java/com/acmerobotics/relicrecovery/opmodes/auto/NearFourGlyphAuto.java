@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Config
-@Autonomous(name = "4 Glyph Auto (Better)")
-public class BetterFourGlyphAuto extends AutoOpMode {
+@Autonomous(name = "4 Glyph Auto (Near)")
+public class NearFourGlyphAuto extends AutoOpMode {
     public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.CENTER;
 
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
@@ -112,47 +112,38 @@ public class BetterFourGlyphAuto extends AutoOpMode {
         robot.drive.waitForPathFollower();
 
         Path pitToCrypto1 = new PathBuilder(floorToPit.end())
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 36))
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 54))
                 .build();
         robot.drive.followPath(pitToCrypto1);
 
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
 
-        robot.sleep(0.4 * pitToCrypto1.duration());
+        robot.sleep(0.2 * pitToCrypto1.duration());
         robot.intake.setIntakePower(-0.3);
         robot.sleep(0.5);
         robot.intake.setIntakePower(1);
-        robot.drive.waitForPathFollower();
+        robot.sleep(0.3 * pitToCrypto1.duration() - 0.5);
         robot.intake.setIntakePower(0);
-
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
-
-        robot.waitOneFullCycle();
-
-        Pose2d estimatedPose = robot.drive.getEstimatedPose();
-        Path cryptoApproach1 = new PathBuilder(estimatedPose)
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 54))
-                .build();
-        robot.drive.followPath(cryptoApproach1);
         robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
-        robot.drive.enableHeadingCorrection(Math.PI / 2);
+        robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
         robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
-        robot.drive.setEstimatedPosition(cryptoApproach1.end().pos());
+        robot.drive.setEstimatedPosition(pitToCrypto1.end().pos());
 
         robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         sleep(500);
 
-        Path cryptoToPit2 = new PathBuilder(cryptoApproach1.end())
+        Path cryptoToPit2 = new PathBuilder(pitToCrypto1.end())
                 .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 12))
                 .turn(-Math.PI / 4)
                 .build();
@@ -179,47 +170,38 @@ public class BetterFourGlyphAuto extends AutoOpMode {
         }
         robot.drive.waitForPathFollower();
 
-        Path pitToCrypto2 = new PathBuilder(new Pose2d(cryptoToPit2.end().pos(), Math.PI / 2))
-                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 36))
+        Path pitToCrypto2 = new PathBuilder(new Pose2d(cryptoToPit2.end().pos(), -yMultiplier * Math.PI / 2))
+                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 54))
                 .build();
 
         robot.drive.followPath(pitToCrypto2);
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
 
-        robot.sleep(0.4 * pitToCrypto2.duration());
+        robot.sleep(0.2 * pitToCrypto2.duration());
         robot.intake.setIntakePower(-0.3);
         robot.sleep(0.5);
         robot.intake.setIntakePower(1);
-        robot.drive.waitForPathFollower();
+        robot.sleep(0.3 * pitToCrypto2.duration() - 0.5);
         robot.intake.setIntakePower(0);
-
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
-
-        robot.waitOneFullCycle();
-
-        estimatedPose = robot.drive.getEstimatedPose();
-        Path cryptoApproach2 = new PathBuilder(new Pose2d(estimatedPose.pos(), Math.PI / 2))
-                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 54))
-                .build();
-        robot.drive.followPath(cryptoApproach2);
         robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
-        robot.drive.enableHeadingCorrection(Math.PI / 2);
+        robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
         robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
-        robot.drive.setEstimatedPosition(cryptoApproach2.end().pos());
+        robot.drive.setEstimatedPosition(pitToCrypto2.end().pos());
 
         robot.dumpBed.dump();
         sleep(500);
 
-        robot.drive.followPath(new PathBuilder(cryptoApproach2.end())
+        robot.drive.followPath(new PathBuilder(pitToCrypto2.end())
                 .forward(8)
                 .build());
         robot.drive.waitForPathFollower();
