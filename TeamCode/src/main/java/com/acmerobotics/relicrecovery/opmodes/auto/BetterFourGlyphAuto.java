@@ -153,7 +153,7 @@ public class BetterFourGlyphAuto extends AutoOpMode {
         sleep(500);
 
         Path cryptoToPit2 = new PathBuilder(cryptoApproach1.end())
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 12))
+                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 12))
                 .turn(-Math.PI / 4)
                 .build();
         robot.drive.followPath(cryptoToPit2);
@@ -180,7 +180,7 @@ public class BetterFourGlyphAuto extends AutoOpMode {
         robot.drive.waitForPathFollower();
 
         Path pitToCrypto2 = new PathBuilder(new Pose2d(cryptoToPit2.end().pos(), Math.PI / 2))
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 36))
+                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 36))
                 .build();
 
         robot.drive.followPath(pitToCrypto2);
@@ -201,7 +201,6 @@ public class BetterFourGlyphAuto extends AutoOpMode {
 
         estimatedPose = robot.drive.getEstimatedPose();
         Path cryptoApproach2 = new PathBuilder(new Pose2d(estimatedPose.pos(), Math.PI / 2))
-                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), estimatedPose.y()))
                 .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 54))
                 .build();
         robot.drive.followPath(cryptoApproach2);
