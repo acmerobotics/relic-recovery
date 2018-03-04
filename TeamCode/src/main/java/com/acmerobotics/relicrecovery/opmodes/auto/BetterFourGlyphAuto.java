@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
@@ -22,8 +23,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
+@Config
 @Autonomous(name = "4 Glyph Auto (Better)")
 public class BetterFourGlyphAuto extends AutoOpMode {
+    public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.CENTER;
+
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
     static {
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.LEFT, RelicRecoveryVuMark.RIGHT);
@@ -55,7 +59,7 @@ public class BetterFourGlyphAuto extends AutoOpMode {
 
         int yMultiplier = (crypto.getAllianceColor() == AllianceColor.BLUE) ? -1 : 1;
 
-        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = VUMARK; // vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
@@ -86,11 +90,15 @@ public class BetterFourGlyphAuto extends AutoOpMode {
         Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(stone);
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
+        Vector2d biasedSecondColumnPosition = AutoPaths.getBiasedCryptoboxColumnPosition(crypto, secondColumn);
 
         Path stoneToFloor = new PathBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .build();
+        robot.drive.setEstimatedPose(stoneToFloor.start());
         robot.drive.followPath(stoneToFloor);
+        robot.sleep(0.5);
+        robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
 
         robot.intake.autoIntake();
@@ -171,21 +179,21 @@ public class BetterFourGlyphAuto extends AutoOpMode {
         }
         robot.drive.waitForPathFollower();
 
-        Path pitToCrypto2 = new PathBuilder(cryptoToPit2.end())
+        Path pitToCrypto2 = new PathBuilder(new Pose2d(cryptoToPit2.end().pos(), Math.PI / 2))
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 36))
                 .build();
 
         robot.drive.followPath(pitToCrypto2);
         robot.drive.extendUltrasonicSwivel();
-
-        robot.sleep(0.5 * pitToCrypto2.duration());
-
-        robot.intake.setIntakePower(-1);
         robot.drive.extendProximitySwivel();
 
+        robot.sleep(0.4 * pitToCrypto2.duration());
+        robot.intake.setIntakePower(-0.3);
+        robot.sleep(0.5);
+        robot.intake.setIntakePower(1);
         robot.drive.waitForPathFollower();
-
         robot.intake.setIntakePower(0);
+
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
@@ -193,8 +201,8 @@ public class BetterFourGlyphAuto extends AutoOpMode {
 
         estimatedPose = robot.drive.getEstimatedPose();
         Path cryptoApproach2 = new PathBuilder(new Pose2d(estimatedPose.pos(), Math.PI / 2))
-                .lineTo(new Vector2d(secondColumnPosition.x(), estimatedPose.y()))
-                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 54))
+                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), estimatedPose.y()))
+                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 54))
                 .build();
         robot.drive.followPath(cryptoApproach2);
         robot.drive.waitForPathFollower();

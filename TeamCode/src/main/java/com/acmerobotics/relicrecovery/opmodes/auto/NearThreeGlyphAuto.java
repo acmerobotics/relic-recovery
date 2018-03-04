@@ -125,7 +125,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.drive.extendProximitySwivel();
         robot.drive.setEstimatedPose(stoneToCrypto.start());
         robot.drive.followPath(stoneToCrypto);
-        robot.sleep(0.75);
+        robot.sleep(0.5);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
 

@@ -29,7 +29,7 @@ public class DumpBed extends Subsystem {
 
     public static double BED_LEFT_DOWN_POSITION = 0.14; // .09
     public static double BED_RIGHT_DOWN_POSITION = 0.69;
-    public static double BED_LEFT_UP_POSITION = 0.71; // .6
+    public static double BED_LEFT_UP_POSITION = 0.76; // .6
     public static double BED_RIGHT_UP_POSITION = 0.02;
 
     public static double BED_RELEASE_ENGAGE_POSITION = 0.42;

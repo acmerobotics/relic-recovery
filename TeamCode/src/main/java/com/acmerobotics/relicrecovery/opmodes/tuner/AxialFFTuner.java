@@ -77,7 +77,7 @@ public class AxialFFTuner extends LinearOpMode {
      * @return the mean error for the movement, positive indicates the coefficient is too low
      */
     public double testCoefficient(double coefficient) {
-        MecanumDrive.AXIAL_PID.a = coefficient;
+        MecanumDrive.AXIAL_PIDF.a = coefficient;
 
         robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));
 

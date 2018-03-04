@@ -61,9 +61,9 @@ public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.004);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
+    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
+    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.004);
+    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
     public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
@@ -214,7 +214,7 @@ public class MecanumDrive extends Subsystem {
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
 
-        pathFollower = new PathFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
+        pathFollower = new PathFollower(HEADING_PIDF, AXIAL_PIDF, LATERAL_PIDF);
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
@@ -411,11 +411,6 @@ public class MecanumDrive extends Subsystem {
         } catch (Exception e) {
             Log.w("MecanumDrive", e);
         }
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
-            s.append(positions[i] + " ");
-        }
-        System.out.println(s.toString());
         return positions;
     }
 

@@ -19,6 +19,8 @@ public class AutoPaths {
     /** used to artificially adjust the balancing stone location. */
     public static double STONE_CORRECTION = -2; // in
 
+    public static double LATERAL_BIAS = 1.25; // in
+
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
     public static final Map<RelicRecoveryVuMark, Integer> VUMARK_MAP;
@@ -51,6 +53,23 @@ public class AutoPaths {
             case FAR_BLUE:
             case FAR_RED:
                 return cryptobox.getPosition().added(new Vector2d(0, -columnInt * CRYPTO_COL_WIDTH));
+        }
+        throw new UnsupportedOperationException(cryptobox + " is not a supported cryptobox");
+    }
+
+    public static Vector2d getBiasedCryptoboxColumnPosition(Cryptobox cryptobox, RelicRecoveryVuMark column) {
+        if (column == RelicRecoveryVuMark.UNKNOWN) {
+            throw new IllegalArgumentException("Column may not be UNKNOWN");
+        }
+        int columnInt = VUMARK_MAP.get(column);
+        switch (cryptobox) {
+            case NEAR_BLUE:
+                return cryptobox.getPosition().added(new Vector2d(columnInt * (CRYPTO_COL_WIDTH + LATERAL_BIAS), 0));
+            case NEAR_RED:
+                return cryptobox.getPosition().added(new Vector2d(-columnInt * (CRYPTO_COL_WIDTH + LATERAL_BIAS), 0));
+            case FAR_BLUE:
+            case FAR_RED:
+                return cryptobox.getPosition().added(new Vector2d(0, -columnInt * (CRYPTO_COL_WIDTH + LATERAL_BIAS)));
         }
         throw new UnsupportedOperationException(cryptobox + " is not a supported cryptobox");
     }

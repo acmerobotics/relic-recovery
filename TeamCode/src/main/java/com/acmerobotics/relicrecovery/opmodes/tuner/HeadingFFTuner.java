@@ -75,7 +75,7 @@ public class HeadingFFTuner extends LinearOpMode {
      * @return the mean error for the movement, positive indicates the coefficient is too high
      */
     public double testCoefficient(double coefficient) {
-        MecanumDrive.HEADING_PID.a = coefficient;
+        MecanumDrive.HEADING_PIDF.a = coefficient;
 
         robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));
 

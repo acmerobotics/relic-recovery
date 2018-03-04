@@ -49,8 +49,13 @@ public class JewelSlapper extends Subsystem {
     }
 
     public void lowerArmAndSlapper() {
-        setSlapperPosition(SlapperPosition.CENTER);
         setArmPosition(ArmPosition.DOWN);
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        setSlapperPosition(SlapperPosition.CENTER);
     }
 
     public void stowArmAndSlapper() {

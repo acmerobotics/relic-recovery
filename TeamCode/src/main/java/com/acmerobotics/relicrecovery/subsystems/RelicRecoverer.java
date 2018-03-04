@@ -24,9 +24,9 @@ public class RelicRecoverer extends Subsystem {
     public static double FINGER_CLOSE_POSITION = 0;
     public static double FINGER_OPEN_POSITION = 0.45;
 
-    public static double ARM_PULLEY_RADIUS = 2.734; // in
-    public static double MAX_EXTENSION_DISTANCE = 46;
-    public static PIDCoefficients ARM_PID = new PIDCoefficients(-1.5, 0, -0.02);
+    public static double ARM_PULLEY_RADIUS = 0.6835; // in
+    public static double MAX_EXTENSION_DISTANCE = 42;
+    public static PIDCoefficients ARM_PID = new PIDCoefficients(-3, 0, -0.04);
 
     public enum ArmMode {
         PID,
@@ -129,6 +129,7 @@ public class RelicRecoverer extends Subsystem {
 
         switch (armMode) {
             case MANUAL:
+                telemetryData.relicArmPosition = getArmPosition();
                 break;
             case PID:
                 double armPosition = getArmPosition();

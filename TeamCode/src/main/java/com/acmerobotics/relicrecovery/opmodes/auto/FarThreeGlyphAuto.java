@@ -136,14 +136,14 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
 
-        double headingP = MecanumDrive.HEADING_PID.p;
-        MecanumDrive.HEADING_PID.p = 0;
+        double headingP = MecanumDrive.HEADING_PIDF.p;
+        MecanumDrive.HEADING_PIDF.p = 0;
         robot.drive.setEstimatedPose(stoneToCrypto.start());
         robot.drive.followPath(stoneToCrypto);
         robot.sleep(0.5);
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
-        MecanumDrive.HEADING_PID.p = headingP;
+        MecanumDrive.HEADING_PIDF.p = headingP;
 
 //        robot.drive.alignWithColumn();
 //        robot.drive.waitForColumnAlign();
