@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -42,8 +43,8 @@ public class JewelSlapper extends Subsystem {
     public JewelSlapper(HardwareMap map, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        jewelArm = map.servo.get("jewelArm");
-        jewelSlapper = map.servo.get("jewelSlapper");
+        jewelArm = new CachingServo(map.servo.get("jewelArm"));
+        jewelSlapper = new CachingServo(map.servo.get("jewelSlapper"));
 
         stowArmAndSlapper();
     }

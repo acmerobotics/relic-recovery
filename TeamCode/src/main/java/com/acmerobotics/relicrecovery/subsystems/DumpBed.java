@@ -2,6 +2,8 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
+import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -80,13 +82,13 @@ public class DumpBed extends Subsystem {
 
         pidController = new PIDController(LIFT_PID);
 
-        liftMotor = map.dcMotor.get("dumpLift");
+        liftMotor = new CachingDcMotor(map.dcMotor.get("dumpLift"));
         liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        dumpRotateLeft = map.servo.get("dumpRotateLeft");
-        dumpRotateRight = map.servo.get("dumpRotateRight");
-        dumpRelease = map.servo.get("dumpRelease");
+        dumpRotateLeft = new CachingServo(map.servo.get("dumpRotateLeft"));
+        dumpRotateRight = new CachingServo(map.servo.get("dumpRotateRight"));
+        dumpRelease = new CachingServo(map.servo.get("dumpRelease"));
 
         liftHallEffectSensor = map.digitalChannel.get("dumpLiftMagneticTouch");
         liftHallEffectSensor.setMode(DigitalChannel.Mode.INPUT);

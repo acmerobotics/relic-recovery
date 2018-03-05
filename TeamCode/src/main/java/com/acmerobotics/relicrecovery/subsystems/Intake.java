@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -44,8 +45,8 @@ public class Intake extends Subsystem {
         this.telemetry = new TelemetryEx(telemetry);
         this.telemetryData = new TelemetryData();
 
-        leftIntake = map.dcMotor.get("intakeLeft");
-        rightIntake = map.dcMotor.get("intakeRight");
+        leftIntake = new CachingDcMotor(map.dcMotor.get("intakeLeft"));
+        rightIntake = new CachingDcMotor(map.dcMotor.get("intakeRight"));
 
         frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
         rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");

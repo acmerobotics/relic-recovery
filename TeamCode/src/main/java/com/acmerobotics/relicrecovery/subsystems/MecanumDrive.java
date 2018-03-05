@@ -10,6 +10,8 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
+import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
+import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
@@ -21,6 +23,7 @@ import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
+import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -29,6 +32,7 @@ import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -189,22 +193,24 @@ public class MecanumDrive extends Subsystem {
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
         frontHub = map.get(LynxModule.class, "frontHub");
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(frontHub, IMU_PORT);
+        I2cDeviceSynch imuI2cDevice = LynxOptimizedI2cSensorFactory.createLynxI2cDeviceSync(frontHub, IMU_PORT);
+        imuI2cDevice.setUserConfiguredName("imu");
+        imu = new AdafruitBNO055IMU(imuI2cDevice);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
         proximitySensor = map.get(LynxI2cColorRangeSensor.class, "proximitySensor");
-        proximitySwivel = map.servo.get("proximitySwivel");
+        proximitySwivel = new CachingServo(map.servo.get("proximitySwivel"));
 
         ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonicSensor"));
-        ultrasonicSwivel = map.servo.get("ultrasonicSwivel");
+        ultrasonicSwivel = new CachingServo(map.servo.get("ultrasonicSwivel"));
 
         powers = new double[4];
         encoderOffsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
-            motors[i] = map.dcMotor.get(MOTOR_NAMES[i]);
+            motors[i] = new CachingDcMotor(map.dcMotor.get(MOTOR_NAMES[i]));
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }

@@ -2,6 +2,8 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
+import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -68,11 +70,11 @@ public class RelicRecoverer extends Subsystem {
         this.telemetry = new TelemetryEx(telemetry);
         telemetryData = new TelemetryData();
 
-        relicArm = map.dcMotor.get("relicArm");
+        relicArm = new CachingDcMotor(map.dcMotor.get("relicArm"));
         relicArm.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        relicWrist = map.servo.get("relicWrist");
-        relicFinger = map.servo.get("relicFinger");
+        relicWrist = new CachingServo(map.servo.get("relicWrist"));
+        relicFinger = new CachingServo(map.servo.get("relicFinger"));
 
         armController = new PIDController(ARM_PID);
 
@@ -129,7 +131,6 @@ public class RelicRecoverer extends Subsystem {
 
         switch (armMode) {
             case MANUAL:
-                telemetryData.relicArmPosition = getArmPosition();
                 break;
             case PID:
                 double armPosition = getArmPosition();
