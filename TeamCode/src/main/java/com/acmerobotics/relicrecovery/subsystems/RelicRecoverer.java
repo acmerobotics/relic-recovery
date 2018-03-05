@@ -25,7 +25,7 @@ public class RelicRecoverer extends Subsystem {
     public static double FINGER_OPEN_POSITION = 0.45;
 
     public static double ARM_PULLEY_RADIUS = 0.6835; // in
-    public static double MAX_EXTENSION_DISTANCE = 42;
+    public static double MAX_EXTENSION_DISTANCE = 41;
     public static PIDCoefficients ARM_PID = new PIDCoefficients(-3, 0, -0.04);
 
     public enum ArmMode {

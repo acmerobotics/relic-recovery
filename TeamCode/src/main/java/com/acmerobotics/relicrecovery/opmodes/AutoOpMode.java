@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 public abstract class AutoOpMode extends LinearOpMode {
     public static final double PICTOGRAPH_READ_TIMEOUT = 5; // seconds
     public static final long POLL_INTERVAL = 5; // ms
+    public static final double LATERAL_BIAS = 1.25; // in
 
     protected Robot robot;
 

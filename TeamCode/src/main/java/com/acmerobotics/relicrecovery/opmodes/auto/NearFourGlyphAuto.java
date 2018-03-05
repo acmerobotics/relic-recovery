@@ -90,7 +90,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(stone);
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
-        Vector2d biasedSecondColumnPosition = AutoPaths.getBiasedCryptoboxColumnPosition(crypto, secondColumn);
+        Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(-yMultiplier * AutoPaths.VUMARK_MAP.get(secondColumn) * LATERAL_BIAS, 0));
 
         Path stoneToFloor = new PathBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
@@ -112,7 +112,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.waitForPathFollower();
 
         Path pitToCrypto1 = new PathBuilder(floorToPit.end())
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 54))
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
                 .build();
         robot.drive.followPath(pitToCrypto1);
 
@@ -171,7 +171,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.waitForPathFollower();
 
         Path pitToCrypto2 = new PathBuilder(new Pose2d(cryptoToPit2.end().pos(), -yMultiplier * Math.PI / 2))
-                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 54))
+                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 57))
                 .build();
 
         robot.drive.followPath(pitToCrypto2);

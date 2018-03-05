@@ -23,7 +23,7 @@ public class DiagonalAuto extends AutoOpMode {
     @Override
     protected void run() {
         // jewel logic here
-        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.LEFT; // vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
@@ -59,5 +59,6 @@ public class DiagonalAuto extends AutoOpMode {
         robot.drive.stop();
         sleep(1000);
         robot.dumpBed.retract();
+        sleep(500);
     }
 }
