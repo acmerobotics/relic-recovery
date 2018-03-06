@@ -43,8 +43,8 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
     public RelicRecoverer relicRecoverer;
 
     private List<Subsystem> subsystems;
-    private List<Subsystem> subsystemsWithProblems;
-    private List<CountDownLatch> cycleLatches;
+    private final List<Subsystem> subsystemsWithProblems;
+    private final List<CountDownLatch> cycleLatches;
     private List<Telemetry> allTelemetry;
     private CSVLoggingTelemetry robotTelemetry;
     private OpModeManagerImpl opModeManager;
@@ -120,7 +120,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
             opModeManager.registerListener(this);
         }
 
-        updateExecutor = ThreadPool.newSingleThreadExecutor("robot subsystem updater");
+        updateExecutor = ThreadPool.newSingleThreadExecutor("robot updater");
 
         subsystemsWithProblems = new ArrayList<>();
         RobotLog.registerGlobalWarningSource(this);
