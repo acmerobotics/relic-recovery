@@ -129,7 +129,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.jewelSlapper.stowArmAndSlapper();
         robot.drive.waitForPathFollower();
 
-        robot.drive.alignWithColumn();
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
 
         robot.drive.setEstimatedPosition(stoneToCrypto.end().pos());
@@ -179,7 +179,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
 
         robot.drive.enableHeadingCorrection(yMultiplier * -Math.PI / 2);
-        robot.drive.alignWithColumn();
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
         robot.drive.disableHeadingCorrection();
 

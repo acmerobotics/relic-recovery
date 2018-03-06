@@ -112,7 +112,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.waitForPathFollower();
 
         Path pitToCrypto1 = new PathBuilder(floorToPit.end())
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 59))
                 .build();
         robot.drive.followPath(pitToCrypto1);
 
@@ -133,7 +133,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
-        robot.drive.alignWithColumn();
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
@@ -171,7 +171,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.waitForPathFollower();
 
         Path pitToCrypto2 = new PathBuilder(new Pose2d(cryptoToPit2.end().pos(), -yMultiplier * Math.PI / 2))
-                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 57))
+                .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 60))
                 .build();
 
         robot.drive.followPath(pitToCrypto2);
@@ -192,7 +192,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
-        robot.drive.alignWithColumn();
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();

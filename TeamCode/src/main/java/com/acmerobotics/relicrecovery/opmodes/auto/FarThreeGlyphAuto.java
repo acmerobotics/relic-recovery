@@ -15,7 +15,6 @@ import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
-import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -28,12 +27,7 @@ import java.util.Map;
 @Config
 @Autonomous(name = "3 Glyph Auto (Far)")
 public class FarThreeGlyphAuto extends AutoOpMode {
-    public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
-    static {
-        COLUMN_TRANSITION.put(RelicRecoveryVuMark.LEFT, RelicRecoveryVuMark.RIGHT);
-        COLUMN_TRANSITION.put(RelicRecoveryVuMark.CENTER, RelicRecoveryVuMark.RIGHT);
-        COLUMN_TRANSITION.put(RelicRecoveryVuMark.RIGHT, RelicRecoveryVuMark.LEFT);
-    }
+    public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.CENTER;
 
     private UltrasonicLocalizer ultrasonicLocalizer;
     private BalancingStone stone;
@@ -69,14 +63,20 @@ public class FarThreeGlyphAuto extends AutoOpMode {
     protected void run() {
         double startTime = TimestampedData.getCurrentTime();
 
-        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
-
         int yMultiplier = crypto.getAllianceColor() == AllianceColor.BLUE ? -1 : 1;
 
         // jewel logic here
-        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = VUMARK; // vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
+
+        final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
+        COLUMN_TRANSITION.put(RelicRecoveryVuMark.LEFT,
+                robot.config.getAllianceColor() == AllianceColor.BLUE ? RelicRecoveryVuMark.RIGHT : RelicRecoveryVuMark.CENTER);
+        COLUMN_TRANSITION.put(RelicRecoveryVuMark.CENTER,
+                robot.config.getAllianceColor() == AllianceColor.BLUE ? RelicRecoveryVuMark.RIGHT : RelicRecoveryVuMark.LEFT);
+        COLUMN_TRANSITION.put(RelicRecoveryVuMark.RIGHT,
+                robot.config.getAllianceColor() == AllianceColor.BLUE ? RelicRecoveryVuMark.CENTER : RelicRecoveryVuMark.LEFT);
 
         robot.jewelSlapper.lowerArmAndSlapper();
 
@@ -138,7 +138,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
 
         robot.drive.enableHeadingCorrection(cryptoApproach1.end().heading());
-        robot.drive.alignWithColumn();
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(new Vector2d(-56, firstColumnPosition.y()));
@@ -163,7 +163,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         Path pitToCrypto = new PathBuilder(cryptoToPit.end())
                 .turn(Math.PI / 4 * yMultiplier)
-                .lineTo(new Vector2d(-48, yMultiplier * 16))
+//                .lineTo(new Vector2d(-48, yMultiplier * 16))
                 .lineTo(new Vector2d(-48, biasedSecondColumnPosition.y()))
                 .build();
         robot.drive.followPath(pitToCrypto);
@@ -192,7 +192,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
 
         robot.drive.enableHeadingCorrection(cryptoApproach2.end().heading());
-        robot.drive.alignWithColumn();
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(new Vector2d(-56, secondColumnPosition.y()));

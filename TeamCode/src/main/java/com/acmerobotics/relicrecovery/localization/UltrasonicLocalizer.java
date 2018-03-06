@@ -90,7 +90,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                         break;
                     case FAR_BLUE:
                     case FAR_RED:
-                        estimatedPosition = new Vector2d(-72 + targetOffset + ultrasonicDistance + MOUNTING_OFFSET, estimatedPosition.y());
+                        estimatedPosition = new Vector2d(-72 + targetOffset + ultrasonicDistance - MOUNTING_OFFSET, estimatedPosition.y());
                         break;
                 }
             }

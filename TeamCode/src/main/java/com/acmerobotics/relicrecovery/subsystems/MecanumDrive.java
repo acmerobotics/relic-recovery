@@ -10,6 +10,7 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
 import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
@@ -70,7 +71,8 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
 
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
-    public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
+    public static double COLUMN_ALIGN_BLUE_SETPOINT = 7;
+    public static double COLUMN_ALIGN_RED_SETPOINT = 4.3;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
 
     public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
@@ -494,9 +496,9 @@ public class MecanumDrive extends Subsystem {
         useCachedEncoderPositions = false;
     }
 
-    public void alignWithColumn() {
+    public void alignWithColumn(AllianceColor color) {
         columnAlignController.reset();
-        columnAlignController.setSetpoint(COLUMN_ALIGN_TARGET_DISTANCE);
+        columnAlignController.setSetpoint(color == AllianceColor.BLUE ? COLUMN_ALIGN_BLUE_SETPOINT : COLUMN_ALIGN_RED_SETPOINT);
         proximitySmoother.reset();
         setMode(Mode.COLUMN_ALIGN);
     }

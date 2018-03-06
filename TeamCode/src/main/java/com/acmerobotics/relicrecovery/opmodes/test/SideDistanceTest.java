@@ -1,6 +1,5 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -15,7 +14,6 @@ public class SideDistanceTest extends OpMode {
     public void init() {
         robot = new Robot(this);
         robot.drive.extendProximitySwivel();
-        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
         robot.start();
     }
 
