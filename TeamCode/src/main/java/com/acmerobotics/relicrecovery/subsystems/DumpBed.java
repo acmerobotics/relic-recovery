@@ -4,6 +4,7 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
 import com.acmerobotics.relicrecovery.hardware.CachingServo;
+import com.acmerobotics.relicrecovery.hardware.CurrentSensor;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -50,6 +51,7 @@ public class DumpBed extends Subsystem {
     private DcMotor liftMotor;
     private Servo dumpRelease, dumpRotateLeft, dumpRotateRight;
     private DigitalChannel liftHallEffectSensor;
+    private CurrentSensor servoCurrentSensor;
 
     private boolean bedDumping, liftUp, skipFirstRead, calibrated, movingDownToSensor;
 
@@ -92,6 +94,9 @@ public class DumpBed extends Subsystem {
 
         liftHallEffectSensor = map.digitalChannel.get("dumpLiftMagneticTouch");
         liftHallEffectSensor.setMode(DigitalChannel.Mode.INPUT);
+
+        // TODO
+//        servoCurrentSensor = map...
 
         retract();
         calibrate();
