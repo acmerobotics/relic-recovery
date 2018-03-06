@@ -209,6 +209,8 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.dumpBed.retract();
         robot.drive.retractProximitySwivel();
 
+        robot.waitOneFullCycle();
+
         telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
         telemetry.update();
 
