@@ -70,7 +70,8 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.004);
     public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
 
-    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
+    public static PIDCoefficients BLUE_COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
+    public static PIDCoefficients RED_COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
     public static double COLUMN_ALIGN_BLUE_SETPOINT = 7;
     public static double COLUMN_ALIGN_RED_SETPOINT = 4.3;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
@@ -127,7 +128,7 @@ public class MecanumDrive extends Subsystem {
 
     private LynxI2cColorRangeSensor proximitySensor;
     private ExponentialSmoother proximitySmoother;
-    private PIDController columnAlignController;
+    private PIDController columnAlignController, blueColumnAlignController, redColumnAlignController;
 
     private boolean useCachedOrientation;
     private Orientation cachedOrientation;
@@ -226,8 +227,8 @@ public class MecanumDrive extends Subsystem {
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
-        columnAlignController = new PIDController(COLUMN_ALIGN_PID);
-        columnAlignController.setOutputBounds(-0.2, 0.2);
+        blueColumnAlignController = new PIDController(BLUE_COLUMN_ALIGN_PID);
+        redColumnAlignController = new PIDController(RED_COLUMN_ALIGN_PID);
 
         proximitySmoother = new ExponentialSmoother(PROXIMITY_SMOOTHING_COEFF);
 
@@ -497,6 +498,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void alignWithColumn(AllianceColor color) {
+        columnAlignController = (color == AllianceColor.BLUE) ? blueColumnAlignController : redColumnAlignController;
         columnAlignController.reset();
         columnAlignController.setSetpoint(color == AllianceColor.BLUE ? COLUMN_ALIGN_BLUE_SETPOINT : COLUMN_ALIGN_RED_SETPOINT);
         proximitySmoother.reset();
