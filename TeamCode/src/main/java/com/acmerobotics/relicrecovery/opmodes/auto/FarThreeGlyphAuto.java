@@ -191,21 +191,30 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
 
-        robot.drive.enableHeadingCorrection(cryptoApproach2.end().heading());
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
-        robot.drive.waitForColumnAlign();
-        robot.drive.disableHeadingCorrection();
-        robot.drive.setEstimatedPosition(new Vector2d(-56, secondColumnPosition.y()));
+        double elapsedTime = TimestampedData.getCurrentTime() - startTime;
+        if (elapsedTime < 27) {
+            robot.drive.enableHeadingCorrection(cryptoApproach2.end().heading());
+            robot.drive.alignWithColumn(robot.config.getAllianceColor());
+            robot.drive.waitForColumnAlign();
+            robot.drive.disableHeadingCorrection();
+            robot.drive.setEstimatedPosition(new Vector2d(-56, secondColumnPosition.y()));
 
-        robot.drive.retractProximitySwivel();
-        robot.dumpBed.dump();
-        robot.sleep(0.5);
+            robot.drive.retractProximitySwivel();
+            robot.dumpBed.dump();
+            robot.sleep(0.5);
 
-        robot.drive.followPath(new PathBuilder(cryptoApproach2.end())
-                .forward(6)
-                .build());
-        robot.drive.waitForPathFollower();
-        robot.dumpBed.retract();
+            robot.drive.followPath(new PathBuilder(cryptoApproach2.end())
+                    .forward(6)
+                    .build());
+            robot.drive.waitForPathFollower();
+            robot.dumpBed.retract();
+        } else {
+            robot.drive.retractProximitySwivel();
+            robot.drive.followPath(new PathBuilder(cryptoApproach2.end())
+                    .forward(6)
+                    .build());
+            robot.drive.waitForPathFollower();
+        }
 
         robot.waitOneFullCycle();
 

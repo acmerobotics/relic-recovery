@@ -141,7 +141,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
 
         robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
-        sleep(500);
+        robot.sleep(0.5);
 
         Path cryptoToPit2 = new PathBuilder(pitToCrypto1.end())
                 .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 12))
@@ -187,27 +187,33 @@ public class NearFourGlyphAuto extends AutoOpMode {
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForPathFollower();
-
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
-        robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
-        robot.drive.waitForColumnAlign();
+        double elapsedTime = TimestampedData.getCurrentTime() - startTime;
+        if (elapsedTime < 27) {
+            robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
+            robot.drive.alignWithColumn(robot.config.getAllianceColor());
+            robot.drive.waitForColumnAlign();
+            robot.drive.disableHeadingCorrection();
+            robot.drive.setEstimatedPosition(pitToCrypto2.end().pos());
 
-        robot.drive.disableHeadingCorrection();
-        robot.drive.setEstimatedPosition(pitToCrypto2.end().pos());
+            robot.drive.retractProximitySwivel();
+            robot.dumpBed.dump();
+            robot.sleep(0.5);
 
-        robot.dumpBed.dump();
-        sleep(500);
+            robot.drive.followPath(new PathBuilder(pitToCrypto2.end())
+                    .forward(8)
+                    .build());
+            robot.drive.waitForPathFollower();
 
-        robot.drive.followPath(new PathBuilder(pitToCrypto2.end())
-                .forward(8)
-                .build());
-        robot.drive.waitForPathFollower();
-
-        robot.dumpBed.retract();
-        robot.drive.retractProximitySwivel();
+            robot.dumpBed.retract();
+        } else {
+            robot.drive.followPath(new PathBuilder(pitToCrypto2.end())
+                    .forward(8)
+                    .build());
+            robot.drive.waitForPathFollower();
+        }
 
         robot.waitOneFullCycle();
 
