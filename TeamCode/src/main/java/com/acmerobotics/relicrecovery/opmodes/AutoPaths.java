@@ -17,7 +17,7 @@ import java.util.Map;
 @Config
 public class AutoPaths {
     /** used to artificially adjust the balancing stone location. */
-    public static double STONE_CORRECTION = -2; // in
+    public static double STONE_CORRECTION = -3; // in
 
     public static double CRYPTO_COL_WIDTH = 7.5; // in
 
@@ -113,21 +113,21 @@ public class AutoPaths {
                 double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX - 18, -48))
+                            .lineTo(new Vector2d(cryptoboxX - 19, -48))
                             .turn(-Math.PI / 4)
-                            .lineTo(new Vector2d(cryptoboxX - 8, -58))
+                            .lineTo(new Vector2d(cryptoboxX - 9, -58))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX + 4 + 10 / Math.sqrt(3), -48))
+                            .lineTo(new Vector2d(cryptoboxX + 4 + 8 / Math.sqrt(3), -48))
                             .turn(-2 * Math.PI / 3)
-                            .lineTo(new Vector2d(cryptoboxX + 4, -58))
+                            .lineTo(new Vector2d(cryptoboxX + 4, -56))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX + 18, -48))
+                            .lineTo(new Vector2d(cryptoboxX + 21, -48))
                             .turn(-3 * Math.PI / 4)
-                            .lineTo(new Vector2d(cryptoboxX + 8, -58))
+                            .lineTo(new Vector2d(cryptoboxX + 10, -59))
                             .build();
                 }
                 break;
@@ -162,21 +162,21 @@ public class AutoPaths {
                 double cryptoboxX = 12 - CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX + 18, 48))
+                            .lineTo(new Vector2d(cryptoboxX + 16, 48))
                             .turn(-Math.PI / 4)
-                            .lineTo(new Vector2d(cryptoboxX + 8, 58))
+                            .lineTo(new Vector2d(cryptoboxX + 6, 58))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX + 4 + 10 / Math.sqrt(3), 48))
+                            .lineTo(new Vector2d(cryptoboxX + 4 + 8 / Math.sqrt(3), 48))
                             .turn(-Math.PI / 3)
-                            .lineTo(new Vector2d(cryptoboxX + 4, 58))
+                            .lineTo(new Vector2d(cryptoboxX + 4, 56))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
                     return new PathBuilder(stonePose)
-                            .lineTo(new Vector2d(cryptoboxX - 18, 48))
+                            .lineTo(new Vector2d(cryptoboxX - 21, 48))
                             .turn(-3 * Math.PI / 4)
-                            .lineTo(new Vector2d(cryptoboxX - 8, 58))
+                            .lineTo(new Vector2d(cryptoboxX - 10, 59))
                             .build();
                 }
                 break;

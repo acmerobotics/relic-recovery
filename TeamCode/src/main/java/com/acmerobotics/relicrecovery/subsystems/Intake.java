@@ -5,6 +5,7 @@ import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -47,6 +48,9 @@ public class Intake extends Subsystem {
 
         leftIntake = new CachingDcMotor(map.dcMotor.get("intakeLeft"));
         rightIntake = new CachingDcMotor(map.dcMotor.get("intakeRight"));
+
+        leftIntake.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightIntake.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
         rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");

@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
+import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
@@ -12,8 +13,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
+@Config
 @Autonomous(name = "Diagonal Auto")
 public class DiagonalAuto extends AutoOpMode {
+    public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.CENTER;
+
     @Override
     protected void setup() {
         Pose2d initialPose = AutoPaths.getAdjustedBalancingStonePose(robot.config.getBalancingStone());
@@ -23,7 +27,7 @@ public class DiagonalAuto extends AutoOpMode {
     @Override
     protected void run() {
         // jewel logic here
-        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = VUMARK; // vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 

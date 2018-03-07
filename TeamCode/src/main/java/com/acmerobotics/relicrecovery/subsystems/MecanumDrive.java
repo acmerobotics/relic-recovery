@@ -70,9 +70,9 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.004);
     public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
 
-    public static PIDCoefficients BLUE_COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
-    public static PIDCoefficients RED_COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
-    public static double COLUMN_ALIGN_BLUE_SETPOINT = 7;
+    public static PIDCoefficients BLUE_COLUMN_ALIGN_PID = new PIDCoefficients(-0.035, 0, -0.0175);
+    public static PIDCoefficients RED_COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.03);
+    public static double COLUMN_ALIGN_BLUE_SETPOINT = 6;
     public static double COLUMN_ALIGN_RED_SETPOINT = 4.3;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
 
