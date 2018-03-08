@@ -9,9 +9,9 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class JewelSlapper extends Subsystem {
-    public static double ARM_UP_POSITION = 0.17;
-    public static double ARM_HALFWAY_POSITION = 0.6;
-    public static double ARM_DOWN_POSITION = 0.85;
+    public static double ARM_UP_POSITION = 0.1;
+    public static double ARM_HALFWAY_POSITION = 0.3;
+    public static double ARM_DOWN_POSITION = 0.75;
 
     public static double SLAPPER_LEFT_POSITION = 0.85;
     public static double SLAPPER_PARALLEL_POSITION = 0.49;
@@ -46,26 +46,20 @@ public class JewelSlapper extends Subsystem {
         jewelArm = new CachingServo(map.servo.get("jewelArm"));
         jewelSlapper = new CachingServo(map.servo.get("jewelSlapper"));
 
-        stowArmAndSlapper();
-    }
-
-    public void lowerArmAndSlapper() {
-        setArmPosition(ArmPosition.DOWN);
-        try {
-            Thread.sleep(250);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        setSlapperPosition(SlapperPosition.CENTER);
-    }
-
-    public void stowArmAndSlapper() {
         setSlapperPosition(SlapperPosition.STOW);
         setArmPosition(ArmPosition.UP);
     }
 
+    public SlapperPosition getSlapperPosition() {
+        return slapperPosition;
+    }
+
     public void setSlapperPosition(SlapperPosition slapperPosition) {
         this.slapperPosition = slapperPosition;
+    }
+
+    public ArmPosition getArmPosition() {
+        return armPosition;
     }
 
     public void setArmPosition(ArmPosition armPosition) {

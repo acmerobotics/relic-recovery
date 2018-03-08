@@ -30,29 +30,27 @@ public class DiagonalPlusAuto extends AutoOpMode {
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
-        robot.jewelSlapper.lowerArmAndSlapper();
-
-        robot.sleep(0.75);
+        lowerArmAndSlapper();
 
         boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
 
         if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
-            robot.sleep(0.5);
+            robot.sleep(0.75);
         }
 
         Path stoneToCrypto = AutoPaths.makeDiagonalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
         robot.drive.followPath(stoneToCrypto);
         robot.sleep(0.5);
-        robot.jewelSlapper.stowArmAndSlapper();
+        raiseArmAndSlapper();
         robot.drive.waitForPathFollower();
 
         robot.dumpBed.dump();

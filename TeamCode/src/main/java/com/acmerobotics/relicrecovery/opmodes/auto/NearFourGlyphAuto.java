@@ -1,6 +1,5 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
-import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
@@ -23,11 +22,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
-@Config
 @Autonomous(name = "4 Glyph Auto (Near)")
 public class NearFourGlyphAuto extends AutoOpMode {
-    public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.CENTER;
-
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
     static {
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.LEFT, RelicRecoveryVuMark.RIGHT);
@@ -59,29 +55,25 @@ public class NearFourGlyphAuto extends AutoOpMode {
 
         int yMultiplier = (crypto.getAllianceColor() == AllianceColor.BLUE) ? -1 : 1;
 
-        RelicRecoveryVuMark vuMark = VUMARK; // vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
-        robot.jewelSlapper.lowerArmAndSlapper();
-
-        robot.sleep(0.75);
+        lowerArmAndSlapper();
 
         boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
 
         if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
             robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
             robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
-            robot.sleep(0.5);
+            robot.sleep(0.75);
         }
 
         RelicRecoveryVuMark firstColumn = (vuMark == RelicRecoveryVuMark.UNKNOWN) ? RelicRecoveryVuMark.LEFT : vuMark;
@@ -98,7 +90,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.setEstimatedPose(stoneToFloor.start());
         robot.drive.followPath(stoneToFloor);
         robot.sleep(0.5);
-        robot.jewelSlapper.stowArmAndSlapper();
+        raiseArmAndSlapper();
         robot.drive.waitForPathFollower();
 
         robot.intake.autoIntake();

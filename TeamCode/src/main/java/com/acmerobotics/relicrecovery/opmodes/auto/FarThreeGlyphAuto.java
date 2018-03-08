@@ -2,7 +2,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
@@ -24,11 +23,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
-@Config
 @Autonomous(name = "3 Glyph Auto (Far)")
 public class FarThreeGlyphAuto extends AutoOpMode {
-    public static RelicRecoveryVuMark VUMARK = RelicRecoveryVuMark.CENTER;
-
     private UltrasonicLocalizer ultrasonicLocalizer;
     private BalancingStone stone;
     private Cryptobox crypto;
@@ -66,7 +62,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         int yMultiplier = crypto.getAllianceColor() == AllianceColor.BLUE ? -1 : 1;
 
         // jewel logic here
-        RelicRecoveryVuMark vuMark = VUMARK; // vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
@@ -78,23 +74,21 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.RIGHT,
                 robot.config.getAllianceColor() == AllianceColor.BLUE ? RelicRecoveryVuMark.CENTER : RelicRecoveryVuMark.LEFT);
 
-        robot.jewelSlapper.lowerArmAndSlapper();
-
-        robot.sleep(0.75);
+        lowerArmAndSlapper();
 
         boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
 
         if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
+            robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
-            robot.sleep(0.5);
+            robot.sleep(0.75);
         }
 
         RelicRecoveryVuMark firstColumn = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
@@ -118,7 +112,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.extendUltrasonicSwivel();
 
         robot.sleep(0.5);
-        robot.jewelSlapper.stowArmAndSlapper();
+        lowerArmAndSlapper();
         robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
