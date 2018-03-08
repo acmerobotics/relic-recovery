@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
+import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
@@ -53,14 +54,17 @@ public class DiagonalPlusAuto extends AutoOpMode {
         raiseArmAndSlapper();
         robot.drive.waitForPathFollower();
 
+        double pileAngle = -yMultiplier * Math.PI / 4;
+        double turnAngle = Angle.norm(pileAngle - stoneToCrypto.end().heading());
+
         robot.dumpBed.dump();
         sleep(500);
         Path cryptoToPit = new PathBuilder(stoneToCrypto.end())
                 .lineTo(new Vector2d(stoneToCrypto.end().x(), yMultiplier * 12))
-                .turn(-yMultiplier * Math.PI / 4)
+                .turn(turnAngle)
                 .forward(12)
                 .back(12)
-                .turn(yMultiplier * Math.PI / 4)
+                .turn(-yMultiplier * Math.PI / 4)
                 .lineTo(new Vector2d(stoneToCrypto.end().x(), yMultiplier * 48))
                 .build();
         robot.drive.followPath(cryptoToPit);
