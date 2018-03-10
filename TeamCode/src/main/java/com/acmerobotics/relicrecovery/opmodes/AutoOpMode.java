@@ -87,7 +87,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.CENTER);
         robot.sleep(0.5);
         robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.DOWN);
-        robot.sleep(0.25);
+        robot.sleep(0.5);
     }
 
     protected void raiseArmAndSlapper() {

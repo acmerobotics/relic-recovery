@@ -183,7 +183,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
 
         double elapsedTime = TimestampedData.getCurrentTime() - startTime;
-        if (elapsedTime < 27) {
+        if (elapsedTime < 28) {
             robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
             robot.drive.alignWithColumn(robot.config.getAllianceColor());
             robot.drive.waitForColumnAlign();
