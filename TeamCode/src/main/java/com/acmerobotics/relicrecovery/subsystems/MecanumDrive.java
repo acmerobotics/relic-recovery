@@ -74,7 +74,7 @@ public class MecanumDrive extends Subsystem {
     public static PIDCoefficients RED_COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.03);
     public static double COLUMN_ALIGN_BLUE_SETPOINT = 6;
     public static double COLUMN_ALIGN_RED_SETPOINT = 4.3;
-    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
+    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.25;
 
     public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
     public static double PROXIMITY_SWIVEL_EXTEND = 0.09;
