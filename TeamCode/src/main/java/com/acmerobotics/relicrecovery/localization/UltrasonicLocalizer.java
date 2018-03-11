@@ -10,8 +10,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
-    public static double MOUNTING_OFFSET = 0.5; // in, positive is towards the back
-    public static double SMOOTHING_COEFF = 0.4;
+    public static double MOUNTING_OFFSET = -2.5; // in, positive is towards the front
+    public static double SMOOTHING_COEFF = 1;
 
     // all offsets are measured in reference to the wall
     public static double WALL_OFFSET = 0;
@@ -90,7 +90,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                         break;
                     case FAR_BLUE:
                     case FAR_RED:
-                        estimatedPosition = new Vector2d(-72 + targetOffset + ultrasonicDistance + MOUNTING_OFFSET, estimatedPosition.y());
+                        estimatedPosition = new Vector2d(-72 + targetOffset + ultrasonicDistance - MOUNTING_OFFSET, estimatedPosition.y());
                         break;
                 }
             }

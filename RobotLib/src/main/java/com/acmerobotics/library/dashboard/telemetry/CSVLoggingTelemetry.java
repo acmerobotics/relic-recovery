@@ -114,7 +114,6 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
         }
         if (printStream != null) {
             printStream.println(valueBuilder.toString());
-            printStream.flush();
         }
         return true;
     }
@@ -185,6 +184,7 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
 
     public void close() {
         if (printStream != null) {
+            printStream.flush();
             printStream.close();
             printStream = null;
         }

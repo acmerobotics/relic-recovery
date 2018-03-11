@@ -7,7 +7,7 @@ const DEFAULT_OPTIONS = {
     '#ffa000',
   ],
   lineWidth: 2,
-  durationMs: 12000,
+  durationMs: 5000,
   padding: 15,
   keySpacing: 4,
   keyLineWidth: 12,

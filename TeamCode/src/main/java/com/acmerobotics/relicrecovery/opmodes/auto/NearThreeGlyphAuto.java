@@ -2,7 +2,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
@@ -16,7 +15,6 @@ import com.acmerobotics.relicrecovery.path.Path;
 import com.acmerobotics.relicrecovery.path.PathBuilder;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
-import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -26,7 +24,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
-@Config
 @Autonomous(name = "3 Glyph Auto (Near)")
 public class NearThreeGlyphAuto extends AutoOpMode {
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
@@ -34,13 +31,6 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.LEFT, RelicRecoveryVuMark.CENTER);
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.CENTER, RelicRecoveryVuMark.LEFT);
         COLUMN_TRANSITION.put(RelicRecoveryVuMark.RIGHT, RelicRecoveryVuMark.CENTER);
-    }
-
-    public static final Map<RelicRecoveryVuMark, UltrasonicLocalizer.UltrasonicTarget> ULTRASONIC_TARGETS = new HashMap<>();
-    static {
-        ULTRASONIC_TARGETS.put(RelicRecoveryVuMark.LEFT, UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
-        ULTRASONIC_TARGETS.put(RelicRecoveryVuMark.CENTER, UltrasonicLocalizer.UltrasonicTarget.WALL);
-        ULTRASONIC_TARGETS.put(RelicRecoveryVuMark.RIGHT, UltrasonicLocalizer.UltrasonicTarget.WALL);
     }
 
     private UltrasonicLocalizer ultrasonicLocalizer;
@@ -77,34 +67,27 @@ public class NearThreeGlyphAuto extends AutoOpMode {
     protected void run() {
         double startTime = TimestampedData.getCurrentTime();
 
-        robot.relicRecoverer.setWristPosition(RelicRecoverer.WristPosition.UP);
-
         int yMultiplier = crypto.getAllianceColor() == AllianceColor.BLUE ? -1 : 1;
 
-        // jewel logic here
         RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
-        robot.jewelSlapper.lowerArmAndSlapper();
-
-        robot.sleep(0.75);
+        lowerArmAndSlapper();
 
         boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
 
         if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
             robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            robot.sleep(0.5);
-            robot.jewelSlapper.stowArmAndSlapper();
             robot.sleep(0.75);
+            raiseArmAndSlapper();
         } else {
             robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
-            robot.sleep(0.5);
+            robot.sleep(0.75);
         }
 
         RelicRecoveryVuMark firstColumn = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
@@ -117,8 +100,7 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         Path stoneToCrypto = new PathBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turn(-Math.PI / 2)
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
-                .waitFor(1)
+//                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 57))
                 .build();
 
         Pose2d cryptoPose = stoneToCrypto.end();
@@ -134,18 +116,17 @@ public class NearThreeGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36))
                 .build();
 
-        UltrasonicLocalizer.UltrasonicTarget ultrasonicTarget = ULTRASONIC_TARGETS.get(secondColumn);
-
+        robot.drive.extendProximitySwivel();
         robot.drive.setEstimatedPose(stoneToCrypto.start());
         robot.drive.followPath(stoneToCrypto);
-        robot.sleep(0.75);
-        robot.jewelSlapper.stowArmAndSlapper();
+        robot.sleep(0.5);
+        raiseArmAndSlapper();
         robot.drive.waitForPathFollower();
 
-//        robot.drive.alignWithColumn();
-//        robot.drive.waitForColumnAlign();
-//
-//        robot.drive.setEstimatedPosition(stoneToCrypto.end().pos());
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.waitForColumnAlign();
+
+        robot.drive.setEstimatedPosition(stoneToCrypto.end().pos());
 
         robot.dumpBed.dump();
         robot.sleep(1);
@@ -167,14 +148,14 @@ public class NearThreeGlyphAuto extends AutoOpMode {
 
         robot.drive.followPath(pitToCrypto);
         robot.sleep(0.2 * pitToCrypto.duration());
-        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+        robot.drive.extendUltrasonicSwivel();
         robot.intake.setIntakePower(-0.3);
         robot.sleep(0.75);
         robot.intake.setIntakePower(1);
         robot.drive.waitForPathFollower();
         robot.intake.setIntakePower(0);
 
-        ultrasonicLocalizer.setTarget(ultrasonicTarget);
+        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
         robot.waitOneFullCycle();
@@ -183,22 +164,22 @@ public class NearThreeGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 57))
                 .build();
 
-        robot.drive.extendSideSwivel();
+        robot.drive.extendProximitySwivel();
         robot.drive.followPath(finalApproach);
         robot.drive.waitForPathFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
-        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
+        robot.drive.retractUltrasonicSwivel();
 
         robot.drive.enableHeadingCorrection(yMultiplier * -Math.PI / 2);
-        robot.drive.alignWithColumn();
+        robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
         robot.drive.disableHeadingCorrection();
 
         robot.drive.setEstimatedPosition(finalApproach.end().pos());
 
-        robot.drive.retractSideSwivel();
+        robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         robot.sleep(1);
         robot.drive.followPath(new PathBuilder(finalApproach.end())
@@ -208,9 +189,9 @@ public class NearThreeGlyphAuto extends AutoOpMode {
         robot.dumpBed.retract();
         robot.sleep(0.5);
 
-//        telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
-//        telemetry.update();
-//
-//        while (opModeIsActive());
+        telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
+        telemetry.update();
+
+        while (opModeIsActive());
     }
 }

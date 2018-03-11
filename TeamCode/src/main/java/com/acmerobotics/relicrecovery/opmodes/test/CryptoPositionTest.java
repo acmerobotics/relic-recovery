@@ -33,7 +33,6 @@ public class CryptoPositionTest extends LinearOpMode {
             }
         });
         robot.start();
-        robot.phoneSwivel.pointAtCryptobox();
 
         telemetry = new MultipleTelemetry(telemetry, robot.dashboard.getTelemetry());
 
