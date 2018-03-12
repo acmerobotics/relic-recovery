@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -8,13 +9,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class JewelSlapper extends Subsystem {
-    public static double ARM_UP_POSITION = 0.17;
-    public static double ARM_HALFWAY_POSITION = 0.6;
-    public static double ARM_DOWN_POSITION = 0.85;
+    public static double ARM_UP_POSITION = 0.14;
+    public static double ARM_HALFWAY_POSITION = 0.3;
+    public static double ARM_DOWN_POSITION = 0.8;
 
     public static double SLAPPER_LEFT_POSITION = 0.85;
-    public static double SLAPPER_PARALLEL_POSITION = 0.49;
-    public static double SLAPPER_CENTER_POSITION = 0.59;
+    public static double SLAPPER_PARALLEL_POSITION = 0.64; // 0.49
+    public static double SLAPPER_CENTER_POSITION = 0.64;
     public static double SLAPPER_RIGHT_POSITION = 0.25;
     public static double SLAPPER_STOW_POSITION = 0.09;
 
@@ -42,24 +43,23 @@ public class JewelSlapper extends Subsystem {
     public JewelSlapper(HardwareMap map, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        jewelArm = map.servo.get("jewelArm");
-        jewelSlapper = map.servo.get("jewelSlapper");
+        jewelArm = new CachingServo(map.servo.get("jewelArm"));
+        jewelSlapper = new CachingServo(map.servo.get("jewelSlapper"));
 
-        stowArmAndSlapper();
-    }
-
-    public void lowerArmAndSlapper() {
-        setSlapperPosition(SlapperPosition.CENTER);
-        setArmPosition(ArmPosition.DOWN);
-    }
-
-    public void stowArmAndSlapper() {
         setSlapperPosition(SlapperPosition.STOW);
         setArmPosition(ArmPosition.UP);
     }
 
+    public SlapperPosition getSlapperPosition() {
+        return slapperPosition;
+    }
+
     public void setSlapperPosition(SlapperPosition slapperPosition) {
         this.slapperPosition = slapperPosition;
+    }
+
+    public ArmPosition getArmPosition() {
+        return armPosition;
     }
 
     public void setArmPosition(ArmPosition armPosition) {

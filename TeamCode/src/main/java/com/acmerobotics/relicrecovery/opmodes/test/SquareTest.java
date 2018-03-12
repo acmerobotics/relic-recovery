@@ -34,7 +34,7 @@ public class SquareTest extends LinearOpMode {
 
         while (opModeIsActive()) {
             robot.drive.followTrajectory(SQUARE);
-            while (opModeIsActive() && robot.drive.isFollowingPath()) {
+            while (opModeIsActive() && robot.drive.isFollowingTrajectory()) {
                 sleep(10);
             }
         }

@@ -4,14 +4,15 @@ import com.acmerobotics.library.dashboard.config.options.Option;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class Configuration {
-    private Map<String, Option> options;
+    private SortedMap<String, Option> options;
 
     public Configuration() {
-        options = new HashMap<>();
+        options = new TreeMap<>();
     }
 
     public void addOptionsFromClass(Class<?> klass) {

@@ -10,6 +10,9 @@ import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
+import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
+import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
@@ -22,6 +25,7 @@ import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
@@ -29,6 +33,7 @@ import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -56,22 +61,27 @@ import java.util.Collections;
 
 @Config
 public class MecanumDrive extends Subsystem {
-    public static final int IMU_PORT = 1;
+    public static final int IMU_PORT = 0;
 
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(24.0, 16.0, 32.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 1.33, 2.67, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PID = new PIDFCoefficients(-0.5, 0, 0, 0.256, 0.126);
-    public static PIDFCoefficients AXIAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0177, 0.0112);
-    public static PIDFCoefficients LATERAL_PID = new PIDFCoefficients(-0.02, 0, 0, 0.0202, 0.0138);
+    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
+    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.004);
+    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
 
-    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.03, 0, -0.02);
-    public static double COLUMN_ALIGN_TARGET_DISTANCE = 7;
-    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
-    public static double SIDE_DISTANCE_SMOOTHING_COEFF = 0.1;
+    public static PIDCoefficients BLUE_COLUMN_ALIGN_PID = new PIDCoefficients(-0.035, 0, -0.0175);
+    public static PIDCoefficients RED_COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.03);
+    public static double COLUMN_ALIGN_BLUE_SETPOINT = 6;
+    public static double COLUMN_ALIGN_RED_SETPOINT = 4.3;
+    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.25;
 
-    public static double SIDE_SWIVEL_EXTEND = 0.08;
-    public static double SIDE_SWIVEL_RETRACT = 0.59;
+    public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
+    public static double PROXIMITY_SWIVEL_EXTEND = 0.09;
+    public static double PROXIMITY_SWIVEL_RETRACT = 0.64;
+
+    public static double ULTRASONIC_SWIVEL_EXTEND = 0.2;
+    public static double ULTRASONIC_SWIVEL_RETRACT = 0.75;
 
     public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-2, 0, -0.01);
 
@@ -108,14 +118,17 @@ public class MecanumDrive extends Subsystem {
 
     private BNO055IMU imu;
 
-    private MaxSonarEZ1UltrasonicSensor ultrasonic;
+    private MaxSonarEZ1UltrasonicSensor ultrasonicSensor;
 
-    private Servo sideSwivel;
-    private boolean sideSwivelExtended;
+    private Servo proximitySwivel;
+    private boolean proximitySwivelExtended;
 
-    private LynxI2cColorRangeSensor sideColorDistance;
-    private ExponentialSmoother sideDistanceSmoother;
-    private PIDController columnAlignController;
+    private Servo ultrasonicSwivel;
+    private boolean ultrasonicSwivelExtended;
+
+    private LynxI2cColorRangeSensor proximitySensor;
+    private ExponentialSmoother proximitySmoother;
+    private PIDController columnAlignController, blueColumnAlignController, redColumnAlignController;
 
     private boolean useCachedOrientation;
     private Orientation cachedOrientation;
@@ -168,11 +181,12 @@ public class MecanumDrive extends Subsystem {
         public double pathHeadingError;
         public double pathHeadingUpdate;
 
-        public double sideDistance;
+        public double proximityDistance;
         public double columnAlignError;
         public double columnAlignUpdate;
 
-        public boolean sideSwivelExtended;
+        public boolean proximitySwivelExtended;
+        public boolean ultrasonicSwivelExtended;
     }
 
     public MecanumDrive(HardwareMap map, Telemetry telemetry) {
@@ -182,20 +196,51 @@ public class MecanumDrive extends Subsystem {
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
         frontHub = map.get(LynxModule.class, "frontHub");
-        imu = LynxOptimizedI2cSensorFactory.createLynxEmbeddedIMU(frontHub, IMU_PORT);
+        I2cDeviceSynch imuI2cDevice = LynxOptimizedI2cSensorFactory.createLynxI2cDeviceSync(frontHub, IMU_PORT);
+        imuI2cDevice.setUserConfiguredName("imu");
+        imu = new LynxEmbeddedIMU(imuI2cDevice);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
-        ultrasonic = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonic"));
-        sideColorDistance = map.get(LynxI2cColorRangeSensor.class, "sideColorDistance");
-        sideSwivel = map.servo.get("sideSwivel");
+        // taken from https://ftcforum.usfirst.org/forum/ftc-technology/53812-mounting-the-revhub-vertically?p=56587#post56587
+        // testing suggests that an axis remap is more accurate then simply changing the axis read
+        // we hypothesize that this helps properly configure the internal sensor fusion/Kalman filtering
+        try {
+            // axis remap
+            byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
+            byte AXIS_MAP_SIGN_BYTE = 0x1; //This is what to write to the AXIS_MAP_SIGN register to negate the z axis
+
+            //Need to be in CONFIG mode to write to registers
+            imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.CONFIG.bVal & 0x0F);
+
+            Thread.sleep(100); //Changing modes requires a delay before doing anything else
+
+            //Write to the AXIS_MAP_CONFIG register
+            imu.write8(BNO055IMU.Register.AXIS_MAP_CONFIG, AXIS_MAP_CONFIG_BYTE & 0x0F);
+
+            //Write to the AXIS_MAP_SIGN register
+            imu.write8(BNO055IMU.Register.AXIS_MAP_SIGN, AXIS_MAP_SIGN_BYTE & 0x0F);
+
+            //Need to change back into the IMU mode to use the gyro
+            imu.write8(BNO055IMU.Register.OPR_MODE, BNO055IMU.SensorMode.IMU.bVal & 0x0F);
+
+            Thread.sleep(100); //Changing modes again requires a delay
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        proximitySensor = map.get(LynxI2cColorRangeSensor.class, "proximitySensor");
+        proximitySwivel = new CachingServo(map.servo.get("proximitySwivel"));
+
+        ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonicSensor"));
+        ultrasonicSwivel = new CachingServo(map.servo.get("ultrasonicSwivel"));
 
         powers = new double[4];
         encoderOffsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
-            motors[i] = map.dcMotor.get(MOTOR_NAMES[i]);
+            motors[i] = new CachingDcMotor(map.dcMotor.get(MOTOR_NAMES[i]));
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
@@ -205,17 +250,18 @@ public class MecanumDrive extends Subsystem {
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
 
-        trajectoryFollower = new TrajectoryFollower(HEADING_PID, AXIAL_PID, LATERAL_PID);
+        trajectoryFollower = new TrajectoryFollower(HEADING_PIDF, AXIAL_PIDF, LATERAL_PIDF);
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
-        columnAlignController = new PIDController(COLUMN_ALIGN_PID);
-        columnAlignController.setOutputBounds(-0.2, 0.2);
+        blueColumnAlignController = new PIDController(BLUE_COLUMN_ALIGN_PID);
+        redColumnAlignController = new PIDController(RED_COLUMN_ALIGN_PID);
 
-        sideDistanceSmoother = new ExponentialSmoother(SIDE_DISTANCE_SMOOTHING_COEFF);
+        proximitySmoother = new ExponentialSmoother(PROXIMITY_SMOOTHING_COEFF);
 
         resetEncoders();
-        retractSideSwivel();
+        retractProximitySwivel();
+        retractUltrasonicSwivel();
     }
 
     public Localizer getLocalizer() {
@@ -227,12 +273,20 @@ public class MecanumDrive extends Subsystem {
         localizer.setEstimatedPosition(estimatedPose.pos());
     }
 
-    public void extendSideSwivel() {
-        sideSwivelExtended = true;
+    public void extendProximitySwivel() {
+        proximitySwivelExtended = true;
     }
 
-    public void retractSideSwivel() {
-        sideSwivelExtended = false;
+    public void retractProximitySwivel() {
+        proximitySwivelExtended = false;
+    }
+
+    public void extendUltrasonicSwivel() {
+        ultrasonicSwivelExtended = true;
+    }
+
+    public void retractUltrasonicSwivel() {
+        ultrasonicSwivelExtended = false;
     }
 
     public TrajectoryFollower getTrajectoryFollower() {
@@ -370,6 +424,9 @@ public class MecanumDrive extends Subsystem {
     public int[] getEncoderPositions() {
         if (!useCachedEncoderPositions || cachedEncoderPositions == null) {
             cachedEncoderPositions = internalGetEncoderPositions();
+            for (int i = 0; i < 4; i++) {
+                cachedEncoderPositions[i] += encoderOffsets[i];
+            }
             useCachedEncoderPositions = true;
         }
         return cachedEncoderPositions;
@@ -390,11 +447,6 @@ public class MecanumDrive extends Subsystem {
         } catch (Exception e) {
             Log.w("MecanumDrive", e);
         }
-        StringBuilder s = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
-            s.append(positions[i] + " ");
-        }
-        System.out.println(s.toString());
         return positions;
     }
 
@@ -435,11 +487,11 @@ public class MecanumDrive extends Subsystem {
         setMode(Mode.FOLLOW_PATH);
     }
 
-    public boolean isFollowingPath() {
-        return trajectoryFollower.isFollowingPath();
+    public boolean isFollowingTrajectory() {
+        return trajectoryFollower.isFollowingTrajectory();
     }
 
-    public void waitForPathFollower() {
+    public void waitForTrajectoryFollower() {
         while (!Thread.currentThread().isInterrupted() && mode == Mode.FOLLOW_PATH) {
             try {
                 Thread.sleep(AutoOpMode.POLL_INTERVAL);
@@ -472,10 +524,11 @@ public class MecanumDrive extends Subsystem {
         useCachedEncoderPositions = false;
     }
 
-    public void alignWithColumn() {
+    public void alignWithColumn(AllianceColor color) {
+        columnAlignController = (color == AllianceColor.BLUE) ? blueColumnAlignController : redColumnAlignController;
         columnAlignController.reset();
-        columnAlignController.setSetpoint(COLUMN_ALIGN_TARGET_DISTANCE);
-        sideDistanceSmoother.reset();
+        columnAlignController.setSetpoint(color == AllianceColor.BLUE ? COLUMN_ALIGN_BLUE_SETPOINT : COLUMN_ALIGN_RED_SETPOINT);
+        proximitySmoother.reset();
         setMode(Mode.COLUMN_ALIGN);
     }
 
@@ -490,15 +543,15 @@ public class MecanumDrive extends Subsystem {
     }
 
     public double getUltrasonicDistance(DistanceUnit unit) {
-        return ultrasonic.getDistance(unit);
+        return ultrasonicSensor.getDistance(unit);
     }
 
     public double getMinUltrasonicDistance(DistanceUnit unit) {
-        return ultrasonic.getMinDistance(unit);
+        return ultrasonicSensor.getMinDistance(unit);
     }
 
     public double getSideDistance(DistanceUnit unit) {
-        return sideColorDistance.getDistance(unit);
+        return proximitySensor.getDistance(unit);
     }
 
     public void update() {
@@ -517,7 +570,7 @@ public class MecanumDrive extends Subsystem {
             case OPEN_LOOP:
                 break;
             case FOLLOW_PATH:
-                if (trajectoryFollower.isFollowingPath()) {
+                if (trajectoryFollower.isFollowingTrajectory()) {
                     Pose2d estimatedPose = getEstimatedPose();
                     Pose2d update = trajectoryFollower.update(estimatedPose);
                     internalSetVelocity(update.pos(), update.heading());
@@ -536,10 +589,10 @@ public class MecanumDrive extends Subsystem {
                 double rawSideDistance = getSideDistance(DistanceUnit.INCH);
                 rawSideDistance = Double.isNaN(rawSideDistance) ? 10 : Range.clip(rawSideDistance, -10, 10);
 
-                double sideDistance = sideDistanceSmoother.update(rawSideDistance);
+                double sideDistance = proximitySmoother.update(rawSideDistance);
                 double distanceError = columnAlignController.getError(sideDistance);
 
-                telemetryData.sideDistance = sideDistance;
+                telemetryData.proximityDistance = sideDistance;
                 telemetryData.columnAlignError = distanceError;
 
                 if (Math.abs(distanceError) > COLUMN_ALIGN_ALLOWED_ERROR) {
@@ -578,13 +631,20 @@ public class MecanumDrive extends Subsystem {
         telemetryData.rearRightPower = powers[2];
         telemetryData.frontRightPower = powers[3];
 
-        // side swivel
-        if (sideSwivelExtended) {
-            sideSwivel.setPosition(SIDE_SWIVEL_EXTEND);
+        // proximity swivel
+        if (proximitySwivelExtended) {
+            proximitySwivel.setPosition(PROXIMITY_SWIVEL_EXTEND);
         } else {
-            sideSwivel.setPosition(SIDE_SWIVEL_RETRACT);
+            proximitySwivel.setPosition(PROXIMITY_SWIVEL_RETRACT);
         }
-        telemetryData.sideSwivelExtended = sideSwivelExtended;
+        telemetryData.proximitySwivelExtended = proximitySwivelExtended;
+
+        if (ultrasonicSwivelExtended) {
+            ultrasonicSwivel.setPosition(ULTRASONIC_SWIVEL_EXTEND);
+        } else {
+            ultrasonicSwivel.setPosition(ULTRASONIC_SWIVEL_RETRACT);
+        }
+        telemetryData.ultrasonicSwivelExtended = ultrasonicSwivelExtended;
 
         telemetryData.estimatedX = estimatedPose.x();
         telemetryData.estimatedY = estimatedPose.y();

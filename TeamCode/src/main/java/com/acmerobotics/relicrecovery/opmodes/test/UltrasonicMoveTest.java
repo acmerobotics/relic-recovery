@@ -30,7 +30,7 @@ public class UltrasonicMoveTest extends AutoOpMode {
         robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -24, Math.PI / 2))
                 .lineTo(new Vector2d(12, -54))
                 .build());
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         sleep(500);
 

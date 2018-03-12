@@ -81,11 +81,11 @@ public class TrajectoryFollower {
         lateralController.reset();
     }
 
-    public boolean isFollowingPath() {
-        return isFollowingPath(TimestampedData.getCurrentTime());
+    public boolean isFollowingTrajectory() {
+        return isFollowingTrajectory(TimestampedData.getCurrentTime());
     }
 
-    public boolean isFollowingPath(double timestamp) {
+    public boolean isFollowingTrajectory(double timestamp) {
         return trajectory != null && (timestamp - startTimestamp) < trajectory.duration();
     }
 

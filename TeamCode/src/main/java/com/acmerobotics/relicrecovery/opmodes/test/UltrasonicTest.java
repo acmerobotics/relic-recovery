@@ -2,7 +2,6 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
-import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -19,7 +18,7 @@ public class UltrasonicTest extends OpMode {
 
     @Override
     public void init() {
-        ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(hardwareMap.analogInput.get("ultrasonic"));
+        ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(hardwareMap.analogInput.get("ultrasonicSensor"));
         smoothers = new ExponentialSmoother[SMOOTHING_RATIOS.length];
         for (int i = 0; i < smoothers.length; i++) {
             smoothers[i] = new ExponentialSmoother(SMOOTHING_RATIOS[i]);
@@ -36,7 +35,7 @@ public class UltrasonicTest extends OpMode {
 
     @Override
     public void start() {
-        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+        robot.drive.extendUltrasonicSwivel();
     }
 
     @Override

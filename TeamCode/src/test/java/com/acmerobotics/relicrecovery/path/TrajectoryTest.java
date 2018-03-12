@@ -35,7 +35,7 @@ public class TrajectoryTest {
         File dataFile = new File("path.csv");
         FileWriter writer = new FileWriter(dataFile);
         writer.write("x,y,heading\n");
-        while (follower.isFollowingPath(timestamp)) {
+        while (follower.isFollowingTrajectory(timestamp)) {
             Pose2d update = follower.update(estimatedPose, timestamp);
             Vector2d vector = new Vector2d(0.01 * update.x() + 0.01 * (Math.random() - 0.5),
                     0.01 * update.y() + 0.01 * (Math.random() - 0.5));

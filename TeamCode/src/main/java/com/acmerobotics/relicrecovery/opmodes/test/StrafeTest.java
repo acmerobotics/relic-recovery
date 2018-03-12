@@ -21,7 +21,7 @@ public class StrafeTest extends AutoOpMode {
         robot.drive.followTrajectory(new TrajectoryBuilder(robot.drive.getEstimatedPose())
                 .strafeLeft(DISTANCE)
                 .build());
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         telemetry.addData("estimatedPose", robot.drive.getEstimatedPose());
         telemetry.update();

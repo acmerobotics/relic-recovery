@@ -77,7 +77,7 @@ public class AxialFFTuner extends LinearOpMode {
      * @return the mean error for the movement, positive indicates the coefficient is too low
      */
     public double testCoefficient(double coefficient) {
-        MecanumDrive.AXIAL_PID.a = coefficient;
+        MecanumDrive.AXIAL_PIDF.a = coefficient;
 
         robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));
 
@@ -91,24 +91,26 @@ public class AxialFFTuner extends LinearOpMode {
                     .build());
         }
 
-        double errorSum = 0;
-        int numErrors = 0;
+//        double errorSum = 0;
+//        int numErrors = 0;
 
-        while (opModeIsActive() && robot.drive.isFollowingPath()) {
-            double rawAxialError = trajectoryFollower.getAxialError();
-            // If axial K_a is too high, then the error will be positive in when acceleration is
-            // positive and negative when acceleration is negative. Thus we use the sign of the
-            // acceleration to make sure all the errors have matching signs.
-            if (trajectoryFollower.getPoseAcceleration() == null) continue;
-            errorSum += -Math.signum(trajectoryFollower.getPoseAcceleration().x()) * rawAxialError;
-            numErrors++;
-            sleep(25);
+        while (opModeIsActive() && robot.drive.isFollowingTrajectory()) {
+//            double rawAxialError = pathFollower.getAxialError();
+//            // If axial K_a is too high, then the error will be positive in when acceleration is
+//            // positive and negative when acceleration is negative. Thus we use the sign of the
+//            // acceleration to make sure all the errors have matching signs.
+//            if (pathFollower.getPoseAcceleration() == null) continue;
+//            errorSum += -Math.signum(pathFollower.getPoseAcceleration().x()) * rawAxialError;
+//            numErrors++;
+//            sleep(25);
         }
 
-        errorSum *= shouldTravelForward ? 1 : -1;
+//        errorSum *= shouldTravelForward ? 1 : -1;
 
         shouldTravelForward = !shouldTravelForward;
 
-        return errorSum / numErrors;
+//        return errorSum / numErrors;
+
+        return -(shouldTravelForward ? 1 : -1) * trajectoryFollower.getAxialError();
     }
 }

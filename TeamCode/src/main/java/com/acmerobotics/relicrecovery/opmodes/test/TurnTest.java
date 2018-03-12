@@ -16,7 +16,7 @@ public class TurnTest extends AutoOpMode {
         robot.drive.followTrajectory(new TrajectoryBuilder(robot.drive.getEstimatedPose())
                 .turn(Math.PI / 2)
                 .build());
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         telemetry.addData("heading", robot.drive.getHeading());
         telemetry.update();

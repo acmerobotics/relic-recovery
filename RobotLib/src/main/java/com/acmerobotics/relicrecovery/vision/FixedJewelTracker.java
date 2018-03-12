@@ -13,10 +13,10 @@ import org.opencv.imgproc.Imgproc;
 public class FixedJewelTracker extends Tracker {
     public static final String TAG = "FixedJewelTracker";
 
-    public static Point LEFT_CENTER = new Point(715, 560);
-    public static Point RIGHT_CENTER = new Point(1080, 550);
+    public static Point LEFT_CENTER = new Point(825, 500);
+    public static Point RIGHT_CENTER = new Point(1200, 500);
 
-    public static int LEFT_RADIUS = 130;
+    public static int LEFT_RADIUS = 125;
     public static int RIGHT_RADIUS = 125;
 
     public static double COLOR_THRESHOLD = 0.7;

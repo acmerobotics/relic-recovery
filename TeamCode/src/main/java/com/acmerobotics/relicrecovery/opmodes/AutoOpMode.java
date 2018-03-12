@@ -1,22 +1,19 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.cameraoverlay.CameraStreamServer;
-import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.MatchType;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
-import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VuforiaVuMarkTracker;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-
 public abstract class AutoOpMode extends LinearOpMode {
     public static final double PICTOGRAPH_READ_TIMEOUT = 5; // seconds
     public static final long POLL_INTERVAL = 5; // ms
+    public static final double LATERAL_BIAS = 1.25; // in
 
     protected Robot robot;
 
@@ -80,42 +77,29 @@ public abstract class AutoOpMode extends LinearOpMode {
         telemetry.update();
     }
 
-    protected RelicRecoveryVuMark scoreJewelAndReadPictograph() {
-        JewelPosition jewelPosition = jewelTracker.getJewelPosition();
-        jewelTracker.disable();
-
-        robot.jewelSlapper.lowerArmAndSlapper();
-
-        sleep(1500);
-
-        double startTime = TimestampedData.getCurrentTime();
-        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.UNKNOWN;
-        while (opModeIsActive()) {
-            double timeElapsed = TimestampedData.getCurrentTime() - startTime;
-            vuMark = vuMarkTracker.getVuMark();
-            if (timeElapsed >= PICTOGRAPH_READ_TIMEOUT || vuMark != RelicRecoveryVuMark.UNKNOWN) {
-                break;
-            }
+    protected void lowerArmAndSlapper() {
+        if (robot.jewelSlapper.getArmPosition() == JewelSlapper.ArmPosition.DOWN) {
+            return;
         }
 
-        jewelTracker.disable();
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+        robot.sleep(0.25);
+        robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.CENTER);
+        robot.sleep(0.5);
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.DOWN);
+        robot.sleep(0.5);
+    }
 
-        if (jewelPosition != JewelPosition.UNKNOWN) {
-            if (robot.config.getAllianceColor() == jewelPosition.rightColor()) {
-                // remove left
-                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            } else {
-                // remove right
-                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            }
+    protected void raiseArmAndSlapper() {
+        if (robot.jewelSlapper.getArmPosition() == JewelSlapper.ArmPosition.UP) {
+            return;
         }
 
-        sleep(1500);
-
-        robot.jewelSlapper.stowArmAndSlapper();
-
-        sleep(1500);
-
-        return vuMark;
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.HALFWAY);
+        robot.sleep(0.25);
+        robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.STOW);
+        robot.sleep(0.5);
+        robot.jewelSlapper.setArmPosition(JewelSlapper.ArmPosition.UP);
+        robot.sleep(0.25);
     }
 }

@@ -16,7 +16,7 @@ public class MoveTest extends AutoOpMode {
         robot.drive.followTrajectory(new TrajectoryBuilder(robot.drive.getEstimatedPose())
                 .forward(48)
                 .build());
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         telemetry.addData("estimatedPose", robot.drive.getEstimatedPose());
         telemetry.update();
