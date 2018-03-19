@@ -16,10 +16,9 @@ public class SplinePathTest {
     @Test
     public void testSplineGeneration() {
         ParametricPath spline = CompositePath.fitSpline(
-                new Pose2d(0, 0, Math.PI / 4),
-                new Pose2d(24, 12, 0),
-                new Pose2d(36, 8, Math.PI / 4),
-                new Pose2d(48, 4, 3 * Math.PI / 4));
+                new Pose2d(0, 0, 0),
+                new Pose2d(4, 16, Math.PI / 4),
+                new Pose2d(12, 22, 3 * Math.PI / 8));
         writeParametricPath(spline, "simpleSpline");
 
         TrajectorySegment motionSegment = new ParametricSegment(spline);
@@ -32,6 +31,7 @@ public class SplinePathTest {
             outputDir.mkdirs();
             FileWriter writer = new FileWriter(new File(outputDir,name + ".csv"));
             writer.write("t, x, y, theta, vx, vy, omega, ax, ay, alpha\n");
+            System.out.printf("writing path: length=%.2fin", path.length());
             for (int i = 0; i <= 200; i++) {
                 double displacement = i / 200.0 * path.length();
                 Pose2d pose = path.getPose(displacement);

@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.path.parametric;
 import com.acmerobotics.library.localization.Pose2d;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CompositePath implements ParametricPath {
@@ -17,12 +18,16 @@ public class CompositePath implements ParametricPath {
     }
 
     public static CompositePath fitSpline(SplinePath.Type type, Pose2d... waypoints) {
-        if (waypoints.length < 2) {
+        return fitSpline(type, Arrays.asList(waypoints));
+    }
+
+    public static CompositePath fitSpline(SplinePath.Type type, List<Pose2d> waypoints) {
+        if (waypoints.size() < 2) {
             throw new IllegalArgumentException("2 waypoints are required to fit a spline");
         }
         List<ParametricPath> segments = new ArrayList<>();
-        for (int i = 0; i < waypoints.length - 1; i++) {
-            segments.add(new SplinePath(type, waypoints[i], waypoints[i + 1]));
+        for (int i = 0; i < waypoints.size() - 1; i++) {
+            segments.add(new SplinePath(type, waypoints.get(i), waypoints.get(i+1)));
         }
         return new CompositePath(segments);
     }

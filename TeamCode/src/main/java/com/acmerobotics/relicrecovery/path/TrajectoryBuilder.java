@@ -9,6 +9,7 @@ import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
 import com.acmerobotics.relicrecovery.path.parametric.SplinePath;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TrajectoryBuilder {
@@ -69,23 +70,20 @@ public class TrajectoryBuilder {
     }
 
     public TrajectoryBuilder splineThrough(SplinePath.Type type, Pose2d... waypoints) {
-        CompositePath spline = CompositePath.fitSpline(type, waypoints);
+        List<Pose2d> modifiedWaypoints = new ArrayList<>(Arrays.asList(waypoints));
+        modifiedWaypoints.add(0, currentPose);
+        CompositePath spline = CompositePath.fitSpline(type, modifiedWaypoints);
         if (composite) {
             compositeSegments.add(spline);
         } else {
             motionSegments.add(new ParametricSegment(spline));
         }
+        currentPose = modifiedWaypoints.get(modifiedWaypoints.size() - 1);
         return this;
     }
 
     public TrajectoryBuilder splineThrough(Pose2d... waypoints) {
-        CompositePath spline = CompositePath.fitSpline(waypoints);
-        if (composite) {
-            compositeSegments.add(spline);
-        } else {
-            motionSegments.add(new ParametricSegment(spline));
-        }
-        return this;
+        return splineThrough(SplinePath.Type.QUINTIC_HERMITIAN, waypoints);
     }
 
     public TrajectoryBuilder waitFor(double seconds) {
@@ -93,17 +91,19 @@ public class TrajectoryBuilder {
         return this;
     }
 
-    public void beginComposite() {
+    public TrajectoryBuilder beginComposite() {
         if (composite) {
             closeComposite();
         }
         composite = true;
+        return this;
     }
 
-    public void closeComposite() {
+    public TrajectoryBuilder closeComposite() {
         composite = false;
         motionSegments.add(new ParametricSegment(new CompositePath(compositeSegments)));
         compositeSegments = new ArrayList<>();
+        return this;
     }
 
     public Trajectory build() {
