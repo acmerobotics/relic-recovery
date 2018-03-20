@@ -38,25 +38,30 @@ public class TrajectoryVisualTest {
                 .lineTo(new Vector2d(36, -48))
                 .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
                 .closeComposite()
-                .beginComposite()
+//                .beginComposite()
                 .splineThrough(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -60))
-                .closeComposite()
+//                .closeComposite()
                 .splineThrough(new Pose2d(24, -12, Math.PI / 4))
-                .beginComposite()
+//                .beginComposite()
                 .splineThrough(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -60))
-                .closeComposite()
+//                .closeComposite()
                 .splineThrough(new Pose2d(16, 0, 3 * Math.PI / 8))
-                .beginComposite()
+//                .beginComposite()
                 .splineThrough(new Pose2d(12, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12, -60))
-                .closeComposite()
+//                .closeComposite()
+                .build();
+        Trajectory trajectory3 = new TrajectoryBuilder(new Pose2d(60, 0, Math.PI))
+                .splineThrough(new Pose2d(24, -24, Math.PI), new Pose2d(12, -52, Math.PI / 2))
                 .build();
         System.out.println("Trajectory 1 duration: " + trajectory.duration());
         System.out.println("Trajectory 2 duration: " + trajectory2.duration());
+        System.out.println("Trajectory 3 duration: " + trajectory3.duration());
         writeTrajectory(trajectory, "trajectory");
         writeTrajectory(trajectory2, "trajectory2");
+        writeTrajectory(trajectory3, "trajectory3");
     }
 
     public static void writeTrajectory(Trajectory trajectory, String name) {
