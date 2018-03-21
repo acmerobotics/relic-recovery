@@ -9,7 +9,7 @@ public class Pose2d {
 
     public Pose2d(Vector2d pos, double heading) {
         this.pos = pos;
-        this.heading = Angle.norm(heading);
+        this.heading = heading;
     }
 
     public Pose2d(double x, double y, double heading) {

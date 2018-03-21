@@ -72,13 +72,15 @@ public class TrajectoryFollower {
         return poseAcceleration;
     }
 
-    public void follow(Trajectory trajectory) {
+    public double follow(Trajectory trajectory) {
         this.trajectory = trajectory;
         this.startTimestamp = TimestampedData.getCurrentTime();
 
         headingController.reset();
         axialController.reset();
         lateralController.reset();
+
+        return startTimestamp;
     }
 
     public boolean isFollowingTrajectory() {
@@ -95,9 +97,9 @@ public class TrajectoryFollower {
 
     /**
      * Update the drive controls
-     * @param estimatedPose current robot pose
-     * @param timestamp current time in seconds
-     * @return the desired velocity
+     * @param estimatedPose current robot pose (in field coordinates)
+     * @param timestamp current time (in seconds)
+     * @return the desired velocity (in robot coordinates)
      */
     public Pose2d update(Pose2d estimatedPose, double timestamp) {
         double time = timestamp - startTimestamp;
