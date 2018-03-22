@@ -4,6 +4,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
+import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,8 +26,25 @@ public class TrajectoryFollowerTest {
 //                .lineTo(new Vector2d(2, 3))
 //                .lineTo(new Vector2d(2, 5))
 //                .build();
-        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(60, 0, Math.PI))
-                .splineThrough(new Pose2d(24, -24, Math.PI), new Pose2d(12, -52, Math.PI / 2))
+        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(48, -48, Math.PI))
+                .beginComposite()
+                .lineTo(new Vector2d(36, -48))
+                .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
+                .closeComposite()
+//                .beginComposite()
+                .splineThrough(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
+                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -60))
+//                .closeComposite()
+                .splineThrough(new Pose2d(24, -12, Math.PI / 4))
+//                .beginComposite()
+                .splineThrough(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
+                .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -60))
+//                .closeComposite()
+                .splineThrough(new Pose2d(16, 0, 3 * Math.PI / 8))
+//                .beginComposite()
+                .splineThrough(new Pose2d(12, -44, Math.PI / 2))
+                .lineTo(new Vector2d(12, -60))
+//                .closeComposite()
                 .build();
         TrajectoryFollower follower = new TrajectoryFollower(
                 new PIDFCoefficients(-0.01, 0, 0, 1, 0),
@@ -53,9 +71,9 @@ public class TrajectoryFollowerTest {
         writer.close();
 
         Pose2d endPose = trajectory.getPose(trajectory.duration() - 0.0001);
-        assertEquals(endPose.x(), estimatedPose.x(), 0.1);
-        assertEquals(endPose.y(), estimatedPose.y(), 0.1);
-        assertEquals(endPose.heading(), estimatedPose.heading(), 0.1);
+        assertEquals(endPose.x(), estimatedPose.x(), 0.2);
+        assertEquals(endPose.y(), estimatedPose.y(), 0.2);
+        assertEquals(endPose.heading(), estimatedPose.heading(), 0.2);
     }
 
 

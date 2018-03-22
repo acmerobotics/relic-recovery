@@ -142,7 +142,7 @@ public class SplinePath implements ParametricPath {
     public Pose2d getSecondDerivative(double displacement) {
         double percentage = displacement / length;
         double x = 0;
-        double y = secondDerivativeAt(percentage) * knotDistance / (length * length);
+        double y = secondDerivativeAt(percentage) * knotDistance * knotDistance / (length * length);
 
         double cosHeadingOffset = Math.cos(headingOffset);
         double sinHeadingOffset = Math.sin(headingOffset);
@@ -153,7 +153,7 @@ public class SplinePath implements ParametricPath {
 
         double heading = (1 + derivative * derivative) * thirdDerivative - secondDerivative * 2 * derivative * secondDerivative;
         heading /= (1 + derivative * derivative) * (1 + derivative * derivative);
-        heading *= knotDistance / (length * length);
+        heading *= knotDistance * knotDistance / (length * length);
 
         return new Pose2d(
                 x * cosHeadingOffset - y * sinHeadingOffset,

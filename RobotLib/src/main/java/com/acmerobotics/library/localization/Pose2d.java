@@ -37,7 +37,7 @@ public class Pose2d {
     }
 
     public Pose2d added(Pose2d other) {
-        return new Pose2d(pos.added(other.pos), Angle.norm(heading + other.heading));
+        return new Pose2d(pos.added(other.pos), heading + other.heading);
     }
 
     public Pose2d multiplied(double scalar) {

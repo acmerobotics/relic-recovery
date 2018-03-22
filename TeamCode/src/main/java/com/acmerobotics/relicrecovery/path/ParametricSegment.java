@@ -48,7 +48,7 @@ public class ParametricSegment implements TrajectorySegment {
     @Override
     public Pose2d getAcceleration(double time) {
         MotionState motionState = profile.get(time);
-        return path.getSecondDerivative(motionState.x).multiplied(Math.pow(motionState.x, 2))
+        return path.getSecondDerivative(motionState.x).multiplied(Math.pow(motionState.v, 2))
                 .added(path.getDerivative(motionState.x).multiplied(motionState.a));
     }
 
