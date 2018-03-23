@@ -1,9 +1,13 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import android.util.Log;
+
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
+import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.lynx.commands.core.LynxGetADCCommand;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,6 +25,8 @@ public class Intake extends Subsystem {
     }
 
     private Mode mode = Mode.MANUAL;
+
+    private LynxModule rearHub;
 
     private DcMotor leftIntake, rightIntake;
     private double leftIntakePower, rightIntakePower;
@@ -40,6 +46,9 @@ public class Intake extends Subsystem {
         public boolean intakeHasFrontGlyph;
         public boolean intakeHasRearGlyph;
         public int intakeGlyphCount;
+
+        public double leftIntakeCurrent;
+        public double rightIntakeCurrent;
     }
 
     public Intake(HardwareMap map, Telemetry telemetry) {
@@ -54,6 +63,8 @@ public class Intake extends Subsystem {
 
         frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
         rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
+
+        rearHub = map.get(LynxModule.class, "rearHub");
     }
 
     public Mode getMode() {
@@ -79,6 +90,19 @@ public class Intake extends Subsystem {
         telemetryData.intakeMode = mode;
         telemetryData.leftIntakePower = leftIntakePower;
         telemetryData.rightIntakePower = rightIntakePower;
+
+        try {
+            LynxGetADCCommand leftCurrentCommand = new LynxGetADCCommand(rearHub, LynxGetADCCommand.Channel.MOTOR0_CURRENT, LynxGetADCCommand.Mode.ENGINEERING);
+            LynxGetADCCommand rightCurrentCommand = new LynxGetADCCommand(rearHub, LynxGetADCCommand.Channel.MOTOR1_CURRENT, LynxGetADCCommand.Mode.ENGINEERING);
+            double leftCurrent = leftCurrentCommand.sendReceive().getValue();
+            double rightCurrent = rightCurrentCommand.sendReceive().getValue();
+            telemetryData.leftIntakeCurrent = leftCurrent;
+            telemetryData.rightIntakeCurrent = rightCurrent;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            Log.w("Intake", e);
+        }
 
         switch (mode) {
             case AUTO:
