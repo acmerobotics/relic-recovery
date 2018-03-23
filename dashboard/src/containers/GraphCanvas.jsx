@@ -52,14 +52,14 @@ class GraphCanvas extends React.Component {
   renderGraph() {
     if (!this.state.paused && this.canvas) {
       this.graph.render(0, 0,
-        Math.min(this.canvas.parentElement.parentElement.clientWidth - 32, 1000),
-        Math.min(this.canvas.parentElement.parentElement.clientHeight - 50, 1000));
+        Math.min(this.canvas.parentElement.parentElement.clientWidth - 32, 2500),
+        Math.min(this.canvas.parentElement.parentElement.clientHeight - 50, 2500));
       requestAnimationFrame(this.renderGraph);
     }
   }
 
   render() {
-    return <canvas ref={(c) => { this.canvas = c; }} width="1000" height="1000" />;
+    return <canvas ref={(c) => { this.canvas = c; }} width="2500" height="2500" />;
   }
 }
 
