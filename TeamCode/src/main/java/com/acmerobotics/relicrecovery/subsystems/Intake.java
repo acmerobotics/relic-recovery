@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -18,6 +19,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Config
 public class Intake extends Subsystem {
     public static double GLYPH_PRESENCE_THRESHOLD = 2.5; // in (theoretically, might actually be cm)
+    public static double CURRENT_SMOOTHER_COEFF = 0.1;
+    public static int CURRENT_THRESHOLD = 1000; // mA
 
     public enum Mode {
         AUTO,
@@ -32,6 +35,8 @@ public class Intake extends Subsystem {
     private double leftIntakePower, rightIntakePower;
 
     private LynxI2cColorRangeSensor frontColorDistance, rearColorDistance;
+
+    private ExponentialSmoother leftCurrentSmoother, rightCurrentSmoother;
 
     private TelemetryEx telemetry;
     private TelemetryData telemetryData;
@@ -65,6 +70,9 @@ public class Intake extends Subsystem {
         rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
 
         rearHub = map.get(LynxModule.class, "rearHub");
+
+        leftCurrentSmoother = new ExponentialSmoother(0.1);
+        rightCurrentSmoother = new ExponentialSmoother(0.1);
     }
 
     public Mode getMode() {
@@ -83,6 +91,8 @@ public class Intake extends Subsystem {
 
     public void autoIntake() {
         mode = Mode.AUTO;
+        leftCurrentSmoother.reset();
+        rightCurrentSmoother.reset();
     }
 
     @Override
@@ -91,44 +101,54 @@ public class Intake extends Subsystem {
         telemetryData.leftIntakePower = leftIntakePower;
         telemetryData.rightIntakePower = rightIntakePower;
 
-        try {
-            LynxGetADCCommand leftCurrentCommand = new LynxGetADCCommand(rearHub, LynxGetADCCommand.Channel.MOTOR0_CURRENT, LynxGetADCCommand.Mode.ENGINEERING);
-            LynxGetADCCommand rightCurrentCommand = new LynxGetADCCommand(rearHub, LynxGetADCCommand.Channel.MOTOR1_CURRENT, LynxGetADCCommand.Mode.ENGINEERING);
-            double leftCurrent = leftCurrentCommand.sendReceive().getValue();
-            double rightCurrent = rightCurrentCommand.sendReceive().getValue();
-            telemetryData.leftIntakeCurrent = leftCurrent;
-            telemetryData.rightIntakeCurrent = rightCurrent;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            Log.w("Intake", e);
-        }
-
         switch (mode) {
             case AUTO:
-                double frontDistance = frontColorDistance.getDistance(DistanceUnit.INCH);
-                double rearDistance = rearColorDistance.getDistance(DistanceUnit.INCH);
+                try {
+                    LynxGetADCCommand leftCurrentCommand = new LynxGetADCCommand(rearHub, LynxGetADCCommand.Channel.MOTOR0_CURRENT, LynxGetADCCommand.Mode.ENGINEERING);
+                    LynxGetADCCommand rightCurrentCommand = new LynxGetADCCommand(rearHub, LynxGetADCCommand.Channel.MOTOR1_CURRENT, LynxGetADCCommand.Mode.ENGINEERING);
+                    double leftCurrent = leftCurrentSmoother.update(leftCurrentCommand.sendReceive().getValue());
+                    double rightCurrent = rightCurrentSmoother.update(rightCurrentCommand.sendReceive().getValue());
+                    telemetryData.leftIntakeCurrent = leftCurrent;
+                    telemetryData.rightIntakeCurrent = rightCurrent;
 
-                frontDistance = Double.isNaN(frontDistance) ? 20 : frontDistance;
-                rearDistance = Double.isNaN(rearDistance) ? 20 : rearDistance;
+                    // TODO: consider optimizing this to short circuit
+                    double frontDistance = frontColorDistance.getDistance(DistanceUnit.INCH);
+                    double rearDistance = rearColorDistance.getDistance(DistanceUnit.INCH);
 
-                boolean hasFrontGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
-                boolean hasRearGlyph = rearDistance <= GLYPH_PRESENCE_THRESHOLD;
-                int glyphCount = (hasFrontGlyph ? 1 : 0) + (hasRearGlyph ? 1 : 0);
+                    frontDistance = Double.isNaN(frontDistance) ? 20 : frontDistance;
+                    rearDistance = Double.isNaN(rearDistance) ? 20 : rearDistance;
 
-                telemetryData.intakeFrontDistance = frontDistance;
-                telemetryData.intakeRearDistance = rearDistance;
-                telemetryData.intakeHasFrontGlyph = hasFrontGlyph;
-                telemetryData.intakeHasRearGlyph = hasRearGlyph;
-                telemetryData.intakeGlyphCount = glyphCount;
+                    boolean hasFrontGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
+                    boolean hasRearGlyph = rearDistance <= GLYPH_PRESENCE_THRESHOLD;
+                    int glyphCount = (hasFrontGlyph ? 1 : 0) + (hasRearGlyph ? 1 : 0);
 
-                if (glyphCount < 2) {
-                    leftIntakePower = 1;
-                    rightIntakePower = 1;
-                } else {
-                    leftIntakePower = 0;
-                    rightIntakePower = 0;
-                    mode = Mode.MANUAL;
+                    telemetryData.intakeFrontDistance = frontDistance;
+                    telemetryData.intakeRearDistance = rearDistance;
+                    telemetryData.intakeHasFrontGlyph = hasFrontGlyph;
+                    telemetryData.intakeHasRearGlyph = hasRearGlyph;
+                    telemetryData.intakeGlyphCount = glyphCount;
+
+                    if (glyphCount < 2) {
+                        if (leftCurrent >= CURRENT_THRESHOLD) {
+                            leftIntakePower = -1;
+                            rightIntakePower = 1;
+                        } else if (rightCurrent >= CURRENT_THRESHOLD) {
+                            leftIntakePower = 1;
+                            rightIntakePower = -1;
+                        } else {
+                            leftIntakePower = 1;
+                            rightIntakePower = 1;
+                        }
+                    } else {
+                        leftIntakePower = 0;
+                        rightIntakePower = 0;
+                        mode = Mode.MANUAL;
+                    }
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                    Log.w("Intake", e);
                 }
 
                 break;
