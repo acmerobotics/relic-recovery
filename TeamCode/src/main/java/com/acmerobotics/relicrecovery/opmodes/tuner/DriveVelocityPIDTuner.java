@@ -33,7 +33,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
         for (int i = 0; i < 4; i ++) {
             motors[i] = hardwareMap.get(DcMotorEx.class, MecanumDrive.MOTOR_NAMES[i]);
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         }
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
@@ -59,7 +59,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
         if (isStopRequested()) return;
 
         MotorConfigurationType motorType = motors[0].getMotorType();
-        double maxRpm = motorType.getAchieveableMaxRPMFraction();
+        double maxRpm = motorType.getMaxRPM();
 
         double startTimestamp = TimestampedData.getCurrentTime();
 
@@ -109,6 +109,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
                 RobotLog.logStackTrace(e);
             }
             // update telemetry
+            telemetry.addData("power", power);
             telemetry.addData("targetVelocity", targetVelocity);
             for (int i = 0; i < 4; i++) {
                 telemetry.addData("velocity" + i, velocities[i]);
