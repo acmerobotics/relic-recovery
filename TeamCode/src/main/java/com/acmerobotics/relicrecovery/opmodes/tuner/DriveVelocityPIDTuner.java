@@ -5,6 +5,11 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageType;
 import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.relicrecovery.motion.MotionConstraints;
+import com.acmerobotics.relicrecovery.motion.MotionGoal;
+import com.acmerobotics.relicrecovery.motion.MotionProfile;
+import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
+import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
@@ -24,8 +29,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
 public class DriveVelocityPIDTuner extends LinearOpMode {
     public static PIDCoefficients MOTOR_PID = new PIDCoefficients();
+    public static MotionConstraints MOTION_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static double DISTANCE = 72;
-    public static double PERIOD = 30;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -59,9 +64,11 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
         if (isStopRequested()) return;
 
         MotorConfigurationType motorType = motors[0].getMotorType();
-        double maxRpm = motorType.getMaxRPM();
+        double ticksPerRev = motorType.getTicksPerRev();
+        double wheelCircumference = 2 * Math.PI * MecanumDrive.RADIUS;
 
-        double startTimestamp = TimestampedData.getCurrentTime();
+        MotionProfile activeProfile = new MotionProfile(new MotionState(0, 0, 0, 0, 0), MOTION_CONSTRAINTS);
+        boolean movingForwards = false;
 
         while (opModeIsActive()) {
             // update the coefficients if necessary
@@ -74,32 +81,28 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
                     motor.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, currentCoeffs);
                 }
             }
-            // calculate the motor power
-            double accelTime = PERIOD / 4;
-            double acceleration = DISTANCE / (accelTime * accelTime);
-            double periodTime = (TimestampedData.getCurrentTime() - startTimestamp) % PERIOD;
-            double targetVelocity;
-            if (periodTime < PERIOD / 4) {
-                targetVelocity = acceleration * periodTime;
-            } else if (periodTime < PERIOD / 2) {
-                targetVelocity = acceleration * (PERIOD / 2 - periodTime);
-            } else if (periodTime < 3 * PERIOD / 4) {
-                targetVelocity = -acceleration * (periodTime - PERIOD / 2);
-            } else {
-                targetVelocity = -acceleration * (PERIOD - periodTime);
+            // calculate and set the motor power
+            double timestamp = TimestampedData.getCurrentTime();
+            if (timestamp > activeProfile.end().t) {
+                // generate a new profile
+                MotionState start = new MotionState(movingForwards ? 0 : DISTANCE, 0, 0, 0, activeProfile.end().t);
+                MotionGoal goal = new MotionGoal(movingForwards ? DISTANCE : 0, 0);
+                activeProfile = MotionProfileGenerator.generateProfile(start, goal, MOTION_CONSTRAINTS);
+                movingForwards = !movingForwards;
             }
-            double rpm = 60 * targetVelocity / (2 * Math.PI * MecanumDrive.RADIUS);
-            double power = rpm / maxRpm;
+            double targetVelocity = activeProfile.get(timestamp).v;
+            double targetPower = MecanumDrive.AXIAL_PIDF.v * targetVelocity;
             for (DcMotorEx motor : motors) {
-                motor.setPower(power);
+                motor.setPower(targetPower);
             }
             // retrieve the motor velocities
             double[] velocities = new double[4];
             try {
                 LynxGetBulkInputDataCommand command = new LynxGetBulkInputDataCommand(frontHub);
+                // the driver suggests that the velocity units are encoder ticks / second
                 LynxGetBulkInputDataResponse response = command.sendReceive();
                 for (int i = 0; i < 4; i++) {
-                    velocities[i] = response.getVelocity(i) * (2 * Math.PI * MecanumDrive.RADIUS);
+                    velocities[i] = (response.getVelocity(i) / ticksPerRev) * wheelCircumference;
                 }
                 velocities[2] = -velocities[2];
                 velocities[3] = -velocities[3];
@@ -109,7 +112,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
                 RobotLog.logStackTrace(e);
             }
             // update telemetry
-            telemetry.addData("power", power);
+            telemetry.addData("targetPower", targetPower);
             telemetry.addData("targetVelocity", targetVelocity);
             for (int i = 0; i < 4; i++) {
                 telemetry.addData("velocity" + i, velocities[i]);
