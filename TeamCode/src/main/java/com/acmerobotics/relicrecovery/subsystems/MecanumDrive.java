@@ -31,6 +31,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
@@ -63,7 +64,9 @@ import java.util.Collections;
 public class MecanumDrive extends Subsystem {
     public static final int IMU_PORT = 0;
 
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static final PIDCoefficients DRIVE_MOTOR_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
+
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(36.0, 40.0, 25.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
     public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
@@ -240,7 +243,9 @@ public class MecanumDrive extends Subsystem {
         encoderOffsets = new int[4];
         motors = new DcMotor[4];
         for (int i = 0; i < 4; i ++) {
-            motors[i] = new CachingDcMotor(map.dcMotor.get(MOTOR_NAMES[i]));
+            DcMotorEx dcMotor = map.get(DcMotorEx.class, MOTOR_NAMES[i]);
+            dcMotor.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, DRIVE_MOTOR_VELOCITY_PID);
+            motors[i] = new CachingDcMotor(dcMotor);
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
