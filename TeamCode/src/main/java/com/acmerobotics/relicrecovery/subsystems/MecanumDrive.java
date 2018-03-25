@@ -478,7 +478,7 @@ public class MecanumDrive extends Subsystem {
 
     public void followPath(Path path) {
         if (!positionEstimationEnabled) {
-            throw new IllegalStateException("SlapperPosition estimation must be enable for path following");
+            throw new IllegalStateException("Position estimation must be enable for path following");
         }
         pathFollower.follow(path);
         setMode(Mode.FOLLOW_PATH);
