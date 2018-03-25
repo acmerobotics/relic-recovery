@@ -1,31 +1,19 @@
 package com.acmerobotics.relicrecovery.motion;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class MotionTest {
 
     public static void main(String[] args) {
-        doATest("basic", 16, 0,0);
-        /*doATest("violateA", 5, 5, 0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_A);
-        doATest("violateV", 5, 5, 0, MotionConstraints.EndBehavior.VIOLATE_MAX_ABS_V);
-        doATest("overshoot", 5, 5, 0, MotionConstraints.EndBehavior.OVERSHOOT);
-        doATest("reversed", -10, 0,0);
-        doATest("short", 2.3, 0,0);*/
 
-        // TODO: finish implementing this
-//        PathSegment segment = new LinearPathSegment(
-//                new Pose2d(0, 0, 0),
-//                new Pose2d(10, 0, Math.PI/2),
-//                new MotionConstraints(3, 1, 1, MotionConstraints.EndBehavior.OVERSHOOT),
-//                new MotionConstraints(1, .5, .5, MotionConstraints.EndBehavior.OVERSHOOT),
-//                new MotionState(0, 0, 0, 0, 0),
-//                0
-//        );
-//        writeProfile(segment.posProfile(), "posProfile");
-//        writeProfile(segment.headingProfile(), "headingProfile");
-//        writeSegment (segment, "basicSegments");
+        MotionConstraints constraints = new MotionConstraints(5, 5, 5, MotionConstraints.EndBehavior.OVERSHOOT);
 
+        MotionState start = new MotionState (10, -3, -2, 0, 0);
+        MotionProfile profile = MotionProfileGenerator.generateStopingProfile(start, constraints);
+
+        writeProfile(profile, "stop");
 
     }
 
@@ -43,6 +31,7 @@ public class MotionTest {
 
     public static void writeProfile(MotionProfile profile, String name) {
         try {
+            new File("./out").mkdirs();
             FileWriter writer = new FileWriter("./out/" + name + ".csv");
             writer.write("t, x, v, a, j\n");
             for(double t = 0; t < profile.end().t; t += .01) {
