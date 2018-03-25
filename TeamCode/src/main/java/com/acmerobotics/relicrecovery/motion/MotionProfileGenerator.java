@@ -158,9 +158,55 @@ public class MotionProfileGenerator {
         profile.appendControl(0, timesToDecel[1]);
         profile.appendControl(j, timesToDecel[2]);
 
-        profile.doCommenceDeUnConsolidatedification();
+        profile.removeEmptySegments();
 
         return profile;
+    }
+
+    public static MotionProfile generateStopingProfile(MotionState start, MotionConstraints constraints) {
+        double dv = -start.v;
+        // do the flipping thing
+
+        MotionProfile profile = new MotionProfile(start, constraints);
+
+        if (start.a < 0) {
+            double stopingTime = Math.abs(start.a / constraints.maxJ);
+            profile.appendControl(constraints.maxJ, stopingTime);
+            start = profile.end();
+            dv = -start.v;
+        }
+
+        double aMax = Math.min(constraints.maxA, Math.sqrt((start.a * start.a / 2) + (dv * constraints.maxJ)));
+        System.out.println(Math.sqrt((start.a * start.a / 2) + (dv * constraints.maxJ)));
+        System.out.println(aMax);
+
+        if (aMax > start.a) {
+            double accelTime = (aMax - start.a) / constraints.maxJ;
+            profile.appendControl(constraints.maxJ, accelTime);
+            start = profile.end();
+            dv = -start.v;
+        }
+
+        double dvDecel = (start.a * start.a) / (2.0 * constraints.maxJ);
+
+        double dvCruise = Math.max(0.0, dv - dvDecel);
+
+        System.out.println(dvCruise);
+
+        if (dvCruise > 0.0) {
+            double cruiseTime = dvCruise / start.a;
+            profile.appendControl(0, cruiseTime);
+            start = profile.end();
+        }
+
+        double decelTime = start.a / constraints.maxJ;
+        profile.appendControl(-constraints.maxJ, decelTime);
+
+        profile.removeEmptySegments();
+
+        return profile;
+
+
     }
 
     //get the duration of the three segments needed to achieve a delta v
