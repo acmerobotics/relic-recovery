@@ -20,7 +20,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class Intake extends Subsystem {
     public static double GLYPH_PRESENCE_THRESHOLD = 2.5; // in (theoretically, might actually be cm)
     public static double CURRENT_SMOOTHER_COEFF = 0.1;
-    public static int CURRENT_THRESHOLD = 1000; // mA
+    public static int LOWER_CURRENT_THRESHOLD = 1000; // mA
+    public static int UPPER_CURRENT_THRESHOLD = 1500; // mA
 
     public enum Mode {
         AUTO,
@@ -33,6 +34,7 @@ public class Intake extends Subsystem {
 
     private DcMotor leftIntake, rightIntake;
     private double leftIntakePower, rightIntakePower;
+    private boolean leftIntakeReversed, rightIntakeReversed;
 
     private LynxI2cColorRangeSensor frontColorDistance, rearColorDistance;
 
@@ -71,8 +73,8 @@ public class Intake extends Subsystem {
 
         rearHub = map.get(LynxModule.class, "rearHub");
 
-        leftCurrentSmoother = new ExponentialSmoother(0.1);
-        rightCurrentSmoother = new ExponentialSmoother(0.1);
+        leftCurrentSmoother = new ExponentialSmoother(CURRENT_SMOOTHER_COEFF);
+        rightCurrentSmoother = new ExponentialSmoother(CURRENT_SMOOTHER_COEFF);
     }
 
     public Mode getMode() {
@@ -128,11 +130,23 @@ public class Intake extends Subsystem {
                     telemetryData.intakeHasRearGlyph = hasRearGlyph;
                     telemetryData.intakeGlyphCount = glyphCount;
 
+                    if (leftIntakeReversed && leftCurrent < LOWER_CURRENT_THRESHOLD) {
+                        leftIntakeReversed = false;
+                    } else if (!leftIntakeReversed && leftCurrent > UPPER_CURRENT_THRESHOLD) {
+                        leftIntakeReversed = true;
+                    }
+
+                    if (rightIntakeReversed && rightCurrent < LOWER_CURRENT_THRESHOLD) {
+                        rightIntakeReversed = false;
+                    } else if (!rightIntakeReversed && rightCurrent > UPPER_CURRENT_THRESHOLD) {
+                        rightIntakeReversed = true;
+                    }
+
                     if (glyphCount < 2) {
-                        if (leftCurrent >= CURRENT_THRESHOLD) {
+                        if (leftIntakeReversed) {
                             leftIntakePower = -1;
                             rightIntakePower = 1;
-                        } else if (rightCurrent >= CURRENT_THRESHOLD) {
+                        } else if (rightIntakeReversed) {
                             leftIntakePower = 1;
                             rightIntakePower = -1;
                         } else {
@@ -144,7 +158,6 @@ public class Intake extends Subsystem {
                         rightIntakePower = 0;
                         mode = Mode.MANUAL;
                     }
-
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 } catch (Exception e) {
