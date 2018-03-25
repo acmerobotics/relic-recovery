@@ -45,9 +45,6 @@ public class SplinePath implements ParametricPath {
         }
 
         computeLength();
-
-        System.out.println("knot distance: " + knotDistance);
-        System.out.println("length: " + length());
     }
 
     private double valueAt(double percentage) {
@@ -75,8 +72,8 @@ public class SplinePath implements ParametricPath {
         double lastIntegrand = Math.sqrt(1 + derivativeAt(0) * derivativeAt(0)) / ARC_LENGTH_SAMPLES;
         for (int i = 1; i <= ARC_LENGTH_SAMPLES; i++) {
             double percentage = (double) i / ARC_LENGTH_SAMPLES;
-            double dydt = derivativeAt(percentage);
-            double integrand = Math.sqrt(1 + dydt * dydt) / ARC_LENGTH_SAMPLES;
+            double dydx = derivativeAt(percentage);
+            double integrand = Math.sqrt(1 + dydx * dydx) / ARC_LENGTH_SAMPLES;
             length += (integrand + lastIntegrand) / 2;
             lastIntegrand = integrand;
         }
@@ -101,17 +98,16 @@ public class SplinePath implements ParametricPath {
     @Override
     public Pose2d getPose(double displacement) {
         double percentage = displacement / length;
+
+        double derivative = derivativeAt(percentage);
+
         double x = knotDistance * percentage;
         double y = valueAt(percentage);
-
-        double cosHeadingOffset = Math.cos(headingOffset);
-        double sinHeadingOffset = Math.sin(headingOffset);
-
-        double heading = Angle.norm(Math.atan(derivativeAt(percentage)) + headingOffset);
+        double heading = Angle.norm(Math.atan(derivative) + headingOffset);
 
         return new Pose2d(
-                x * cosHeadingOffset - y * sinHeadingOffset + xOffset,
-                x * sinHeadingOffset + y * cosHeadingOffset + yOffset,
+                x * Math.cos(headingOffset) - y * Math.sin(headingOffset) + xOffset,
+                x * Math.sin(headingOffset) + y * Math.cos(headingOffset) + yOffset,
                 heading
         );
     }
@@ -119,46 +115,40 @@ public class SplinePath implements ParametricPath {
     @Override
     public Pose2d getDerivative(double displacement) {
         double percentage = displacement / length;
-        double x = knotDistance / length;
-        double y = derivativeAt(percentage) * knotDistance / length;
-
-        double cosHeadingOffset = Math.cos(headingOffset);
-        double sinHeadingOffset = Math.sin(headingOffset);
 
         double derivative = derivativeAt(percentage);
         double secondDerivative = secondDerivativeAt(percentage);
 
-        double heading = secondDerivative / (1 + derivative * derivative);
-        heading *= knotDistance / length;
+        double xDeriv = knotDistance / length;
+        double yDeriv = derivative * knotDistance / length;
+        double omega = secondDerivative / (1 + derivative * derivative);
+        omega *= knotDistance / length;
 
         return new Pose2d(
-                x * cosHeadingOffset - y * sinHeadingOffset,
-                x * sinHeadingOffset + y * cosHeadingOffset,
-                heading
+                xDeriv * Math.cos(headingOffset) - yDeriv * Math.sin(headingOffset),
+                xDeriv * Math.sin(headingOffset) + yDeriv * Math.cos(headingOffset),
+                omega
         );
     }
 
     @Override
     public Pose2d getSecondDerivative(double displacement) {
         double percentage = displacement / length;
-        double x = 0;
-        double y = secondDerivativeAt(percentage) * knotDistance * knotDistance / (length * length);
-
-        double cosHeadingOffset = Math.cos(headingOffset);
-        double sinHeadingOffset = Math.sin(headingOffset);
 
         double derivative = derivativeAt(percentage);
         double secondDerivative = secondDerivativeAt(percentage);
         double thirdDerivative = thirdDerivativeAt(percentage);
 
-        double heading = (1 + derivative * derivative) * thirdDerivative - secondDerivative * 2 * derivative * secondDerivative;
-        heading /= (1 + derivative * derivative) * (1 + derivative * derivative);
-        heading *= knotDistance * knotDistance / (length * length);
+        double xSecondDeriv = 0;
+        double ySecondDeriv = secondDerivative * knotDistance * knotDistance / (length * length);
+        double alpha = (1 + derivative * derivative) * thirdDerivative - secondDerivative * 2 * derivative * secondDerivative;
+        alpha /= (1 + derivative * derivative) * (1 + derivative * derivative);
+        alpha *= knotDistance * knotDistance / (length * length);
 
         return new Pose2d(
-                x * cosHeadingOffset - y * sinHeadingOffset,
-                x * sinHeadingOffset + y * cosHeadingOffset,
-                heading
+                xSecondDeriv * Math.cos(headingOffset) - ySecondDeriv * Math.sin(headingOffset),
+                xSecondDeriv * Math.sin(headingOffset) + ySecondDeriv * Math.cos(headingOffset),
+                alpha
         );
     }
 
