@@ -85,10 +85,10 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
             double timestamp = TimestampedData.getCurrentTime();
             if (timestamp > activeProfile.end().t) {
                 // generate a new profile
-                MotionState start = new MotionState(movingForwards ? 0 : DISTANCE, 0, 0, 0, activeProfile.end().t);
+                movingForwards = !movingForwards;
+                MotionState start = new MotionState(movingForwards ? 0 : DISTANCE, 0, 0, 0, timestamp);
                 MotionGoal goal = new MotionGoal(movingForwards ? DISTANCE : 0, 0);
                 activeProfile = MotionProfileGenerator.generateProfile(start, goal, MOTION_CONSTRAINTS);
-                movingForwards = !movingForwards;
             }
             double targetVelocity = activeProfile.get(timestamp).v;
             double targetPower = MecanumDrive.AXIAL_PIDF.v * targetVelocity;
