@@ -32,7 +32,7 @@ public class TrajectoryBuilder {
         } else {
             motionSegments.add(new ParametricSegment(path));
         }
-        currentPose = pose;
+        currentPose = path.end();
         return this;
     }
 
@@ -78,7 +78,7 @@ public class TrajectoryBuilder {
         } else {
             motionSegments.add(new ParametricSegment(spline));
         }
-        currentPose = modifiedWaypoints.get(modifiedWaypoints.size() - 1);
+        currentPose = spline.end();
         return this;
     }
 

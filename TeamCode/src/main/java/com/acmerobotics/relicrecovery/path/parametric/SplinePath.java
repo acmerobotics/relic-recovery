@@ -19,6 +19,7 @@ public class SplinePath implements ParametricPath {
     private double a, b, c, d, e;
     private double xOffset, yOffset, headingOffset, knotDistance;
     private double length;
+    private boolean headingFlipped;
 
     public SplinePath(Type type, Pose2d startPose, Pose2d endPose) {
         xOffset = startPose.x();
@@ -45,6 +46,14 @@ public class SplinePath implements ParametricPath {
         }
 
         computeLength();
+        System.out.println("input start: " + startPose + ", end: " + endPose);
+
+        headingFlipped = Math.abs(Angle.norm(startPose.heading() - start().heading())) > Math.PI / 2;
+
+        System.out.println("calc  start: " + start() + ", end: " + end());
+
+        System.out.println("heading offset: " + Math.toDegrees(headingOffset));
+        System.out.println();
     }
 
     private double valueAt(double percentage) {
@@ -104,6 +113,9 @@ public class SplinePath implements ParametricPath {
         double x = knotDistance * percentage;
         double y = valueAt(percentage);
         double heading = Angle.norm(Math.atan(derivative) + headingOffset);
+        if (headingFlipped) {
+            heading += Math.PI;
+        }
 
         return new Pose2d(
                 x * Math.cos(headingOffset) - y * Math.sin(headingOffset) + xOffset,

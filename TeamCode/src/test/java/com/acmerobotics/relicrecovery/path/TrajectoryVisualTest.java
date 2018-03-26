@@ -53,15 +53,10 @@ public class TrajectoryVisualTest {
                 .lineTo(new Vector2d(12, -60))
 //                .closeComposite()
                 .build();
-        Trajectory trajectory3 = new TrajectoryBuilder(new Pose2d(60, 0, Math.PI))
-                .splineThrough(new Pose2d(24, -24, Math.PI), new Pose2d(12, -52, Math.PI / 2))
-                .build();
         System.out.println("Trajectory 1 duration: " + trajectory.duration());
         System.out.println("Trajectory 2 duration: " + trajectory2.duration());
-        System.out.println("Trajectory 3 duration: " + trajectory3.duration());
         writeTrajectory(trajectory, "trajectory");
         writeTrajectory(trajectory2, "trajectory2");
-        writeTrajectory(trajectory3, "trajectory3");
     }
 
     public static void writeTrajectory(Trajectory trajectory, String name) {

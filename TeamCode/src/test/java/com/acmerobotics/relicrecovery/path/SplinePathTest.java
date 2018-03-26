@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
 import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
 
@@ -16,9 +17,8 @@ public class SplinePathTest {
     @Test
     public void testSplineGeneration() {
         ParametricPath spline = CompositePath.fitSpline(
-                new Pose2d(0, 0, 0),
-                new Pose2d(4, 16, Math.PI / 4),
-                new Pose2d(12, 22, 3 * Math.PI / 8));
+                new Pose2d(0, -12, 3 * Math.PI / 4),
+                new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2));
         writeParametricPath(spline, "simpleSpline");
 
         TrajectorySegment motionSegment = new ParametricSegment(spline);

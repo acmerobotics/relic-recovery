@@ -128,7 +128,6 @@ public class MotionProfileGenerator {
             int iterations = 0;
             while (Math.abs(dxCoast) > epsilon && iterations < 1000) {
                 iterations ++;
-                System.out.println(iterations + ", " + dxCoast + ", " + maxV);
                 if (dxCoast < 0) {
                     maxVmax = maxV;
                     maxV -= (maxV - maxVmin)/2;

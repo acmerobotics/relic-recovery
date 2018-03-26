@@ -128,17 +128,17 @@ export default class Field {
         const { knotDistance, xOffset, yOffset, headingOffset, a, b, c, d, e } = op;
         this.ctx.moveTo(scalePoint(yOffset, 72, -72, x, width + x),
           scalePoint(xOffset, 72, -72, y, height + y));
-        for (let i = 0; i <= 1; i += 0.001) {
-          const x = knotDistance * i;
-          const y = (a*x + b) * (x*x*x*x) + c * (x*x*x)+ d * (x*x) + e * x;
+        for (let i = 0; i <= 1; i += 0.01) {
+          const sx = knotDistance * i;
+          const sy = (a*sx + b) * (sx*sx*sx*sx) + c * (sx*sx*sx)+ d * (sx*sx) + e * sx;
 
           const cosHeadingOffset = Math.cos(headingOffset);
           const sinHeadingOffset = Math.sin(headingOffset);
 
-          const adjustedX = x * cosHeadingOffset - y * sinHeadingOffset + xOffset;
-          const adjustedY = x * sinHeadingOffset + y * cosHeadingOffset + yOffset;
+          const adjustedX = sx * cosHeadingOffset - sy * sinHeadingOffset + xOffset;
+          const adjustedY = sx * sinHeadingOffset + sy * cosHeadingOffset + yOffset;
 
-          this.ctx.moveTo(scalePoint(adjustedY, 72, -72, x, width + x),
+          this.ctx.lineTo(scalePoint(adjustedY, 72, -72, x, width + x),
             scalePoint(adjustedX, 72, -72, y, height + y));
         }
         this.ctx.stroke();
