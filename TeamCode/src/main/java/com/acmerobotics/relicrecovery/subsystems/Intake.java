@@ -12,6 +12,7 @@ import com.qualcomm.hardware.lynx.commands.core.LynxGetADCCommand;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -89,6 +90,14 @@ public class Intake extends Subsystem {
         this.leftIntakePower = leftIntakePower;
         this.rightIntakePower = rightIntakePower;
         mode = Mode.MANUAL;
+    }
+
+    public NormalizedRGBA getFrontNormalizedColors() {
+        return frontColorDistance.getNormalizedColors();
+    }
+
+    public NormalizedRGBA getRearNormalizedColors() {
+        return rearColorDistance.getNormalizedColors();
     }
 
     public void autoIntake() {
