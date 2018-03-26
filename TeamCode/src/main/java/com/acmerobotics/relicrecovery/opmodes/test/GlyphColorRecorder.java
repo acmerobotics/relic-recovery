@@ -22,13 +22,12 @@ public class GlyphColorRecorder extends LinearOpMode {
         CSVLoggingTelemetry loggingTelemetry = new CSVLoggingTelemetry(new File(
                 LoggingUtil.getLogRoot(this), "GlyphColorResults-" + System.currentTimeMillis() + ".csv"));
 
-        telemetry.log().add("Press the right button to record a new sample:");
-        telemetry.log().add("[A] front gray glyph");
-        telemetry.log().add("[B] front brown glyph");
-        telemetry.log().add("[X] rear gray glyph");
-        telemetry.log().add("[Y] rear brown glyph");
+        telemetry.log().add("Ready! Press play to begin.");
+        telemetry.update();
 
         waitForStart();
+
+        int samplesCollected = 0;
 
         while (opModeIsActive()) {
             stickyGamepad1.update();
@@ -39,6 +38,8 @@ public class GlyphColorRecorder extends LinearOpMode {
                 loggingTelemetry.addData("red", color.red);
                 loggingTelemetry.addData("green", color.green);
                 loggingTelemetry.addData("blue", color.blue);
+                loggingTelemetry.update();
+                samplesCollected++;
             }
 
             if (stickyGamepad1.x || stickyGamepad1.y) {
@@ -47,7 +48,18 @@ public class GlyphColorRecorder extends LinearOpMode {
                 loggingTelemetry.addData("red", color.red);
                 loggingTelemetry.addData("green", color.green);
                 loggingTelemetry.addData("blue", color.blue);
+                loggingTelemetry.update();
+                samplesCollected++;
             }
+
+            telemetry.log().clear();
+            telemetry.log().add("Press the right button to record a new sample:");
+            telemetry.log().add("[A] front gray glyph");
+            telemetry.log().add("[B] front brown glyph");
+            telemetry.log().add("[X] rear gray glyph");
+            telemetry.log().add("[Y] rear brown glyph");
+            telemetry.log().add(samplesCollected + " samples collected.");
+            telemetry.update();
         }
     }
 }
