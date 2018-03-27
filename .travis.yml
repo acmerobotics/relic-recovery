@@ -3,12 +3,9 @@ android:
   components:
   - tools
   - platform-tools
-  - build-tools-26.0.2
+  - build-tools-27.0.3
   - android-23
   - android-26
 notifications:
   email: false
-  slack:
-    secure: TzY44P9ywQINTyTEFE1QmJsXS4SE6pT+hnMVbRKDTVSl9HnTpK757V8W8uJQP079gvgDVZVf/QXPvgtw9rhkhneQkty1wYn0d7LCqXdxT4RSN2P80aJ+3NPC6LgW4zUIgftaiLPSsgIMOe4aqtmDJ4MBl9q8IntyxhVynaaIC64qjK8Gyzvyz5TEG0pCVpOTZCLLHE6+ZmehdcJt/x6daJVZx97Q4MpiUN6aujr9PPhJ7n6Fkt6YGV/vAYFGV3eFwbKM/ul/aTOr0+P3dtYvRZOW0gcC3UcJa4ycpXNxYFCN0fVluArCINR1dIFByo609JiasknQr5dyRRG9f4yIrAaO3+NFZ7Zphn5FFOwXudejHDw/scv/+XNOaadE6qPKmdVDJ+j+ujAaSqt4/hJ12/1gAD1b1F+sZJu2IjR9Dk9Bu0WJkYWMp0ocBMzREdQudmdZlz6BtGYAPNomet4tkpOdJ0j40ifjhr2++MFHejms3gWQxaHDdlCXh7e308ksw6tErFNtfl7OyG3rmiN02njJseD5H78WJWVwZx9Y8LXDQi6MS86OmP4WdpIa1bZiGrVF7KlCYbsnjFQ0WrBXyj/c2fQgw3vRJKyQoZmWZhVILF2+ENSvRt7K8Y32D8I7l0njxGaiXObrGlSO6FTK1ELHAMpmAy1ODs5ye/WyvEM=
-    on_success: change
-    on_failure: always
+  slack: acmerobotics:9SyyedCFx2m2yLp9dIYS93TG
