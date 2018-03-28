@@ -17,7 +17,7 @@
             <NeveRest20Gearmotor name="intakeLeft" port="0" />
             <NeveRest20Gearmotor name="intakeRight" port="1" />
             <NeveRest20Gearmotor name="dumpLift" port="2" />
-            <NeveRest40Gearmotor name="relicArm" port="3" />
+            <NeveRest20Gearmotor name="relicArm" port="3" />
             <Servo name="dumpRotateRight" port="0" />
             <Servo name="dumpRotateLeft" port="1" />
             <Servo name="dumpRelease" port="2" />
