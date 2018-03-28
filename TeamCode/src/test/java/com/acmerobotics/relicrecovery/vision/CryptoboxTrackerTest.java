@@ -32,8 +32,7 @@ public class CryptoboxTrackerTest {
     @Test
     @Ignore
     public void testSampleImages() {
-//        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
-        System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
+        OpenCVStaticLoader.loadStaticLibs();
 
         VisionCamera.Properties properties = new VisionCamera.Properties() {
             @Override

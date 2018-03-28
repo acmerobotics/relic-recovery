@@ -132,11 +132,8 @@ export default class Field {
           const sx = knotDistance * i;
           const sy = (a*sx + b) * (sx*sx*sx*sx) + c * (sx*sx*sx)+ d * (sx*sx) + e * sx;
 
-          const cosHeadingOffset = Math.cos(headingOffset);
-          const sinHeadingOffset = Math.sin(headingOffset);
-
-          const adjustedX = sx * cosHeadingOffset - sy * sinHeadingOffset + xOffset;
-          const adjustedY = sx * sinHeadingOffset + sy * cosHeadingOffset + yOffset;
+          const adjustedX = sx * Math.cos(headingOffset) - sy * Math.sin(headingOffset) + xOffset;
+          const adjustedY = sx * Math.sin(headingOffset) + sy * Math.cos(headingOffset) + yOffset;
 
           this.ctx.lineTo(scalePoint(adjustedY, 72, -72, x, width + x),
             scalePoint(adjustedX, 72, -72, y, height + y));
