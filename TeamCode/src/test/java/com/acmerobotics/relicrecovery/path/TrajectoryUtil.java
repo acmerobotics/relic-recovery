@@ -21,7 +21,7 @@ import java.io.IOException;
 public class TrajectoryUtil {
     public static void writeParametricPath(ParametricPath path, String name) {
         try {
-            File outputDir = new File("./out");
+            File outputDir = new File("../out");
             outputDir.mkdirs();
             FileWriter writer = new FileWriter(new File(outputDir,name + ".csv"));
             writer.write("t, x, y, theta, vx, vy, omega, ax, ay, alpha\n");
@@ -44,7 +44,7 @@ public class TrajectoryUtil {
 
     public static void writePathMotionSegment(TrajectorySegment motionSegment, String name) {
         try {
-            File outputDir = new File("./out");
+            File outputDir = new File("../out");
             outputDir.mkdirs();
             FileWriter writer = new FileWriter(new File(outputDir,name + ".csv"));
             writer.write("t, x, y, theta, vx, vy, omega, ax, ay, alpha\n");
@@ -67,7 +67,9 @@ public class TrajectoryUtil {
 
     public static void writeTrajectory(Trajectory trajectory, String name) {
         try {
-            FileWriter writer = new FileWriter(new File(name + ".csv"));
+            File outputDir = new File("../out");
+            outputDir.mkdirs();
+            FileWriter writer = new FileWriter(new File(outputDir,name + ".csv"));
             writer.write("t, x, y, theta, vx, vy, omega, ax, ay, alpha\n");
             System.out.println("starting duration: " + trajectory.duration());
             for (double time = 0; time < trajectory.duration(); time += 0.01) {
@@ -88,7 +90,7 @@ public class TrajectoryUtil {
 
     public static void drawTrajectoryOnField(Trajectory trajectory, String name) {
         OpenCVStaticLoader.loadStaticLibs();
-        Mat field = Imgcodecs.imread("dashboard/src/assets/field.png");
+        Mat field = Imgcodecs.imread("../dashboard/src/assets/field.png");
         MatOverlay overlay = new MatOverlay(field);
         overlay.setScalingFactor(field.width() / 144.0);
         drawTrajectory(overlay, trajectory, new Scalar(0, 255, 0));

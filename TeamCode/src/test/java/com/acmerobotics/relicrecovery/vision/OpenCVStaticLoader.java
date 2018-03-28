@@ -7,7 +7,7 @@ public class OpenCVStaticLoader {
 
     public static void loadStaticLibs() {
         if (!hasLoaded) {
-            File libsDir = new File("libs");
+            File libsDir = new File("../libs");
             String os = System.getProperty("os.name");
             if (os.startsWith("Windows")) {
                 System.load(new File(libsDir, "opencv_java331.dll").getAbsolutePath());

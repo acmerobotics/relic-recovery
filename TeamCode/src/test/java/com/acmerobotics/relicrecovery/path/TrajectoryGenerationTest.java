@@ -16,7 +16,6 @@ public class TrajectoryGenerationTest {
     @Test
     public void drawTrajectory() {
         OpenCVStaticLoader.loadStaticLibs();
-        System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
         Trajectory trajectory = new TrajectoryBuilder(new Pose2d(48, -48, Math.PI))
                 .beginComposite()
                 .lineTo(new Vector2d(36, -48))

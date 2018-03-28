@@ -49,8 +49,8 @@ public class CryptoboxTrackerTest {
         redTracker.init(visionCamera);
         blueTracker.init(visionCamera);
 
-        File imageSourceDir = new File("scripts/new-cryptobox/images");
-        File imageOutputDir = new File("scripts/new-cryptobox/output");
+        File imageSourceDir = new File("../scripts/new-cryptobox/images");
+        File imageOutputDir = new File("../scripts/new-cryptobox/output");
         imageOutputDir.mkdirs();
 
         for (File imageFile : imageSourceDir.listFiles()) {
