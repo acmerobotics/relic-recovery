@@ -64,16 +64,16 @@ public class MaxSonarEZ1UltrasonicSensor implements UltrasonicSensor, DistanceSe
 
     @Override
     public int getVersion() {
-        return 0;
+        return 1;
     }
 
     @Override
     public void resetDeviceConfigurationForOpMode() {
-
+        input.resetDeviceConfigurationForOpMode();
     }
 
     @Override
     public void close() {
-
+        input.close();
     }
 }
