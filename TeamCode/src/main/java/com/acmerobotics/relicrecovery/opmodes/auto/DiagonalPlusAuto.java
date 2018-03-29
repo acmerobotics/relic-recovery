@@ -6,8 +6,8 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -48,18 +48,18 @@ public class DiagonalPlusAuto extends AutoOpMode {
             robot.sleep(0.75);
         }
 
-        Path stoneToCrypto = AutoPaths.makeDiagonalPathToCryptobox(robot.config.getBalancingStone(), vuMark);
-        robot.drive.followPath(stoneToCrypto);
+        Trajectory stoneToCrypto = AutoPaths.makeDiagonalTrajectoryToCryptobox(robot.config.getBalancingStone(), vuMark);
+        robot.drive.followTrajectory(stoneToCrypto);
         robot.sleep(0.5);
         raiseArmAndSlapper();
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         double pileAngle = -yMultiplier * Math.PI / 4;
         double turnAngle = Angle.norm(pileAngle - stoneToCrypto.end().heading());
 
         robot.dumpBed.dump();
         sleep(500);
-        Path cryptoToPit = new PathBuilder(stoneToCrypto.end())
+        Trajectory cryptoToPit = new TrajectoryBuilder(stoneToCrypto.end())
                 .lineTo(new Vector2d(stoneToCrypto.end().x(), yMultiplier * 12))
                 .turn(turnAngle)
                 .forward(12)
@@ -67,10 +67,10 @@ public class DiagonalPlusAuto extends AutoOpMode {
                 .turn(-yMultiplier * Math.PI / 4)
                 .lineTo(new Vector2d(stoneToCrypto.end().x(), yMultiplier * 48))
                 .build();
-        robot.drive.followPath(cryptoToPit);
+        robot.drive.followTrajectory(cryptoToPit);
         sleep(500);
         robot.dumpBed.retract();
         robot.intake.autoIntake();
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
     }
 }

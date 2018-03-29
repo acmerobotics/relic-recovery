@@ -4,7 +4,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -27,10 +27,10 @@ public class UltrasonicMoveTest extends AutoOpMode {
 
     @Override
     protected void run() {
-        robot.drive.followPath(new PathBuilder(new Pose2d(12, -24, Math.PI / 2))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -24, Math.PI / 2))
                 .lineTo(new Vector2d(12, -54))
                 .build());
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         sleep(500);
 

@@ -21,8 +21,8 @@ import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathFollower;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
@@ -69,9 +69,9 @@ public class MecanumDrive extends Subsystem {
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(36.0, 40.0, 25.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0.07);
-    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.004);
-    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0.008);
+    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0);
+    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
+    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
 
     public static PIDCoefficients BLUE_COLUMN_ALIGN_PID = new PIDCoefficients(-0.035, 0, -0.0175);
     public static PIDCoefficients RED_COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.03);
@@ -140,7 +140,7 @@ public class MecanumDrive extends Subsystem {
     private boolean positionEstimationEnabled;
     private Pose2d estimatedPose = new Pose2d(0, 0, 0);
 
-    private PathFollower pathFollower;
+    private TrajectoryFollower trajectoryFollower;
 
     private Localizer localizer;
 
@@ -206,6 +206,9 @@ public class MecanumDrive extends Subsystem {
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
 
+        // taken from https://ftcforum.usfirst.org/forum/ftc-technology/53812-mounting-the-revhub-vertically?p=56587#post56587
+        // testing suggests that an axis remap is more accurate then simply changing the axis read
+        // we hypothesize that this helps properly configure the internal sensor fusion/Kalman filtering
         try {
             // axis remap
             byte AXIS_MAP_CONFIG_BYTE = 0x6; //This is what to write to the AXIS_MAP_CONFIG register to swap x and z axes
@@ -252,7 +255,7 @@ public class MecanumDrive extends Subsystem {
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
 
-        pathFollower = new PathFollower(HEADING_PIDF, AXIAL_PIDF, LATERAL_PIDF);
+        trajectoryFollower = new TrajectoryFollower(HEADING_PIDF, AXIAL_PIDF, LATERAL_PIDF);
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
@@ -291,8 +294,8 @@ public class MecanumDrive extends Subsystem {
         ultrasonicSwivelExtended = false;
     }
 
-    public PathFollower getPathFollower() {
-        return pathFollower;
+    public TrajectoryFollower getTrajectoryFollower() {
+        return trajectoryFollower;
     }
 
     public void enablePositionEstimation() {
@@ -481,19 +484,19 @@ public class MecanumDrive extends Subsystem {
         setHeading(0);
     }
 
-    public void followPath(Path path) {
+    public void followTrajectory(Trajectory trajectory) {
         if (!positionEstimationEnabled) {
             throw new IllegalStateException("Position estimation must be enable for path following");
         }
-        pathFollower.follow(path);
+        trajectoryFollower.follow(trajectory);
         setMode(Mode.FOLLOW_PATH);
     }
 
-    public boolean isFollowingPath() {
-        return pathFollower.isFollowingPath();
+    public boolean isFollowingTrajectory() {
+        return trajectoryFollower.isFollowingTrajectory();
     }
 
-    public void waitForPathFollower() {
+    public void waitForTrajectoryFollower() {
         while (!Thread.currentThread().isInterrupted() && mode == Mode.FOLLOW_PATH) {
             try {
                 Thread.sleep(AutoOpMode.POLL_INTERVAL);
@@ -572,17 +575,17 @@ public class MecanumDrive extends Subsystem {
             case OPEN_LOOP:
                 break;
             case FOLLOW_PATH:
-                if (pathFollower.isFollowingPath()) {
+                if (trajectoryFollower.isFollowingTrajectory()) {
                     Pose2d estimatedPose = getEstimatedPose();
-                    Pose2d update = pathFollower.update(estimatedPose);
+                    Pose2d update = trajectoryFollower.update(estimatedPose);
                     internalSetVelocity(update.pos(), update.heading());
 
-                    telemetryData.pathAxialError = pathFollower.getAxialError();
-                    telemetryData.pathAxialUpdate = pathFollower.getAxialUpdate();
-                    telemetryData.pathLateralError = pathFollower.getLateralError();
-                    telemetryData.pathLateralUpdate = pathFollower.getLateralUpdate();
-                    telemetryData.pathHeadingError = pathFollower.getHeadingError();
-                    telemetryData.pathHeadingUpdate = pathFollower.getHeadingUpdate();
+                    telemetryData.pathAxialError = trajectoryFollower.getAxialError();
+                    telemetryData.pathAxialUpdate = trajectoryFollower.getAxialUpdate();
+                    telemetryData.pathLateralError = trajectoryFollower.getLateralError();
+                    telemetryData.pathLateralUpdate = trajectoryFollower.getLateralUpdate();
+                    telemetryData.pathHeadingError = trajectoryFollower.getHeadingError();
+                    telemetryData.pathHeadingUpdate = trajectoryFollower.getHeadingUpdate();
                 } else {
                     stop();
                 }
@@ -652,14 +655,14 @@ public class MecanumDrive extends Subsystem {
         telemetryData.estimatedY = estimatedPose.y();
         telemetryData.estimatedHeading = estimatedPose.heading();
 
-        if (pathFollower.getPath() != null) {
+        if (trajectoryFollower.getTrajectory() != null) {
             fieldOverlay.setStroke("#4CAF50");
-            DrawingUtil.drawPath(fieldOverlay, pathFollower.getPath());
+            DrawingUtil.drawTrajectory(fieldOverlay, trajectoryFollower.getTrajectory());
         }
 
-        if (pathFollower.getPose() != null) {
+        if (trajectoryFollower.getPose() != null) {
             fieldOverlay.setStroke("#F44336");
-            DrawingUtil.drawMecanumRobot(fieldOverlay, pathFollower.getPose());
+            DrawingUtil.drawMecanumRobot(fieldOverlay, trajectoryFollower.getPose());
         }
 
         fieldOverlay.setStroke("#3F51B5");

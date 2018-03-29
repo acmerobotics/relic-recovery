@@ -7,17 +7,9 @@ public class Pose2d {
     private final Vector2d pos;
     private final double heading;
 
-    public Pose2d(Vector2d pos) {
-        this(pos, 0);
-    }
-
     public Pose2d(Vector2d pos, double heading) {
         this.pos = pos;
-        this.heading = Angle.norm(heading);
-    }
-
-    public Pose2d(double x, double y) {
-        this(x, y, 0);
+        this.heading = heading;
     }
 
     public Pose2d(double x, double y, double heading) {
@@ -45,7 +37,7 @@ public class Pose2d {
     }
 
     public Pose2d added(Pose2d other) {
-        return new Pose2d(pos.added(other.pos), Angle.norm(heading + other.heading));
+        return new Pose2d(pos.added(other.pos), heading + other.heading);
     }
 
     public Pose2d multiplied(double scalar) {
@@ -67,7 +59,7 @@ public class Pose2d {
 
     @Override
     public String toString() {
-        return String.format(Locale.ENGLISH, "<%.2f, %.2f, %.2f (%.2f deg)>", pos.x(), pos.y(), heading, Math.toDegrees(heading));
+        return String.format(Locale.ENGLISH, "<%.2f, %.2f, %.2f (%.2f\u00B0)>", pos.x(), pos.y(), heading, Math.toDegrees(heading));
     }
 
 }

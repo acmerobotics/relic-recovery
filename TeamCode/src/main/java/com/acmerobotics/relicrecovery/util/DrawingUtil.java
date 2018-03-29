@@ -3,9 +3,13 @@ package com.acmerobotics.relicrecovery.util;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.path.LineSegment;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathSegment;
+import com.acmerobotics.relicrecovery.path.ParametricSegment;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectorySegment;
+import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
+import com.acmerobotics.relicrecovery.path.parametric.LinePath;
+import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
+import com.acmerobotics.relicrecovery.path.parametric.SplinePath;
 
 import java.util.Arrays;
 import java.util.List;
@@ -120,14 +124,27 @@ public class DrawingUtil {
         canvas.strokePolyline(xCoords, yCoords);
     }
 
-    public static void drawPath(Canvas canvas, Path path) {
+    public static void drawTrajectory(Canvas canvas, Trajectory trajectory) {
         canvas.setStrokeWidth(3);
-        for (PathSegment segment : path.getSegments()) {
-            if (segment instanceof LineSegment) {
-                LineSegment lineSegment = (LineSegment) segment;
-                canvas.strokeLine(lineSegment.start().x(), lineSegment.start().y(),
-                        lineSegment.end().x(), lineSegment.end().y());
+        for (TrajectorySegment motionSegment : trajectory.segments()) {
+            if (motionSegment instanceof ParametricSegment) {
+                drawParametricPath(canvas, ((ParametricSegment) motionSegment).path());
             }
+        }
+    }
+
+    public static void drawParametricPath(Canvas canvas, ParametricPath path) {
+        if (path instanceof CompositePath) {
+            for (ParametricPath subPath : ((CompositePath) path).segments()) {
+                drawParametricPath(canvas, subPath);
+            }
+        } else if (path instanceof LinePath) {
+            LinePath line = (LinePath) path;
+            canvas.strokeLine(line.start().x(), line.start().y(), line.end().x(), line.end().y());
+        } else if (path instanceof SplinePath) {
+            SplinePath spline = (SplinePath) path;
+            canvas.strokeSpline(spline.knotDistance(), spline.xOffset(), spline.yOffset(), spline.headingOffset(),
+                    spline.a(), spline.b(), spline.c(), spline.d(), spline.e());
         }
     }
 }

@@ -2,7 +2,7 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 
-public class WaitSegment implements PathSegment {
+public class WaitSegment implements TrajectorySegment {
     private Pose2d pose;
     private double duration;
 
@@ -17,21 +17,6 @@ public class WaitSegment implements PathSegment {
     }
 
     @Override
-    public Pose2d getPose(double time) {
-        return pose;
-    }
-
-    @Override
-    public Pose2d getPoseVelocity(double time) {
-        return new Pose2d(0, 0, 0);
-    }
-
-    @Override
-    public Pose2d getPoseAcceleration(double time) {
-        return new Pose2d(0, 0, 0);
-    }
-
-    @Override
     public Pose2d start() {
         return pose;
     }
@@ -39,5 +24,25 @@ public class WaitSegment implements PathSegment {
     @Override
     public Pose2d end() {
         return pose;
+    }
+
+    @Override
+    public Pose2d getPose(double time) {
+        return pose;
+    }
+
+    @Override
+    public Pose2d getVelocity(double time) {
+        return new Pose2d(0, 0, 0);
+    }
+
+    @Override
+    public Pose2d getAcceleration(double time) {
+        return new Pose2d(0, 0, 0);
+    }
+
+    @Override
+    public void trimRemainingDistance(double time) {
+        duration = time;
     }
 }

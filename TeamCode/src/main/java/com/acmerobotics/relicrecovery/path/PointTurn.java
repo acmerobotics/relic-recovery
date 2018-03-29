@@ -2,40 +2,28 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
 import com.acmerobotics.relicrecovery.motion.MotionProfile;
 import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
 import com.acmerobotics.relicrecovery.motion.MotionState;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
-import java.util.Locale;
-
-public class PointTurn implements PathSegment {
-    private Pose2d initialPose;
-    private double angle;
+public class PointTurn implements TrajectorySegment {
+    private Pose2d startPose;
+    private double endHeading;
     private MotionProfile profile;
 
-    public PointTurn(Pose2d initialPose, double angle) {
-        this.initialPose = initialPose;
-        this.angle = angle;
-        MotionState start = new MotionState(0, 0, 0, 0, 0);
-        MotionGoal goal = new MotionGoal(angle, 0);
-        this.profile = MotionProfileGenerator.generateProfile(start, goal, MecanumDrive.POINT_TURN_CONSTRAINTS);
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (other instanceof PointTurn) {
-            PointTurn otherTurn = (PointTurn) other;
-            return Math.abs(angle - otherTurn.angle) < Vector2d.EPSILON;
+    public PointTurn(Pose2d startPose, double endHeading) {
+        this.startPose = startPose;
+        this.endHeading = endHeading;
+        double startHeading = startPose.heading(), displacement;
+        displacement = endHeading - startHeading;
+        if (endHeading < startHeading) {
+            displacement -= 2 * Math.PI;
         }
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return String.format(Locale.ENGLISH, "PointTurn[%s, %1.4f (%.2f deg)]", initialPose.toString(), angle, Math.toDegrees(angle));
+        MotionState start = new MotionState(0, 0, 0, 0, 0);
+        MotionGoal goal = new MotionGoal(displacement, 0);
+        profile = MotionProfileGenerator.generateProfile(start, goal, MecanumDrive.POINT_TURN_CONSTRAINTS);
     }
 
     @Override
@@ -44,31 +32,32 @@ public class PointTurn implements PathSegment {
     }
 
     @Override
-    public Pose2d getPose(double time) {
-        return new Pose2d(initialPose.pos(), Angle.norm(profile.get(time).x + initialPose.heading()));
-    }
-
-    @Override
-    public Pose2d getPoseVelocity(double time) {
-        return new Pose2d(new Vector2d(0, 0), profile.get(time).v);
-    }
-
-    @Override
-    public Pose2d getPoseAcceleration(double time) {
-        return new Pose2d(new Vector2d(0, 0), profile.get(time).a);
-    }
-
-    @Override
     public Pose2d start() {
-        return initialPose;
+        return startPose;
     }
 
     @Override
     public Pose2d end() {
-        return new Pose2d(initialPose.pos(), Angle.norm(initialPose.heading() + angle));
+        return new Pose2d(startPose.pos(), endHeading);
     }
 
-    public double getAngle() {
-        return angle;
+    @Override
+    public Pose2d getPose(double time) {
+        return new Pose2d(startPose.pos(), Angle.norm(profile.get(time).x));
+    }
+
+    @Override
+    public Pose2d getVelocity(double time) {
+        return new Pose2d(0, 0, profile.get(time).v);
+    }
+
+    @Override
+    public Pose2d getAcceleration(double time) {
+        return new Pose2d(0, 0, profile.get(time).a);
+    }
+
+    @Override
+    public void trimRemainingDistance(double time) {
+        // do nothing; TODO: is there something better to do here?
     }
 }

@@ -13,6 +13,9 @@ public abstract class CanvasOp {
         @SerializedName("polyline")
         POLYLINE,
 
+        @SerializedName("spline")
+        SPLINE,
+
         @SerializedName("stroke")
         STROKE,
 

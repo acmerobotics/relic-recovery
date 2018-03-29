@@ -32,8 +32,7 @@ public class CryptoboxTrackerTest {
     @Test
     @Ignore
     public void testSampleImages() {
-//        System.load("/usr/local/Cellar/opencv/3.3.1/share/OpenCV/java/libopencv_java331.dylib");
-        System.load("R:\\Downloads\\opencv\\build\\java\\x64\\opencv_java331.dll");
+        OpenCVStaticLoader.loadStaticLibs();
 
         VisionCamera.Properties properties = new VisionCamera.Properties() {
             @Override
@@ -50,8 +49,8 @@ public class CryptoboxTrackerTest {
         redTracker.init(visionCamera);
         blueTracker.init(visionCamera);
 
-        File imageSourceDir = new File("scripts/new-cryptobox/images");
-        File imageOutputDir = new File("scripts/new-cryptobox/output");
+        File imageSourceDir = new File("../scripts/new-cryptobox/images");
+        File imageOutputDir = new File("../scripts/new-cryptobox/output");
         imageOutputDir.mkdirs();
 
         for (File imageFile : imageSourceDir.listFiles()) {

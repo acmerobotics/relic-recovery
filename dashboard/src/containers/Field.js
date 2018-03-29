@@ -123,6 +123,24 @@ export default class Field {
         this.ctx.stroke();
         break;
       }
+      case 'spline': {
+        this.ctx.beginPath();
+        const { knotDistance, xOffset, yOffset, headingOffset, a, b, c, d, e } = op;
+        this.ctx.moveTo(scalePoint(yOffset, 72, -72, x, width + x),
+          scalePoint(xOffset, 72, -72, y, height + y));
+        for (let i = 0; i <= 1; i += 0.01) {
+          const sx = knotDistance * i;
+          const sy = (a*sx + b) * (sx*sx*sx*sx) + c * (sx*sx*sx)+ d * (sx*sx) + e * sx;
+
+          const adjustedX = sx * Math.cos(headingOffset) - sy * Math.sin(headingOffset) + xOffset;
+          const adjustedY = sx * Math.sin(headingOffset) + sy * Math.cos(headingOffset) + yOffset;
+
+          this.ctx.lineTo(scalePoint(adjustedY, 72, -72, x, width + x),
+            scalePoint(adjustedX, 72, -72, y, height + y));
+        }
+        this.ctx.stroke();
+        break;
+      }
       default:
         console.log(`unknown op: ${op.type}`);
         console.log(op);

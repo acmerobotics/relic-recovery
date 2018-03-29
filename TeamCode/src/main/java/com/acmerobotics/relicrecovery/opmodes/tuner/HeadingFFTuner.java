@@ -2,8 +2,8 @@ package com.acmerobotics.relicrecovery.opmodes.tuner;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
-import com.acmerobotics.relicrecovery.path.PathFollower;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -24,7 +24,7 @@ public class HeadingFFTuner extends LinearOpMode {
     public static int TRIALS = 5;
 
     private Robot robot;
-    private PathFollower pathFollower;
+    private TrajectoryFollower trajectoryFollower;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -32,7 +32,7 @@ public class HeadingFFTuner extends LinearOpMode {
         robot.drive.enablePositionEstimation();
         robot.start();
 
-        pathFollower = robot.drive.getPathFollower();
+        trajectoryFollower = robot.drive.getTrajectoryFollower();
 
         telemetry.log().add("Ready. Make sure to clear PID gains.");
         telemetry.update();
@@ -79,14 +79,14 @@ public class HeadingFFTuner extends LinearOpMode {
 
         robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));
 
-        robot.drive.followPath(new PathBuilder(new Pose2d(0, 0, 0))
+        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(0, 0, 0))
                 .turn(ANGLE)
                 .build());
 
 //        double errorSum = 0;
 //        int numErrors = 0;
 
-        while (!isStopRequested() && robot.drive.isFollowingPath()) {
+        while (!isStopRequested() && robot.drive.isFollowingTrajectory()) {
 //            double rawHeadingError = pathFollower.getHeadingError();
 //            // If axial K_a is too high, then the error will be positive in when acceleration is
 //            // positive and negative when acceleration is negative. Thus we use the sign of the
@@ -98,6 +98,6 @@ public class HeadingFFTuner extends LinearOpMode {
         }
 
 //        return errorSum / numErrors;
-        return -pathFollower.getHeadingError();
+        return -trajectoryFollower.getHeadingError();
     }
 }

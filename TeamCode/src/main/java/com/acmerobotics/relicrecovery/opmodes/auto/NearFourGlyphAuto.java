@@ -9,8 +9,8 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Path;
-import com.acmerobotics.relicrecovery.path.PathBuilder;
+import com.acmerobotics.relicrecovery.path.Trajectory;
+import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
@@ -84,29 +84,29 @@ public class NearFourGlyphAuto extends AutoOpMode {
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
         Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(-yMultiplier * AutoPaths.VUMARK_MAP.get(secondColumn) * LATERAL_BIAS, 0));
 
-        Path stoneToFloor = new PathBuilder(stonePose)
+        Trajectory stoneToFloor = new TrajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .build();
         robot.drive.setEstimatedPose(stoneToFloor.start());
-        robot.drive.followPath(stoneToFloor);
+        robot.drive.followTrajectory(stoneToFloor);
         robot.sleep(0.5);
         raiseArmAndSlapper();
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         robot.intake.autoIntake();
 
-        Path floorToPit = new PathBuilder(stoneToFloor.end())
+        Trajectory floorToPit = new TrajectoryBuilder(stoneToFloor.end())
                 .turn(-Math.PI / 4)
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 12))
                 .turn(-Math.PI / 4)
                 .build();
-        robot.drive.followPath(floorToPit);
-        robot.drive.waitForPathFollower();
+        robot.drive.followTrajectory(floorToPit);
+        robot.drive.waitForTrajectoryFollower();
 
-        Path pitToCrypto1 = new PathBuilder(floorToPit.end())
+        Trajectory pitToCrypto1 = new TrajectoryBuilder(floorToPit.end())
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 59))
                 .build();
-        robot.drive.followPath(pitToCrypto1);
+        robot.drive.followTrajectory(pitToCrypto1);
 
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
@@ -119,7 +119,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(0);
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
@@ -135,38 +135,38 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         robot.sleep(0.5);
 
-        Path cryptoToPit2 = new PathBuilder(pitToCrypto1.end())
+        Trajectory cryptoToPit2 = new TrajectoryBuilder(pitToCrypto1.end())
                 .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 12))
                 .turn(-Math.PI / 4)
                 .build();
-        robot.drive.followPath(cryptoToPit2);
+        robot.drive.followTrajectory(cryptoToPit2);
 
         robot.sleep(0.25 * cryptoToPit2.duration());
 
         robot.dumpBed.retract();
         robot.intake.autoIntake();
 
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
         if (robot.intake.getMode() == Intake.Mode.AUTO) {
             // we still didn't get enough glyphs; let's forage a little more
-            robot.drive.followPath(new PathBuilder(cryptoToPit2.end())
+            robot.drive.followTrajectory(new TrajectoryBuilder(cryptoToPit2.end())
                     .forward(12)
                     .back(12)
                     .turn(Math.PI / 4)
                     .build());
         } else {
-            robot.drive.followPath(new PathBuilder(cryptoToPit2.end())
+            robot.drive.followTrajectory(new TrajectoryBuilder(cryptoToPit2.end())
                     .turn(Math.PI / 4)
                     .build());
         }
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
 
-        Path pitToCrypto2 = new PathBuilder(new Pose2d(cryptoToPit2.end().pos(), -yMultiplier * Math.PI / 2))
+        Trajectory pitToCrypto2 = new TrajectoryBuilder(new Pose2d(cryptoToPit2.end().pos(), -yMultiplier * Math.PI / 2))
                 .lineTo(new Vector2d(biasedSecondColumnPosition.x(), yMultiplier * 60))
                 .build();
 
-        robot.drive.followPath(pitToCrypto2);
+        robot.drive.followTrajectory(pitToCrypto2);
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
 
@@ -178,7 +178,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(0);
         ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
-        robot.drive.waitForPathFollower();
+        robot.drive.waitForTrajectoryFollower();
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
 
@@ -194,17 +194,17 @@ public class NearFourGlyphAuto extends AutoOpMode {
             robot.dumpBed.dump();
             robot.sleep(0.5);
 
-            robot.drive.followPath(new PathBuilder(pitToCrypto2.end())
+            robot.drive.followTrajectory(new TrajectoryBuilder(pitToCrypto2.end())
                     .forward(8)
                     .build());
-            robot.drive.waitForPathFollower();
+            robot.drive.waitForTrajectoryFollower();
 
             robot.dumpBed.retract();
         } else {
-            robot.drive.followPath(new PathBuilder(pitToCrypto2.end())
+            robot.drive.followTrajectory(new TrajectoryBuilder(pitToCrypto2.end())
                     .forward(8)
                     .build());
-            robot.drive.waitForPathFollower();
+            robot.drive.waitForTrajectoryFollower();
         }
 
         robot.waitOneFullCycle();
