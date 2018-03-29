@@ -1,11 +1,13 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+@Disabled
 @TeleOp
 public class SideDistanceTest extends OpMode {
     private Robot robot;

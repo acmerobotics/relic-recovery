@@ -5,10 +5,12 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.hardware.AdafruitINA219CurrentSensor;
 import com.acmerobotics.relicrecovery.hardware.CurrentSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@Disabled
 @TeleOp
 @Config
 public class ServoCurrentTest extends OpMode {

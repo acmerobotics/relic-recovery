@@ -7,11 +7,13 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.io.File;
 
+@Disabled
 @Config
 @TeleOp(name = "New Drive Characterization")
 public class NewDriveCharacterization extends LinearOpMode {

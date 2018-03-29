@@ -3,7 +3,9 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
+@Disabled
 @Autonomous
 public class ColumnAlignTest extends AutoOpMode {
     @Override

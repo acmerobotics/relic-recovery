@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.qualcomm.robotcore.eventloop.EventLoop;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -64,7 +65,7 @@ public class RobotDashboard {
 
             @Override
             public void processClass(Class klass) {
-                if (klass.isAnnotationPresent(Config.class)) {
+                if (klass.isAnnotationPresent(Config.class) && !klass.isAnnotationPresent(Disabled.class)) {
                 	Log.i(TAG, String.format("Found config class %s", klass.getCanonicalName()));
 					configuration.addOptionsFromClass(klass);
                 }
