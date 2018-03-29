@@ -4,6 +4,7 @@ import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageType;
+import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
 import com.acmerobotics.relicrecovery.motion.MotionGoal;
@@ -31,9 +32,10 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
     public static PIDCoefficients MOTOR_PID = new PIDCoefficients();
     public static MotionConstraints MOTION_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static double DISTANCE = 72;
+    public static double SYNTHETIC_SMOOTHING_FACTOR = 1;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         DcMotorEx[] motors = new DcMotorEx[4];
         for (int i = 0; i < 4; i ++) {
             motors[i] = hardwareMap.get(DcMotorEx.class, MecanumDrive.MOTOR_NAMES[i]);
@@ -70,6 +72,13 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
         MotionProfile activeProfile = new MotionProfile(new MotionState(0, 0, 0, 0, 0), MOTION_CONSTRAINTS);
         boolean movingForwards = false;
 
+        int[] lastEncoderCounts = new int[4];
+        double lastTimestamp = TimestampedData.getCurrentTime();
+        ExponentialSmoother[] smoothers = new ExponentialSmoother[4];
+        for (int i = 0; i < 4; i++) {
+            smoothers[i] = new ExponentialSmoother(SYNTHETIC_SMOOTHING_FACTOR);
+        }
+
         while (opModeIsActive()) {
             // update the coefficients if necessary
             if (currentCoeffs.p != MOTOR_PID.p || currentCoeffs.i != MOTOR_PID.i || currentCoeffs.d != MOTOR_PID.d) {
@@ -83,6 +92,8 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
             }
             // calculate and set the motor power
             double timestamp = TimestampedData.getCurrentTime();
+            double dt = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
             if (timestamp > activeProfile.end().t) {
                 // generate a new profile
                 movingForwards = !movingForwards;
@@ -90,22 +101,34 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
                 MotionGoal goal = new MotionGoal(movingForwards ? DISTANCE : 0, 0);
                 activeProfile = MotionProfileGenerator.generateProfile(start, goal, MOTION_CONSTRAINTS);
             }
-            double targetVelocity = activeProfile.get(timestamp).v;
-            double targetPower = MecanumDrive.AXIAL_PIDF.v * targetVelocity;
+            MotionState motionState = activeProfile.get(timestamp);
+            double targetPower = MecanumDrive.AXIAL_PIDF.v * motionState.v;
             for (DcMotorEx motor : motors) {
                 motor.setPower(targetPower);
             }
             // retrieve the motor velocities
-            double[] velocities = new double[4];
+            double[] hubVelocities = new double[4];
+            double[] syntheticVelocities = new double[4];
+            int[] encoderCounts = new int[4];
             try {
                 LynxGetBulkInputDataCommand command = new LynxGetBulkInputDataCommand(frontHub);
                 // the driver suggests that the velocity units are encoder ticks / second
                 LynxGetBulkInputDataResponse response = command.sendReceive();
                 for (int i = 0; i < 4; i++) {
-                    velocities[i] = (response.getVelocity(i) / ticksPerRev) * wheelCircumference;
+                    hubVelocities[i] = (response.getVelocity(i) / ticksPerRev) * wheelCircumference;
+                    encoderCounts[i] = response.getEncoder(i);
                 }
-                velocities[2] = -velocities[2];
-                velocities[3] = -velocities[3];
+                hubVelocities[2] = -hubVelocities[2];
+                hubVelocities[3] = -hubVelocities[3];
+                encoderCounts[2] = -encoderCounts[2];
+                encoderCounts[3] = -encoderCounts[3];
+                for (int i = 0; i < 4; i++) {
+                    ExponentialSmoother smoother = smoothers[i];
+                    smoother.setSmoothingFactor(SYNTHETIC_SMOOTHING_FACTOR);
+                    double rawSyntheticVelocity = (encoderCounts[i] - lastEncoderCounts[i]) / (ticksPerRev * dt) * wheelCircumference;
+                    syntheticVelocities[i] = smoother.update(rawSyntheticVelocity);
+                }
+                lastEncoderCounts = encoderCounts;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
@@ -113,9 +136,13 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
             }
             // update telemetry
             telemetry.addData("targetPower", targetPower);
-            telemetry.addData("targetVelocity", targetVelocity);
+            telemetry.addData("targetPosition", motionState.x);
+            telemetry.addData("targetVelocity", motionState.v);
+            telemetry.addData("targetAcceleration", motionState.a);
+            telemetry.addData("targetJerk", motionState.j);
             for (int i = 0; i < 4; i++) {
-                telemetry.addData("velocity" + i, velocities[i]);
+                telemetry.addData("hubVelocity" + i, hubVelocities[i]);
+                telemetry.addData("syntheticVelocity" + i, syntheticVelocities[i]);
             }
             telemetry.update();
         }

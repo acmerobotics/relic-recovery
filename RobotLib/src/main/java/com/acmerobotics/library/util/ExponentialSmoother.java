@@ -6,31 +6,35 @@ package com.acmerobotics.library.util;
 
 public class ExponentialSmoother {
 
-    private double exp, avg;
+    private double smoothingFactor, average;
     private boolean hasUpdated;
 
-    public ExponentialSmoother(double exp) {
-        this.exp = exp;
+    public ExponentialSmoother(double smoothingFactor) {
+        this.smoothingFactor = smoothingFactor;
     }
 
     /**
      * Update the smoother with a new data value
      *
-     * @param val new data value
+     * @param newValue new data value
      * @return the smoothed value
      */
-    public double update(double val) {
+    public double update(double newValue) {
         if (!hasUpdated) {
-            avg = val;
+            average = newValue;
             hasUpdated = true;
         } else {
-            avg = exp * val + (1 - exp) * avg;
+            average = smoothingFactor * newValue + (1 - smoothingFactor) * average;
         }
-        return avg;
+        return average;
     }
 
     public void reset() {
         hasUpdated = false;
+    }
+
+    public void setSmoothingFactor(double smoothingFactor) {
+        this.smoothingFactor = smoothingFactor;
     }
 
 }
