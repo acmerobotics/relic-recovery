@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
-@Autonomous(name = "Diagonal Auto")
+@Autonomous
 public class DiagonalAuto extends AutoOpMode {
     @Override
     protected void setup() {

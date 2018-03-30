@@ -9,5 +9,5 @@ public interface TrajectorySegment {
     Pose2d getPose(double time);
     Pose2d getVelocity(double time);
     Pose2d getAcceleration(double time);
-    void trimRemainingDistance(double time);
+    void stopPrematurely(double time);
 }

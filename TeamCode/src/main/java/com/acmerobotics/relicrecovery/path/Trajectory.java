@@ -62,11 +62,11 @@ public class Trajectory {
         return endSegment().getAcceleration(endSegment().duration());
     }
 
-    public void trimRemainingDistance(double time) {
+    public void stopPrematurely(double time) {
         for (int i = 0; i < motionSegments.size(); i++) {
             TrajectorySegment motionSegment = motionSegments.get(i);
             if (time <= motionSegment.duration()) {
-                motionSegment.trimRemainingDistance(time);
+                motionSegment.stopPrematurely(time);
                 while (motionSegments.size() > i + 1) {
                     motionSegments.remove(endSegment());
                 }

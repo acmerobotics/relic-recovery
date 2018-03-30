@@ -23,7 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
-@Autonomous(name = "3 Glyph Auto (Far)")
+@Autonomous
 public class FarThreeGlyphAuto extends AutoOpMode {
     private UltrasonicLocalizer ultrasonicLocalizer;
     private BalancingStone stone;

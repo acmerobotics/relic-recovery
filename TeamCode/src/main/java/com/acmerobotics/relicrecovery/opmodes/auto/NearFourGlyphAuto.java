@@ -22,7 +22,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
-@Autonomous(name = "4 Glyph Auto (Near)")
+@Autonomous
 public class NearFourGlyphAuto extends AutoOpMode {
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
     static {

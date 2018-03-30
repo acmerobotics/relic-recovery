@@ -57,7 +57,7 @@ public class PointTurn implements TrajectorySegment {
     }
 
     @Override
-    public void trimRemainingDistance(double time) {
+    public void stopPrematurely(double time) {
         // do nothing; TODO: is there something better to do here?
     }
 }

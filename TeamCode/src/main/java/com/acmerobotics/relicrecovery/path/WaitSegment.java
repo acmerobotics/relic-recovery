@@ -42,7 +42,7 @@ public class WaitSegment implements TrajectorySegment {
     }
 
     @Override
-    public void trimRemainingDistance(double time) {
+    public void stopPrematurely(double time) {
         duration = time;
     }
 }
