@@ -33,4 +33,20 @@ public class AutoSplineTest {
         drawTrajectoryOnField(trajectory, "fourGlyphNear");
         System.out.format("4 Glyph Near Duration: %.2fs\n", trajectory.duration());
     }
+
+    @Ignore
+    @Test
+    public void testFourGlyphFar() {
+        Trajectory trajectory = new TrajectoryBuilder(
+                new Pose2d(BalancingStone.FAR_BLUE.getPosition(), Math.PI))
+                .turnTo(Math.PI / 2)
+                .beginComposite()
+                .lineTo(new Vector2d(-24, -36))
+                .splineThrough(new Pose2d(0, 0, Math.PI / 6))
+                .closeComposite()
+                .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(-59, -36 - AutoPaths.CRYPTO_COL_WIDTH, 0))
+                .build();
+        drawTrajectoryOnField(trajectory, "fourGlyphFar");
+        System.out.format("4 Glyph Far Duration: %.2fs\n", trajectory.duration());
+    }
 }

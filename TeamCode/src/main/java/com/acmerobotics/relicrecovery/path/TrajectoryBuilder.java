@@ -83,7 +83,7 @@ public class TrajectoryBuilder {
     }
 
     public TrajectoryBuilder splineThrough(Pose2d... waypoints) {
-        return splineThrough(SplinePath.Type.QUINTIC_HERMITIAN, waypoints);
+        return splineThrough(SplinePath.Type.CUBIC_HERMITIAN, waypoints);
     }
 
     public TrajectoryBuilder waitFor(double seconds) {

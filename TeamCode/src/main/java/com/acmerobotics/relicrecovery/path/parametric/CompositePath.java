@@ -14,7 +14,7 @@ public class CompositePath implements ParametricPath {
     }
 
     public static CompositePath fitSpline(Pose2d... waypoints) {
-        return fitSpline(SplinePath.Type.QUINTIC_HERMITIAN, waypoints);
+        return fitSpline(SplinePath.Type.CUBIC_HERMITIAN, waypoints);
     }
 
     public static CompositePath fitSpline(SplinePath.Type type, Pose2d... waypoints) {
