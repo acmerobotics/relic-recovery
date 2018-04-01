@@ -19,7 +19,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
     public static double EMPTY_COLUMN_OFFSET = 2; // in
 
     /** the weight of the ultrasonic readings in the complementary filter */
-    public static double ULTRASONIC_WEIGHT = 0.5;
+    public static double ULTRASONIC_WEIGHT = 1;
 
     public enum UltrasonicTarget {
         WALL,

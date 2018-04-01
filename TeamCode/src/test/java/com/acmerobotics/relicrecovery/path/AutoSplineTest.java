@@ -17,7 +17,7 @@ public class AutoSplineTest {
         Trajectory trajectory = new TrajectoryBuilder(
                 new Pose2d(BalancingStone.NEAR_BLUE.getPosition(), Math.PI))
                 .beginComposite()
-                .lineTo(new Vector2d(36, -48))
+                .lineTo(new Vector2d(24, -48))
                 .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
                 .closeComposite()
                 .beginComposite()

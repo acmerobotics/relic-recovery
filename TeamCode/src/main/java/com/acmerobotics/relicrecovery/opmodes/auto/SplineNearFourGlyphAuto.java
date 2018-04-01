@@ -57,7 +57,7 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
 
         int yMultiplier = (crypto.getAllianceColor() == AllianceColor.BLUE) ? -1 : 1;
 
-        RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
+        RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.RIGHT; // vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
 
@@ -87,7 +87,7 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
 
         Trajectory stoneToPit = new TrajectoryBuilder(stonePose)
                 .beginComposite()
-                .lineTo(new Vector2d(36, stonePose.y()))
+                .lineTo(new Vector2d(30, stonePose.y()))
                 .splineThrough(new Pose2d(0, yMultiplier * 12, -yMultiplier * 3 * Math.PI / 4))
                 .closeComposite()
                 .build();
@@ -103,6 +103,7 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
                 .beginComposite()
                 .splineThrough(new Pose2d(firstColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 59))
+                .closeComposite()
                 .build();
         robot.drive.followTrajectory(pitToCrypto1);
 
@@ -146,8 +147,10 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
 
         Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
+                .beginComposite()
                 .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
-                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 59))
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 59.5))
+                .closeComposite()
                 .build();
         robot.drive.followTrajectory(pitToCrypto2);
 
