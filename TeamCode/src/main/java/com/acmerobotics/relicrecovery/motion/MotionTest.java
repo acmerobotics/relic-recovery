@@ -10,8 +10,8 @@ public class MotionTest {
 
         MotionConstraints constraints = new MotionConstraints(5, 5, 5, MotionConstraints.EndBehavior.OVERSHOOT);
 
-        MotionState start = new MotionState (10, -3, -2, 0, 0);
-        MotionProfile profile = MotionProfileGenerator.generateStopingProfile(start, constraints);
+        MotionState start = new MotionState (0, 3, 2, 0, 0);
+        MotionProfile profile = MotionProfileGenerator.generateStoppingProfile(start, constraints);
 
         writeProfile(profile, "stop");
 
