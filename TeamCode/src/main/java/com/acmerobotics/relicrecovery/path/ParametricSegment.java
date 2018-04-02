@@ -54,17 +54,7 @@ public class ParametricSegment implements TrajectorySegment {
 
     @Override
     public void trimRemainingDistance(double time) {
-        MotionState newStart = profile.get(time);
-        double remainingDistance = profile.end().x - newStart.x;
-        double decelerationDistance = profile.end().x - profile.segments().get(-3).start().x;
-        double goalPosition;
-        if (remainingDistance > decelerationDistance) {
-            goalPosition = newStart.x + decelerationDistance;
-        } else {
-            goalPosition = path.length();
-        }
-        MotionGoal goal = new MotionGoal(goalPosition, 0);
-        profile = MotionProfileGenerator.generateProfile(newStart, goal, MecanumDrive.AXIAL_CONSTRAINTS);
+        profile = MotionProfileGenerator.generateStoppingProfile(profile.get(time), MecanumDrive.AXIAL_CONSTRAINTS);
     }
 
     public ParametricPath path() {
