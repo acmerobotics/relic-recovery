@@ -164,9 +164,19 @@ public class MotionProfileGenerator {
         return profile;
     }
 
-    public static MotionProfile generateStopingProfile(MotionState start, MotionConstraints constraints) {
+    public static MotionProfile generateStoppingProfile(MotionState start, MotionConstraints constraints) {
         double dv = -start.v;
-        // do the flipping thing
+
+        if (dv < 0) {
+            MotionProfile profile = generateStoppingProfile(start.flipped(), constraints);
+            SuperArrayList<MotionSegment> segments = profile.segments();
+            //then flip the result
+            SuperArrayList<MotionSegment> flipped = new SuperArrayList<>();
+            for (MotionSegment seg: segments) {
+                flipped.add(new MotionSegment(seg.start().flipped(), seg.dt()));
+            }
+            return new MotionProfile (flipped, constraints);
+        }
 
         MotionProfile profile = new MotionProfile(start, constraints);
 
