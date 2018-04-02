@@ -180,8 +180,8 @@ public class MotionProfileGenerator {
         MotionProfile profile = new MotionProfile(start, constraints);
 
         if (start.a < 0) {
-            double stopingTime = Math.abs(start.a / constraints.maxJ);
-            profile.appendControl(constraints.maxJ, stopingTime);
+            double stoppingTime = Math.abs(start.a / constraints.maxJ);
+            profile.appendControl(constraints.maxJ, stoppingTime);
             start = profile.end();
             dv = -start.v;
         }
@@ -213,8 +213,6 @@ public class MotionProfileGenerator {
         profile.removeEmptySegments();
 
         return profile;
-
-
     }
 
     //get the duration of the three segments needed to achieve a delta v
