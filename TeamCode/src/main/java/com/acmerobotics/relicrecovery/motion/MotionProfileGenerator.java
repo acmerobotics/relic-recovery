@@ -187,8 +187,7 @@ public class MotionProfileGenerator {
         }
 
         double aMax = Math.min(constraints.maxA, Math.sqrt((start.a * start.a / 2) + (dv * constraints.maxJ)));
-        System.out.println(Math.sqrt((start.a * start.a / 2) + (dv * constraints.maxJ)));
-        System.out.println(aMax);
+
 
         if (aMax > start.a) {
             double accelTime = (aMax - start.a) / constraints.maxJ;
@@ -201,7 +200,6 @@ public class MotionProfileGenerator {
 
         double dvCruise = Math.max(0.0, dv - dvDecel);
 
-        System.out.println(dvCruise);
 
         if (dvCruise > 0.0) {
             double cruiseTime = dvCruise / start.a;
