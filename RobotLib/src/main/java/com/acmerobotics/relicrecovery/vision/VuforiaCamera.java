@@ -141,7 +141,7 @@ public class VuforiaCamera extends VisionCamera {
 
             final Activity activity = appUtil.getActivity();
             activity.runOnUiThread(() -> {
-                LinearLayout cameraMonitorView = (LinearLayout) activity.findViewById(parameters.cameraMonitorViewId);
+                LinearLayout cameraMonitorView = activity.findViewById(parameters.cameraMonitorViewId);
                 cameraLayout = (FrameLayout) cameraMonitorView.getParent();
                 cameraLayout.addView(overlayView);
             });

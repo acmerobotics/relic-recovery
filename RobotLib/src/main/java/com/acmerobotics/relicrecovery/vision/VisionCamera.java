@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import android.app.Activity;
+import android.content.Context;
 import android.support.annotation.IdRes;
 import android.util.Log;
 
@@ -23,8 +24,13 @@ public abstract class VisionCamera implements OpModeManagerNotifier.Notification
     public static final String TAG = "VisionCamera";
 
     public static class Parameters {
-        @IdRes public int cameraMonitorViewId = 0x7f060025;
+        @IdRes public int cameraMonitorViewId;
         public VuforiaLocalizer.CameraDirection cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+
+        public Parameters() {
+            Context context = AppUtil.getDefContext();
+            cameraMonitorViewId = context.getResources().getIdentifier("cameraMonitorViewId", "id", context.getPackageName());
+        }
     }
 
     protected final List<Tracker> trackers;
