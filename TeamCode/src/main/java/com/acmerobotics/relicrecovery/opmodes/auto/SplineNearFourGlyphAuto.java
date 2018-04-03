@@ -102,7 +102,7 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto1 = new TrajectoryBuilder(stoneToPit.end())
                 .beginComposite()
                 .splineThrough(new Pose2d(firstColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 59))
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
                 .closeComposite()
                 .build();
         robot.drive.followTrajectory(pitToCrypto1);
@@ -149,7 +149,7 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
                 .beginComposite()
                 .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
-                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 59.5))
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56.5))
                 .closeComposite()
                 .build();
         robot.drive.followTrajectory(pitToCrypto2);

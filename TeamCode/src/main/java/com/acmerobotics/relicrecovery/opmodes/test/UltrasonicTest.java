@@ -2,14 +2,14 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
+import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Disabled
+//@Disabled
 @TeleOp
 public class UltrasonicTest extends OpMode {
     public static final double[] SMOOTHING_RATIOS = {1, 0.5, 0.25, 0.15, 0.1};
@@ -27,7 +27,9 @@ public class UltrasonicTest extends OpMode {
         }
         robot = new Robot(this);
         robot.addListener(() -> {
-            double distance = ultrasonicSensor.getDistance(DistanceUnit.INCH);
+            double rawDistance = ultrasonicSensor.getDistance(DistanceUnit.INCH);
+            robot.dashboard.getTelemetry().addData("rawDistance", rawDistance);
+            double distance = -71 + UltrasonicLocalizer.EMPTY_COLUMN_OFFSET + rawDistance + UltrasonicLocalizer.MOUNTING_OFFSET;
             for (int i = 0; i < smoothers.length; i++) {
                 robot.dashboard.getTelemetry().addData("distance" + i, smoothers[i].update(distance));
             }

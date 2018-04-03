@@ -10,12 +10,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
-    public static double MOUNTING_OFFSET = -2.5; // in, positive is towards the front
+    public static double MOUNTING_OFFSET = 3.75; // in, positive is towards the front
     public static double SMOOTHING_COEFF = 1;
 
     // all offsets are measured in reference to the wall
     public static double WALL_OFFSET = 0;
-    public static double FULL_COLUMN_OFFSET = 6;
+    public static double FULL_COLUMN_OFFSET = 4;
     public static double EMPTY_COLUMN_OFFSET = 2; // in
 
     /** the weight of the ultrasonic readings in the complementary filter */
@@ -92,16 +92,16 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                 switch (closestCryptobox) {
                     case NEAR_BLUE:
                         estimatedPosition = new Vector2d(estimatedPosition.x(),
-                                combineEstimates(estimatedPosition.y(), -72 + targetOffset + ultrasonicDistance + MOUNTING_OFFSET));
+                                combineEstimates(estimatedPosition.y(), -71 + targetOffset + ultrasonicDistance + MOUNTING_OFFSET));
                         break;
                     case NEAR_RED:
                         estimatedPosition = new Vector2d(estimatedPosition.x(),
-                                combineEstimates(estimatedPosition.y(), 72 - targetOffset - ultrasonicDistance - MOUNTING_OFFSET));
+                                combineEstimates(estimatedPosition.y(), 71 - targetOffset - ultrasonicDistance - MOUNTING_OFFSET));
                         break;
                     case FAR_BLUE:
                     case FAR_RED:
                         estimatedPosition = new Vector2d(combineEstimates(estimatedPosition.x(),
-                                -72 + targetOffset + ultrasonicDistance - MOUNTING_OFFSET), estimatedPosition.y());
+                                -71 + targetOffset + ultrasonicDistance - MOUNTING_OFFSET), estimatedPosition.y());
                         break;
                 }
             }
