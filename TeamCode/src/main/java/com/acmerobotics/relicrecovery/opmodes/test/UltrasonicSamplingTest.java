@@ -20,6 +20,7 @@ public class UltrasonicSamplingTest extends LinearOpMode {
                 new File(LoggingUtil.getLogRoot(this), "UltrasonicSamples-" + System.currentTimeMillis() + ".csv"));
         Robot robot = new Robot(this);
         robot.drive.enablePositionEstimation();
+        robot.drive.setEstimatedPosition(new Vector2d(47, 0));
         robot.start();
 
         waitForStart();

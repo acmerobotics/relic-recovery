@@ -116,7 +116,6 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(1);
         robot.sleep(0.3 * pitToCrypto1.duration() - 0.5);
         robot.intake.setIntakePower(0);
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
 
@@ -163,7 +162,6 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(1);
         robot.sleep(0.3 * pitToCrypto2.duration() - 0.5);
         robot.intake.setIntakePower(0);
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
         ultrasonicLocalizer.disableUltrasonicFeedback();

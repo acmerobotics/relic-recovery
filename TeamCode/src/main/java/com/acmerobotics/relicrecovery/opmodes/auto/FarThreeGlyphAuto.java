@@ -115,7 +115,6 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         raiseArmAndSlapper();
         robot.drive.waitForTrajectoryFollower();
 
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
         robot.waitOneFullCycle();
@@ -170,7 +169,6 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
         robot.intake.setIntakePower(0);
 
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
 
         robot.waitOneFullCycle();
