@@ -102,6 +102,7 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto1 = new TrajectoryBuilder(stoneToPit.end())
                 .beginComposite()
                 .splineThrough(new Pose2d(firstColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
+                .addMarker("ultrasonic")
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
                 .closeComposite()
                 .build();
@@ -110,12 +111,11 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
 
-        robot.sleep(0.2 * pitToCrypto1.duration());
-        robot.intake.setIntakePower(-0.3);
-        robot.sleep(0.5);
+        robot.sleep(0.5 * pitToCrypto1.duration());
         robot.intake.setIntakePower(1);
-        robot.sleep(0.3 * pitToCrypto1.duration() - 0.5);
+        robot.sleep(0.25 * pitToCrypto1.duration());
         robot.intake.setIntakePower(0);
+        robot.drive.waitForMarker("ultrasonic");
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
 
@@ -148,6 +148,7 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
                 .beginComposite()
                 .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
+                .addMarker("ultrasonic")
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56.5))
                 .closeComposite()
                 .build();
@@ -156,20 +157,21 @@ public class SplineNearFourGlyphAuto extends AutoOpMode {
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
 
-        robot.sleep(0.2 * pitToCrypto2.duration());
-        robot.intake.setIntakePower(-0.3);
-        robot.sleep(0.5);
+        robot.sleep(0.5 * pitToCrypto1.duration());
         robot.intake.setIntakePower(1);
-        robot.sleep(0.3 * pitToCrypto2.duration() - 0.5);
+        robot.sleep(0.25 * pitToCrypto1.duration());
         robot.intake.setIntakePower(0);
+        robot.drive.waitForMarker("ultrasonic");
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
+
         ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
-
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
+
         robot.drive.alignWithColumn(robot.config.getAllianceColor());
         robot.drive.waitForColumnAlign();
+
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(pitToCrypto2.end().pos());
 
