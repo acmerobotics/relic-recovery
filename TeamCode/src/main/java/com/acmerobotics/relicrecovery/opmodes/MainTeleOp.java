@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -37,9 +38,19 @@ public class MainTeleOp extends OpMode {
         if (stickyGamepad1.b) {
             slowMode = !slowMode;
             superSlowMode = false;
+            if (slowMode) {
+                robot.drive.setVelocityPIDCoefficients(MecanumDrive.SLOW_VELOCITY_PID);
+            } else {
+                robot.drive.setVelocityPIDCoefficients(MecanumDrive.NORMAL_VELOCITY_PID);
+            }
         } else if (stickyGamepad1.left_bumper) {
             superSlowMode = !superSlowMode;
             slowMode = false;
+            if (superSlowMode) {
+                robot.drive.setVelocityPIDCoefficients(MecanumDrive.SLOW_VELOCITY_PID);
+            } else {
+                robot.drive.setVelocityPIDCoefficients(MecanumDrive.NORMAL_VELOCITY_PID);
+            }
         }
 
         double x, y = 0, omega;
