@@ -11,7 +11,6 @@ public class DeadReckoningLocalizer implements Localizer {
 
     public DeadReckoningLocalizer(MecanumDrive drive) {
         this.drive = drive;
-        this.lastRotations = new double[4];
     }
 
     @Override
