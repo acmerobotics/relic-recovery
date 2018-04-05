@@ -15,7 +15,7 @@ public class DeadReckoningLocalizer implements Localizer {
 
     @Override
     public Vector2d update() {
-        double[] rotations = drive.getMotorRotations();
+        double[] rotations = drive.getDriveMotorRotations();
         if (lastRotations != null) {
             double[] rotationDeltas = new double[4];
             for (int i = 0; i < 4; i++) {

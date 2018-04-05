@@ -26,7 +26,7 @@ public class TrackingOmniLocalizer implements Localizer {
 
     @Override
     public Vector2d update() {
-        double[] trackingOmniRotations = new double[2]; // TODO
+        double[] trackingOmniRotations = drive.getTrackingEncoderRotations();
         double firstWheelRotation = trackingOmniRotations[0];
         double secondWheelRotation = trackingOmniRotations[1];
         double heading = drive.getHeading();
