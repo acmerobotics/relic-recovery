@@ -83,8 +83,8 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
         }
     }
 
-    protected VCNL4010ProximitySensor(I2cDeviceSynch i2cDeviceSynch, boolean isOwned, @NonNull Parameters parameters) {
-        super(i2cDeviceSynch, isOwned, parameters);
+    protected VCNL4010ProximitySensor(I2cDeviceSynch i2cDeviceSynch) {
+        super(i2cDeviceSynch, true, new Parameters());
     }
 
     @Override
