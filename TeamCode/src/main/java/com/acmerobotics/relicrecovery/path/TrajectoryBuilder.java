@@ -5,6 +5,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
 import com.acmerobotics.relicrecovery.path.parametric.LinePath;
+import com.acmerobotics.relicrecovery.path.parametric.Marker;
 import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
 import com.acmerobotics.relicrecovery.path.parametric.SplinePath;
 
@@ -88,6 +89,16 @@ public class TrajectoryBuilder {
 
     public TrajectoryBuilder waitFor(double seconds) {
         motionSegments.add(new WaitSegment(currentPose, seconds));
+        return this;
+    }
+
+    public TrajectoryBuilder addMarker(String name) {
+        Marker marker = new Marker(name, currentPose);
+        if (composite) {
+            compositeSegments.add(marker);
+        } else {
+            motionSegments.add(new ParametricSegment(marker));
+        }
         return this;
     }
 

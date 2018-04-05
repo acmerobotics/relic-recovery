@@ -57,6 +57,10 @@ public class ParametricSegment implements TrajectorySegment {
         profile = MotionProfileGenerator.generateStoppingProfile(profile.get(time), MecanumDrive.AXIAL_CONSTRAINTS);
     }
 
+    public double timeAtPos(double position) {
+        return profile.timeAtPos(position);
+    }
+
     public ParametricPath path() {
         return path;
     }

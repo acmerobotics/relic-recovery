@@ -91,6 +91,14 @@ public class TrajectoryFollower {
         return trajectory != null && (timestamp - startTimestamp) < trajectory.duration();
     }
 
+    public double getTrajectoryTime() {
+        return getTrajectoryTime(TimestampedData.getCurrentTime());
+    }
+
+    public double getTrajectoryTime(double timestamp) {
+        return trajectory == null ? 0 : (timestamp - startTimestamp);
+    }
+
     public Pose2d update(Pose2d estimatedPose) {
         return update(estimatedPose, TimestampedData.getCurrentTime());
     }

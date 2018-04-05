@@ -561,6 +561,19 @@ public class MecanumDrive extends Subsystem {
         }
     }
 
+    public void waitForMarker(String name) {
+        while (!Thread.currentThread().isInterrupted() && mode == Mode.FOLLOW_PATH) {
+            if (trajectoryFollower.getTrajectoryTime() >= trajectoryFollower.getTrajectory().getMarkerTime(name)) {
+                return;
+            }
+            try {
+                Thread.sleep(AutoOpMode.POLL_INTERVAL);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
     public Vector2d getEstimatedPosition() {
         return estimatedPose.pos();
     }
