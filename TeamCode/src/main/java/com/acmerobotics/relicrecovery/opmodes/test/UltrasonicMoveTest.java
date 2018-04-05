@@ -4,13 +4,13 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
+import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Disabled
+//@Disabled
 @Autonomous
 public class UltrasonicMoveTest extends AutoOpMode {
     private UltrasonicLocalizer ultrasonicLocalizer;
@@ -24,32 +24,21 @@ public class UltrasonicMoveTest extends AutoOpMode {
             telemetry.addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
         });
         robot.drive.setLocalizer(ultrasonicLocalizer);
-        robot.drive.setEstimatedPose(new Pose2d(12, -24, Math.PI / 2));
+        robot.drive.extendUltrasonicSwivel();
     }
 
     @Override
     protected void run() {
-        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -24, Math.PI / 2))
-                .lineTo(new Vector2d(12, -54))
-                .build());
+        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(12, 0, Math.PI / 2))
+                .lineTo(new Vector2d(12, -44))
+                .addMarker("ultrasonic")
+                .lineTo(new Vector2d(12, -56))
+                .build();
+        robot.drive.setEstimatedPose(trajectory.start());
+        robot.drive.followTrajectory(trajectory);
+        robot.drive.waitForMarker("ultrasonic");
+        ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
-
-        sleep(500);
-
-        robot.dumpBed.dump();
-
-        sleep(1000);
-
-        robot.drive.setVelocity(new Vector2d(0.2, 0), 0);
-
-        sleep(750);
-
-        robot.drive.stop();
-
-        sleep(500);
-
-        robot.dumpBed.retract();
-
-        sleep(1000);
+        ultrasonicLocalizer.disableUltrasonicFeedback();
     }
 }

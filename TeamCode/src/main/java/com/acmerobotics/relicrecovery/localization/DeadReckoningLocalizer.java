@@ -6,7 +6,7 @@ import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 public class DeadReckoningLocalizer implements Localizer {
     protected MecanumDrive drive;
 
-    private Vector2d estimatedPosition;
+    protected Vector2d estimatedPosition;
     private double[] lastRotations;
 
     public DeadReckoningLocalizer(MecanumDrive drive) {

@@ -48,7 +48,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
 
     @Override
     public Vector2d update() {
-        Vector2d estimatedPosition = super.update();
+        super.update();
 
         double rawDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
 
