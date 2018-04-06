@@ -33,6 +33,7 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
     public static final byte bPROXIMITY_READY = 0x20;
     public static final byte bAMBIENT_PERIODIC = 0x04;
     public static final byte bPROXIMITY_PERIODIC = 0x02;
+    public static final byte bSELF_TIMED = 0x01;
 
     /** proximity reads per sec */
     public enum ProximityRate {
@@ -83,8 +84,10 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
         }
     }
 
-    protected VCNL4010ProximitySensor(I2cDeviceSynch i2cDeviceSynch) {
+    public VCNL4010ProximitySensor(I2cDeviceSynch i2cDeviceSynch) {
         super(i2cDeviceSynch, true, new Parameters());
+
+        i2cDeviceSynch.engage();
     }
 
     @Override
@@ -97,6 +100,9 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
         }
 
         int commandValue = 0;
+        if (parameters.measureProximityPeriodic | parameters.measureAmbientPeriodic) {
+            commandValue |= bSELF_TIMED;
+        }
         if (parameters.measureProximityPeriodic) {
             commandValue |= bPROXIMITY_PERIODIC;
         }
@@ -110,8 +116,6 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
         setProximityRate(parameters.proximityRate);
         setFrequency(parameters.frequency);
 
-        write8(Register.INT_CONTROL, 0x08);
-        waitForWriteCompletions();
         return true;
     }
 
@@ -136,6 +140,9 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
 
     public int readProximity() {
         if (!parameters.measureProximityPeriodic) {
+            if (parameters.measureAmbientPeriodic) {
+                throw new UnsupportedOperationException("Periodic proximity measurements must be enabled");
+            }
             byte i = read8(Register.COMMAND);
             write8(Register.COMMAND, i | bMEASURE_PROXIMITY);
             waitForWriteCompletions();
@@ -154,6 +161,9 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
 
     public int readAmbient() {
         if (!parameters.measureAmbientPeriodic) {
+            if (parameters.measureProximityPeriodic) {
+                throw new UnsupportedOperationException("Periodic ambient measurements must be enabled");
+            }
             byte i = read8(Register.COMMAND);
             write8(Register.COMMAND, i | bMEASURE_AMBIENT);
             waitForWriteCompletions();
@@ -194,9 +204,9 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
         return deviceClient.read(reg.bVal, cb);
     }
 
-    public short readShort(Register reg) {
+    public int readShort(Register reg) {
         byte[] data = read(reg, 2);
-        return TypeConversion.byteArrayToShort(data, ByteOrder.LITTLE_ENDIAN);
+        return TypeConversion.byteArrayToShort(data, ByteOrder.LITTLE_ENDIAN) & 0xFFFF;
     }
 
     public void write8(Register reg, int data) {
