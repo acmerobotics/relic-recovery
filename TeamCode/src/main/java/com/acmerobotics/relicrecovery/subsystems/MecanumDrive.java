@@ -11,7 +11,7 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
-import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
+import com.acmerobotics.relicrecovery.hardware.CachingDcMotorEx;
 import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
@@ -64,7 +64,8 @@ import java.util.Collections;
 public class MecanumDrive extends Subsystem {
     public static final int IMU_PORT = 0;
 
-    public static final PIDCoefficients DRIVE_MOTOR_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
+    public static final PIDCoefficients NORMAL_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
+    public static final PIDCoefficients SLOW_VELOCITY_PID = new PIDCoefficients(10, 3, 1);
 
     public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(36.0, 40.0, 25.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
@@ -109,7 +110,7 @@ public class MecanumDrive extends Subsystem {
      */
     public static final double RADIUS = 2;
 
-    private DcMotor[] motors;
+    private DcMotorEx[] motors;
 
     /**
      * units in encoder ticks; solely intended for internal use
@@ -241,16 +242,16 @@ public class MecanumDrive extends Subsystem {
 
         powers = new double[4];
         encoderOffsets = new int[4];
-        motors = new DcMotor[4];
+        motors = new DcMotorEx[4];
         for (int i = 0; i < 4; i ++) {
-            DcMotorEx dcMotor = map.get(DcMotorEx.class, MOTOR_NAMES[i]);
-            dcMotor.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, DRIVE_MOTOR_VELOCITY_PID);
-            motors[i] = new CachingDcMotor(dcMotor);
+            DcMotorEx dcMotorEx = map.get(DcMotorEx.class, MOTOR_NAMES[i]);
+            motors[i] = new CachingDcMotorEx(dcMotorEx);
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
         motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
+        setVelocityPIDCoefficients(NORMAL_VELOCITY_PID);
 
         localizer = new DeadReckoningLocalizer(this);
         setEstimatedPose(estimatedPose);
@@ -557,6 +558,12 @@ public class MecanumDrive extends Subsystem {
 
     public double getSideDistance(DistanceUnit unit) {
         return proximitySensor.getDistance(unit);
+    }
+
+    public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {
+        for (int i = 0; i < 4; i++) {
+            motors[i].setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidCoefficients);
+        }
     }
 
     public void update() {
