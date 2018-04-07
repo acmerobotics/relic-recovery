@@ -68,12 +68,12 @@ public class MecanumDrive extends Subsystem {
     public static final PIDCoefficients NORMAL_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
     public static final PIDCoefficients SLOW_VELOCITY_PID = new PIDCoefficients(10, 3, 1);
 
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(36.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(20.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0);
-    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
-    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
+    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.230, 0);
+    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0177, 0);
+    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0179, 0);
 
     // units in cm
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.025, 0, -0.01);

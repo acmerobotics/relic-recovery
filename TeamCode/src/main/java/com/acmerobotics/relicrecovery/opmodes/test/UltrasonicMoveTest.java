@@ -18,7 +18,6 @@ public class UltrasonicMoveTest extends AutoOpMode {
     @Override
     protected void setup() {
         ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive);
-        ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.addListener(() -> {
             robot.dashboard.getTelemetry().addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
             telemetry.addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
@@ -30,9 +29,11 @@ public class UltrasonicMoveTest extends AutoOpMode {
     @Override
     protected void run() {
         Trajectory trajectory = new TrajectoryBuilder(new Pose2d(12, 0, Math.PI / 2))
-                .lineTo(new Vector2d(12, -44))
+                .beginComposite()
+                .lineTo(new Vector2d(12, -36))
                 .addMarker("ultrasonic")
                 .lineTo(new Vector2d(12, -56))
+                .closeComposite()
                 .build();
         robot.drive.setEstimatedPose(trajectory.start());
         robot.drive.followTrajectory(trajectory);

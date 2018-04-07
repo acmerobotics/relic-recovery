@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
+import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -26,7 +27,7 @@ public class UltrasonicTest extends OpMode {
         }
         robot = new Robot(this);
         robot.addListener(() -> {
-            double distance = ultrasonicSensor.getDistance(DistanceUnit.INCH);
+            double distance = UltrasonicLocalizer.COEFFICIENT_A * ultrasonicSensor.getDistance(DistanceUnit.INCH) + UltrasonicLocalizer.COEFFICIENT_B;
             for (int i = 0; i < smoothers.length; i++) {
                 robot.dashboard.getTelemetry().addData("distance" + i, smoothers[i].update(distance));
             }
