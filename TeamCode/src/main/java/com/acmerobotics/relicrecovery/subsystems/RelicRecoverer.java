@@ -6,7 +6,6 @@ import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
 import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -71,7 +70,6 @@ public class RelicRecoverer extends Subsystem {
         telemetryData = new TelemetryData();
 
         relicArm = new CachingDcMotor(map.dcMotor.get("relicArm"));
-        relicArm.setDirection(DcMotorSimple.Direction.REVERSE);
 
         relicWrist = new CachingServo(map.servo.get("relicWrist"));
         relicFinger = new CachingServo(map.servo.get("relicFinger"));
