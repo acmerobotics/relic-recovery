@@ -101,9 +101,10 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(0, yMultiplier * LATERAL_BIAS));
 
         Trajectory stoneToCrypto = new TrajectoryBuilder(stonePose)
-                .lineTo(new Vector2d(-48, stonePose.y()))
+                .lineTo(new Vector2d(-44, stonePose.y()))
                 .turn(robot.config.getAllianceColor() == AllianceColor.BLUE ? Math.PI : 0)
-                .lineTo(new Vector2d(-48, biasedFirstColumnPosition.y()))
+                .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()))
+                .waitFor(0.25)
                 .build();
         robot.drive.setEstimatedPose(stoneToCrypto.start());
         robot.drive.followTrajectory(stoneToCrypto);
@@ -116,18 +117,18 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
 
         ultrasonicLocalizer.enableUltrasonicFeedback();
-
         robot.waitOneFullCycle();
+        ultrasonicLocalizer.disableUltrasonicFeedback();
 
         Vector2d estimatedPosition = robot.drive.getEstimatedPosition();
         Trajectory cryptoApproach1 = new TrajectoryBuilder(new Pose2d(estimatedPosition, stoneToCrypto.end().heading()))
                 .lineTo(new Vector2d(-56, biasedFirstColumnPosition.y()))
+                .waitFor(0.5)
                 .build();
 
         robot.drive.followTrajectory(cryptoApproach1);
         robot.drive.waitForTrajectoryFollower();
 
-        ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
 
         robot.drive.enableHeadingCorrection(cryptoApproach1.end().heading());
@@ -141,8 +142,8 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.sleep(0.5);
 
         Trajectory cryptoToPit = new TrajectoryBuilder(new Pose2d(-56, firstColumnPosition.y(), cryptoApproach1.end().heading()))
-                .lineTo(new Vector2d(-48, firstColumnPosition.y()))
-                .lineTo(new Vector2d(-48, yMultiplier * 16))
+                .lineTo(new Vector2d(-44, firstColumnPosition.y()))
+                .lineTo(new Vector2d(-44, yMultiplier * 16))
                 .turn(-Math.PI / 4 * yMultiplier)
                 .lineTo(new Vector2d(-12, yMultiplier * 16))
                 .forward(12)
@@ -156,13 +157,12 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         Trajectory pitToCrypto = new TrajectoryBuilder(cryptoToPit.end())
                 .turn(Math.PI / 4 * yMultiplier)
-//                .lineTo(new Vector2d(-48, yMultiplier * 16))
-                .lineTo(new Vector2d(-48, biasedSecondColumnPosition.y()))
+//                .lineTo(new Vector2d(-44, yMultiplier * 16))
+                .lineTo(new Vector2d(-44, biasedSecondColumnPosition.y()))
+                .waitFor(0.25)
                 .build();
         robot.drive.followTrajectory(pitToCrypto);
-        robot.sleep(0.2 * pitToCrypto.duration());
-        robot.intake.setIntakePower(-0.3);
-        robot.sleep(0.75);
+        robot.sleep(0.5 * pitToCrypto.duration());
         robot.intake.setIntakePower(1);
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
@@ -170,17 +170,17 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(0);
 
         ultrasonicLocalizer.enableUltrasonicFeedback();
-
         robot.waitOneFullCycle();
+        ultrasonicLocalizer.disableUltrasonicFeedback();
 
         estimatedPosition = robot.drive.getEstimatedPosition();
         Trajectory cryptoApproach2 = new TrajectoryBuilder(new Pose2d(estimatedPosition, pitToCrypto.end().heading()))
                 .lineTo(new Vector2d(-56, biasedSecondColumnPosition.y()))
+                .waitFor(0.5)
                 .build();
 
         robot.drive.followTrajectory(cryptoApproach2);
         robot.drive.waitForTrajectoryFollower();
-        ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
 
         double elapsedTime = TimestampedData.getCurrentTime() - startTime;
