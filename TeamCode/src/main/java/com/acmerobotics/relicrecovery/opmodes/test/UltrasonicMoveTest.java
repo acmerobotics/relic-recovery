@@ -7,6 +7,7 @@ import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -29,17 +30,25 @@ public class UltrasonicMoveTest extends AutoOpMode {
     @Override
     protected void run() {
         Trajectory trajectory = new TrajectoryBuilder(new Pose2d(12, 0, Math.PI / 2))
-                .beginComposite()
                 .lineTo(new Vector2d(12, -36))
-                .addMarker("ultrasonic")
-                .lineTo(new Vector2d(12, -56))
-                .closeComposite()
+                .waitFor(0.25)
                 .build();
         robot.drive.setEstimatedPose(trajectory.start());
         robot.drive.followTrajectory(trajectory);
-        robot.drive.waitForMarker("ultrasonic");
-        ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
+
+        ultrasonicLocalizer.enableUltrasonicFeedback();
+        robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
+
+        RobotLog.i("Distance: " + ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
+
+        Trajectory trajectory2 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), Math.PI / 2))
+                .waitFor(10.0)
+                .lineTo(new Vector2d(12, -56))
+                .waitFor(0.5)
+                .build();
+        robot.drive.followTrajectory(trajectory2);
+        robot.drive.waitForTrajectoryFollower();
     }
 }

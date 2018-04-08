@@ -14,7 +14,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
 
     // linear regression: y = ax + b
     // y: actual distance, x: raw ultrasonic distance
-    public static double COEFFICIENT_A = 0.986;
+    public static double COEFFICIENT_A = 0.906;
     public static double COEFFICIENT_B = 9.462;
 
     public static double MIN_DISTANCE = 16;

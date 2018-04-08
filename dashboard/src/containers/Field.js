@@ -128,7 +128,7 @@ export default class Field {
         const { knotDistance, xOffset, yOffset, headingOffset, a, b, c, d, e } = op;
         this.ctx.moveTo(scalePoint(yOffset, 72, -72, x, width + x),
           scalePoint(xOffset, 72, -72, y, height + y));
-        for (let i = 0; i <= 1; i += 0.01) {
+        for (let i = 0; i <= 1; i += 0.0025) {
           const sx = knotDistance * i;
           const sy = (a*sx + b) * (sx*sx*sx*sx) + c * (sx*sx*sx)+ d * (sx*sx) + e * sx;
 
