@@ -1,28 +1,17 @@
 package com.acmerobotics.relicrecovery.hardware;
 
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import java.util.Map;
-import java.util.TreeMap;
-
-public class SharpGP2Y0A51SK0FProximitySensor implements DistanceSensor {
+public class SharpGP2Y0A51SK0FProximitySensor implements HardwareDevice {
     // the datasheet lists the range as 2 to 15 cm although there are values outside this range
     // TODO: decide whether the values outside are usable
-
-    /* <volts, cm> */
-    public static final TreeMap<Double, Double> VOLTAGE_TO_DISTANCE = new TreeMap<>();
-    static {
-        // earlier (out of range) values omitted
-        VOLTAGE_TO_DISTANCE.put(2.45, 1.25);
-        VOLTAGE_TO_DISTANCE.put(2.08, 2D);
-        VOLTAGE_TO_DISTANCE.put(1.05, 5D);
-        VOLTAGE_TO_DISTANCE.put(0.58, 10D);
-        VOLTAGE_TO_DISTANCE.put(0.38, 15D);
-        VOLTAGE_TO_DISTANCE.put(0.3, 20D);
-    }
+    public static final double A = 237.622, B = 9.5436, C = -2.3496, D = -12.2452;
+    public static final double M_RED = 0.0265537, B_RED = 3.97514;
+    public static final double M_BLUE = 0.123529, B_BLUE = 2.29412;
 
     private AnalogInput input;
 
@@ -30,28 +19,18 @@ public class SharpGP2Y0A51SK0FProximitySensor implements DistanceSensor {
         input = analogInput;
     }
 
-    @Override
-    public double getDistance(DistanceUnit unit) {
+    public double getRawDistance() {
         double voltage = input.getVoltage();
-        Double distance = VOLTAGE_TO_DISTANCE.get(voltage);
-        if (distance == null) {
-            Map.Entry<Double, Double> floorEntry = VOLTAGE_TO_DISTANCE.floorEntry(voltage);
-            Map.Entry<Double, Double> ceilEntry = VOLTAGE_TO_DISTANCE.ceilingEntry(voltage);
+        return A / (B * voltage + C) + D;
+    }
 
-            if (floorEntry == null) {
-                return ceilEntry.getValue();
-            }
-
-            if (ceilEntry == null) {
-                return floorEntry.getValue();
-            }
-
-            double t = (voltage - floorEntry.getKey()) / (ceilEntry.getKey() - floorEntry.getKey());
-            double interpolatedDistance = floorEntry.getValue() + t * (ceilEntry.getValue() - floorEntry.getValue());
-            return unit.fromCm(interpolatedDistance);
-        } else {
-            return unit.fromCm(distance);
+    public double getDistance(AllianceColor color, DistanceUnit unit) {
+        if (color == AllianceColor.RED) {
+            return unit.fromCm(M_RED * getRawDistance() + B_RED);
+        } else if (color == AllianceColor.BLUE) {
+            return unit.fromCm(M_BLUE * getRawDistance() + B_BLUE);
         }
+        return Double.NaN;
     }
 
     @Override
