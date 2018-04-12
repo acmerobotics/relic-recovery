@@ -40,18 +40,24 @@ public class TrackingOmniLocalizer implements Localizer {
 
             double firstWheelNorm = FIRST_WHEEL_DIRECTION.norm();
             double secondWheelNorm = SECOND_WHEEL_DIRECTION.norm();
-            double determinant = SECOND_WHEEL_DIRECTION.y() * FIRST_WHEEL_DIRECTION.x() - FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.x();
+            double determinant = FIRST_WHEEL_DIRECTION.x() * SECOND_WHEEL_DIRECTION.y() - FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.x();
 
             if (Math.abs(determinant) < Vector2d.EPSILON) {
-                throw new RuntimeException("Both tracking omnis must point in different directions");
+                throw new RuntimeException("The tracking omnis must point in different directions");
             }
 
             double deltaX = (SECOND_WHEEL_DIRECTION.y() * firstWheelDelta * firstWheelNorm
-                    - FIRST_WHEEL_DIRECTION.y() * secondWheelDelta * secondWheelNorm) / determinant
-                    + FIRST_WHEEL_POSITION.y() * headingDelta;
-            double deltaY = (SECOND_WHEEL_DIRECTION.x() * firstWheelDelta * firstWheelNorm
-                    - FIRST_WHEEL_DIRECTION.x() * secondWheelDelta * secondWheelNorm) / -determinant
-                    + SECOND_WHEEL_POSITION.x() * headingDelta;
+                    - FIRST_WHEEL_DIRECTION.y() * secondWheelDelta * secondWheelNorm
+                    + headingDelta * (FIRST_WHEEL_DIRECTION.x() * SECOND_WHEEL_DIRECTION.y() * FIRST_WHEEL_POSITION.y()
+                            + FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.y() * SECOND_WHEEL_POSITION.x()
+                            - FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.y() * FIRST_WHEEL_POSITION.x()
+                            - FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.x() * SECOND_WHEEL_POSITION.y())) / determinant;
+            double deltaY = (FIRST_WHEEL_DIRECTION.x() * secondWheelDelta * secondWheelNorm
+                    - SECOND_WHEEL_DIRECTION.x() * firstWheelDelta * firstWheelNorm
+                    + headingDelta * (FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.x() * FIRST_WHEEL_POSITION.x()
+                            + FIRST_WHEEL_DIRECTION.x() * SECOND_WHEEL_DIRECTION.x() * SECOND_WHEEL_POSITION.y()
+                            - FIRST_WHEEL_DIRECTION.x() * SECOND_WHEEL_POSITION.x() * FIRST_WHEEL_POSITION.y()
+                            - FIRST_WHEEL_DIRECTION.x() * SECOND_WHEEL_POSITION.y() * SECOND_WHEEL_POSITION.x())) / determinant;
 
             Vector2d robotPoseDelta = new Vector2d(deltaX, deltaY);
             Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
@@ -69,6 +75,6 @@ public class TrackingOmniLocalizer implements Localizer {
 
     @Override
     public void setEstimatedPosition(Vector2d position) {
-
+        estimatedPosition = position;
     }
 }
