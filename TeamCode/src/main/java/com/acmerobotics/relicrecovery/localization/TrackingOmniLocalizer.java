@@ -5,7 +5,8 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 public class TrackingOmniLocalizer implements Localizer {
-    // position of the omnis in the drive coordinate frame
+    // TODO: determine wheel positions and directions
+    // position of the omnis in the drive coordinate frame (in)
     public static Vector2d FIRST_WHEEL_POSITION = new Vector2d(0, 0);
     public static Vector2d SECOND_WHEEL_POSITION = new Vector2d(0, 0);
 
@@ -13,7 +14,8 @@ public class TrackingOmniLocalizer implements Localizer {
     public static Vector2d FIRST_WHEEL_DIRECTION = new Vector2d(0, 0);
     public static Vector2d SECOND_WHEEL_DIRECTION = new Vector2d(0, 0);
 
-    public static double OMNI_RADIUS = 0; // TODO
+    // omni radius (in)
+    public static double OMNI_RADIUS = 1.1811;
 
     private MecanumDrive drive;
     private Vector2d estimatedPosition;
@@ -36,20 +38,24 @@ public class TrackingOmniLocalizer implements Localizer {
             double secondWheelDelta = OMNI_RADIUS * (secondWheelRotation - secondWheelLastRotation);
             double headingDelta = Angle.norm(heading - lastHeading);
 
-            double deltaY = (FIRST_WHEEL_DIRECTION.x() * secondWheelDelta * SECOND_WHEEL_DIRECTION.norm()
-                    - SECOND_WHEEL_DIRECTION.x() * firstWheelDelta * FIRST_WHEEL_DIRECTION.norm()
-                    + headingDelta * (SECOND_WHEEL_DIRECTION.x() * SECOND_WHEEL_POSITION.y()
-                        - SECOND_WHEEL_DIRECTION.y() * SECOND_WHEEL_POSITION.x()
-                        - SECOND_WHEEL_DIRECTION.x() * FIRST_WHEEL_DIRECTION.x() * FIRST_WHEEL_POSITION.y()
-                        - SECOND_WHEEL_DIRECTION.x() * FIRST_WHEEL_DIRECTION.y() * FIRST_WHEEL_POSITION.x())) /
-                    (FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.x() + SECOND_WHEEL_DIRECTION.y());
-            double deltaX = (firstWheelDelta * FIRST_WHEEL_DIRECTION.norm()
-                    + FIRST_WHEEL_DIRECTION.y() * deltaY
-                    + headingDelta * (FIRST_WHEEL_DIRECTION.x() * FIRST_WHEEL_POSITION.y()
-                        + FIRST_WHEEL_DIRECTION.y() * FIRST_WHEEL_POSITION.x())) /
-                    FIRST_WHEEL_DIRECTION.x();
+            double firstWheelNorm = FIRST_WHEEL_DIRECTION.norm();
+            double secondWheelNorm = SECOND_WHEEL_DIRECTION.norm();
+            double determinant = SECOND_WHEEL_DIRECTION.y() * FIRST_WHEEL_DIRECTION.x() - FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.x();
 
-            estimatedPosition = estimatedPosition.added(new Vector2d(deltaX, deltaY));
+            if (Math.abs(determinant) < Vector2d.EPSILON) {
+                throw new RuntimeException("Both tracking omnis must point in different directions");
+            }
+
+            double deltaX = (SECOND_WHEEL_DIRECTION.y() * firstWheelDelta * firstWheelNorm
+                    - FIRST_WHEEL_DIRECTION.y() * secondWheelDelta * secondWheelNorm) / determinant
+                    + FIRST_WHEEL_POSITION.y() * headingDelta;
+            double deltaY = (SECOND_WHEEL_DIRECTION.x() * firstWheelDelta * firstWheelNorm
+                    - FIRST_WHEEL_DIRECTION.x() * secondWheelDelta * secondWheelNorm) / -determinant
+                    + SECOND_WHEEL_POSITION.x() * headingDelta;
+
+            Vector2d robotPoseDelta = new Vector2d(deltaX, deltaY);
+            Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
+            estimatedPosition = estimatedPosition.added(fieldPoseDelta);
         } else {
             initialized = true;
         }

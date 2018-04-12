@@ -584,6 +584,7 @@ public class MecanumDrive extends Subsystem {
     private void invalidateCaches() {
         useCachedOrientation = false;
         useCachedDriveEncoderPositions = false;
+        useCachedTrackingEncoderPosition = false;
     }
 
     public void alignWithColumn(AllianceColor color) {
