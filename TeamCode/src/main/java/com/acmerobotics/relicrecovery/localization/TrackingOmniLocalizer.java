@@ -5,14 +5,13 @@ import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 public class TrackingOmniLocalizer implements Localizer {
-    // TODO: determine wheel positions and directions
     // position of the omnis in the drive coordinate frame (in)
-    public static Vector2d FIRST_WHEEL_POSITION = new Vector2d(0, 0);
-    public static Vector2d SECOND_WHEEL_POSITION = new Vector2d(0, 0);
+    public static Vector2d FIRST_WHEEL_POSITION = new Vector2d(-2.375, -7.5);
+    public static Vector2d SECOND_WHEEL_POSITION = new Vector2d(-0.25, 0);
 
     // the direction the omnis point in (magnitude is ignored)
-    public static Vector2d FIRST_WHEEL_DIRECTION = new Vector2d(0, 0);
-    public static Vector2d SECOND_WHEEL_DIRECTION = new Vector2d(0, 0);
+    public static Vector2d FIRST_WHEEL_DIRECTION = new Vector2d(1, 0);
+    public static Vector2d SECOND_WHEEL_DIRECTION = new Vector2d(0, 1);
 
     // omni radius (in)
     public static double OMNI_RADIUS = 1.1811;

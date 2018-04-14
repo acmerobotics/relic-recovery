@@ -157,7 +157,9 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
                         Log.w(TAG, "Subsystem update failed for " + subsystem.getClass().getSimpleName() + ": " + t.getMessage());
                         Log.w(TAG, t);
                         synchronized (subsystemsWithProblems) {
-                            subsystemsWithProblems.add(subsystem);
+                            if (!subsystemsWithProblems.contains(subsystem)) {
+                                subsystemsWithProblems.add(subsystem);
+                            }
                         }
                     }
                 }

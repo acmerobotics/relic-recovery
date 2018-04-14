@@ -64,7 +64,7 @@ import java.util.Collections;
 public class MecanumDrive extends Subsystem {
     public static final int IMU_PORT = 0;
 
-    public static int TRACKING_ENCODER_TICKS_PER_REV = 500; // TODO: verify?
+    public static int TRACKING_ENCODER_TICKS_PER_REV = 2000;
 
     public static final PIDCoefficients NORMAL_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
     public static final PIDCoefficients SLOW_VELOCITY_PID = new PIDCoefficients(10, 3, 1);
@@ -122,7 +122,7 @@ public class MecanumDrive extends Subsystem {
     private int[] cachedDriveEncoderPositions;
 
     private int[] trackingEncoderOffsets;
-    private boolean useCachedTrackingEncoderPosition;
+    private boolean useCachedTrackingEncoderPositions;
     private int[] cachedTrackingEncoderPositions;
 
     private BNO055IMU imu;
@@ -420,29 +420,29 @@ public class MecanumDrive extends Subsystem {
 
     private void resetTrackingEncoders() {
         int[] positions = internalGetTrackingEncoderPositions();
-        for(int i = 0; i < 4; i++) {
+        for(int i = 0; i < 2; i++) {
             trackingEncoderOffsets[i] = -positions[i];
         }
     }
 
     public double[] getTrackingEncoderRotations() {
-        double[] motorRotations = new double[4];
+        double[] motorRotations = new double[2];
         int[] encoderPositions = getTrackingEncoderPositions();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 2; i++) {
             motorRotations[i] = trackingEncoderTicksToRadians(encoderPositions[i]);
         }
         return motorRotations;
     }
 
     public int[] getTrackingEncoderPositions() {
-        if (!useCachedTrackingEncoderPosition || cachedTrackingEncoderPositions == null) {
+        if (!useCachedTrackingEncoderPositions || cachedTrackingEncoderPositions == null) {
             cachedTrackingEncoderPositions = internalGetTrackingEncoderPositions();
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 2; i++) {
                 cachedTrackingEncoderPositions[i] += trackingEncoderOffsets[i];
             }
-            useCachedDriveEncoderPositions = true;
+            useCachedTrackingEncoderPositions = true;
         }
-        return cachedDriveEncoderPositions;
+        return cachedTrackingEncoderPositions;
     }
 
     private int[] internalGetTrackingEncoderPositions() {
@@ -584,7 +584,7 @@ public class MecanumDrive extends Subsystem {
     private void invalidateCaches() {
         useCachedOrientation = false;
         useCachedDriveEncoderPositions = false;
-        useCachedTrackingEncoderPosition = false;
+        useCachedTrackingEncoderPositions = false;
     }
 
     public void alignWithColumn(AllianceColor color) {
