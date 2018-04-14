@@ -64,6 +64,8 @@ import java.util.Collections;
 public class MecanumDrive extends Subsystem {
     public static final int IMU_PORT = 0;
 
+    public static int TRACKING_ENCODER_TICKS_PER_REV = 2000;
+
     public static final PIDCoefficients NORMAL_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
     public static final PIDCoefficients SLOW_VELOCITY_PID = new PIDCoefficients(10, 3, 1);
 
@@ -115,10 +117,13 @@ public class MecanumDrive extends Subsystem {
     /**
      * units in encoder ticks; solely intended for internal use
      */
-    private int[] encoderOffsets;
+    private int[] driveEncoderOffsets;
+    private boolean useCachedDriveEncoderPositions;
+    private int[] cachedDriveEncoderPositions;
 
-    private boolean useCachedEncoderPositions;
-    private int[] cachedEncoderPositions;
+    private int[] trackingEncoderOffsets;
+    private boolean useCachedTrackingEncoderPositions;
+    private int[] cachedTrackingEncoderPositions;
 
     private BNO055IMU imu;
 
@@ -154,7 +159,7 @@ public class MecanumDrive extends Subsystem {
     private Vector2d targetVel = new Vector2d(0, 0);
     private double targetOmega = 0;
 
-    private LynxModule frontHub;
+    private LynxModule frontHub, rearHub;
 
     private Canvas fieldOverlay;
 
@@ -200,6 +205,8 @@ public class MecanumDrive extends Subsystem {
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
         frontHub = map.get(LynxModule.class, "frontHub");
+        rearHub = map.get(LynxModule.class, "rearHub");
+
         I2cDeviceSynch imuI2cDevice = LynxOptimizedI2cSensorFactory.createLynxI2cDeviceSync(frontHub, IMU_PORT);
         imuI2cDevice.setUserConfiguredName("imu");
         imu = new LynxEmbeddedIMU(imuI2cDevice);
@@ -241,7 +248,8 @@ public class MecanumDrive extends Subsystem {
         ultrasonicSwivel = new CachingServo(map.servo.get("ultrasonicSwivel"));
 
         powers = new double[4];
-        encoderOffsets = new int[4];
+        driveEncoderOffsets = new int[4];
+        trackingEncoderOffsets = new int[4];
         motors = new DcMotorEx[4];
         for (int i = 0; i < 4; i ++) {
             DcMotorEx dcMotorEx = map.get(DcMotorEx.class, MOTOR_NAMES[i]);
@@ -265,7 +273,8 @@ public class MecanumDrive extends Subsystem {
 
         proximitySmoother = new ExponentialSmoother(PROXIMITY_SMOOTHING_COEFF);
 
-        resetEncoders();
+        resetDriveEncoders();
+        resetTrackingEncoders();
         retractProximitySwivel();
         retractUltrasonicSwivel();
     }
@@ -409,36 +418,79 @@ public class MecanumDrive extends Subsystem {
         return new Pose2d(x, y, h);
     }
 
-    private void resetEncoders() {
-        int[] positions = internalGetEncoderPositions();
+    private void resetTrackingEncoders() {
+        int[] positions = internalGetTrackingEncoderPositions();
+        for(int i = 0; i < 2; i++) {
+            trackingEncoderOffsets[i] = -positions[i];
+        }
+    }
+
+    public double[] getTrackingEncoderRotations() {
+        double[] motorRotations = new double[2];
+        int[] encoderPositions = getTrackingEncoderPositions();
+        for (int i = 0; i < 2; i++) {
+            motorRotations[i] = trackingEncoderTicksToRadians(encoderPositions[i]);
+        }
+        return motorRotations;
+    }
+
+    public int[] getTrackingEncoderPositions() {
+        if (!useCachedTrackingEncoderPositions || cachedTrackingEncoderPositions == null) {
+            cachedTrackingEncoderPositions = internalGetTrackingEncoderPositions();
+            for (int i = 0; i < 2; i++) {
+                cachedTrackingEncoderPositions[i] += trackingEncoderOffsets[i];
+            }
+            useCachedTrackingEncoderPositions = true;
+        }
+        return cachedTrackingEncoderPositions;
+    }
+
+    private int[] internalGetTrackingEncoderPositions() {
+        LynxGetBulkInputDataCommand command = new LynxGetBulkInputDataCommand(rearHub);
+        int[] positions = new int[2];
+        try {
+            LynxGetBulkInputDataResponse response = command.sendReceive();
+            for (int i = 0; i < 2; i++) {
+                positions[i] = response.getEncoder(i);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            Log.w("MecanumDrive", e);
+        }
+        return positions;
+    }
+
+    private void resetDriveEncoders() {
+        int[] positions = internalGetDriveEncoderPositions();
         for(int i = 0; i < 4; i++) {
-            encoderOffsets[i] = -positions[i];
+            driveEncoderOffsets[i] = -positions[i];
         }
     }
 
     /** @return motor rotations in radians */
-    public double[] getMotorRotations() {
+    public double[] getDriveMotorRotations() {
         double[] motorRotations = new double[4];
-        int[] encoderPositions = getEncoderPositions();
+        int[] encoderPositions = getDriveEncoderPositions();
         for (int i = 0; i < 4; i++) {
-            motorRotations[i] = ticksToRadians(i, encoderPositions[i]);
+            motorRotations[i] = driveEncoderTicksToRadians(encoderPositions[i]);
         }
         return motorRotations;
     }
 
     /** @return motor positions in encoder ticks */
-    public int[] getEncoderPositions() {
-        if (!useCachedEncoderPositions || cachedEncoderPositions == null) {
-            cachedEncoderPositions = internalGetEncoderPositions();
+    public int[] getDriveEncoderPositions() {
+        if (!useCachedDriveEncoderPositions || cachedDriveEncoderPositions == null) {
+            cachedDriveEncoderPositions = internalGetDriveEncoderPositions();
             for (int i = 0; i < 4; i++) {
-                cachedEncoderPositions[i] += encoderOffsets[i];
+                cachedDriveEncoderPositions[i] += driveEncoderOffsets[i];
             }
-            useCachedEncoderPositions = true;
+            useCachedDriveEncoderPositions = true;
         }
-        return cachedEncoderPositions;
+        return cachedDriveEncoderPositions;
     }
 
-    private int[] internalGetEncoderPositions() {
+    private int[] internalGetDriveEncoderPositions() {
         LynxGetBulkInputDataCommand command = new LynxGetBulkInputDataCommand(frontHub);
         int[] positions = new int[4];
         try {
@@ -456,9 +508,13 @@ public class MecanumDrive extends Subsystem {
         return positions;
     }
 
-    private double ticksToRadians(int motor, int ticks) {
-        double ticksPerRev = motors[motor].getMotorType().getTicksPerRev();
+    private double driveEncoderTicksToRadians(int ticks) {
+        double ticksPerRev = motors[0].getMotorType().getTicksPerRev();
         return 2 * Math.PI * ticks / ticksPerRev;
+    }
+
+    private double trackingEncoderTicksToRadians(int ticks) {
+        return 2 * Math.PI * ticks / TRACKING_ENCODER_TICKS_PER_REV;
     }
 
     private Orientation internalGetAngularOrientation() {
@@ -527,7 +583,8 @@ public class MecanumDrive extends Subsystem {
 
     private void invalidateCaches() {
         useCachedOrientation = false;
-        useCachedEncoderPositions = false;
+        useCachedDriveEncoderPositions = false;
+        useCachedTrackingEncoderPositions = false;
     }
 
     public void alignWithColumn(AllianceColor color) {

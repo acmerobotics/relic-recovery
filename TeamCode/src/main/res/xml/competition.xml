@@ -1,19 +1,8 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
     <!-- REV -->
-    <LynxUsbDevice name="portal" serialNumber="DQ16PMSD" parentModuleAddress="2">
-        <LynxModule name="frontHub" port="1">
-            <NeveRest20Gearmotor name="frontLeft" port="0" />
-            <NeveRest20Gearmotor name="rearLeft" port="1" />
-            <NeveRest20Gearmotor name="rearRight" port="2" />
-            <NeveRest20Gearmotor name="frontRight" port="3" />
-            <Servo name="jewelArm" port="0" />
-            <Servo name="jewelSlapper" port="1" />
-            <Servo name="relicWrist" port="2" />
-            <Servo name="relicFinger" port="3" />
-            <AnalogInput name="ultrasonicSensor" port="1" />
-        </LynxModule>
-        <LynxModule name="rearHub" port="2">
+    <LynxUsbDevice name="portal" serialNumber="DQ1NXDE5" parentModuleAddress="1">
+        <LynxModule name="rearHub" port="1">
             <NeveRest20Gearmotor name="intakeLeft" port="0" />
             <NeveRest20Gearmotor name="intakeRight" port="1" />
             <NeveRest20Gearmotor name="dumpLift" port="2" />
@@ -23,10 +12,21 @@
             <Servo name="dumpRelease" port="2" />
             <Servo name="ultrasonicSwivel" port="3" />
             <Servo name="proximitySwivel" port="4" />
-            <DigitalDevice name="dumpLiftMagneticTouch" port="1" />
             <LynxColorSensor name="proximitySensor" port="0" bus="1" />
-            <LynxColorSensor name="frontColorDistance" port="0" bus="2" />
-            <LynxColorSensor name="rearColorDistance" port="0" bus="3" />
+            <AnalogInput name="ultrasonicSensor" port="0" />
         </LynxModule>
+        <LynxModule name="frontHub" port="2">
+            <NeveRest20Gearmotor name="frontLeft" port="0" />
+            <NeveRest20Gearmotor name="rearLeft" port="1" />
+            <NeveRest20Gearmotor name="rearRight" port="2" />
+            <NeveRest20Gearmotor name="frontRight" port="3" />
+            <Servo name="jewelArm" port="0" />
+            <Servo name="jewelSlapper" port="1" />
+            <DigitalDevice name="dumpLiftMagneticTouch" port="1" />
+            <LynxColorSensor name="frontColorDistance" port="0" bus="0" />
+            <LynxColorSensor name="rearColorDistance" port="0" bus="1" />
+        </LynxModule>
+        <!--<Servo name="relicWrist" port="2" />-->
+        <!--<Servo name="relicFinger" port="3" />-->
     </LynxUsbDevice>
 </Robot>

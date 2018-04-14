@@ -11,12 +11,11 @@ public class DeadReckoningLocalizer implements Localizer {
 
     public DeadReckoningLocalizer(MecanumDrive drive) {
         this.drive = drive;
-        this.lastRotations = new double[4];
     }
 
     @Override
     public Vector2d update() {
-        double[] rotations = drive.getMotorRotations();
+        double[] rotations = drive.getDriveMotorRotations();
         if (lastRotations != null) {
             double[] rotationDeltas = new double[4];
             for (int i = 0; i < 4; i++) {
