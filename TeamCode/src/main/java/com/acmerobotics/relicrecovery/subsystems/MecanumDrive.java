@@ -78,7 +78,7 @@ public class MecanumDrive extends Subsystem {
     // units in cm
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.025, 0, -0.01);
     public static double COLUMN_ALIGN_SETPOINT = 7;
-    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0;
+    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
 
     public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
     public static double PROXIMITY_SWIVEL_EXTEND = 0.09;
@@ -625,12 +625,6 @@ public class MecanumDrive extends Subsystem {
 
     public double getSideDistance(SharpGP2Y0A51SK0FProximitySensor.Surface surface, DistanceUnit unit) {
         return proximitySensor.getDistance(surface, unit);
-    }
-
-    public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {
-        for (int i = 0; i < 4; i++) {
-            motors[i].setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidCoefficients);
-        }
     }
 
     public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {

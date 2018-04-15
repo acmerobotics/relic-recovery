@@ -36,6 +36,9 @@ public class TrackingOmniLocalizer implements Localizer {
             double firstWheelDelta = OMNI_RADIUS * (firstWheelRotation - firstWheelLastRotation);
             double secondWheelDelta = OMNI_RADIUS * (secondWheelRotation - secondWheelLastRotation);
             double headingDelta = Angle.norm(heading - lastHeading);
+            while (Math.abs(headingDelta) > Math.PI / 2) {
+                headingDelta -= Math.signum(headingDelta) * Math.PI;
+            }
 
             double firstWheelNorm = FIRST_WHEEL_DIRECTION.norm();
             double secondWheelNorm = SECOND_WHEEL_DIRECTION.norm();

@@ -2,23 +2,29 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.annotation.SuppressLint;
 
+import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
+import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
+import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.localization.TrackingOmniLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,7 +50,34 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
     protected void setup() {
         stone = robot.config.getBalancingStone();
         crypto = stone.getCryptobox();
+//        robot.drive.setLocalizer(new TrackingOmniLocalizer(robot.drive));
+        CSVLoggingTelemetry positionComparison = new CSVLoggingTelemetry(new File(LoggingUtil.getLogRoot(this),
+                "PositionComparison-" + System.currentTimeMillis() + ".csv"));
+        DeadReckoningLocalizer deadReckoningLocalizer = new DeadReckoningLocalizer(robot.drive);
+        TrackingOmniLocalizer trackingOmniLocalizer = new TrackingOmniLocalizer(robot.drive);
+        robot.drive.setLocalizer(new Localizer() {
+            @Override
+            public Vector2d update() {
+                Vector2d deadReckoningPosition = deadReckoningLocalizer.update();
+                Vector2d trackingOmniPosition = trackingOmniLocalizer.update();
+
+                positionComparison.addData("deadReckoningX", deadReckoningPosition.x());
+                positionComparison.addData("deadReckoningY", deadReckoningPosition.y());
+                positionComparison.addData("trackingOmniX", trackingOmniPosition.x());
+                positionComparison.addData("trackingOmniY", trackingOmniPosition.y());
+                positionComparison.update();
+
+                return deadReckoningPosition;
+            }
+
+            @Override
+            public void setEstimatedPosition(Vector2d position) {
+                deadReckoningLocalizer.setEstimatedPosition(position);
+                trackingOmniLocalizer.setEstimatedPosition(position);
+            }
+        });
         robot.drive.setEstimatedPosition(stone.getPosition());
+        robot.drive.setVelocityPIDCoefficients(MecanumDrive.SLOW_VELOCITY_PID);
     }
 
     @SuppressLint("DefaultLocale")
@@ -96,6 +129,8 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
         raiseArmAndSlapper();
         robot.sleep(0.5);
         robot.intake.autoIntake();
+        robot.sleep(0.75 * stoneToPit.duration() - 1);
+        robot.drive.setVelocityPIDCoefficients(MecanumDrive.NORMAL_VELOCITY_PID);
         robot.drive.waitForTrajectoryFollower();
 
         Trajectory pitToCrypto1 = new TrajectoryBuilder(stoneToPit.end())
@@ -110,7 +145,6 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
         robot.drive.extendProximitySwivel();
 
         robot.sleep(0.5 * pitToCrypto1.duration());
-        robot.drive.setLocalizer(new TrackingOmniLocalizer(robot.drive));
         robot.intake.setIntakePower(1);
         robot.sleep(0.3 * pitToCrypto1.duration());
         robot.intake.setIntakePower(0);
@@ -190,7 +224,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
                 .build();
         robot.drive.followTrajectory(pitToCrypto3);
 
-        robot.drive.extendProximitySwivel();
+        robot.drive.extendProximitySwivel(); //extend the proximity sensor
 
         robot.sleep(0.5 * pitToCrypto3.duration());
         robot.intake.setIntakePower(1);
