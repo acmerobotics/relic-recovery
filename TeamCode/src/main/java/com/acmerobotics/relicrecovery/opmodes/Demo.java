@@ -29,6 +29,11 @@ public class Demo extends OpMode {
     }
 
     @Override
+    public void start() {
+        robot.intake.releaseBar();
+    }
+
+    @Override
     public void loop() {
         stickyGamepad1.update();
         stickyGamepad2.update();

@@ -6,18 +6,23 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
+import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetADCCommand;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class Intake extends Subsystem {
+    public static double SERVO_STOW_POSITION = 0.1;
+    public static double SERVO_RELEASE_POSITION = 0.3;
+
     public static double GLYPH_PRESENCE_THRESHOLD = 2.5; // in (theoretically, might actually be cm)
     public static double CURRENT_SMOOTHER_COEFF = 0.1;
     public static int LOWER_CURRENT_THRESHOLD = 1000; // mA
@@ -33,8 +38,9 @@ public class Intake extends Subsystem {
     private LynxModule rearHub;
 
     private DcMotor leftIntake, rightIntake;
+    private Servo intakeRelease;
     private double leftIntakePower, rightIntakePower;
-    private boolean leftIntakeReversed, rightIntakeReversed;
+    private boolean leftIntakeReversed, rightIntakeReversed, intakeBarStowed;
 
     private LynxI2cColorRangeSensor frontColorDistance, rearColorDistance;
 
@@ -68,6 +74,8 @@ public class Intake extends Subsystem {
         leftIntake.setDirection(DcMotorSimple.Direction.REVERSE);
         rightIntake.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        intakeRelease = new CachingServo(map.servo.get("intakeRelease"));
+
         frontColorDistance = map.get(LynxI2cColorRangeSensor.class, "frontColorDistance");
         rearColorDistance = map.get(LynxI2cColorRangeSensor.class, "rearColorDistance");
 
@@ -75,6 +83,8 @@ public class Intake extends Subsystem {
 
         leftCurrentSmoother = new ExponentialSmoother(CURRENT_SMOOTHER_COEFF);
         rightCurrentSmoother = new ExponentialSmoother(CURRENT_SMOOTHER_COEFF);
+
+        intakeBarStowed = true;
     }
 
     public Mode getMode() {
@@ -97,11 +107,21 @@ public class Intake extends Subsystem {
         rightCurrentSmoother.reset();
     }
 
+    public void releaseBar() {
+        intakeBarStowed = false;
+    }
+
     @Override
     public void update() {
         telemetryData.intakeMode = mode;
         telemetryData.leftIntakePower = leftIntakePower;
         telemetryData.rightIntakePower = rightIntakePower;
+
+        if (intakeBarStowed) {
+            intakeRelease.setPosition(SERVO_STOW_POSITION);
+        } else {
+            intakeRelease.setPosition(SERVO_RELEASE_POSITION);
+        }
 
         switch (mode) {
             case AUTO:

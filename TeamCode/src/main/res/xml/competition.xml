@@ -12,8 +12,8 @@
             <Servo name="dumpRelease" port="2" />
             <Servo name="ultrasonicSwivel" port="3" />
             <Servo name="proximitySwivel" port="4" />
-            <LynxColorSensor name="proximitySensor" port="0" bus="1" />
             <AnalogInput name="ultrasonicSensor" port="0" />
+            <AnalogInput name="proximitySensor" port="3" />
         </LynxModule>
         <LynxModule name="frontHub" port="2">
             <NeveRest20Gearmotor name="frontLeft" port="0" />
@@ -22,6 +22,9 @@
             <NeveRest20Gearmotor name="frontRight" port="3" />
             <Servo name="jewelArm" port="0" />
             <Servo name="jewelSlapper" port="1" />
+            <Servo name="relicWrist" port="2" />
+            <Servo name="relicFinger" port="3" />
+            <Servo name="intakeRelease" port="4" />
             <DigitalDevice name="dumpLiftMagneticTouch" port="1" />
             <LynxColorSensor name="frontColorDistance" port="0" bus="0" />
             <LynxColorSensor name="rearColorDistance" port="0" bus="1" />

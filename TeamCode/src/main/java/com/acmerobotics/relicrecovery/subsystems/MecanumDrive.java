@@ -15,6 +15,7 @@ import com.acmerobotics.relicrecovery.hardware.CachingDcMotorEx;
 import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
 import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
+import com.acmerobotics.relicrecovery.hardware.SharpGP2Y0A51SK0FProximitySensor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
 import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.motion.MotionConstraints;
@@ -26,7 +27,6 @@ import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
-import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse;
@@ -37,7 +37,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -76,11 +75,10 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
     public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
 
-    public static PIDCoefficients BLUE_COLUMN_ALIGN_PID = new PIDCoefficients(-0.035, 0, -0.0175);
-    public static PIDCoefficients RED_COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.03);
-    public static double COLUMN_ALIGN_BLUE_SETPOINT = 6;
-    public static double COLUMN_ALIGN_RED_SETPOINT = 4.3;
-    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.25;
+    // units in cm
+    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.025, 0, -0.01);
+    public static double COLUMN_ALIGN_SETPOINT = 7;
+    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0;
 
     public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
     public static double PROXIMITY_SWIVEL_EXTEND = 0.09;
@@ -135,9 +133,10 @@ public class MecanumDrive extends Subsystem {
     private Servo ultrasonicSwivel;
     private boolean ultrasonicSwivelExtended;
 
-    private LynxI2cColorRangeSensor proximitySensor;
+    private SharpGP2Y0A51SK0FProximitySensor proximitySensor;
     private ExponentialSmoother proximitySmoother;
-    private PIDController columnAlignController, blueColumnAlignController, redColumnAlignController;
+    private PIDController columnAlignController;
+    private SharpGP2Y0A51SK0FProximitySensor.Surface columnAlignSurface;
 
     private boolean useCachedOrientation;
     private Orientation cachedOrientation;
@@ -241,7 +240,7 @@ public class MecanumDrive extends Subsystem {
             Thread.currentThread().interrupt();
         }
 
-        proximitySensor = map.get(LynxI2cColorRangeSensor.class, "proximitySensor");
+        proximitySensor = new SharpGP2Y0A51SK0FProximitySensor(map.analogInput.get("proximitySensor"));
         proximitySwivel = new CachingServo(map.servo.get("proximitySwivel"));
 
         ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonicSensor"));
@@ -268,8 +267,7 @@ public class MecanumDrive extends Subsystem {
         maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
-        blueColumnAlignController = new PIDController(BLUE_COLUMN_ALIGN_PID);
-        redColumnAlignController = new PIDController(RED_COLUMN_ALIGN_PID);
+        columnAlignController = new PIDController(COLUMN_ALIGN_PID);
 
         proximitySmoother = new ExponentialSmoother(PROXIMITY_SMOOTHING_COEFF);
 
@@ -316,7 +314,7 @@ public class MecanumDrive extends Subsystem {
         positionEstimationEnabled = false;
     }
 
-    public DcMotor[] getMotors() {
+    public DcMotorEx[] getMotors() {
         return motors;
     }
 
@@ -588,9 +586,8 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void alignWithColumn(AllianceColor color) {
-        columnAlignController = (color == AllianceColor.BLUE) ? blueColumnAlignController : redColumnAlignController;
+        columnAlignSurface = SharpGP2Y0A51SK0FProximitySensor.Surface.CRYPTO;
         columnAlignController.reset();
-        columnAlignController.setSetpoint(color == AllianceColor.BLUE ? COLUMN_ALIGN_BLUE_SETPOINT : COLUMN_ALIGN_RED_SETPOINT);
         proximitySmoother.reset();
         setMode(Mode.COLUMN_ALIGN);
     }
@@ -613,8 +610,14 @@ public class MecanumDrive extends Subsystem {
         return ultrasonicSensor.getMinDistance(unit);
     }
 
-    public double getSideDistance(DistanceUnit unit) {
-        return proximitySensor.getDistance(unit);
+    public double getSideDistance(SharpGP2Y0A51SK0FProximitySensor.Surface surface, DistanceUnit unit) {
+        return proximitySensor.getDistance(surface, unit);
+    }
+
+    public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {
+        for (int i = 0; i < 4; i++) {
+            motors[i].setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidCoefficients);
+        }
     }
 
     public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {
@@ -655,10 +658,10 @@ public class MecanumDrive extends Subsystem {
                 }
                 break;
             case COLUMN_ALIGN:
-                double rawSideDistance = getSideDistance(DistanceUnit.INCH);
-                rawSideDistance = Double.isNaN(rawSideDistance) ? 10 : Range.clip(rawSideDistance, -10, 10);
+                double rawSideDistance = getSideDistance(columnAlignSurface, DistanceUnit.CM);
 
                 double sideDistance = proximitySmoother.update(rawSideDistance);
+                columnAlignController.setSetpoint(COLUMN_ALIGN_SETPOINT);
                 double distanceError = columnAlignController.getError(sideDistance);
 
                 telemetryData.proximityDistance = sideDistance;
