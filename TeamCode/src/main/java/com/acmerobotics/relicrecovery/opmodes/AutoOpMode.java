@@ -62,6 +62,8 @@ public abstract class AutoOpMode extends LinearOpMode {
             return;
         }
 
+        robot.intake.releaseBar();
+
         run();
     }
 

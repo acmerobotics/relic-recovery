@@ -6,34 +6,32 @@ import com.qualcomm.robotcore.hardware.HardwareDevice;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class SharpGP2Y0A51SK0FProximitySensor implements HardwareDevice {
+    // TODO: are the parameters constant for all surfaces?
     public enum Surface {
-        // TODO: determine e and f
-        RED_CRYPTO(-68.5004, 18.2733, -1.85815, 45.6475, 1, 0),
-        BLUE_CRYPTO(1.57038, 0.102239, -5.10007, 0.0576782, 1, 0);
+        CRYPTO(7.26557, -1.49673, -0.264094, 2.54, 1.55966);
 
         /**
          * Linearization parameters:
-         * y = a + b * ln(x^c + d) where x is voltage and y is *raw distance*
-         * y = ex + f where x is raw distance and y is normalized distance (in cm)
+         * y = ae^(bx) + c where x is voltage and y is *raw distance*
+         * y = dx + f where x is raw distance and y is normalized distance (cm)
          */
-        private double a, b, c, d, e, f;
+        private double a, b, c, d, f;
 
-        Surface(double a, double b, double c, double d, double e, double f) {
+        Surface(double a, double b, double c, double d, double f) {
             this.a = a;
             this.b = b;
             this.c = c;
             this.d = d;
-            this.e = e;
             this.f = f;
         }
 
         private double getRawDistance(double voltage) {
-            return a + b * Math.log(Math.pow(voltage, c) + d);
+            return a * Math.exp(b * voltage) + c;
         }
 
         public double getDistance(double voltage, DistanceUnit unit) {
             double rawDistance = getRawDistance(voltage);
-            double distanceCm = e * rawDistance + f;
+            double distanceCm = d * rawDistance + f;
             return unit.fromCm(distanceCm);
         }
     }

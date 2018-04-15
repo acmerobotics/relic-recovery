@@ -75,10 +75,10 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
     public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
 
-    // TODO: tune this!
-    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(0, 0, 0);
-    public static double COLUMN_ALIGN_SETPOINT = 0;
-    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.25;
+    // units in cm
+    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.025, 0, -0.01);
+    public static double COLUMN_ALIGN_SETPOINT = 7;
+    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0;
 
     public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
     public static double PROXIMITY_SWIVEL_EXTEND = 0.09;
@@ -314,7 +314,7 @@ public class MecanumDrive extends Subsystem {
         positionEstimationEnabled = false;
     }
 
-    public DcMotor[] getMotors() {
+    public DcMotorEx[] getMotors() {
         return motors;
     }
 
@@ -586,9 +586,8 @@ public class MecanumDrive extends Subsystem {
     }
 
     public void alignWithColumn(AllianceColor color) {
-        columnAlignSurface = (color == AllianceColor.BLUE) ? SharpGP2Y0A51SK0FProximitySensor.Surface.BLUE_CRYPTO : SharpGP2Y0A51SK0FProximitySensor.Surface.RED_CRYPTO;
+        columnAlignSurface = SharpGP2Y0A51SK0FProximitySensor.Surface.CRYPTO;
         columnAlignController.reset();
-        columnAlignController.setSetpoint(COLUMN_ALIGN_SETPOINT);
         proximitySmoother.reset();
         setMode(Mode.COLUMN_ALIGN);
     }
@@ -653,9 +652,10 @@ public class MecanumDrive extends Subsystem {
                 }
                 break;
             case COLUMN_ALIGN:
-                double rawSideDistance = getSideDistance(columnAlignSurface, DistanceUnit.INCH);
+                double rawSideDistance = getSideDistance(columnAlignSurface, DistanceUnit.CM);
 
                 double sideDistance = proximitySmoother.update(rawSideDistance);
+                columnAlignController.setSetpoint(COLUMN_ALIGN_SETPOINT);
                 double distanceError = columnAlignController.getError(sideDistance);
 
                 telemetryData.proximityDistance = sideDistance;
