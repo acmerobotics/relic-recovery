@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.annotation.SuppressLint;
+import android.util.TimingLogger;
 
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -59,6 +60,7 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     protected void run() {
+        TimingLogger timings = new TimingLogger("Auto", "splineNearSixGlyph");
         double startTime = TimestampedData.getCurrentTime();
 
         int yMultiplier = (crypto.getAllianceColor() == AllianceColor.BLUE) ? -1 : 1;
@@ -66,6 +68,8 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         RelicRecoveryVuMark vuMark = vuMarkTracker.getVuMark();
         JewelPosition jewelPosition = jewelTracker.getJewelPosition();
         jewelTracker.disable();
+
+        timings.addSplit("vuMark");
 
         lowerArmAndSlapper();
 
@@ -84,6 +88,8 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
             robot.sleep(0.75);
         }
 
+        timings.addSplit("jewel");
+
         RelicRecoveryVuMark firstColumn = (vuMark == RelicRecoveryVuMark.UNKNOWN) ? RelicRecoveryVuMark.LEFT : vuMark;
         RelicRecoveryVuMark secondColumn = COLUMN_TRANSITION1.get(firstColumn);
         RelicRecoveryVuMark thirdColumn = COLUMN_TRANSITION2.get(firstColumn);
@@ -99,6 +105,9 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
                 .splineThrough(new Pose2d(0, yMultiplier * 12, -yMultiplier * 3 * Math.PI / 4))
                 .closeComposite()
                 .build();
+
+        timings.addSplit("stoneToPit gen");
+
         robot.drive.setEstimatedPose(stoneToPit.start());
         robot.drive.followTrajectory(stoneToPit);
         robot.sleep(0.5);
@@ -107,10 +116,15 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         robot.intake.autoIntake();
         robot.drive.waitForTrajectoryFollower();
 
+        timings.addSplit("stoneToPit");
+
         Trajectory pitToCrypto1 = new TrajectoryBuilder(stoneToPit.end())
                 .splineThrough(new Pose2d(firstColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
+
+        timings.addSplit("pitToCrypto1 gen");
+
         robot.drive.followTrajectory(pitToCrypto1);
 
         robot.drive.extendUltrasonicSwivel();
@@ -122,6 +136,8 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(0);
         robot.drive.waitForTrajectoryFollower();
 
+        timings.addSplit("pitToCrypto1");
+
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
@@ -130,8 +146,13 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
                 .waitFor(0.5)
                 .build();
+
+        timings.addSplit("cryptoApproach1 gen");
+
         robot.drive.followTrajectory(cryptoApproach1);
         robot.drive.waitForTrajectoryFollower();
+
+        timings.addSplit("cryptoApproach1");
 
         robot.drive.retractUltrasonicSwivel();
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
@@ -142,13 +163,20 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(cryptoApproach1.end().pos());
 
+        timings.addSplit("columnAlign1");
+
         robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         robot.sleep(0.5);
 
+        timings.addSplit("dump1");
+
         Trajectory cryptoToPit2 = new TrajectoryBuilder(cryptoApproach1.end())
                 .splineThrough(new Pose2d(24, yMultiplier * 12, -yMultiplier * Math.PI / 4))
                 .build();
+
+        timings.addSplit("cryptoToPit2 gen");
+
         robot.drive.followTrajectory(cryptoToPit2);
 
         robot.sleep(0.25 * cryptoToPit2.duration());
@@ -158,10 +186,15 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
 
         robot.drive.waitForTrajectoryFollower();
 
+        timings.addSplit("cryptoToPit2");
+
         Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
                 .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
+
+        timings.addSplit("pitToCrypto2 gen");
+
         robot.drive.followTrajectory(pitToCrypto2);
 
         robot.drive.extendUltrasonicSwivel();
@@ -173,6 +206,8 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(0);
         robot.drive.waitForTrajectoryFollower();
 
+        timings.addSplit("pitToCrypto2");
+
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
@@ -181,8 +216,13 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
                 .waitFor(0.5)
                 .build();
+
+        timings.addSplit("cryptoApproach2 gen");
+
         robot.drive.followTrajectory(cryptoApproach2);
         robot.drive.waitForTrajectoryFollower();
+
+        timings.addSplit("cryptoApproach2");
 
         robot.drive.retractUltrasonicSwivel();
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
@@ -193,13 +233,20 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(cryptoApproach2.end().pos());
 
+        timings.addSplit("columnAlign2");
+
         robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         robot.sleep(0.5);
 
+        timings.addSplit("dump2");
+
         Trajectory cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
                 .splineThrough(new Pose2d(16, 0, -yMultiplier * 3 * Math.PI / 8))
                 .build();
+
+        timings.addSplit("cryptoToPit3 gen");
+
         robot.drive.followTrajectory(cryptoToPit3);
 
         robot.sleep(0.25 * cryptoToPit3.duration());
@@ -209,10 +256,15 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
 
         robot.drive.waitForTrajectoryFollower();
 
+        timings.addSplit("cryptoToPit3");
+
         Trajectory pitToCrypto3 = new TrajectoryBuilder(cryptoToPit3.end())
                 .splineThrough(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
+
+        timings.addSplit("pitToCrypto3 gen");
+
         robot.drive.followTrajectory(pitToCrypto3);
 
         robot.drive.extendUltrasonicSwivel();
@@ -224,6 +276,8 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(0);
         robot.drive.waitForTrajectoryFollower();
 
+        timings.addSplit("pitToCrypto3");
+
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
@@ -232,8 +286,13 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
                 .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 56))
                 .waitFor(0.5)
                 .build();
+
+        timings.addSplit("cryptoApproach3 gen");
+
         robot.drive.followTrajectory(cryptoApproach3);
         robot.drive.waitForTrajectoryFollower();
+
+        timings.addSplit("cryptoApproach3");
 
         robot.drive.retractUltrasonicSwivel();
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
@@ -244,18 +303,29 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(cryptoApproach3.end().pos());
 
+        timings.addSplit("columnAlign3");
+
         robot.drive.retractProximitySwivel();
         robot.dumpBed.dump();
         robot.sleep(0.5);
 
+        timings.addSplit("dump3");
+
         robot.drive.followTrajectory(new TrajectoryBuilder(cryptoApproach3.end())
                 .forward(8)
                 .build());
+
+        timings.addSplit("return gen");
+
         robot.drive.waitForTrajectoryFollower();
+
+        timings.addSplit("return");
 
         robot.dumpBed.retract();
 
         robot.waitOneFullCycle();
+
+        timings.dumpToLog();
 
         telemetry.log().add(String.format("Took %.2fs", TimestampedData.getCurrentTime() - startTime));
         telemetry.update();
