@@ -40,6 +40,17 @@ public class NearFourGlyphAuto extends AutoOpMode {
         stone = robot.config.getBalancingStone();
         crypto = stone.getCryptobox();
 
+        if (stone == BalancingStone.FAR_BLUE|| stone == BalancingStone.FAR_RED) {
+            telemetry.log().add("Invalid balancing stone: " + stone + "!");
+            telemetry.update();
+
+            robot.sleep(1);
+
+            requestOpModeStop();
+
+            return;
+        }
+
         ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive);
         robot.addListener(() -> {
             robot.dashboard.getTelemetry().addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));

@@ -49,11 +49,12 @@ public class AutoSplineTest {
                 .lineTo(new Vector2d(-24, -36))
                 .splineThrough(new Pose2d(-8, -8, Math.PI / 4))
                 .closeComposite()
-                .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(-59, -36 - AutoPaths.CRYPTO_COL_WIDTH, 0))
+                .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(-56, -36 - AutoPaths.CRYPTO_COL_WIDTH, 0))
                 .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(0, 0, Math.PI / 4))
-                .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(-59, -36 + AutoPaths.CRYPTO_COL_WIDTH, 0))
-                .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(12, 0, 0))
-                .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(-59, -36, 0))
+                .splineThrough(new Pose2d(-16, -12, 0), new Pose2d(-40, -36 + AutoPaths.CRYPTO_COL_WIDTH, 0))
+                .lineTo(new Vector2d(-56, -36 + AutoPaths.CRYPTO_COL_WIDTH))
+// .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(12, 0, 0))
+//                .splineThrough(new Pose2d(-24, -12, 0), new Pose2d(-56, -36, 0))
                 .build();
         drawTrajectoryOnField(trajectory, "sixGlyphFar");
         System.out.format("6 Glyph Far Duration: %.2fs\n", trajectory.duration());
