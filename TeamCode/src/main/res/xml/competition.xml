@@ -29,5 +29,7 @@
             <LynxColorSensor name="frontColorDistance" port="0" bus="0" />
             <LynxColorSensor name="rearColorDistance" port="0" bus="1" />
         </LynxModule>
+        <!--<Servo name="relicWrist" port="2" />-->
+        <!--<Servo name="relicFinger" port="3" />-->
     </LynxUsbDevice>
 </Robot>

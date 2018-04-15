@@ -620,6 +620,12 @@ public class MecanumDrive extends Subsystem {
         }
     }
 
+    public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {
+        for (int i = 0; i < 4; i++) {
+            motors[i].setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidCoefficients);
+        }
+    }
+
     public void update() {
         invalidateCaches();
 
