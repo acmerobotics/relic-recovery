@@ -76,7 +76,7 @@ public class MecanumDrive extends Subsystem {
     public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.05, 0, 0, 0.0179, 0);
 
     // units in cm
-    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.025, 0, -0.01);
+    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.01);
     public static double COLUMN_ALIGN_SETPOINT = 7;
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
 
@@ -268,6 +268,7 @@ public class MecanumDrive extends Subsystem {
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
+        columnAlignController.setOutputBounds(-0.2, 0.2);
 
         proximitySmoother = new ExponentialSmoother(PROXIMITY_SMOOTHING_COEFF);
 
