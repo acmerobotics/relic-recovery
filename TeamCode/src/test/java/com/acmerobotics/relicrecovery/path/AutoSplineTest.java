@@ -16,10 +16,9 @@ public class AutoSplineTest {
     public void testSixGlyphNear() {
         Trajectory trajectory = new TrajectoryBuilder(
                 new Pose2d(BalancingStone.NEAR_BLUE.getPosition(), Math.PI))
-                .beginComposite()
-                .lineTo(new Vector2d(24, -48))
+                .lineTo(new Vector2d(12, -48))
+                .turnTo(Math.PI / 2)
                 .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
-                .closeComposite()
 //                .beginComposite()
                 .splineThrough(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -60))

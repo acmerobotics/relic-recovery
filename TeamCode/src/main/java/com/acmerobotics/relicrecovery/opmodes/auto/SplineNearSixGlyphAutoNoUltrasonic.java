@@ -21,6 +21,7 @@ import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
@@ -28,6 +29,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+@Disabled
 @Autonomous
 public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION1 = new HashMap<>();

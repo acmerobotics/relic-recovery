@@ -20,8 +20,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class Intake extends Subsystem {
-    public static double SERVO_STOW_POSITION = 0.1;
-    public static double SERVO_RELEASE_POSITION = 0.3;
+    public static double SERVO_STOW_POSITION = 0.2;
+    public static double SERVO_RELEASE_POSITION = 0.5;
 
     public static double GLYPH_PRESENCE_THRESHOLD = 2.5; // in (theoretically, might actually be cm)
     public static double CURRENT_SMOOTHER_COEFF = 0.1;

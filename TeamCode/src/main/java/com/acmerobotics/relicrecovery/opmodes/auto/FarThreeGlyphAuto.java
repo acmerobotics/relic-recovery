@@ -14,6 +14,7 @@ import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -78,17 +79,15 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
 
-        if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
-            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            robot.sleep(0.75);
-            raiseArmAndSlapper();
-        } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
-            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            robot.sleep(0.75);
-            raiseArmAndSlapper();
-        } else {
-            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
-            robot.sleep(0.75);
+        if (robot.config.getAllianceColor() == AllianceColor.RED) {
+            if (!removeLeft) {
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
+                robot.sleep(0.75);
+                raiseArmAndSlapper();
+            } else {
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
+                robot.sleep(0.75);
+            }
         }
 
         RelicRecoveryVuMark firstColumn = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
@@ -101,12 +100,15 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(0, yMultiplier * LATERAL_BIAS));
 
         Trajectory stoneToCrypto = new TrajectoryBuilder(stonePose)
+                .turnTo(removeLeft ? -Vector2d.EPSILON : Vector2d.EPSILON) // fun hack
                 .lineTo(new Vector2d(-44, stonePose.y()))
-                .turn(robot.config.getAllianceColor() == AllianceColor.BLUE ? Math.PI : 0)
                 .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()))
                 .waitFor(0.25)
                 .build();
         robot.drive.setEstimatedPose(stoneToCrypto.start());
+        if (robot.config.getAllianceColor() == AllianceColor.BLUE) {
+            robot.drive.setVelocityPIDCoefficients(MecanumDrive.SLOW_VELOCITY_PID);
+        }
         robot.drive.followTrajectory(stoneToCrypto);
 
         robot.drive.extendProximitySwivel();
@@ -115,6 +117,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.sleep(0.5);
         raiseArmAndSlapper();
         robot.drive.waitForTrajectoryFollower();
+        robot.drive.setVelocityPIDCoefficients(MecanumDrive.NORMAL_VELOCITY_PID);
 
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.waitOneFullCycle();
@@ -144,7 +147,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Trajectory cryptoToPit = new TrajectoryBuilder(new Pose2d(-56, firstColumnPosition.y(), cryptoApproach1.end().heading()))
                 .lineTo(new Vector2d(-44, firstColumnPosition.y()))
                 .lineTo(new Vector2d(-44, yMultiplier * 16))
-                .turn(-Math.PI / 4 * yMultiplier)
+                .turnTo(-yMultiplier * Math.PI / 4)
                 .lineTo(new Vector2d(-12, yMultiplier * 16))
                 .forward(12)
                 .back(12)
@@ -156,7 +159,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
 
         Trajectory pitToCrypto = new TrajectoryBuilder(cryptoToPit.end())
-                .turn(Math.PI / 4 * yMultiplier)
+                .turnTo(0)
 //                .lineTo(new Vector2d(-44, yMultiplier * 16))
                 .lineTo(new Vector2d(-44, biasedSecondColumnPosition.y()))
                 .waitFor(0.25)
