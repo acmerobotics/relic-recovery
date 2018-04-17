@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Autonomous
-public class SplineNearFiveGlyphAuto extends AutoOpMode {
+public class HybridNearFiveGlyphAuto extends AutoOpMode {
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION1 = new HashMap<>();
     static {
         COLUMN_TRANSITION1.put(RelicRecoveryVuMark.LEFT, RelicRecoveryVuMark.RIGHT);
@@ -76,7 +76,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     protected void run() {
-        TimingLogger timings = new TimingLogger("Auto", "splineNearFiveGlyph");
+        TimingLogger timings = new TimingLogger("Auto", "hybridNearFiveGlyphAuto");
         double startTime = TimestampedData.getCurrentTime();
 
         int yMultiplier = (crypto.getAllianceColor() == AllianceColor.BLUE) ? -1 : 1;
@@ -150,22 +150,12 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump1");
 
-        Trajectory cryptoToPit2;
-        if (firstColumn == RelicRecoveryVuMark.CENTER || isNearColumn(firstColumn, robot.config.getAllianceColor())) {
-            cryptoToPit2 = new TrajectoryBuilder(stoneToCrypto1.end())
-                    .beginComposite()
-                    .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * 3 * Math.PI / 4))
-                    .lineTo(new Vector2d(0, yMultiplier * 12))
-                    .closeComposite()
-                    .build();
-        } else {
-            cryptoToPit2 = new TrajectoryBuilder(stoneToCrypto1.end())
-                    .beginComposite()
-                    .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * Math.PI / 4))
-                    .lineTo(new Vector2d(24, yMultiplier * 12))
-                    .closeComposite()
-                    .build();
-        }
+        Trajectory cryptoToPit2 = new TrajectoryBuilder(stoneToCrypto1.end())
+                .beginComposite()
+                .lineToPose(new Pose2d(firstColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 12))
+                .closeComposite()
+                .build();
 
         timings.addSplit("cryptoToPit2 gen");
 
@@ -181,7 +171,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         timings.addSplit("cryptoToPit2");
 
         Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
-                .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
 
@@ -232,22 +222,12 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump2");
 
-        Trajectory cryptoToPit3;
-        if (isNearColumn(secondColumn, robot.config.getAllianceColor())) {
-            cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
-                    .beginComposite()
-                    .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * 3 * Math.PI / 4))
-                    .lineTo(new Vector2d(0, yMultiplier * 12))
-                    .closeComposite()
-                    .build();
-        } else {
-            cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
-                    .beginComposite()
-                    .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * Math.PI / 4))
-                    .lineTo(new Vector2d(24, yMultiplier * 12))
-                    .closeComposite()
-                    .build();
-        }
+        Trajectory cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
+                .beginComposite()
+                .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 12))
+                .closeComposite()
+                .build();
 
         timings.addSplit("cryptoToPit3 gen");
 
@@ -263,7 +243,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         timings.addSplit("cryptoToPit3");
 
         Trajectory pitToCrypto3 = new TrajectoryBuilder(cryptoToPit3.end())
-                .splineThrough(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .lineToPose(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
 

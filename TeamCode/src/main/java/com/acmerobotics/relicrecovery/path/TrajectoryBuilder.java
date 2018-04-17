@@ -25,8 +25,7 @@ public class TrajectoryBuilder {
         compositeSegments = new ArrayList<>();
     }
 
-    public TrajectoryBuilder lineTo(Vector2d pos) {
-        Pose2d pose = new Pose2d(pos, currentPose.heading());
+    public TrajectoryBuilder lineToPose(Pose2d pose) {
         ParametricPath path = new LinePath(currentPose, pose);
         if (composite) {
             compositeSegments.add(path);
@@ -35,6 +34,10 @@ public class TrajectoryBuilder {
         }
         currentPose = path.end();
         return this;
+    }
+
+    public TrajectoryBuilder lineTo(Vector2d pos) {
+        return lineToPose(new Pose2d(pos, currentPose.heading()));
     }
 
     public TrajectoryBuilder turn(double angle) {

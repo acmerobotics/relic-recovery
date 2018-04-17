@@ -81,7 +81,7 @@ public class MecanumDrive extends Subsystem {
     public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
 
     public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
-    public static double PROXIMITY_SWIVEL_EXTEND = 0.09;
+    public static double PROXIMITY_SWIVEL_EXTEND = 0;
     public static double PROXIMITY_SWIVEL_RETRACT = 0.64;
 
     public static double ULTRASONIC_SWIVEL_EXTEND = 0.2;
