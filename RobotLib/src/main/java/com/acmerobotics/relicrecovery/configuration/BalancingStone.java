@@ -3,10 +3,10 @@ package com.acmerobotics.relicrecovery.configuration;
 import com.acmerobotics.library.localization.Vector2d;
 
 public enum BalancingStone {
-    NEAR_BLUE(0, AllianceColor.BLUE, new Vector2d(48, -48.5)),
-    FAR_BLUE(1, AllianceColor.BLUE, new Vector2d(-24, -48.5)),
-    NEAR_RED(2, AllianceColor.RED, new Vector2d(48, 48.5)),
-    FAR_RED(3, AllianceColor.RED, new Vector2d(-24, 48.5));
+    NEAR_BLUE(0, AllianceColor.BLUE, new Vector2d(48, -47.5)),
+    FAR_BLUE(1, AllianceColor.BLUE, new Vector2d(-24, -47.5)),
+    NEAR_RED(2, AllianceColor.RED, new Vector2d(48, 47.5)),
+    FAR_RED(3, AllianceColor.RED, new Vector2d(-24, 47.5));
 
     private int index;
     private AllianceColor allianceColor;

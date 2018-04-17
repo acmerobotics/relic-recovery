@@ -1,6 +1,7 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
 import com.acmerobotics.relicrecovery.path.parametric.LinePath;
 import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
@@ -94,7 +95,13 @@ public class TrajectoryUtil {
         MatOverlay overlay = new MatOverlay(field);
         overlay.setScalingFactor(field.width() / 144.0);
         drawTrajectory(overlay, trajectory, new Scalar(0, 255, 0));
-        Imgcodecs.imwrite(name + ".png", field);
+        for (double t = 0; t <= trajectory.duration(); t += 0.25) {
+            Vector2d pos = trajectory.getPose(t).pos();
+            overlay.fillCircle(new Point(-pos.y() + 72, -pos.x() + 72), 0.5, new Scalar(0, 255, 255));
+        }
+        File outputDir = new File("../out");
+        outputDir.mkdirs();
+        Imgcodecs.imwrite(new File(outputDir, name + ".png").getAbsolutePath(), field);
     }
 
     public static void drawTrajectory(Overlay overlay, Trajectory trajectory, Scalar color) {

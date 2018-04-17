@@ -20,8 +20,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class Intake extends Subsystem {
-    public static double SERVO_STOW_POSITION = 0.1;
-    public static double SERVO_RELEASE_POSITION = 0.3;
+    public static double SERVO_STOW_POSITION = 0.2;
+    public static double SERVO_RELEASE_POSITION = 0.5;
 
     public static double GLYPH_PRESENCE_THRESHOLD = 2.5; // in (theoretically, might actually be cm)
     public static double CURRENT_SMOOTHER_COEFF = 0.1;
@@ -40,7 +40,7 @@ public class Intake extends Subsystem {
     private DcMotor leftIntake, rightIntake;
     private Servo intakeRelease;
     private double leftIntakePower, rightIntakePower;
-    private boolean leftIntakeReversed, rightIntakeReversed, intakeBarStowed;
+    private boolean leftIntakeReversed, rightIntakeReversed, intakeBarStowed, readFrontDistance;
 
     private LynxI2cColorRangeSensor frontColorDistance, rearColorDistance;
 
@@ -56,8 +56,6 @@ public class Intake extends Subsystem {
 
         public double intakeFrontDistance;
         public double intakeRearDistance;
-        public boolean intakeHasFrontGlyph;
-        public boolean intakeHasRearGlyph;
         public int intakeGlyphCount;
 
         public double leftIntakeCurrent;
@@ -133,21 +131,32 @@ public class Intake extends Subsystem {
                     telemetryData.leftIntakeCurrent = leftCurrent;
                     telemetryData.rightIntakeCurrent = rightCurrent;
 
-                    // TODO: consider optimizing this to short circuit
-                    double frontDistance = frontColorDistance.getDistance(DistanceUnit.INCH);
-                    double rearDistance = rearColorDistance.getDistance(DistanceUnit.INCH);
-
-                    frontDistance = Double.isNaN(frontDistance) ? 20 : frontDistance;
-                    rearDistance = Double.isNaN(rearDistance) ? 20 : rearDistance;
+                    double frontDistance = 20, rearDistance = 20;
+                    if (readFrontDistance) {
+                        frontDistance = frontColorDistance.getDistance(DistanceUnit.INCH);
+                        frontDistance = Double.isNaN(frontDistance) ? 20 : frontDistance;
+                        if (frontDistance <= GLYPH_PRESENCE_THRESHOLD) {
+                            readFrontDistance = !readFrontDistance;
+                            rearDistance = rearColorDistance.getDistance(DistanceUnit.INCH);
+                            rearDistance = Double.isNaN(rearDistance) ? 20 : rearDistance;
+                        }
+                    } else {
+                        rearDistance = rearColorDistance.getDistance(DistanceUnit.INCH);
+                        rearDistance = Double.isNaN(rearDistance) ? 20 : rearDistance;
+                        if (rearDistance <= GLYPH_PRESENCE_THRESHOLD) {
+                            readFrontDistance = !readFrontDistance;
+                            frontDistance = frontColorDistance.getDistance(DistanceUnit.INCH);
+                            frontDistance = Double.isNaN(frontDistance) ? 20 : frontDistance;
+                        }
+                    }
 
                     boolean hasFrontGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
-                    boolean hasRearGlyph = rearDistance <= GLYPH_PRESENCE_THRESHOLD;
+                    boolean hasRearGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
+
                     int glyphCount = (hasFrontGlyph ? 1 : 0) + (hasRearGlyph ? 1 : 0);
 
                     telemetryData.intakeFrontDistance = frontDistance;
                     telemetryData.intakeRearDistance = rearDistance;
-                    telemetryData.intakeHasFrontGlyph = hasFrontGlyph;
-                    telemetryData.intakeHasRearGlyph = hasRearGlyph;
                     telemetryData.intakeGlyphCount = glyphCount;
 
                     if (leftIntakeReversed && leftCurrent < LOWER_CURRENT_THRESHOLD) {

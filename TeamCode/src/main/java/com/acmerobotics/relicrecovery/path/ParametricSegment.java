@@ -53,8 +53,12 @@ public class ParametricSegment implements TrajectorySegment {
     }
 
     @Override
-    public void trimRemainingDistance(double time) {
+    public void stopPrematurely(double time) {
         profile = MotionProfileGenerator.generateStoppingProfile(profile.get(time), MecanumDrive.AXIAL_CONSTRAINTS);
+    }
+
+    public double timeAtPos(double position) {
+        return profile.timeAtPos(position);
     }
 
     public ParametricPath path() {

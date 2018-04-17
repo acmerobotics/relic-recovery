@@ -11,10 +11,7 @@ public class LinePath implements ParametricPath {
     public LinePath(Pose2d start, Pose2d end) {
         this.start = start;
         this.end = end;
-        headingDelta = end.heading() - start.heading();
-        if (end.heading() < start.heading()) {
-            headingDelta -= 2 * Math.PI;
-        }
+        headingDelta = Angle.norm(end.heading() - start.heading());
     }
 
     @Override

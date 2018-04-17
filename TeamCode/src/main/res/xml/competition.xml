@@ -12,7 +12,7 @@
             <Servo name="dumpRelease" port="2" />
             <Servo name="ultrasonicSwivel" port="3" />
             <Servo name="proximitySwivel" port="4" />
-            <AnalogInput name="ultrasonicSensor" port="0" />
+            <AnalogInput name="ultrasonicSensor" port="1" />
             <AnalogInput name="proximitySensor" port="3" />
         </LynxModule>
         <LynxModule name="frontHub" port="2">
@@ -29,7 +29,5 @@
             <LynxColorSensor name="frontColorDistance" port="0" bus="0" />
             <LynxColorSensor name="rearColorDistance" port="0" bus="1" />
         </LynxModule>
-        <!--<Servo name="relicWrist" port="2" />-->
-        <!--<Servo name="relicFinger" port="3" />-->
     </LynxUsbDevice>
 </Robot>

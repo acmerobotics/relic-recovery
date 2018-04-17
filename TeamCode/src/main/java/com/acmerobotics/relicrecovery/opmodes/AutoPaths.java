@@ -3,6 +3,7 @@ package com.acmerobotics.relicrecovery.opmodes;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.path.Trajectory;

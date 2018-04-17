@@ -15,6 +15,7 @@ import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
@@ -22,7 +23,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
-@Autonomous(name = "4 Glyph Auto (Near)")
+@Disabled
+@Autonomous
 public class NearFourGlyphAuto extends AutoOpMode {
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION = new HashMap<>();
     static {
@@ -39,6 +41,17 @@ public class NearFourGlyphAuto extends AutoOpMode {
     protected void setup() {
         stone = robot.config.getBalancingStone();
         crypto = stone.getCryptobox();
+
+        if (stone == BalancingStone.FAR_BLUE|| stone == BalancingStone.FAR_RED) {
+            telemetry.log().add("Invalid balancing stone: " + stone + "!");
+            telemetry.update();
+
+            robot.sleep(1);
+
+            requestOpModeStop();
+
+            return;
+        }
 
         ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive);
         robot.addListener(() -> {
@@ -117,7 +130,6 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(1);
         robot.sleep(0.3 * pitToCrypto1.duration() - 0.5);
         robot.intake.setIntakePower(0);
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
 
@@ -176,7 +188,6 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.intake.setIntakePower(1);
         robot.sleep(0.3 * pitToCrypto2.duration() - 0.5);
         robot.intake.setIntakePower(0);
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.drive.waitForTrajectoryFollower();
         ultrasonicLocalizer.disableUltrasonicFeedback();

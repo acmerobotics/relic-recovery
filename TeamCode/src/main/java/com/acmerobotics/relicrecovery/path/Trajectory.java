@@ -1,6 +1,9 @@
 package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
+import com.acmerobotics.relicrecovery.path.parametric.Marker;
+import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,11 +65,11 @@ public class Trajectory {
         return endSegment().getAcceleration(endSegment().duration());
     }
 
-    public void trimRemainingDistance(double time) {
+    public void stopPrematurely(double time) {
         for (int i = 0; i < motionSegments.size(); i++) {
             TrajectorySegment motionSegment = motionSegments.get(i);
             if (time <= motionSegment.duration()) {
-                motionSegment.trimRemainingDistance(time);
+                motionSegment.stopPrematurely(time);
                 while (motionSegments.size() > i + 1) {
                     motionSegments.remove(endSegment());
                 }
@@ -82,5 +85,55 @@ public class Trajectory {
 
     public Pose2d end() {
         return endSegment().end();
+    }
+
+    public double getMarkerTime(String name) {
+        double duration = 0;
+        for (int i = 0; i < motionSegments.size(); i++) {
+            TrajectorySegment motionSegment = motionSegments.get(i);
+            if (motionSegment instanceof ParametricSegment) {
+                ParametricSegment parametricSegment = (ParametricSegment) motionSegment;
+                MarkerSearchResult result = findMarkerOnPath(name, parametricSegment.path());
+                if (result.found) {
+                    return duration + parametricSegment.timeAtPos(result.position);
+                }
+            }
+            duration += motionSegment.duration();
+        }
+        return Double.NaN;
+    }
+
+    private class MarkerSearchResult {
+        public final boolean found;
+        public final double position;
+
+        private MarkerSearchResult(boolean found, double position) {
+            this.found = found;
+            this.position = position;
+        }
+    }
+
+    private MarkerSearchResult findMarkerOnPath(String name, ParametricPath path) {
+        if (path instanceof Marker) {
+            Marker marker = (Marker) path;
+            if (marker.getName().equals(name)) {
+                return new MarkerSearchResult(true, 0);
+            } else {
+                return new MarkerSearchResult(false, 0);
+            }
+        } else if (path instanceof CompositePath) {
+            CompositePath compositePath = (CompositePath) path;
+            double markerPosition = 0;
+            for (ParametricPath subPath : compositePath.segments()) {
+                MarkerSearchResult result = findMarkerOnPath(name, subPath);
+                if (result.found) {
+                    return new MarkerSearchResult(true, result.position + markerPosition);
+                }
+                markerPosition += subPath.length();
+            }
+            return new MarkerSearchResult(false, compositePath.length());
+        } else {
+            return new MarkerSearchResult(false, path.length());
+        }
     }
 }

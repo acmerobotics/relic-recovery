@@ -10,33 +10,26 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
-    public static double MOUNTING_OFFSET = -2.5; // in, positive is towards the front
     public static double SMOOTHING_COEFF = 1;
 
-    // all offsets are measured in reference to the wall
-    public static double WALL_OFFSET = 0;
-    public static double FULL_COLUMN_OFFSET = 6;
-    public static double EMPTY_COLUMN_OFFSET = 2; // in
+    // linear regression: y = ax + b
+    // y: actual distance, x: raw ultrasonic distance
+    public static double COEFFICIENT_A = 0.906;
+    public static double COEFFICIENT_B = 9.462;
 
-    public enum UltrasonicTarget {
-        WALL,
-        FULL_COLUMN,
-        EMPTY_COLUMN
-    }
+    public static double MIN_DISTANCE = 16;
+
+    /** the weight of the ultrasonic readings in the complementary filter */
+    public static double ULTRASONIC_WEIGHT = 1;
 
     private boolean useUltrasonicFeedback;
     private ExponentialSmoother ultrasonicSmoother;
     private double ultrasonicDistance;
-    private UltrasonicTarget target = UltrasonicTarget.WALL;
 
     public UltrasonicLocalizer(MecanumDrive drive) {
         super(drive);
 
         ultrasonicSmoother = new ExponentialSmoother(SMOOTHING_COEFF);
-    }
-
-    public void setTarget(UltrasonicTarget target) {
-        this.target = target;
     }
 
     public void enableUltrasonicFeedback() {
@@ -48,11 +41,22 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
         useUltrasonicFeedback = false;
     }
 
+    /** complementary filter action */
+    public double combineEstimates(double deadReckoningEstimate, double ultrasonicEstimate) {
+        return (1 - ULTRASONIC_WEIGHT) * deadReckoningEstimate + ULTRASONIC_WEIGHT * ultrasonicEstimate;
+    }
+
     @Override
     public Vector2d update() {
-        Vector2d estimatedPosition = super.update();
+        super.update();
 
-        ultrasonicDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
+        double rawDistance = ultrasonicSmoother.update(drive.getUltrasonicDistance(DistanceUnit.INCH));
+
+        if (rawDistance <= MIN_DISTANCE) {
+            return estimatedPosition;
+        }
+
+        ultrasonicDistance = COEFFICIENT_A * rawDistance + COEFFICIENT_B;
 
         if (useUltrasonicFeedback) {
             Cryptobox closestCryptobox = Cryptobox.NEAR_BLUE;
@@ -65,32 +69,20 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
                 }
             }
 
-            double targetOffset;
-            switch (target) {
-                case WALL:
-                    targetOffset = WALL_OFFSET;
-                    break;
-                case FULL_COLUMN:
-                    targetOffset = FULL_COLUMN_OFFSET;
-                    break;
-                case EMPTY_COLUMN:
-                    targetOffset = EMPTY_COLUMN_OFFSET;
-                    break;
-                default:
-                    targetOffset = 0;
-            }
-
             if (ultrasonicDistance > drive.getMinUltrasonicDistance(DistanceUnit.INCH)) {
                 switch (closestCryptobox) {
                     case NEAR_BLUE:
-                        estimatedPosition = new Vector2d(estimatedPosition.x(), -72 + targetOffset + ultrasonicDistance + MOUNTING_OFFSET);
+                        estimatedPosition = new Vector2d(estimatedPosition.x(),
+                                combineEstimates(estimatedPosition.y(), -71 + ultrasonicDistance));
                         break;
                     case NEAR_RED:
-                        estimatedPosition = new Vector2d(estimatedPosition.x(), 72 - targetOffset - ultrasonicDistance - MOUNTING_OFFSET);
+                        estimatedPosition = new Vector2d(estimatedPosition.x(),
+                                combineEstimates(estimatedPosition.y(), 71 - ultrasonicDistance));
                         break;
                     case FAR_BLUE:
                     case FAR_RED:
-                        estimatedPosition = new Vector2d(-72 + targetOffset + ultrasonicDistance - MOUNTING_OFFSET, estimatedPosition.y());
+                        estimatedPosition = new Vector2d(combineEstimates(estimatedPosition.x(),
+                                -71 + ultrasonicDistance), estimatedPosition.y());
                         break;
                 }
             }

@@ -14,6 +14,7 @@ import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -23,7 +24,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
-@Autonomous(name = "3 Glyph Auto (Far)")
+@Autonomous
 public class FarThreeGlyphAuto extends AutoOpMode {
     private UltrasonicLocalizer ultrasonicLocalizer;
     private BalancingStone stone;
@@ -78,17 +79,15 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         boolean removeLeft = robot.config.getAllianceColor() == jewelPosition.rightColor();
 
-        if (removeLeft && robot.config.getAllianceColor() == AllianceColor.BLUE) {
-            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.LEFT);
-            robot.sleep(0.75);
-            raiseArmAndSlapper();
-        } else if (!removeLeft && robot.config.getAllianceColor() == AllianceColor.RED) {
-            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
-            robot.sleep(0.75);
-            raiseArmAndSlapper();
-        } else {
-            robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
-            robot.sleep(0.75);
+        if (robot.config.getAllianceColor() == AllianceColor.RED) {
+            if (!removeLeft) {
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.RIGHT);
+                robot.sleep(0.75);
+                raiseArmAndSlapper();
+            } else {
+                robot.jewelSlapper.setSlapperPosition(JewelSlapper.SlapperPosition.PARALLEL);
+                robot.sleep(0.75);
+            }
         }
 
         RelicRecoveryVuMark firstColumn = vuMark == RelicRecoveryVuMark.UNKNOWN ? RelicRecoveryVuMark.CENTER : vuMark;
@@ -101,11 +100,15 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(0, yMultiplier * LATERAL_BIAS));
 
         Trajectory stoneToCrypto = new TrajectoryBuilder(stonePose)
-                .lineTo(new Vector2d(-48, stonePose.y()))
-                .turn(robot.config.getAllianceColor() == AllianceColor.BLUE ? Math.PI : 0)
-                .lineTo(new Vector2d(-48, biasedFirstColumnPosition.y()))
+                .turnTo(removeLeft ? -Vector2d.EPSILON : Vector2d.EPSILON) // fun hack
+                .lineTo(new Vector2d(-44, stonePose.y()))
+                .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()))
+                .waitFor(0.25)
                 .build();
         robot.drive.setEstimatedPose(stoneToCrypto.start());
+        if (robot.config.getAllianceColor() == AllianceColor.BLUE) {
+            robot.drive.setVelocityPIDCoefficients(MecanumDrive.SLOW_VELOCITY_PID);
+        }
         robot.drive.followTrajectory(stoneToCrypto);
 
         robot.drive.extendProximitySwivel();
@@ -114,21 +117,21 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.sleep(0.5);
         raiseArmAndSlapper();
         robot.drive.waitForTrajectoryFollower();
+        robot.drive.setVelocityPIDCoefficients(MecanumDrive.NORMAL_VELOCITY_PID);
 
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
-
         robot.waitOneFullCycle();
+        ultrasonicLocalizer.disableUltrasonicFeedback();
 
         Vector2d estimatedPosition = robot.drive.getEstimatedPosition();
         Trajectory cryptoApproach1 = new TrajectoryBuilder(new Pose2d(estimatedPosition, stoneToCrypto.end().heading()))
                 .lineTo(new Vector2d(-56, biasedFirstColumnPosition.y()))
+                .waitFor(0.5)
                 .build();
 
         robot.drive.followTrajectory(cryptoApproach1);
         robot.drive.waitForTrajectoryFollower();
 
-        ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
 
         robot.drive.enableHeadingCorrection(cryptoApproach1.end().heading());
@@ -142,9 +145,9 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.sleep(0.5);
 
         Trajectory cryptoToPit = new TrajectoryBuilder(new Pose2d(-56, firstColumnPosition.y(), cryptoApproach1.end().heading()))
-                .lineTo(new Vector2d(-48, firstColumnPosition.y()))
-                .lineTo(new Vector2d(-48, yMultiplier * 16))
-                .turn(-Math.PI / 4 * yMultiplier)
+                .lineTo(new Vector2d(-44, firstColumnPosition.y()))
+                .lineTo(new Vector2d(-44, yMultiplier * 16))
+                .turnTo(-yMultiplier * Math.PI / 4)
                 .lineTo(new Vector2d(-12, yMultiplier * 16))
                 .forward(12)
                 .back(12)
@@ -156,33 +159,31 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
 
         Trajectory pitToCrypto = new TrajectoryBuilder(cryptoToPit.end())
-                .turn(Math.PI / 4 * yMultiplier)
-//                .lineTo(new Vector2d(-48, yMultiplier * 16))
-                .lineTo(new Vector2d(-48, biasedSecondColumnPosition.y()))
+                .turnTo(0)
+//                .lineTo(new Vector2d(-44, yMultiplier * 16))
+                .lineTo(new Vector2d(-44, biasedSecondColumnPosition.y()))
+                .waitFor(0.25)
                 .build();
         robot.drive.followTrajectory(pitToCrypto);
-        robot.sleep(0.2 * pitToCrypto.duration());
-        robot.intake.setIntakePower(-0.3);
-        robot.sleep(0.75);
+        robot.sleep(0.5 * pitToCrypto.duration());
         robot.intake.setIntakePower(1);
         robot.drive.extendUltrasonicSwivel();
         robot.drive.extendProximitySwivel();
         robot.drive.waitForTrajectoryFollower();
         robot.intake.setIntakePower(0);
 
-        ultrasonicLocalizer.setTarget(UltrasonicLocalizer.UltrasonicTarget.EMPTY_COLUMN);
         ultrasonicLocalizer.enableUltrasonicFeedback();
-
         robot.waitOneFullCycle();
+        ultrasonicLocalizer.disableUltrasonicFeedback();
 
         estimatedPosition = robot.drive.getEstimatedPosition();
         Trajectory cryptoApproach2 = new TrajectoryBuilder(new Pose2d(estimatedPosition, pitToCrypto.end().heading()))
                 .lineTo(new Vector2d(-56, biasedSecondColumnPosition.y()))
+                .waitFor(0.5)
                 .build();
 
         robot.drive.followTrajectory(cryptoApproach2);
         robot.drive.waitForTrajectoryFollower();
-        ultrasonicLocalizer.disableUltrasonicFeedback();
         robot.drive.retractUltrasonicSwivel();
 
         double elapsedTime = TimestampedData.getCurrentTime() - startTime;

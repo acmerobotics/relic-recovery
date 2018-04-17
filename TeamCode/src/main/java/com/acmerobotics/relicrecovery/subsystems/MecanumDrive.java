@@ -68,20 +68,20 @@ public class MecanumDrive extends Subsystem {
     public static final PIDCoefficients NORMAL_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
     public static final PIDCoefficients SLOW_VELOCITY_PID = new PIDCoefficients(10, 3, 1);
 
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(36.0, 40.0, 25.0, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
     public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
 
-    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.237, 0);
-    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
-    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.02, 0, 0, 0.0183, 0);
+    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.230, 0);
+    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.05, 0, 0, 0.0177, 0);
+    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.05, 0, 0, 0.0179, 0);
 
     // units in cm
-    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.025, 0, -0.01);
+    public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.01);
     public static double COLUMN_ALIGN_SETPOINT = 7;
-    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0;
+    public static double COLUMN_ALIGN_ALLOWED_ERROR = 0.5;
 
     public static double PROXIMITY_SMOOTHING_COEFF = 0.5;
-    public static double PROXIMITY_SWIVEL_EXTEND = 0.09;
+    public static double PROXIMITY_SWIVEL_EXTEND = 0;
     public static double PROXIMITY_SWIVEL_RETRACT = 0.64;
 
     public static double ULTRASONIC_SWIVEL_EXTEND = 0.2;
@@ -268,6 +268,7 @@ public class MecanumDrive extends Subsystem {
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
 
         columnAlignController = new PIDController(COLUMN_ALIGN_PID);
+        columnAlignController.setOutputBounds(-0.2, 0.2);
 
         proximitySmoother = new ExponentialSmoother(PROXIMITY_SMOOTHING_COEFF);
 
@@ -561,6 +562,19 @@ public class MecanumDrive extends Subsystem {
         }
     }
 
+    public void waitForMarker(String name) {
+        while (!Thread.currentThread().isInterrupted() && mode == Mode.FOLLOW_PATH) {
+            if (trajectoryFollower.getTrajectoryTime() >= trajectoryFollower.getTrajectory().getMarkerTime(name)) {
+                return;
+            }
+            try {
+                Thread.sleep(AutoOpMode.POLL_INTERVAL);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
     public Vector2d getEstimatedPosition() {
         return estimatedPose.pos();
     }
@@ -612,12 +626,6 @@ public class MecanumDrive extends Subsystem {
 
     public double getSideDistance(SharpGP2Y0A51SK0FProximitySensor.Surface surface, DistanceUnit unit) {
         return proximitySensor.getDistance(surface, unit);
-    }
-
-    public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {
-        for (int i = 0; i < 4; i++) {
-            motors[i].setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidCoefficients);
-        }
     }
 
     public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {

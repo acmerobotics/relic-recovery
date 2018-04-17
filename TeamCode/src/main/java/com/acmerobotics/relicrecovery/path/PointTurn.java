@@ -17,10 +17,7 @@ public class PointTurn implements TrajectorySegment {
         this.startPose = startPose;
         this.endHeading = endHeading;
         double startHeading = startPose.heading(), displacement;
-        displacement = endHeading - startHeading;
-        if (endHeading < startHeading) {
-            displacement -= 2 * Math.PI;
-        }
+        displacement = Angle.norm(endHeading - startHeading);
         MotionState start = new MotionState(0, 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(displacement, 0);
         profile = MotionProfileGenerator.generateProfile(start, goal, MecanumDrive.POINT_TURN_CONSTRAINTS);
@@ -43,7 +40,7 @@ public class PointTurn implements TrajectorySegment {
 
     @Override
     public Pose2d getPose(double time) {
-        return new Pose2d(startPose.pos(), Angle.norm(profile.get(time).x));
+        return new Pose2d(startPose.pos(), Angle.norm(startPose.heading() + profile.get(time).x));
     }
 
     @Override
@@ -57,7 +54,7 @@ public class PointTurn implements TrajectorySegment {
     }
 
     @Override
-    public void trimRemainingDistance(double time) {
+    public void stopPrematurely(double time) {
         // do nothing; TODO: is there something better to do here?
     }
 }

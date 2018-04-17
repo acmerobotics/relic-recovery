@@ -4,13 +4,14 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
+import com.acmerobotics.relicrecovery.path.Trajectory;
 import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Disabled
+//@Disabled
 @Autonomous
 public class UltrasonicMoveTest extends AutoOpMode {
     private UltrasonicLocalizer ultrasonicLocalizer;
@@ -18,38 +19,36 @@ public class UltrasonicMoveTest extends AutoOpMode {
     @Override
     protected void setup() {
         ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive);
-        ultrasonicLocalizer.enableUltrasonicFeedback();
         robot.addListener(() -> {
             robot.dashboard.getTelemetry().addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
             telemetry.addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
         });
         robot.drive.setLocalizer(ultrasonicLocalizer);
-        robot.drive.setEstimatedPose(new Pose2d(12, -24, Math.PI / 2));
+        robot.drive.extendUltrasonicSwivel();
     }
 
     @Override
     protected void run() {
-        robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(12, -24, Math.PI / 2))
-                .lineTo(new Vector2d(12, -54))
-                .build());
+        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(12, 0, Math.PI / 2))
+                .lineTo(new Vector2d(12, -36))
+                .waitFor(0.25)
+                .build();
+        robot.drive.setEstimatedPose(trajectory.start());
+        robot.drive.followTrajectory(trajectory);
         robot.drive.waitForTrajectoryFollower();
 
-        sleep(500);
+        ultrasonicLocalizer.enableUltrasonicFeedback();
+        robot.waitOneFullCycle();
+        ultrasonicLocalizer.disableUltrasonicFeedback();
 
-        robot.dumpBed.dump();
+        RobotLog.i("Distance: " + ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
 
-        sleep(1000);
-
-        robot.drive.setVelocity(new Vector2d(0.2, 0), 0);
-
-        sleep(750);
-
-        robot.drive.stop();
-
-        sleep(500);
-
-        robot.dumpBed.retract();
-
-        sleep(1000);
+        Trajectory trajectory2 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), Math.PI / 2))
+                .waitFor(10.0)
+                .lineTo(new Vector2d(12, -56))
+                .waitFor(0.5)
+                .build();
+        robot.drive.followTrajectory(trajectory2);
+        robot.drive.waitForTrajectoryFollower();
     }
 }
