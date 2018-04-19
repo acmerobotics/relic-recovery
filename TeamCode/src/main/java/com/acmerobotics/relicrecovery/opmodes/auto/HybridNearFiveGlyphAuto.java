@@ -155,6 +155,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
                 .lineToPose(new Pose2d(firstColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 12))
                 .closeComposite()
+                .forward(6)
                 .build();
 
         timings.addSplit("cryptoToPit2 gen");
@@ -227,6 +228,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
                 .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 12))
                 .closeComposite()
+                .forward(6)
                 .build();
 
         timings.addSplit("cryptoToPit3 gen");
