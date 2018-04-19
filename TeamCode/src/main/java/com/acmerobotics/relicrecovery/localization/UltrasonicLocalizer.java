@@ -10,7 +10,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Config
 public class UltrasonicLocalizer extends DeadReckoningLocalizer {
-    public static double SMOOTHING_COEFF = 1;
+    public static double SMOOTHING_COEFF = 0.75;
 
     // linear regression: y = ax + b
     // y: actual distance, x: raw ultrasonic distance
