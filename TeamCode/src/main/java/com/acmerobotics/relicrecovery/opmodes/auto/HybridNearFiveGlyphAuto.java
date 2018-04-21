@@ -145,8 +145,11 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
         timings.addSplit("columnAlign1");
 
         robot.drive.retractProximitySwivel();
-        robot.dumpBed.dump();
-        robot.sleep(0.5);
+
+        if (robot.intake.getGlyphCount() > 0) {
+            robot.dumpBed.dump();
+            robot.sleep(0.5);
+        }
 
         timings.addSplit("dump1");
 
@@ -155,7 +158,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
                 .lineToPose(new Pose2d(firstColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 12))
                 .closeComposite()
-                .forward(6)
+                .forward(9)
                 .build();
 
         timings.addSplit("cryptoToPit2 gen");
@@ -225,7 +228,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         Trajectory cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
                 .beginComposite()
-                .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
+                .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * 3 * Math.PI / 4))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 12))
                 .closeComposite()
                 .forward(6)
@@ -290,8 +293,10 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("columnAlign3");
 
-        robot.dumpBed.dump();
-        robot.sleep(0.5);
+        if (robot.intake.getGlyphCount() > 0) {
+            robot.dumpBed.dump();
+            robot.sleep(0.5);
+        }
 
         timings.addSplit("dump3");
 
