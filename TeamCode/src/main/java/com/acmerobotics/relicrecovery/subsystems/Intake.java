@@ -187,9 +187,9 @@ public class Intake extends Subsystem {
                     if (glyphCount < 2) {
                         if (leftIntakeReversed) {
                             leftIntakePower = -1;
-                            rightIntakePower = 1;
+                            rightIntakePower = -1;
                         } else if (rightIntakeReversed) {
-                            leftIntakePower = 1;
+                            leftIntakePower = -1;
                             rightIntakePower = -1;
                         } else {
                             leftIntakePower = 1;

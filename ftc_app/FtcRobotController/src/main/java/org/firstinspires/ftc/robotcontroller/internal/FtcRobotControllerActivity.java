@@ -245,6 +245,9 @@ public class FtcRobotControllerActivity extends Activity
       }
     }
 
+    // Default exception handler
+    Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler(this));
+
     context = this;
     utility = new Utility(this);
     DeviceNameManager.getInstance().start(deviceNameManagerStartResult);
