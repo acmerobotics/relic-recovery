@@ -35,8 +35,8 @@ public class DumpBed extends Subsystem {
     public static double BED_LEFT_UP_POSITION = 0;
     public static double BED_RIGHT_UP_POSITION = 0.85;
 
-    public static double BED_RELEASE_ENGAGE_POSITION = 0.34;
-    public static double BED_RELEASE_DISENGAGE_POSITION = 0.79;
+    public static double BED_RELEASE_ENGAGE_POSITION = 0.6;
+    public static double BED_RELEASE_DISENGAGE_POSITION = 0.1;
 
     public enum LiftMode {
         MANUAL,

@@ -103,7 +103,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
                 .turnTo(removeLeft ? -Vector2d.EPSILON : Vector2d.EPSILON) // fun hack
                 .lineTo(new Vector2d(-44, stonePose.y()))
                 .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()))
-                .waitFor(0.25)
+                .waitFor(1.0)
                 .build();
         robot.drive.setEstimatedPose(stoneToCrypto.start());
         if (robot.config.getAllianceColor() == AllianceColor.BLUE) {
@@ -161,8 +161,8 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto = new TrajectoryBuilder(cryptoToPit.end())
                 .turnTo(0)
 //                .lineTo(new Vector2d(-44, yMultiplier * 16))
-                .lineTo(new Vector2d(-44, biasedSecondColumnPosition.y()))
-                .waitFor(0.25)
+                .lineTo(new Vector2d(-40, biasedSecondColumnPosition.y()))
+                .waitFor(1.0)
                 .build();
         robot.drive.followTrajectory(pitToCrypto);
         robot.sleep(0.5 * pitToCrypto.duration());

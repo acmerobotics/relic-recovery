@@ -109,6 +109,19 @@ public class Intake extends Subsystem {
         intakeBarStowed = false;
     }
 
+    public int getGlyphCount() {
+        double frontDistance = frontColorDistance.getDistance(DistanceUnit.INCH);
+        frontDistance = Double.isNaN(frontDistance) ? 20 : frontDistance;
+
+        double rearDistance = rearColorDistance.getDistance(DistanceUnit.INCH);
+        rearDistance = Double.isNaN(rearDistance) ? 20 : rearDistance;
+
+        boolean hasFrontGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
+        boolean hasRearGlyph = rearDistance <= GLYPH_PRESENCE_THRESHOLD;
+
+        return (hasFrontGlyph ? 1 : 0) + (hasRearGlyph ? 1 : 0);
+    }
+
     @Override
     public void update() {
         telemetryData.intakeMode = mode;
@@ -151,7 +164,7 @@ public class Intake extends Subsystem {
                     }
 
                     boolean hasFrontGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
-                    boolean hasRearGlyph = frontDistance <= GLYPH_PRESENCE_THRESHOLD;
+                    boolean hasRearGlyph = rearDistance <= GLYPH_PRESENCE_THRESHOLD;
 
                     int glyphCount = (hasFrontGlyph ? 1 : 0) + (hasRearGlyph ? 1 : 0);
 
@@ -174,9 +187,9 @@ public class Intake extends Subsystem {
                     if (glyphCount < 2) {
                         if (leftIntakeReversed) {
                             leftIntakePower = -1;
-                            rightIntakePower = 1;
+                            rightIntakePower = -1;
                         } else if (rightIntakeReversed) {
-                            leftIntakePower = 1;
+                            leftIntakePower = -1;
                             rightIntakePower = -1;
                         } else {
                             leftIntakePower = 1;
