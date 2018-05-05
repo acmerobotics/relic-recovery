@@ -3,7 +3,6 @@ package com.acmerobotics.relicrecovery.path;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.vision.OpenCVStaticLoader;
 
@@ -18,7 +17,7 @@ public class TrajectoryGenerationTest {
     @Test
     public void drawTrajectory() {
         OpenCVStaticLoader.loadStaticLibs();
-        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(48, -48, Math.PI))
+        Trajectory trajectory = AutoPaths.trajectoryBuilder(new Pose2d(48, -48, Math.PI))
                 .beginComposite()
                 .lineTo(new Vector2d(36, -48))
                 .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
@@ -29,7 +28,7 @@ public class TrajectoryGenerationTest {
                 .splineThrough(new Pose2d(16, 0, 3 * Math.PI / 8))
                 .splineThrough(new Pose2d(12, -60, Math.PI / 2))
                 .build();
-        Trajectory trajectory2 = new TrajectoryBuilder(new Pose2d(48, -48, Math.PI))
+        Trajectory trajectory2 = AutoPaths.trajectoryBuilder(new Pose2d(48, -48, Math.PI))
                 .beginComposite()
                 .lineTo(new Vector2d(36, -48))
                 .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))

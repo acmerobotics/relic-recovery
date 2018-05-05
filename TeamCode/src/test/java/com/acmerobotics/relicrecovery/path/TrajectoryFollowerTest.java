@@ -2,11 +2,10 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.library.path.TrajectoryFollower;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 
 import org.junit.Ignore;
@@ -22,14 +21,14 @@ public class TrajectoryFollowerTest {
     @Ignore
     @Test
     public void simulateNoisyTrajectoryFollowing() throws IOException {
-//        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(0, 0, 0))
+//        Trajectory trajectory = AutoPaths.trajectoryBuilder(new Pose2d(0, 0, 0))
 //                .turn(3 * Math.PI / 8)
 //                .lineTo(new Vector2d(1, 1))
 //                .turn(-Math.PI / 2)
 //                .lineTo(new Vector2d(2, 3))
 //                .lineTo(new Vector2d(2, 5))
 //                .build();
-        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(48, -48, Math.PI))
+        Trajectory trajectory = AutoPaths.trajectoryBuilder(new Pose2d(48, -48, Math.PI))
                 .beginComposite()
                 .lineTo(new Vector2d(36, -48))
                 .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
@@ -83,7 +82,7 @@ public class TrajectoryFollowerTest {
     @Ignore
     @Test
     public void testTrajectoryFollower() throws IOException {
-        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(60, 0, Math.PI))
+        Trajectory trajectory = AutoPaths.trajectoryBuilder(new Pose2d(60, 0, Math.PI))
                 .splineThrough(new Pose2d(24, -24, Math.PI), new Pose2d(12, -52, Math.PI / 2))
                 .build();
         TrajectoryFollower follower = new TrajectoryFollower(

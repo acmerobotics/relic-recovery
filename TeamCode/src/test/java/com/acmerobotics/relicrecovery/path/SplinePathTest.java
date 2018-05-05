@@ -6,6 +6,7 @@ import com.acmerobotics.library.path.TrajectorySegment;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.library.path.parametric.CompositePath;
 import com.acmerobotics.library.path.parametric.ParametricPath;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,7 +23,7 @@ public class SplinePathTest {
                 new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2));
         writeParametricPath(spline, "simpleSpline");
 
-        TrajectorySegment motionSegment = new ParametricSegment(spline);
+        TrajectorySegment motionSegment = new ParametricSegment(spline, MecanumDrive.AXIAL_CONSTRAINTS);
         writePathMotionSegment(motionSegment, "simpleMotionSegment");
     }
 }
