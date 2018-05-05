@@ -39,7 +39,7 @@ public class CryptoPositionTest extends LinearOpMode {
         VuforiaCamera vuforiaCamera = new VuforiaCamera();
         CryptoboxTracker cryptoboxTracker = new CryptoboxTracker(AllianceColor.BLUE);
         CryptoboxLocalizer localizer = new CryptoboxLocalizer(cryptoboxTracker,
-                vuforiaCamera.getProperties(), new MecanumDrive(hardwareMap, telemetry));
+                vuforiaCamera.getProperties(), new MecanumDrive(hardwareMap));
         localizer.addListener((position, timestamp) -> visionPosition = position);
         vuforiaCamera.initialize();
 

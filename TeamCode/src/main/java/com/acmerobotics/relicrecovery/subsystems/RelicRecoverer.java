@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.library.dashboard.util.TelemetryUtil;
 import com.acmerobotics.library.hardware.CachingDcMotor;
 import com.acmerobotics.library.hardware.CachingServo;
 import com.acmerobotics.library.motion.PIDController;
@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import java.util.Map;
 
 /**
  * Created by ryanbrott on 1/11/18.
@@ -54,7 +54,6 @@ public class RelicRecoverer extends Subsystem {
 
     private ArmMode armMode = ArmMode.MANUAL;
 
-    private TelemetryEx telemetry;
     private TelemetryData telemetryData;
 
     private class TelemetryData {
@@ -66,8 +65,7 @@ public class RelicRecoverer extends Subsystem {
         public double relicArmError;
     }
 
-    public RelicRecoverer(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = new TelemetryEx(telemetry);
+    public RelicRecoverer(HardwareMap map) {
         telemetryData = new TelemetryData();
 
         relicArm = new CachingDcMotor(map.dcMotor.get("relicArm"));
@@ -125,7 +123,7 @@ public class RelicRecoverer extends Subsystem {
     }
 
     @Override
-    public void update() {
+    public Map<String, Object> update() {
         telemetryData.relicWristPosition = wristPosition;
         telemetryData.relicFingerClosed = fingerClosed;
 
@@ -166,6 +164,6 @@ public class RelicRecoverer extends Subsystem {
             relicFinger.setPosition(FINGER_OPEN_POSITION);
         }
 
-        telemetry.addDataObject(telemetryData);
+        return TelemetryUtil.objectToMap(telemetryData);
     }
 }

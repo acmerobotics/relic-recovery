@@ -6,9 +6,9 @@ import android.util.Log;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
-import com.acmerobotics.library.util.LoggingUtil;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
 import com.qualcomm.robotcore.util.GlobalWarningSource;
@@ -20,7 +20,9 @@ import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -46,6 +48,7 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
     private final List<Subsystem> subsystemsWithProblems;
     private final List<CountDownLatch> cycleLatches;
     private List<Telemetry> allTelemetry;
+    private Map<Subsystem, Telemetry> subsystemTelemetryMap;
     private CSVLoggingTelemetry robotTelemetry;
     private OpModeManagerImpl opModeManager;
     private ExecutorService updateExecutor;
@@ -66,10 +69,12 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
 
         allTelemetry = new ArrayList<>();
         subsystems = new ArrayList<>();
+        subsystemTelemetryMap = new HashMap<>();
 
         try {
+            drive = new MecanumDrive(opMode.hardwareMap);
             CSVLoggingTelemetry driveLogger = new CSVLoggingTelemetry(new File(logRoot, "Drive.csv"));
-            drive = new MecanumDrive(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), driveLogger));
+            subsystemTelemetryMap.put(drive, new MultipleTelemetry(dashboard.getTelemetry(), driveLogger));
             subsystems.add(drive);
             allTelemetry.add(driveLogger);
         } catch (IllegalArgumentException e) {
@@ -77,8 +82,9 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
         }
 
         try {
+            intake = new Intake(opMode.hardwareMap);
             CSVLoggingTelemetry intakeLogger = new CSVLoggingTelemetry(new File(logRoot, "Intake.csv"));
-            intake = new Intake(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), intakeLogger));
+            subsystemTelemetryMap.put(intake, new MultipleTelemetry(dashboard.getTelemetry(), intakeLogger));
             subsystems.add(intake);
             allTelemetry.add(intakeLogger);
         } catch (IllegalArgumentException e) {
@@ -86,8 +92,9 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
         }
 
         try {
+            dumpBed = new DumpBed(opMode.hardwareMap);
             CSVLoggingTelemetry dumpBedLogger = new CSVLoggingTelemetry(new File(logRoot, "DumpBed.csv"));
-            dumpBed = new DumpBed(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), dumpBedLogger));
+            subsystemTelemetryMap.put(dumpBed, new MultipleTelemetry(dashboard.getTelemetry(), dumpBedLogger));
             subsystems.add(dumpBed);
             allTelemetry.add(dumpBedLogger);
         } catch (IllegalArgumentException e) {
@@ -95,8 +102,9 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
         }
 
         try {
+            jewelSlapper = new JewelSlapper(opMode.hardwareMap);
             CSVLoggingTelemetry jewelSlapperLogger = new CSVLoggingTelemetry(new File(logRoot, "JewelSlapper.csv"));
-            jewelSlapper = new JewelSlapper(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), jewelSlapperLogger));
+            subsystemTelemetryMap.put(jewelSlapper, new MultipleTelemetry(dashboard.getTelemetry(), jewelSlapperLogger));
             subsystems.add(jewelSlapper);
             allTelemetry.add(jewelSlapperLogger);
         } catch (IllegalArgumentException e) {
@@ -104,8 +112,9 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
         }
 
         try {
+            relicRecoverer = new RelicRecoverer(opMode.hardwareMap);
             CSVLoggingTelemetry relicRecovererLogger = new CSVLoggingTelemetry(new File(logRoot, "RelicRecoverer.csv"));
-            relicRecoverer = new RelicRecoverer(opMode.hardwareMap, new MultipleTelemetry(dashboard.getTelemetry(), relicRecovererLogger));
+            subsystemTelemetryMap.put(relicRecoverer, new MultipleTelemetry(dashboard.getTelemetry(), relicRecovererLogger));
             subsystems.add(relicRecoverer);
             allTelemetry.add(relicRecovererLogger);
         } catch (IllegalArgumentException e) {
@@ -147,7 +156,11 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
                 for (Subsystem subsystem : subsystems) {
                     if (subsystem == null) continue;
                     try {
-                        subsystem.update();
+                        Map<String, Object> telemetry = subsystem.update();
+                        Telemetry subsystemTelemetry = subsystemTelemetryMap.get(telemetry);
+                        for (Map.Entry<String, Object> telemetryEntry : telemetry.entrySet()) {
+                            subsystemTelemetry.addData(telemetryEntry.getKey(), telemetryEntry.getValue().toString());
+                        }
                         synchronized (subsystemsWithProblems) {
                             if (subsystemsWithProblems.contains(subsystem)) {
                                 subsystemsWithProblems.remove(subsystem);

@@ -5,7 +5,7 @@ import android.util.Log;
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.library.dashboard.util.TelemetryUtil;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
@@ -39,12 +39,12 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Wheel layout (top view):
@@ -163,7 +163,6 @@ public class MecanumDrive extends Subsystem {
 
     private Canvas fieldOverlay;
 
-    private TelemetryEx telemetry;
     private TelemetryData telemetryData;
 
     public class TelemetryData {
@@ -198,8 +197,7 @@ public class MecanumDrive extends Subsystem {
         public boolean ultrasonicSwivelExtended;
     }
 
-    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = new TelemetryEx(telemetry);
+    public MecanumDrive(HardwareMap map) {
         this.telemetryData = new TelemetryData();
 
         this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
@@ -639,7 +637,7 @@ public class MecanumDrive extends Subsystem {
         return new TrajectoryBuilder(pose, AXIAL_CONSTRAINTS, POINT_TURN_CONSTRAINTS);
     }
 
-    public void update() {
+    public Map<String, Object> update() {
         invalidateCaches();
 
         telemetryData.driveMode = mode;
@@ -748,6 +746,6 @@ public class MecanumDrive extends Subsystem {
         fieldOverlay.setStroke("#3F51B5");
         DrawingUtil.drawMecanumRobot(fieldOverlay, estimatedPose);
 
-        telemetry.addDataObject(telemetryData);
+        return TelemetryUtil.objectToMap(telemetryData);
     }
 }
