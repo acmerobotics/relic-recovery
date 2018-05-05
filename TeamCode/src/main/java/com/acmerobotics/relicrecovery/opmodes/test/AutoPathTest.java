@@ -36,6 +36,6 @@ public class AutoPathTest extends OpMode {
         fieldOverlay.setStroke("#F44336");
         DrawingUtil.drawMecanumRobot(fieldOverlay, new Pose2d(
                 BalancingStone.NEAR_BLUE.getPosition(), 0));
-        dashboard.drawOverlay();
+        dashboard.getTelemetry().update();
     }
 }
