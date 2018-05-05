@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TelemetryPacket {
+    private long timestamp;
     private Map<String, String> data;
     private List<String> log;
     private Canvas fieldOverlay;
@@ -34,6 +35,10 @@ public class TelemetryPacket {
 
     public void addLine(String line) {
         log.add(line);
+    }
+
+    public void addTimestamp() {
+        timestamp = System.currentTimeMillis();
     }
 
     public Canvas fieldOverlay() {

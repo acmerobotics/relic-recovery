@@ -80,6 +80,7 @@ public class RobotDashboard {
 	}
 
 	public void sendTelemetryPacket(TelemetryPacket telemetryPacket) {
+		telemetryPacket.addTimestamp();
 		sendAll(new Message(MessageType.RECEIVE_TELEMETRY, telemetryPacket));
 	}
 
