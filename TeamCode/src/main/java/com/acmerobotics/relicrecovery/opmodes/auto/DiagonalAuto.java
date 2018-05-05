@@ -1,11 +1,10 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.path.Trajectory;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -53,7 +52,7 @@ public class DiagonalAuto extends AutoOpMode {
 
         robot.dumpBed.dump();
         sleep(500);
-        Trajectory cryptoToPit = new TrajectoryBuilder(stoneToCrypto.end())
+        Trajectory cryptoToPit = robot.drive.trajectoryBuilder(stoneToCrypto.end())
                 .forward(6)
                 .build();
         robot.drive.followTrajectory(cryptoToPit);

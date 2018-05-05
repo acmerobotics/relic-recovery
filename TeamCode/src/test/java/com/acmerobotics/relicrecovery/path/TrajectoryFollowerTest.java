@@ -2,6 +2,9 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.TrajectoryFollower;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;

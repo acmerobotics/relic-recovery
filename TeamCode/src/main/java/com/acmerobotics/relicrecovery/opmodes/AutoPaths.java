@@ -3,11 +3,11 @@ package com.acmerobotics.relicrecovery.opmodes;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.configuration.AllianceColor;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
@@ -29,6 +29,10 @@ public class AutoPaths {
         VUMARK_MAP.put(RelicRecoveryVuMark.LEFT, 1);
         VUMARK_MAP.put(RelicRecoveryVuMark.CENTER, 0);
         VUMARK_MAP.put(RelicRecoveryVuMark.RIGHT, -1);
+    }
+
+    public static TrajectoryBuilder trajectoryBuilder(Pose2d pose) {
+        return new TrajectoryBuilder(pose, MecanumDrive.AXIAL_CONSTRAINTS, MecanumDrive.POINT_TURN_CONSTRAINTS);
     }
 
     public static Pose2d getBalancingStonePose(BalancingStone stone) {
@@ -67,7 +71,7 @@ public class AutoPaths {
         switch (stone) {
             case NEAR_BLUE: {
                 double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
-                return new TrajectoryBuilder(stonePose)
+                return trajectoryBuilder(stonePose)
                         .lineTo(new Vector2d(cryptoboxX, -48))
                         .turn(-Math.PI / 2)
                         .lineTo(new Vector2d(cryptoboxX, -57))
@@ -75,7 +79,7 @@ public class AutoPaths {
             }
             case FAR_BLUE: {
                 double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
-                return new TrajectoryBuilder(stonePose)
+                return trajectoryBuilder(stonePose)
                         .lineTo(new Vector2d(-48, -48))
                         .turn(-Math.PI / 2)
                         .lineTo(new Vector2d(-48, cryptoboxY))
@@ -85,7 +89,7 @@ public class AutoPaths {
             }
             case FAR_RED: {
                 double cryptoboxY = 36 - CRYPTO_COL_WIDTH * vuMarkInt;
-                return new TrajectoryBuilder(stonePose)
+                return trajectoryBuilder(stonePose)
                         .lineTo(new Vector2d(-48, 48))
                         .turn(-Math.PI / 2)
                         .lineTo(new Vector2d(-48, cryptoboxY))
@@ -95,7 +99,7 @@ public class AutoPaths {
             }
             case NEAR_RED: {
                 double cryptoboxX = 12 - CRYPTO_COL_WIDTH * vuMarkInt;
-                return new TrajectoryBuilder(stonePose)
+                return trajectoryBuilder(stonePose)
                         .lineTo(new Vector2d(cryptoboxX, 48))
                         .turn(-Math.PI / 2)
                         .lineTo(new Vector2d(cryptoboxX, 57))
@@ -113,19 +117,19 @@ public class AutoPaths {
             case NEAR_BLUE: {
                 double cryptoboxX = 12 + CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX - 19, -48))
                             .turn(-Math.PI / 4)
                             .lineTo(new Vector2d(cryptoboxX - 9, -58))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX + 4 + 8 / Math.sqrt(3), -48))
                             .turn(-2 * Math.PI / 3)
                             .lineTo(new Vector2d(cryptoboxX + 4, -56))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX + 21, -48))
                             .turn(-3 * Math.PI / 4)
                             .lineTo(new Vector2d(cryptoboxX + 10, -59))
@@ -136,21 +140,21 @@ public class AutoPaths {
             case FAR_BLUE: {
                 double cryptoboxY = -36 - CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(-52, -48))
                             .lineTo(new Vector2d(-52, cryptoboxY + 13 + AutoOpMode.LATERAL_BIAS))
                             .turn(-3 * Math.PI / 4)
                             .lineTo(new Vector2d(-58, cryptoboxY + 7 + AutoOpMode.LATERAL_BIAS))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(-52, -48))
                             .lineTo(new Vector2d(-52, cryptoboxY - 14 + AutoOpMode.LATERAL_BIAS))
                             .turn(3 * Math.PI / 4)
                             .lineTo(new Vector2d(-58, cryptoboxY - 8 + AutoOpMode.LATERAL_BIAS))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(-52, -48))
                             .lineTo(new Vector2d(-52, cryptoboxY - 13 + AutoOpMode.LATERAL_BIAS))
                             .turn(3 * Math.PI / 4)
@@ -162,19 +166,19 @@ public class AutoPaths {
             case NEAR_RED: {
                 double cryptoboxX = 12 - CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX + 16, 48))
                             .turn(-Math.PI / 4)
                             .lineTo(new Vector2d(cryptoboxX + 6, 58))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX + 4 + 8 / Math.sqrt(3), 48))
                             .turn(-Math.PI / 3)
                             .lineTo(new Vector2d(cryptoboxX + 4, 56))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(cryptoboxX - 21, 48))
                             .turn(-3 * Math.PI / 4)
                             .lineTo(new Vector2d(cryptoboxX - 10, 59))
@@ -185,21 +189,21 @@ public class AutoPaths {
             case FAR_RED: {
                 double cryptoboxY = 36 - CRYPTO_COL_WIDTH * vuMarkInt;
                 if (vuMark == RelicRecoveryVuMark.LEFT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(-52, 48))
                             .lineTo(new Vector2d(-52, cryptoboxY + 13 - AutoOpMode.LATERAL_BIAS))
                             .turn(Math.PI / 4)
                             .lineTo(new Vector2d(-58, cryptoboxY + 7 - AutoOpMode.LATERAL_BIAS))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.CENTER) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(-52, 48))
                             .lineTo(new Vector2d(-52, cryptoboxY + 14 - AutoOpMode.LATERAL_BIAS))
                             .turn(Math.PI / 4)
                             .lineTo(new Vector2d(-58, cryptoboxY + 8 - AutoOpMode.LATERAL_BIAS))
                             .build();
                 } else if (vuMark == RelicRecoveryVuMark.RIGHT) {
-                    return new TrajectoryBuilder(stonePose)
+                    return trajectoryBuilder(stonePose)
                             .lineTo(new Vector2d(-52, 48))
                             .lineTo(new Vector2d(-52, cryptoboxY - 13 - AutoOpMode.LATERAL_BIAS))
                             .turn(-Math.PI / 4)

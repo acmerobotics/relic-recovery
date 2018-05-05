@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.path.parametric;
+package com.acmerobotics.library.path.parametric;
 
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;

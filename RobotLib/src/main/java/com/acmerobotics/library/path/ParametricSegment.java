@@ -1,22 +1,24 @@
-package com.acmerobotics.relicrecovery.path;
+package com.acmerobotics.library.path;
 
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.motion.MotionConstraints;
 import com.acmerobotics.library.motion.MotionGoal;
 import com.acmerobotics.library.motion.MotionProfile;
 import com.acmerobotics.library.motion.MotionProfileGenerator;
 import com.acmerobotics.library.motion.MotionState;
-import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
+import com.acmerobotics.library.path.parametric.ParametricPath;
 
 public class ParametricSegment implements TrajectorySegment {
     private ParametricPath path;
     private MotionProfile profile;
+    private MotionConstraints constraints;
 
-    public ParametricSegment(ParametricPath path) {
+    public ParametricSegment(ParametricPath path, MotionConstraints constraints) {
         this.path = path;
+        this.constraints = constraints;
         MotionState start = new MotionState(0, 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(path.length(), 0);
-        profile = MotionProfileGenerator.generateProfile(start, goal, MecanumDrive.AXIAL_CONSTRAINTS);
+        profile = MotionProfileGenerator.generateProfile(start, goal, constraints);
     }
 
     @Override
@@ -54,7 +56,7 @@ public class ParametricSegment implements TrajectorySegment {
 
     @Override
     public void stopPrematurely(double time) {
-        profile = MotionProfileGenerator.generateStoppingProfile(profile.get(time), MecanumDrive.AXIAL_CONSTRAINTS);
+        profile = MotionProfileGenerator.generateStoppingProfile(profile.get(time), constraints);
     }
 
     public double timeAtPos(double position) {

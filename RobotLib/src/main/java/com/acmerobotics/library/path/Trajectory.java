@@ -1,9 +1,9 @@
-package com.acmerobotics.relicrecovery.path;
+package com.acmerobotics.library.path;
 
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
-import com.acmerobotics.relicrecovery.path.parametric.Marker;
-import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
+import com.acmerobotics.library.path.parametric.CompositePath;
+import com.acmerobotics.library.path.parametric.Marker;
+import com.acmerobotics.library.path.parametric.ParametricPath;
 
 import java.util.ArrayList;
 import java.util.List;

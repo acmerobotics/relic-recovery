@@ -12,8 +12,8 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -115,7 +115,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
         Vector2d thirdColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, thirdColumn);
 
-        Trajectory stoneToCrypto1 = new TrajectoryBuilder(stonePose)
+        Trajectory stoneToCrypto1 = robot.drive.trajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turnTo(-yMultiplier * Math.PI / 2)
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
@@ -152,14 +152,14 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         Trajectory cryptoToPit2;
         if (firstColumn == RelicRecoveryVuMark.CENTER || isNearColumn(firstColumn, robot.config.getAllianceColor())) {
-            cryptoToPit2 = new TrajectoryBuilder(stoneToCrypto1.end())
+            cryptoToPit2 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
                     .beginComposite()
                     .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * 3 * Math.PI / 4))
                     .lineTo(new Vector2d(0, yMultiplier * 12))
                     .closeComposite()
                     .build();
         } else {
-            cryptoToPit2 = new TrajectoryBuilder(stoneToCrypto1.end())
+            cryptoToPit2 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
                     .beginComposite()
                     .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * Math.PI / 4))
                     .lineTo(new Vector2d(24, yMultiplier * 12))
@@ -180,7 +180,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("cryptoToPit2");
 
-        Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
+        Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
                 .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
@@ -201,7 +201,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
-        Trajectory cryptoApproach2 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto2.end().heading()))
+        Trajectory cryptoApproach2 = robot.drive.trajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto2.end().heading()))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
                 .waitFor(0.5)
                 .build();
@@ -234,14 +234,14 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         Trajectory cryptoToPit3;
         if (isNearColumn(secondColumn, robot.config.getAllianceColor())) {
-            cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
+            cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .beginComposite()
                     .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * 3 * Math.PI / 4))
                     .lineTo(new Vector2d(0, yMultiplier * 12))
                     .closeComposite()
                     .build();
         } else {
-            cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
+            cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .beginComposite()
                     .splineThrough(new Pose2d(12, yMultiplier * 24, -yMultiplier * Math.PI / 4))
                     .lineTo(new Vector2d(24, yMultiplier * 12))
@@ -262,7 +262,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("cryptoToPit3");
 
-        Trajectory pitToCrypto3 = new TrajectoryBuilder(cryptoToPit3.end())
+        Trajectory pitToCrypto3 = robot.drive.trajectoryBuilder(cryptoToPit3.end())
                 .splineThrough(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
@@ -283,7 +283,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
-        Trajectory cryptoApproach3 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto3.end().heading()))
+        Trajectory cryptoApproach3 = robot.drive.trajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto3.end().heading()))
                 .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 56))
                 .waitFor(0.5)
                 .build();
@@ -313,7 +313,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump3");
 
-        robot.drive.followTrajectory(new TrajectoryBuilder(cryptoApproach3.end())
+        robot.drive.followTrajectory(robot.drive.trajectoryBuilder(cryptoApproach3.end())
                 .forward(8)
                 .build());
 

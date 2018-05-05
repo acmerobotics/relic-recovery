@@ -1,13 +1,14 @@
-package com.acmerobotics.relicrecovery.path;
+package com.acmerobotics.library.path;
 
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.path.parametric.CompositePath;
-import com.acmerobotics.relicrecovery.path.parametric.LinePath;
-import com.acmerobotics.relicrecovery.path.parametric.Marker;
-import com.acmerobotics.relicrecovery.path.parametric.ParametricPath;
-import com.acmerobotics.relicrecovery.path.parametric.SplinePath;
+import com.acmerobotics.library.motion.MotionConstraints;
+import com.acmerobotics.library.path.parametric.CompositePath;
+import com.acmerobotics.library.path.parametric.LinePath;
+import com.acmerobotics.library.path.parametric.Marker;
+import com.acmerobotics.library.path.parametric.ParametricPath;
+import com.acmerobotics.library.path.parametric.SplinePath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,12 +16,15 @@ import java.util.List;
 
 public class TrajectoryBuilder {
     private Pose2d currentPose;
+    private MotionConstraints axialConstraints, pointTurnConstraints;
     private List<TrajectorySegment> motionSegments;
     private List<ParametricPath> compositeSegments;
     private boolean composite;
 
-    public TrajectoryBuilder(Pose2d pose) {
+    public TrajectoryBuilder(Pose2d pose, MotionConstraints axialConstraints, MotionConstraints pointTurnConstraints) {
         currentPose = pose;
+        this.axialConstraints = axialConstraints;
+        this.pointTurnConstraints = pointTurnConstraints;
         motionSegments = new ArrayList<>();
         compositeSegments = new ArrayList<>();
     }
@@ -30,7 +34,7 @@ public class TrajectoryBuilder {
         if (composite) {
             compositeSegments.add(path);
         } else {
-            motionSegments.add(new ParametricSegment(path));
+            motionSegments.add(new ParametricSegment(path, axialConstraints));
         }
         currentPose = path.end();
         return this;
@@ -45,7 +49,7 @@ public class TrajectoryBuilder {
     }
 
     public TrajectoryBuilder turnTo(double heading) {
-        PointTurn pointTurn = new PointTurn(currentPose, heading);
+        PointTurn pointTurn = new PointTurn(currentPose, heading, pointTurnConstraints);
         motionSegments.add(pointTurn);
         currentPose = new Pose2d(currentPose.pos(), heading);
         return this;
@@ -80,7 +84,7 @@ public class TrajectoryBuilder {
         if (composite) {
             compositeSegments.add(spline);
         } else {
-            motionSegments.add(new ParametricSegment(spline));
+            motionSegments.add(new ParametricSegment(spline, axialConstraints));
         }
         currentPose = spline.end();
         return this;
@@ -100,7 +104,7 @@ public class TrajectoryBuilder {
         if (composite) {
             compositeSegments.add(marker);
         } else {
-            motionSegments.add(new ParametricSegment(marker));
+            motionSegments.add(new ParametricSegment(marker, axialConstraints));
         }
         return this;
     }
@@ -115,7 +119,7 @@ public class TrajectoryBuilder {
 
     public TrajectoryBuilder closeComposite() {
         composite = false;
-        motionSegments.add(new ParametricSegment(new CompositePath(compositeSegments)));
+        motionSegments.add(new ParametricSegment(new CompositePath(compositeSegments), axialConstraints));
         compositeSegments = new ArrayList<>();
         return this;
     }

@@ -1,26 +1,26 @@
-package com.acmerobotics.relicrecovery.path;
+package com.acmerobotics.library.path;
 
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
+import com.acmerobotics.library.motion.MotionConstraints;
 import com.acmerobotics.library.motion.MotionGoal;
 import com.acmerobotics.library.motion.MotionProfile;
 import com.acmerobotics.library.motion.MotionProfileGenerator;
 import com.acmerobotics.library.motion.MotionState;
-import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 public class PointTurn implements TrajectorySegment {
     private Pose2d startPose;
     private double endHeading;
     private MotionProfile profile;
 
-    public PointTurn(Pose2d startPose, double endHeading) {
+    public PointTurn(Pose2d startPose, double endHeading, MotionConstraints constraints) {
         this.startPose = startPose;
         this.endHeading = endHeading;
         double startHeading = startPose.heading(), displacement;
         displacement = Angle.norm(endHeading - startHeading);
         MotionState start = new MotionState(0, 0, 0, 0, 0);
         MotionGoal goal = new MotionGoal(displacement, 0);
-        profile = MotionProfileGenerator.generateProfile(start, goal, MecanumDrive.POINT_TURN_CONSTRAINTS);
+        profile = MotionProfileGenerator.generateProfile(start, goal, constraints);
     }
 
     @Override

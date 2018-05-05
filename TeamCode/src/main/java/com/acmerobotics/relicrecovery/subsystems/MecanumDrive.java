@@ -9,6 +9,7 @@ import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.library.hardware.CachingDcMotorEx;
@@ -22,8 +23,8 @@ import com.acmerobotics.library.motion.MotionConstraints;
 import com.acmerobotics.library.motion.PIDController;
 import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
@@ -632,6 +633,10 @@ public class MecanumDrive extends Subsystem {
         for (int i = 0; i < 4; i++) {
             motors[i].setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidCoefficients);
         }
+    }
+
+    public TrajectoryBuilder trajectoryBuilder(Pose2d pose) {
+        return new TrajectoryBuilder(pose, AXIAL_CONSTRAINTS, POINT_TURN_CONSTRAINTS);
     }
 
     public void update() {

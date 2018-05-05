@@ -3,8 +3,8 @@ package com.acmerobotics.relicrecovery.opmodes.tuner;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
-import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
+import com.acmerobotics.library.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -84,11 +84,11 @@ public class LateralFFTuner extends LinearOpMode {
         robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));
 
         if (shouldTravelLeft) {
-            robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(0, 0, 0))
+            robot.drive.followTrajectory(robot.drive.trajectoryBuilder(new Pose2d(0, 0, 0))
                     .lineTo(new Vector2d(0, DISTANCE))
                     .build());
         } else {
-            robot.drive.followTrajectory(new TrajectoryBuilder(new Pose2d(0, 0, 0))
+            robot.drive.followTrajectory(robot.drive.trajectoryBuilder(new Pose2d(0, 0, 0))
                     .lineTo(new Vector2d(0, -DISTANCE))
                     .build());
         }
