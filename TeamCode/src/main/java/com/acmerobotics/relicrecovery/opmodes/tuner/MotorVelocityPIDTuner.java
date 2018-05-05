@@ -5,7 +5,7 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageType;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
+import com.acmerobotics.library.hardware.CachingDcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;

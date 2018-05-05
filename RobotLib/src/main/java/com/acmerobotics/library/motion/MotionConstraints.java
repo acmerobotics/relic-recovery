@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.motion;
+package com.acmerobotics.library.motion;
 
 /**
  * constraints for a motion profile

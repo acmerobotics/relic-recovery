@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.hardware;
+package com.acmerobotics.library.hardware;
 
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchImplOnSimple;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;

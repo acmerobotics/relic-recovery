@@ -1,6 +1,7 @@
-package com.acmerobotics.relicrecovery.motion;
+package com.acmerobotics.library.motion;
 
-import com.acmerobotics.relicrecovery.util.SuperArrayList;
+
+import com.acmerobotics.library.util.SuperArrayList;
 
 /**
  * used to generate jerk-controlled seven-segment motion profiles given start and goal conditions, and some constraints

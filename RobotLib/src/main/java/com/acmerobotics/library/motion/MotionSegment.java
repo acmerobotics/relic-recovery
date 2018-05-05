@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.motion;
+package com.acmerobotics.library.motion;
 
 /**
  * motion segment with constant jerk

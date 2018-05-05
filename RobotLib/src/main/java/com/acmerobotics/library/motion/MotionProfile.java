@@ -1,7 +1,7 @@
-package com.acmerobotics.relicrecovery.motion;
+package com.acmerobotics.library.motion;
 
 
-import com.acmerobotics.relicrecovery.util.SuperArrayList;
+import com.acmerobotics.library.util.SuperArrayList;
 
 /**
  * a list of continous motion segments

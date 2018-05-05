@@ -1,6 +1,7 @@
-package com.acmerobotics.relicrecovery.motion;
+package com.acmerobotics.library.motion;
 
-import com.acmerobotics.relicrecovery.util.MathUtil;
+
+import com.acmerobotics.library.util.MathUtil;
 
 /**
  *  fully defined state of one dimensional motion

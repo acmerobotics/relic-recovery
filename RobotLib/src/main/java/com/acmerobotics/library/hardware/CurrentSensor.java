@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.hardware;
+package com.acmerobotics.library.hardware;
 
 public interface CurrentSensor {
     /** @return current draw in amps */

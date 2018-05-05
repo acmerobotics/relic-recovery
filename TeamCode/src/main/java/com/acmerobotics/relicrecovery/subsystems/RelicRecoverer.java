@@ -2,9 +2,9 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
-import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
-import com.acmerobotics.relicrecovery.hardware.CachingServo;
-import com.acmerobotics.relicrecovery.motion.PIDController;
+import com.acmerobotics.library.hardware.CachingDcMotor;
+import com.acmerobotics.library.hardware.CachingServo;
+import com.acmerobotics.library.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;

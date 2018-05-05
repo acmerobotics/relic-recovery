@@ -3,7 +3,7 @@ package com.acmerobotics.relicrecovery.path;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
+import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 
 import org.junit.Ignore;

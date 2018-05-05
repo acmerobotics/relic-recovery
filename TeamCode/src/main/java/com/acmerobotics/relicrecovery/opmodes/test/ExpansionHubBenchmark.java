@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
+import com.acmerobotics.library.hardware.LynxOptimizedI2cSensorFactory;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;

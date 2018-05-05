@@ -2,10 +2,10 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.relicrecovery.motion.MotionGoal;
-import com.acmerobotics.relicrecovery.motion.MotionProfile;
-import com.acmerobotics.relicrecovery.motion.MotionProfileGenerator;
-import com.acmerobotics.relicrecovery.motion.MotionState;
+import com.acmerobotics.library.motion.MotionGoal;
+import com.acmerobotics.library.motion.MotionProfile;
+import com.acmerobotics.library.motion.MotionProfileGenerator;
+import com.acmerobotics.library.motion.MotionState;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 
 public class PointTurn implements TrajectorySegment {

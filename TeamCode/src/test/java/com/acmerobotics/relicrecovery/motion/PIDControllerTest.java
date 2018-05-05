@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.motion;
 
+import com.acmerobotics.library.motion.PIDController;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;

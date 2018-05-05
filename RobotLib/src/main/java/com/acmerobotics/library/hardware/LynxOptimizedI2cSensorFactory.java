@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.hardware;
+package com.acmerobotics.library.hardware;
 
 import com.qualcomm.hardware.lynx.LynxI2cDeviceSynchV1;
 import com.qualcomm.hardware.lynx.LynxModule;
