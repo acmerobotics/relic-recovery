@@ -9,9 +9,9 @@ import com.acmerobotics.library.path.parametric.CompositePath;
 import com.acmerobotics.library.path.parametric.LinePath;
 import com.acmerobotics.library.path.parametric.ParametricPath;
 import com.acmerobotics.library.path.parametric.SplinePath;
-import com.acmerobotics.relicrecovery.vision.MatOverlay;
+import com.acmerobotics.library.vision.MatOverlay;
 import com.acmerobotics.relicrecovery.vision.OpenCVStaticLoader;
-import com.acmerobotics.relicrecovery.vision.Overlay;
+import com.acmerobotics.library.vision.Overlay;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;

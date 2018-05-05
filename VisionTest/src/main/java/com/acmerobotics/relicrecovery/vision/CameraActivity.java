@@ -9,6 +9,11 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.library.vision.MatOverlay;
+import com.acmerobotics.library.vision.OpenCVCamera;
+import com.acmerobotics.library.vision.Overlay;
+import com.acmerobotics.library.vision.Tracker;
+import com.acmerobotics.library.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
 import org.opencv.android.BaseLoaderCallback;

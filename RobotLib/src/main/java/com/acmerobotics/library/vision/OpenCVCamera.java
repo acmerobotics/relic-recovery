@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.vision;
+package com.acmerobotics.library.vision;
 
 import android.view.SurfaceView;
 import android.view.ViewGroup;

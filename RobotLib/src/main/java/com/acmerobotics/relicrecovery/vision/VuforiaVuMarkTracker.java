@@ -1,5 +1,10 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import com.acmerobotics.library.vision.Overlay;
+import com.acmerobotics.library.vision.Tracker;
+import com.acmerobotics.library.vision.VisionCamera;
+import com.acmerobotics.library.vision.VuforiaCamera;
+
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;

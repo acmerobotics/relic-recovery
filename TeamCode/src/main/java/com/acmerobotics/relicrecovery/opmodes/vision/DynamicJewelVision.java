@@ -29,7 +29,7 @@
 package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.relicrecovery.vision.DynamicJewelTracker;
-import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
+import com.acmerobotics.library.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;

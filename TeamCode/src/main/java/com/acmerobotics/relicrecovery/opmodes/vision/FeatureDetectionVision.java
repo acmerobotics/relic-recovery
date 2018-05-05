@@ -1,9 +1,9 @@
 package com.acmerobotics.relicrecovery.opmodes.vision;
 
 import com.acmerobotics.relicrecovery.vision.FeatureDetectionVuMarkTracker;
-import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.OpenCVCamera;
-import com.acmerobotics.relicrecovery.vision.VisionCamera;
+import com.acmerobotics.library.vision.FpsTracker;
+import com.acmerobotics.library.vision.OpenCVCamera;
+import com.acmerobotics.library.vision.VisionCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;

@@ -3,6 +3,9 @@ package com.acmerobotics.relicrecovery.vision;
 import android.util.Log;
 
 import com.acmerobotics.library.R;
+import com.acmerobotics.library.vision.Overlay;
+import com.acmerobotics.library.vision.Tracker;
+import com.acmerobotics.library.vision.VisionCamera;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;

@@ -10,7 +10,7 @@ import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.library.util.DrawingUtil;
 import com.acmerobotics.relicrecovery.localization.CryptoboxLocalizer;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
-import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
+import com.acmerobotics.library.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
