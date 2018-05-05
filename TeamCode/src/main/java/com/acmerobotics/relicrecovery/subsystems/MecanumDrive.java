@@ -25,7 +25,7 @@ import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.library.path.Trajectory;
 import com.acmerobotics.library.path.TrajectoryFollower;
-import com.acmerobotics.relicrecovery.util.DrawingUtil;
+import com.acmerobotics.library.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
 import com.qualcomm.hardware.lynx.LynxModule;
