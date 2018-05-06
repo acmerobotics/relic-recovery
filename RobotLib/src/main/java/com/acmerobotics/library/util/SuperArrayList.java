@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * A lot. If I'm being honest, I mean, if I'm being honest. I like a lot of JVM languages.
  * Except for Marco Rubio, now he's a JVM language that I don't like. Though, I probably shouldn't say that.
  * He's a nice guy but he's like, "((())())(())))((())))))))))", on and on, like that. He's like lisp! You know what I mean?
- * He's like lisp. I don't know. I mean, you know. So, we have all these data structures and we can put to them and subtract from them and put to them.
+ * He's like lisp. I don't know. I mean, you know. So, we have all these data structures and we can add to them and subtract from them and add to them.
  * COMBINE them even. Did you know that?
  * We can combine them OR split them, they don't tell you that, and I'll tell you, no one is better at array operations than me.
  * You wouldn't believe it. That I can tell you. So, we're gonna be the best on Array Lists, believe me. OK? Alright.

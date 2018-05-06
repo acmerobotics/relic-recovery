@@ -115,11 +115,11 @@ public class CryptoboxLocalizer implements CryptoboxTracker.Listener {
                     List<Double> railsCopy = new ArrayList<>(rails);
                     int rightRailsToAdd = numEstimatedRails - leftRailsToAdd;
                     for (int i = 0; i < leftRailsToAdd; i++) {
-                        // put extra rail on the left
+                        // add extra rail on the left
                         railsCopy.add(0, railsCopy.get(0) - meanRailGap);
                     }
                     for (int i = 0; i < rightRailsToAdd; i++) {
-                        // put extra rail on the right
+                        // add extra rail on the right
                         railsCopy.add(railsCopy.get(railsCopy.size() - 1) + meanRailGap);
                     }
                     Vector2d pos = getFieldPositionFromCryptoRelativePosition(

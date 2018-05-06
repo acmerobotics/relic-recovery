@@ -63,7 +63,7 @@ public class PIDController {
     public double update(double error, double time) {
         // do the PID update
         double update = 0;
-        // put p error unconditionally
+        // add p error unconditionally
         update += coeff.p * error;
         if (shouldReset) {
             // special handling for first iteration

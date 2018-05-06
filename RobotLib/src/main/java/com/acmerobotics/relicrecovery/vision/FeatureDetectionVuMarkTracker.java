@@ -37,7 +37,7 @@ import java.util.List;
  * https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_feature2d/py_feature_homography/py_feature_homography.html#py-feature-homography
  */
 
-// TODO: clean up a little and potentially put more test points to ensure reliability
+// TODO: clean up a little and potentially add more test points to ensure reliability
 public class FeatureDetectionVuMarkTracker extends Tracker {
     public static final int BRIGHTNESS_THRESHOLD = 25;
 

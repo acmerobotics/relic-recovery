@@ -485,12 +485,12 @@ public class OldCryptoboxTracker extends Tracker {
             double meanRailGap = getMeanRailGap(rails);
             if (rails.get(0) < meanRailGap) {
                 while (actualWidth - rails.get(rails.size() - 1) > meanRailGap && rails.size() < 4) {
-                    // put extra rail on the left
+                    // add extra rail on the left
                     rails.add(0, rails.get(0) - meanRailGap);
                 }
             } else if (actualWidth - rails.get(rails.size() - 1) < meanRailGap) {
                 while (rails.get(0) > meanRailGap && rails.size() < 4) {
-                    // put extra rail on the right
+                    // add extra rail on the right
                     rails.add(rails.get(rails.size() - 1) + meanRailGap);
                 }
             }
