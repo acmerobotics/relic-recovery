@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.TimestampedData;
-import com.acmerobotics.library.hardware.LynxOptimizedI2cSensorFactory;
+import com.acmerobotics.library.hardware.LynxOptimizedI2cFactory;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
@@ -42,7 +42,7 @@ public class ExpansionHubBenchmark extends LinearOpMode {
             imu.close();
 
             // IMU (optimized) test
-            imu = new LynxEmbeddedIMU(LynxOptimizedI2cSensorFactory.createLynxI2cDeviceSync(module, 0));
+            imu = new LynxEmbeddedIMU(LynxOptimizedI2cFactory.createLynxI2cDeviceSynch(module, 0));
             imu.initialize(new BNO055IMU.Parameters());
             telemetry.addLine("IMU (optimized): " + formatResults(benchmarkOperation(imu::getAngularOrientation, TRIALS)));
             telemetry.update();
@@ -63,7 +63,7 @@ public class ExpansionHubBenchmark extends LinearOpMode {
 
             // Color (optimized test)
             // TODO have this automatically detect which bus the color range sensor is plugged into
-            colorRangeSensor = new LynxI2cColorRangeSensor(LynxOptimizedI2cSensorFactory.createLynxI2cDeviceSync(module, 1));
+            colorRangeSensor = new LynxI2cColorRangeSensor(LynxOptimizedI2cFactory.createLynxI2cDeviceSynch(module, 1));
             colorRangeSensor.initialize();
             telemetry.addLine("Color (optimized): " + formatResults(benchmarkOperation(colorRangeSensor::getNormalizedColors, TRIALS)));
             telemetry.update();

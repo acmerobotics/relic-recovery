@@ -7,7 +7,7 @@ import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.util.TelemetryUtil;
 import com.acmerobotics.library.hardware.CachingDcMotorEx;
 import com.acmerobotics.library.hardware.CachingServo;
-import com.acmerobotics.library.hardware.LynxOptimizedI2cSensorFactory;
+import com.acmerobotics.library.hardware.LynxOptimizedI2cFactory;
 import com.acmerobotics.library.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.library.hardware.SharpGP2Y0A51SK0FProximitySensor;
 import com.acmerobotics.library.localization.Angle;
@@ -200,7 +200,7 @@ public class MecanumDrive extends Subsystem {
         frontHub = map.get(LynxModule.class, "frontHub");
         rearHub = map.get(LynxModule.class, "rearHub");
 
-        I2cDeviceSynch imuI2cDevice = LynxOptimizedI2cSensorFactory.createLynxI2cDeviceSync(frontHub, IMU_PORT);
+        I2cDeviceSynch imuI2cDevice = LynxOptimizedI2cFactory.createLynxI2cDeviceSynch(frontHub, IMU_PORT);
         imuI2cDevice.setUserConfiguredName("imu");
         imu = new LynxEmbeddedIMU(imuI2cDevice);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
