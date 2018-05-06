@@ -15,7 +15,7 @@ public class HeadingTest2 extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         RobotDashboard dashboard = RobotDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-        MecanumDrive drive = new MecanumDrive(hardwareMap, dashboard.getTelemetry());
+        MecanumDrive drive = new MecanumDrive(hardwareMap);
         drive.setEstimatedPose(new Pose2d(0, 0, Math.PI));
         drive.enablePositionEstimation();
 
@@ -25,7 +25,7 @@ public class HeadingTest2 extends LinearOpMode {
             Pose2d estimatedPose = drive.getEstimatedPose();
             telemetry.addData("heading", estimatedPose.heading());
             telemetry.update();
-            drive.update();
+            drive.update(null);
         }
     }
 }

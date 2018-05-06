@@ -10,7 +10,7 @@ import com.acmerobotics.library.dashboard.config.options.Option;
 import com.acmerobotics.library.dashboard.message.Message;
 import com.acmerobotics.library.dashboard.message.MessageDeserializer;
 import com.acmerobotics.library.dashboard.message.MessageType;
-import com.acmerobotics.library.dashboard.telemetry.DashboardTelemetry;
+import com.acmerobotics.library.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.library.dashboard.util.ClassFilter;
 import com.acmerobotics.library.dashboard.util.ClasspathScanner;
 import com.google.gson.Gson;
@@ -37,7 +37,7 @@ public class RobotDashboard {
 	// TODO I'm sure there's a better way to make a static singleton
 	public static RobotDashboard open(Context ctx, EventLoop eventLoop) {
 		// the eventLoop can be used to get the op mode manager and monitor op mode activity
-		dashboard = new RobotDashboard(ctx);
+		dashboard = new RobotDashboard();
 		return dashboard;
 	}
 
@@ -45,17 +45,15 @@ public class RobotDashboard {
 		return dashboard;
 	};
 
-	private DashboardTelemetry telemetry;
+	private TelemetryPacket.Adapter telemetry;
 	private List<RobotWebSocket> sockets;
 	private RobotWebSocketServer server;
 	private Configuration configuration;
-	private Canvas fieldOverlay;
-	
-	private RobotDashboard(Context ctx) {
+
+	private RobotDashboard() {
 		sockets = new ArrayList<>();
-		fieldOverlay = new Canvas();
 		configuration = new Configuration();
-		telemetry = new DashboardTelemetry(this);
+		telemetry = new TelemetryPacket.Adapter(this::sendTelemetryPacket);
 
         ClasspathScanner scanner = new ClasspathScanner(new ClassFilter() {
             @Override
@@ -81,12 +79,13 @@ public class RobotDashboard {
 		}
 	}
 
-	public void addOption(String name, Option option) {
-		configuration.addOption(name, option);
+	public void sendTelemetryPacket(TelemetryPacket telemetryPacket) {
+		telemetryPacket.addTimestamp();
+		sendAll(new Message(MessageType.RECEIVE_TELEMETRY, telemetryPacket));
 	}
 
-	public void resetConfigurationForOpMode() {
-		telemetry.resetTelemetryForOpMode();
+	public void addOption(String name, Option option) {
+		configuration.addOption(name, option);
 	}
 
 	public void registerConfigClass(Class<?> configClass, String name) {
@@ -104,12 +103,7 @@ public class RobotDashboard {
     }
 
     public Canvas getFieldOverlay() {
-        return fieldOverlay;
-    }
-
-    public void drawOverlay() {
-        sendAll(new Message(MessageType.RECEIVE_FIELD_OVERLAY, fieldOverlay));
-        fieldOverlay.clear();
+        return telemetry.getCurrentPacket().fieldOverlay();
     }
 
     public JsonElement getConfigSchemaJson() {

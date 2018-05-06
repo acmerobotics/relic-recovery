@@ -3,8 +3,8 @@ package com.acmerobotics.relicrecovery.opmodes.vision;
 import android.graphics.Bitmap;
 
 import com.acmerobotics.library.cameraoverlay.CameraStreamServer;
-import com.acmerobotics.relicrecovery.vision.FpsTracker;
-import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
+import com.acmerobotics.library.vision.FpsTracker;
+import com.acmerobotics.library.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;

@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
+import com.acmerobotics.library.hardware.LynxOptimizedI2cSensorFactory;
 import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;

@@ -2,29 +2,29 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import android.util.Log;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.library.dashboard.util.TelemetryUtil;
+import com.acmerobotics.library.hardware.CachingDcMotorEx;
+import com.acmerobotics.library.hardware.CachingServo;
+import com.acmerobotics.library.hardware.LynxOptimizedI2cSensorFactory;
+import com.acmerobotics.library.hardware.MaxSonarEZ1UltrasonicSensor;
+import com.acmerobotics.library.hardware.SharpGP2Y0A51SK0FProximitySensor;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.motion.MotionConstraints;
+import com.acmerobotics.library.motion.PIDController;
+import com.acmerobotics.library.motion.PIDFCoefficients;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.TrajectoryFollower;
+import com.acmerobotics.library.util.DrawingUtil;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
-import com.acmerobotics.relicrecovery.hardware.CachingDcMotorEx;
-import com.acmerobotics.relicrecovery.hardware.CachingServo;
-import com.acmerobotics.relicrecovery.hardware.LynxOptimizedI2cSensorFactory;
-import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
-import com.acmerobotics.relicrecovery.hardware.SharpGP2Y0A51SK0FProximitySensor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
 import com.acmerobotics.relicrecovery.localization.Localizer;
-import com.acmerobotics.relicrecovery.motion.MotionConstraints;
-import com.acmerobotics.relicrecovery.motion.PIDController;
-import com.acmerobotics.relicrecovery.motion.PIDFCoefficients;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryFollower;
-import com.acmerobotics.relicrecovery.util.DrawingUtil;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -38,12 +38,12 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Wheel layout (top view):
@@ -160,9 +160,6 @@ public class MecanumDrive extends Subsystem {
 
     private LynxModule frontHub, rearHub;
 
-    private Canvas fieldOverlay;
-
-    private TelemetryEx telemetry;
     private TelemetryData telemetryData;
 
     public class TelemetryData {
@@ -197,11 +194,8 @@ public class MecanumDrive extends Subsystem {
         public boolean ultrasonicSwivelExtended;
     }
 
-    public MecanumDrive(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = new TelemetryEx(telemetry);
+    public MecanumDrive(HardwareMap map) {
         this.telemetryData = new TelemetryData();
-
-        this.fieldOverlay = RobotDashboard.getInstance().getFieldOverlay();
 
         frontHub = map.get(LynxModule.class, "frontHub");
         rearHub = map.get(LynxModule.class, "rearHub");
@@ -634,7 +628,11 @@ public class MecanumDrive extends Subsystem {
         }
     }
 
-    public void update() {
+    public TrajectoryBuilder trajectoryBuilder(Pose2d pose) {
+        return new TrajectoryBuilder(pose, AXIAL_CONSTRAINTS, POINT_TURN_CONSTRAINTS);
+    }
+
+    public Map<String, Object> update(Canvas fieldOverlay) {
         invalidateCaches();
 
         telemetryData.driveMode = mode;
@@ -730,19 +728,21 @@ public class MecanumDrive extends Subsystem {
         telemetryData.estimatedY = estimatedPose.y();
         telemetryData.estimatedHeading = estimatedPose.heading();
 
-        if (trajectoryFollower.getTrajectory() != null) {
-            fieldOverlay.setStroke("#4CAF50");
-            DrawingUtil.drawTrajectory(fieldOverlay, trajectoryFollower.getTrajectory());
+        if (fieldOverlay != null) {
+            if (trajectoryFollower.getTrajectory() != null) {
+                fieldOverlay.setStroke("#4CAF50");
+                DrawingUtil.drawTrajectory(fieldOverlay, trajectoryFollower.getTrajectory());
+            }
+
+            if (trajectoryFollower.getPose() != null) {
+                fieldOverlay.setStroke("#F44336");
+                DrawingUtil.drawMecanumRobot(fieldOverlay, trajectoryFollower.getPose());
+            }
+
+            fieldOverlay.setStroke("#3F51B5");
+            DrawingUtil.drawMecanumRobot(fieldOverlay, estimatedPose);
         }
 
-        if (trajectoryFollower.getPose() != null) {
-            fieldOverlay.setStroke("#F44336");
-            DrawingUtil.drawMecanumRobot(fieldOverlay, trajectoryFollower.getPose());
-        }
-
-        fieldOverlay.setStroke("#3F51B5");
-        DrawingUtil.drawMecanumRobot(fieldOverlay, estimatedPose);
-
-        telemetry.addDataObject(telemetryData);
+        return TelemetryUtil.objectToMap(telemetryData);
     }
 }

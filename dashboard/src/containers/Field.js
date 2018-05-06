@@ -142,8 +142,8 @@ export default class Field {
         break;
       }
       default:
-        console.log(`unknown op: ${op.type}`);
-        console.log(op);
+        console.error(`unknown op: ${op.type}`);
+        console.error(op);
       }
     });
   }

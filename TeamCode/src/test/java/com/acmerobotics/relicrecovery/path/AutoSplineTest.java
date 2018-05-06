@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.path;
 
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.path.Trajectory;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 
@@ -14,7 +15,7 @@ public class AutoSplineTest {
     @Ignore
     @Test
     public void testSixGlyphNear() {
-        Trajectory trajectory = new TrajectoryBuilder(
+        Trajectory trajectory = AutoPaths.trajectoryBuilder(
                 new Pose2d(BalancingStone.NEAR_BLUE.getPosition(), Math.PI))
                 .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -48))
                 .turnTo(Math.PI / 2)
@@ -42,7 +43,7 @@ public class AutoSplineTest {
     @Ignore
     @Test
     public void testSixGlyphFar() {
-        Trajectory trajectory = new TrajectoryBuilder(
+        Trajectory trajectory = AutoPaths.trajectoryBuilder(
                 new Pose2d(BalancingStone.FAR_BLUE.getPosition(), Math.PI))
                 .turnTo(Math.PI / 2)
                 .beginComposite()

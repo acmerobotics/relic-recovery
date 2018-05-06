@@ -11,8 +11,8 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
@@ -99,7 +99,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
         Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(0, yMultiplier * LATERAL_BIAS));
 
-        Trajectory stoneToCrypto = new TrajectoryBuilder(stonePose)
+        Trajectory stoneToCrypto = robot.drive.trajectoryBuilder(stonePose)
                 .turnTo(removeLeft ? -Vector2d.EPSILON : Vector2d.EPSILON) // fun hack
                 .lineTo(new Vector2d(-44, stonePose.y()))
                 .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()))
@@ -124,7 +124,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
         Vector2d estimatedPosition = robot.drive.getEstimatedPosition();
-        Trajectory cryptoApproach1 = new TrajectoryBuilder(new Pose2d(estimatedPosition, stoneToCrypto.end().heading()))
+        Trajectory cryptoApproach1 = robot.drive.trajectoryBuilder(new Pose2d(estimatedPosition, stoneToCrypto.end().heading()))
                 .lineTo(new Vector2d(-56, biasedFirstColumnPosition.y()))
                 .waitFor(0.5)
                 .build();
@@ -144,7 +144,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.dumpBed.dump();
         robot.sleep(0.5);
 
-        Trajectory cryptoToPit = new TrajectoryBuilder(new Pose2d(-56, firstColumnPosition.y(), cryptoApproach1.end().heading()))
+        Trajectory cryptoToPit = robot.drive.trajectoryBuilder(new Pose2d(-56, firstColumnPosition.y(), cryptoApproach1.end().heading()))
                 .lineTo(new Vector2d(-44, firstColumnPosition.y()))
                 .lineTo(new Vector2d(-44, yMultiplier * 16))
                 .turnTo(-yMultiplier * Math.PI / 4)
@@ -158,7 +158,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.intake.autoIntake();
         robot.drive.waitForTrajectoryFollower();
 
-        Trajectory pitToCrypto = new TrajectoryBuilder(cryptoToPit.end())
+        Trajectory pitToCrypto = robot.drive.trajectoryBuilder(cryptoToPit.end())
                 .turnTo(0)
 //                .lineTo(new Vector2d(-44, yMultiplier * 16))
                 .lineTo(new Vector2d(-40, biasedSecondColumnPosition.y()))
@@ -177,7 +177,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
         estimatedPosition = robot.drive.getEstimatedPosition();
-        Trajectory cryptoApproach2 = new TrajectoryBuilder(new Pose2d(estimatedPosition, pitToCrypto.end().heading()))
+        Trajectory cryptoApproach2 = robot.drive.trajectoryBuilder(new Pose2d(estimatedPosition, pitToCrypto.end().heading()))
                 .lineTo(new Vector2d(-56, biasedSecondColumnPosition.y()))
                 .waitFor(0.5)
                 .build();
@@ -198,14 +198,14 @@ public class FarThreeGlyphAuto extends AutoOpMode {
             robot.dumpBed.dump();
             robot.sleep(0.5);
 
-            robot.drive.followTrajectory(new TrajectoryBuilder(cryptoApproach2.end())
+            robot.drive.followTrajectory(robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .forward(6)
                     .build());
             robot.drive.waitForTrajectoryFollower();
             robot.dumpBed.retract();
         } else {
             robot.drive.retractProximitySwivel();
-            robot.drive.followTrajectory(new TrajectoryBuilder(cryptoApproach2.end())
+            robot.drive.followTrajectory(robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .forward(6)
                     .build());
             robot.drive.waitForTrajectoryFollower();

@@ -12,8 +12,8 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -99,7 +99,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
 
-        Trajectory stoneToPit = new TrajectoryBuilder(stonePose)
+        Trajectory stoneToPit = robot.drive.trajectoryBuilder(stonePose)
                 .turnTo(-yMultiplier * Math.PI / 2)
                 .beginComposite()
                 .lineTo(new Vector2d(stonePose.x(),  yMultiplier * 36))
@@ -117,7 +117,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
 
         timings.addSplit("stoneToPit");
 
-        Trajectory pitToCrypto1 = new TrajectoryBuilder(stoneToPit.end())
+        Trajectory pitToCrypto1 = robot.drive.trajectoryBuilder(stoneToPit.end())
                 .splineThrough(new Pose2d(-24, yMultiplier * 12, 0), new Pose2d(-56, firstColumnPosition.y(), 0))
                 .waitFor(0.5)
                 .build();
@@ -152,7 +152,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump1");
 
-        Trajectory cryptoToPit2 = new TrajectoryBuilder(pitToCrypto1.end())
+        Trajectory cryptoToPit2 = robot.drive.trajectoryBuilder(pitToCrypto1.end())
                 .splineThrough(new Pose2d(-24, yMultiplier * 12, 0), new Pose2d(0, 0, -yMultiplier * Math.PI / 4))
                 .build();
 
@@ -169,7 +169,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
 
         timings.addSplit("cryptoToPit2");
 
-        Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
+        Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
                 .splineThrough(new Pose2d(-16, yMultiplier * 12, 0), new Pose2d(-40, secondColumnPosition.y(), 0))
                 .waitFor(0.25)
                 .build();
@@ -193,7 +193,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
-        Trajectory cryptoApproach2 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto2.end().heading()))
+        Trajectory cryptoApproach2 = robot.drive.trajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto2.end().heading()))
                 .lineTo(new Vector2d(-56, secondColumnPosition.y()))
                 .waitFor(0.5)
                 .build();
@@ -222,7 +222,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump2");
 
-        robot.drive.followTrajectory(new TrajectoryBuilder(cryptoApproach2.end())
+        robot.drive.followTrajectory(robot.drive.trajectoryBuilder(cryptoApproach2.end())
                 .forward(8)
                 .build());
 

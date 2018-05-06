@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 //@Disabled
@@ -14,7 +14,7 @@ public class TurnTest extends AutoOpMode {
 
     @Override
     protected void run() {
-        robot.drive.followTrajectory(new TrajectoryBuilder(robot.drive.getEstimatedPose())
+        robot.drive.followTrajectory(robot.drive.trajectoryBuilder(robot.drive.getEstimatedPose())
                 .turn(Math.PI)
                 .waitFor(0.5)
                 .build());

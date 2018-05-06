@@ -2,11 +2,12 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import android.util.Log;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
+import com.acmerobotics.library.dashboard.util.TelemetryUtil;
+import com.acmerobotics.library.hardware.CachingDcMotor;
+import com.acmerobotics.library.hardware.CachingServo;
 import com.acmerobotics.library.util.ExponentialSmoother;
-import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
-import com.acmerobotics.relicrecovery.hardware.CachingServo;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetADCCommand;
@@ -15,8 +16,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+import java.util.Map;
 
 @Config
 public class Intake extends Subsystem {
@@ -46,7 +48,6 @@ public class Intake extends Subsystem {
 
     private ExponentialSmoother leftCurrentSmoother, rightCurrentSmoother;
 
-    private TelemetryEx telemetry;
     private TelemetryData telemetryData;
 
     public class TelemetryData {
@@ -62,8 +63,7 @@ public class Intake extends Subsystem {
         public double rightIntakeCurrent;
     }
 
-    public Intake(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = new TelemetryEx(telemetry);
+    public Intake(HardwareMap map) {
         this.telemetryData = new TelemetryData();
 
         leftIntake = new CachingDcMotor(map.dcMotor.get("intakeLeft"));
@@ -123,7 +123,7 @@ public class Intake extends Subsystem {
     }
 
     @Override
-    public void update() {
+    public Map<String, Object> update(Canvas fieldOverlay) {
         telemetryData.intakeMode = mode;
         telemetryData.leftIntakePower = leftIntakePower;
         telemetryData.rightIntakePower = rightIntakePower;
@@ -214,6 +214,6 @@ public class Intake extends Subsystem {
         leftIntake.setPower(leftIntakePower);
         rightIntake.setPower(rightIntakePower);
 
-        telemetry.addDataObject(telemetryData);
+        return TelemetryUtil.objectToMap(telemetryData);
     }
 }

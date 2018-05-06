@@ -1,5 +1,7 @@
 package com.acmerobotics.relicrecovery.vision;
 
+import com.acmerobotics.library.vision.MatOverlay;
+import com.acmerobotics.library.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 
 import org.junit.Ignore;

@@ -1,11 +1,12 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.TelemetryEx;
-import com.acmerobotics.relicrecovery.hardware.CachingDcMotor;
-import com.acmerobotics.relicrecovery.hardware.CachingServo;
-import com.acmerobotics.relicrecovery.hardware.CurrentSensor;
-import com.acmerobotics.relicrecovery.motion.PIDController;
+import com.acmerobotics.library.dashboard.util.TelemetryUtil;
+import com.acmerobotics.library.hardware.CachingDcMotor;
+import com.acmerobotics.library.hardware.CachingServo;
+import com.acmerobotics.library.hardware.CurrentSensor;
+import com.acmerobotics.library.motion.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -13,7 +14,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import java.util.Map;
 
 @Config
 public class DumpBed extends Subsystem {
@@ -60,7 +61,6 @@ public class DumpBed extends Subsystem {
 
     private PIDController pidController;
 
-    private TelemetryEx telemetry;
     private TelemetryData telemetryData;
 
     public class TelemetryData {
@@ -78,8 +78,7 @@ public class DumpBed extends Subsystem {
         public double dumpLiftError;
     }
 
-    public DumpBed(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = new TelemetryEx(telemetry);
+    public DumpBed(HardwareMap map) {
         this.telemetryData = new TelemetryData();
 
         pidController = new PIDController(LIFT_PID);
@@ -193,7 +192,7 @@ public class DumpBed extends Subsystem {
         bedDumping = false;
     }
 
-    public void update() {
+    public Map<String, Object> update(Canvas fieldOverlay) {
         telemetryData.dumpLiftMode = liftMode;
         telemetryData.dumpLiftDumping = bedDumping;
         telemetryData.dumpRotation = dumpRotation;
@@ -218,14 +217,8 @@ public class DumpBed extends Subsystem {
             }
             case MOVE_TO_POSITION: {
                 boolean hallEffectState = isHallEffectSensorTriggered();
-//                double liftHeight = getLiftHeight();
 
                 telemetryData.dumpHallEffectState = hallEffectState;
-//                telemetryData.dumpLiftHeight = liftHeight;
-
-//                if (liftHeight <= -LIFT_ENDPOINT_ALLOWANCE_HEIGHT || liftHeight >= LIFT_HEIGHT + LIFT_ENDPOINT_ALLOWANCE_HEIGHT) {
-//                    liftMode = LiftMode.MISSED_SENSOR;
-//                }
 
                 if (!hallEffectState && skipFirstRead) {
                     skipFirstRead = false;
@@ -322,6 +315,6 @@ public class DumpBed extends Subsystem {
             dumpRelease.setPosition(BED_RELEASE_ENGAGE_POSITION);
         }
 
-        telemetry.addDataObject(telemetryData);
+        return TelemetryUtil.objectToMap(telemetryData);
     }
 }

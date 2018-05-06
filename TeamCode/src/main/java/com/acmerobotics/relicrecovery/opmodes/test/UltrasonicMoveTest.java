@@ -4,8 +4,8 @@ import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -29,7 +29,7 @@ public class UltrasonicMoveTest extends AutoOpMode {
 
     @Override
     protected void run() {
-        Trajectory trajectory = new TrajectoryBuilder(new Pose2d(12, 0, Math.PI / 2))
+        Trajectory trajectory = robot.drive.trajectoryBuilder(new Pose2d(12, 0, Math.PI / 2))
                 .lineTo(new Vector2d(12, -36))
                 .waitFor(0.25)
                 .build();
@@ -43,7 +43,7 @@ public class UltrasonicMoveTest extends AutoOpMode {
 
         RobotLog.i("Distance: " + ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
 
-        Trajectory trajectory2 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), Math.PI / 2))
+        Trajectory trajectory2 = robot.drive.trajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), Math.PI / 2))
                 .waitFor(10.0)
                 .lineTo(new Vector2d(12, -56))
                 .waitFor(0.5)

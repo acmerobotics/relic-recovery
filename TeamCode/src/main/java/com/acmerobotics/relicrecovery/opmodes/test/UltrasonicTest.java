@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.util.ExponentialSmoother;
-import com.acmerobotics.relicrecovery.hardware.MaxSonarEZ1UltrasonicSensor;
+import com.acmerobotics.library.hardware.MaxSonarEZ1UltrasonicSensor;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;

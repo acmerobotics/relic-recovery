@@ -12,8 +12,8 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.relicrecovery.path.Trajectory;
-import com.acmerobotics.relicrecovery.path.TrajectoryBuilder;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -115,7 +115,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
         Vector2d thirdColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, thirdColumn);
 
-        Trajectory stoneToCrypto1 = new TrajectoryBuilder(stonePose)
+        Trajectory stoneToCrypto1 = robot.drive.trajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turnTo(-yMultiplier * Math.PI / 2)
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
@@ -153,7 +153,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump1");
 
-        Trajectory cryptoToPit2 = new TrajectoryBuilder(stoneToCrypto1.end())
+        Trajectory cryptoToPit2 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
                 .beginComposite()
                 .lineToPose(new Pose2d(firstColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 12))
@@ -174,7 +174,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("cryptoToPit2");
 
-        Trajectory pitToCrypto2 = new TrajectoryBuilder(cryptoToPit2.end())
+        Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
                 .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 2))
                 .waitFor(0.5)
                 .build();
@@ -195,7 +195,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
-        Trajectory cryptoApproach2 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto2.end().heading()))
+        Trajectory cryptoApproach2 = robot.drive.trajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto2.end().heading()))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
                 .waitFor(0.5)
                 .build();
@@ -226,7 +226,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump2");
 
-        Trajectory cryptoToPit3 = new TrajectoryBuilder(cryptoApproach2.end())
+        Trajectory cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                 .beginComposite()
                 .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * 3 * Math.PI / 4))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 12))
@@ -247,7 +247,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("cryptoToPit3");
 
-        Trajectory pitToCrypto3 = new TrajectoryBuilder(cryptoToPit3.end())
+        Trajectory pitToCrypto3 = robot.drive.trajectoryBuilder(cryptoToPit3.end())
                 .lineToPose(new Pose2d(thirdColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 2))
                 .waitFor(0.5)
                 .build();
@@ -268,7 +268,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
         robot.waitOneFullCycle();
         ultrasonicLocalizer.disableUltrasonicFeedback();
 
-        Trajectory cryptoApproach3 = new TrajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto3.end().heading()))
+        Trajectory cryptoApproach3 = robot.drive.trajectoryBuilder(new Pose2d(robot.drive.getEstimatedPosition(), pitToCrypto3.end().heading()))
                 .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 56))
                 .waitFor(0.5)
                 .build();
@@ -300,7 +300,7 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("dump3");
 
-        robot.drive.followTrajectory(new TrajectoryBuilder(cryptoApproach3.end())
+        robot.drive.followTrajectory(robot.drive.trajectoryBuilder(cryptoApproach3.end())
                 .forward(8)
                 .build());
 

@@ -2,7 +2,7 @@ package com.acmerobotics.relicrecovery.opmodes.test;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
 import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.relicrecovery.hardware.SharpGP2Y0A51SK0FProximitySensor;
+import com.acmerobotics.library.hardware.SharpGP2Y0A51SK0FProximitySensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;

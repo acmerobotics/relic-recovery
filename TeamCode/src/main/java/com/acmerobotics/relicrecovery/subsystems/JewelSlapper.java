@@ -1,11 +1,13 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.relicrecovery.hardware.CachingServo;
+import com.acmerobotics.library.hardware.CachingServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import java.util.HashMap;
+import java.util.Map;
 
 @Config
 public class JewelSlapper extends Subsystem {
@@ -18,8 +20,6 @@ public class JewelSlapper extends Subsystem {
     public static double SLAPPER_CENTER_POSITION = 0.64;
     public static double SLAPPER_RIGHT_POSITION = 0.25;
     public static double SLAPPER_STOW_POSITION = 0.09;
-
-    private Telemetry telemetry;
 
     public enum ArmPosition {
         UP,
@@ -40,9 +40,7 @@ public class JewelSlapper extends Subsystem {
     private SlapperPosition slapperPosition;
     private ArmPosition armPosition;
 
-    public JewelSlapper(HardwareMap map, Telemetry telemetry) {
-        this.telemetry = telemetry;
-
+    public JewelSlapper(HardwareMap map) {
         jewelArm = new CachingServo(map.servo.get("jewelArm"));
         jewelSlapper = new CachingServo(map.servo.get("jewelSlapper"));
 
@@ -67,9 +65,10 @@ public class JewelSlapper extends Subsystem {
     }
 
     @Override
-    public void update() {
-        telemetry.addData("jewelArmPosition", armPosition);
-        telemetry.addData("jewelSlapperPosition", slapperPosition);
+    public Map<String, Object> update(Canvas fieldOverlay) {
+        Map<String, Object> telemetry = new HashMap<>();
+        telemetry.put("jewelArmPosition", armPosition);
+        telemetry.put("jewelSlapperPosition", slapperPosition);
 
         switch (armPosition) {
             case UP:
@@ -100,5 +99,7 @@ public class JewelSlapper extends Subsystem {
                 jewelSlapper.setPosition(SLAPPER_PARALLEL_POSITION);
                 break;
         }
+
+        return telemetry;
     }
 }

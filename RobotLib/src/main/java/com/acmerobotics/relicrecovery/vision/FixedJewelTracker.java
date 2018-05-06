@@ -1,6 +1,9 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.library.vision.Overlay;
+import com.acmerobotics.library.vision.Tracker;
+import com.acmerobotics.library.vision.VisionCamera;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;

@@ -6,7 +6,7 @@ import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.relicrecovery.vision.FixedJewelTracker;
-import com.acmerobotics.relicrecovery.vision.VuforiaCamera;
+import com.acmerobotics.library.vision.VuforiaCamera;
 import com.acmerobotics.relicrecovery.vision.VuforiaVuMarkTracker;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 

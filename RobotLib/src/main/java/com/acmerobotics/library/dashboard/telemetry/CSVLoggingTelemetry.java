@@ -1,44 +1,21 @@
 package com.acmerobotics.library.dashboard.telemetry;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
+import com.acmerobotics.library.util.CSVWriter;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 // TODO: Create an abstract base class for basic telemetry functionality
-public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Notifications {
-    private Map<String, String> map;
+public class CSVLoggingTelemetry implements Telemetry {
+    private CSVWriter writer;
     private boolean autoClear;
-    private List<String> header;
-    private PrintStream printStream;
-
-    private AppUtil appUtil = AppUtil.getInstance();
-    private OpModeManagerImpl opModeManager;
 
     public CSVLoggingTelemetry(File file) {
-        map = new LinkedHashMap<>();
+        writer = new CSVWriter(file);
         autoClear = true;
-        try {
-            printStream = new PrintStream(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(appUtil.getActivity());
-        if (opModeManager != null) {
-            opModeManager.registerListener(this);
-        }
     }
 
     @Override
@@ -48,7 +25,7 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
 
     @Override
     public Item addData(String caption, Object value) {
-        map.put(caption, value.toString());
+        writer.put(caption, value.toString());
         return null;
     }
 
@@ -69,12 +46,12 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
 
     @Override
     public void clear() {
-        map.clear();
+        writer.clear();
     }
 
     @Override
     public void clearAll() {
-        map.clear();
+        writer.clear();
     }
 
     @Override
@@ -89,31 +66,9 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
 
     @Override
     public boolean update() {
-        if (map.size() == 0) return false;
-        if (header == null) {
-            header = new ArrayList<>();
-            StringBuilder headerBuilder = new StringBuilder();
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                header.add(entry.getKey());
-                headerBuilder.append(entry.getKey());
-                headerBuilder.append(",");
-            }
-            headerBuilder.deleteCharAt(headerBuilder.length() - 1);
-            if (printStream != null) {
-                printStream.println(headerBuilder);
-            }
-        }
-        StringBuilder valueBuilder = new StringBuilder();
-        for (String key : header) {
-            valueBuilder.append(map.get(key));
-            valueBuilder.append(",");
-        }
-        valueBuilder.deleteCharAt(valueBuilder.length() - 1);
+        writer.write();
         if (autoClear) {
             clear();
-        }
-        if (printStream != null) {
-            printStream.println(valueBuilder.toString());
         }
         return true;
     }
@@ -125,10 +80,8 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
 
     @Override
     public Line addLine(String lineCaption) {
-        if (printStream != null) {
-            printStream.println(lineCaption);
-            printStream.flush();
-        }
+        writer.putLine(lineCaption);
+        writer.flush();
         return null;
     }
 
@@ -180,31 +133,5 @@ public class CSVLoggingTelemetry implements Telemetry, OpModeManagerNotifier.Not
     @Override
     public Log log() {
         return null;
-    }
-
-    public void close() {
-        if (printStream != null) {
-            printStream.flush();
-            printStream.close();
-            printStream = null;
-        }
-    }
-
-    @Override
-    public void onOpModePreInit(OpMode opMode) {
-
-    }
-
-    @Override
-    public void onOpModePreStart(OpMode opMode) {
-
-    }
-
-    @Override
-    public void onOpModePostStop(OpMode opMode) {
-        close();
-        if (opModeManager != null) {
-            opModeManager.unregisterListener(this);
-        }
     }
 }

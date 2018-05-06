@@ -45,8 +45,8 @@ FieldView.propTypes = {
   }).isRequired
 };
 
-const mapStateToProps = ({ fieldOverlay }) => ({
-  overlay: fieldOverlay
+const mapStateToProps = ({ telemetry }) => ({
+  overlay: telemetry.fieldOverlay
 });
 
 export default connect(mapStateToProps)(FieldView);
