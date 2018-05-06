@@ -25,7 +25,7 @@ public class HeadingTest2 extends LinearOpMode {
             Pose2d estimatedPose = drive.getEstimatedPose();
             telemetry.addData("heading", estimatedPose.heading());
             telemetry.update();
-            drive.update();
+            drive.update(null);
         }
     }
 }

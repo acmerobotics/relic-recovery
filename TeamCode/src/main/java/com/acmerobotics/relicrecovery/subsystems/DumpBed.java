@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.util.TelemetryUtil;
 import com.acmerobotics.library.hardware.CachingDcMotor;
@@ -191,7 +192,7 @@ public class DumpBed extends Subsystem {
         bedDumping = false;
     }
 
-    public Map<String, Object> update() {
+    public Map<String, Object> update(Canvas fieldOverlay) {
         telemetryData.dumpLiftMode = liftMode;
         telemetryData.dumpLiftDumping = bedDumping;
         telemetryData.dumpRotation = dumpRotation;
@@ -216,14 +217,8 @@ public class DumpBed extends Subsystem {
             }
             case MOVE_TO_POSITION: {
                 boolean hallEffectState = isHallEffectSensorTriggered();
-//                double liftHeight = getLiftHeight();
 
                 telemetryData.dumpHallEffectState = hallEffectState;
-//                telemetryData.dumpLiftHeight = liftHeight;
-
-//                if (liftHeight <= -LIFT_ENDPOINT_ALLOWANCE_HEIGHT || liftHeight >= LIFT_HEIGHT + LIFT_ENDPOINT_ALLOWANCE_HEIGHT) {
-//                    liftMode = LiftMode.MISSED_SENSOR;
-//                }
 
                 if (!hallEffectState && skipFirstRead) {
                     skipFirstRead = false;

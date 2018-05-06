@@ -27,7 +27,7 @@ public class MotionProfile {
     }
 
     /**
-     * add on to the profile by applying a jerk for a length of time
+     * put on to the profile by applying a jerk for a length of time
      * @param j the jerk to apply
      * @param t the time to apply it for
      */
@@ -38,7 +38,7 @@ public class MotionProfile {
     }
 
     /**
-     * add on to the profile by applying an acceleration for a length of time
+     * put on to the profile by applying an acceleration for a length of time
      * @param a the acceleration to apply
      * @param t the time to apply it for
      */

@@ -105,7 +105,7 @@ public class NewDriveCharacterization extends LinearOpMode {
 
     private void reset() {
         robot.drive.stop();
-        robot.drive.update();
+        robot.drive.update(null);
         sleep(1000);
         startTimestamp = TimestampedData.getCurrentTime();
         robot.drive.setEstimatedPose(new Pose2d(0, 0, 0));

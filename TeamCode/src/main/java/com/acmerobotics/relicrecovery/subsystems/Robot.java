@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.util.Log;
 
 import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.library.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.library.util.CSVWriter;
 import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfiguration;
@@ -15,7 +15,6 @@ import com.qualcomm.robotcore.util.GlobalWarningSource;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.ThreadPool;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 
 import java.io.File;
@@ -23,17 +22,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
-public class Robot implements Runnable, OpModeManagerNotifier.Notifications, GlobalWarningSource {
+public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarningSource {
     public static final String TAG = "Robot";
 
     public interface Listener {
         void onPostUpdate();
     }
 
-    public final RobotDashboard dashboard;
+    public RobotDashboard dashboard;
     public final OpModeConfiguration config;
 
     // subsystems
@@ -45,122 +46,31 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
     public RelicRecoverer relicRecoverer;
 
     private List<Subsystem> subsystems;
-    private final List<Subsystem> subsystemsWithProblems;
-    private final List<CountDownLatch> cycleLatches;
-    private List<Telemetry> allTelemetry;
-    private Map<Subsystem, Telemetry> subsystemTelemetryMap;
-    private CSVLoggingTelemetry robotTelemetry;
+    private List<Subsystem> subsystemsWithProblems;
+    private List<CountDownLatch> cycleLatches;
+    private Map<Subsystem, CSVWriter> subsystemLogs;
+    private CSVWriter robotLog;
     private OpModeManagerImpl opModeManager;
-    private ExecutorService updateExecutor;
+    private ExecutorService subsystemUpdateExecutor, telemetryUpdateExecutor;
+    private BlockingQueue<TelemetryPacket> telemetryPacketQueue;
 
     private List<Listener> listeners;
 
     private boolean started;
 
-    public Robot(OpMode opMode) {
-        dashboard = RobotDashboard.getInstance();
-        config = new OpModeConfiguration(opMode.hardwareMap.appContext);
-
-        listeners = new ArrayList<>();
-
-        File logRoot = LoggingUtil.getLogDir(opMode, config);
-
-        robotTelemetry = new CSVLoggingTelemetry(new File(logRoot, "Robot.csv"));
-
-        allTelemetry = new ArrayList<>();
-        subsystems = new ArrayList<>();
-        subsystemTelemetryMap = new HashMap<>();
-
-        try {
-            drive = new MecanumDrive(opMode.hardwareMap);
-            CSVLoggingTelemetry driveLogger = new CSVLoggingTelemetry(new File(logRoot, "Drive.csv"));
-            subsystemTelemetryMap.put(drive, new MultipleTelemetry(dashboard.getTelemetry(), driveLogger));
-            subsystems.add(drive);
-            allTelemetry.add(driveLogger);
-        } catch (IllegalArgumentException e) {
-            Log.w(TAG, "skipping MecanumDrive");
-        }
-
-        try {
-            intake = new Intake(opMode.hardwareMap);
-            CSVLoggingTelemetry intakeLogger = new CSVLoggingTelemetry(new File(logRoot, "Intake.csv"));
-            subsystemTelemetryMap.put(intake, new MultipleTelemetry(dashboard.getTelemetry(), intakeLogger));
-            subsystems.add(intake);
-            allTelemetry.add(intakeLogger);
-        } catch (IllegalArgumentException e) {
-            Log.w(TAG, "skipping Intake");
-        }
-
-        try {
-            dumpBed = new DumpBed(opMode.hardwareMap);
-            CSVLoggingTelemetry dumpBedLogger = new CSVLoggingTelemetry(new File(logRoot, "DumpBed.csv"));
-            subsystemTelemetryMap.put(dumpBed, new MultipleTelemetry(dashboard.getTelemetry(), dumpBedLogger));
-            subsystems.add(dumpBed);
-            allTelemetry.add(dumpBedLogger);
-        } catch (IllegalArgumentException e) {
-            Log.w(TAG, "skipping DumpBed");
-        }
-
-        try {
-            jewelSlapper = new JewelSlapper(opMode.hardwareMap);
-            CSVLoggingTelemetry jewelSlapperLogger = new CSVLoggingTelemetry(new File(logRoot, "JewelSlapper.csv"));
-            subsystemTelemetryMap.put(jewelSlapper, new MultipleTelemetry(dashboard.getTelemetry(), jewelSlapperLogger));
-            subsystems.add(jewelSlapper);
-            allTelemetry.add(jewelSlapperLogger);
-        } catch (IllegalArgumentException e) {
-            Log.w(TAG, "skipping JewelSlapper");
-        }
-
-        try {
-            relicRecoverer = new RelicRecoverer(opMode.hardwareMap);
-            CSVLoggingTelemetry relicRecovererLogger = new CSVLoggingTelemetry(new File(logRoot, "RelicRecoverer.csv"));
-            subsystemTelemetryMap.put(relicRecoverer, new MultipleTelemetry(dashboard.getTelemetry(), relicRecovererLogger));
-            subsystems.add(relicRecoverer);
-            allTelemetry.add(relicRecovererLogger);
-        } catch (IllegalArgumentException e) {
-            Log.w(TAG, "skipping RelicRecoverer");
-        }
-
-        allTelemetry.add(dashboard.getTelemetry());
-
-        Activity activity = (Activity) opMode.hardwareMap.appContext;
-        opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(activity);
-        if (opModeManager != null) {
-            opModeManager.registerListener(this);
-        }
-
-        updateExecutor = ThreadPool.newSingleThreadExecutor("robot updater");
-
-        subsystemsWithProblems = new ArrayList<>();
-        RobotLog.registerGlobalWarningSource(this);
-
-        cycleLatches = new ArrayList<>();
-    }
-
-    public void addListener(Listener listener) {
-        listeners.add(listener);
-    }
-
-    public void start() {
-        if (!started) {
-            updateExecutor.submit(this);
-            started = true;
-        }
-    }
-
-    @Override
-    public void run() {
+    private Runnable subsystemUpdateRunnable = () -> {
         while (!Thread.currentThread().isInterrupted()) {
+            TelemetryPacket telemetryPacket = new TelemetryPacket();
             try {
                 double startTimestamp = TimestampedData.getCurrentTime();
                 for (Subsystem subsystem : subsystems) {
                     if (subsystem == null) continue;
                     try {
-                        Map<String, Object> telemetry = subsystem.update();
-                        Telemetry subsystemTelemetry = subsystemTelemetryMap.get(telemetry);
-                        for (Map.Entry<String, Object> telemetryEntry : telemetry.entrySet()) {
-                            subsystemTelemetry.addData(telemetryEntry.getKey(), telemetryEntry.getValue().toString());
-                        }
+                        Map<String, Object> telemetry = subsystem.update(telemetryPacket.fieldOverlay());
+                        CSVWriter subsystemLog = subsystemLogs.get(telemetry);
+                        subsystemLog.putAll(telemetry);
+                        subsystemLog.write();
+                        telemetryPacket.putAll(telemetry);
                         synchronized (subsystemsWithProblems) {
                             if (subsystemsWithProblems.contains(subsystem)) {
                                 subsystemsWithProblems.remove(subsystem);
@@ -180,13 +90,12 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
                     listener.onPostUpdate();
                 }
                 double postSubsystemUpdateTimestamp = TimestampedData.getCurrentTime();
-                for (Telemetry telemetry : allTelemetry) {
-                    telemetry.update();
+                robotLog.put("subsystemUpdateTime", postSubsystemUpdateTimestamp - startTimestamp);
+                robotLog.write();
+                while (telemetryPacketQueue.remainingCapacity() == 0) {
+                    Thread.sleep(1);
                 }
-                double postTelemetryUpdateTimestamp = TimestampedData.getCurrentTime();
-                robotTelemetry.addData("subsystemUpdateTime", postSubsystemUpdateTimestamp - startTimestamp);
-                robotTelemetry.addData("telemetryUpdateTime", postTelemetryUpdateTimestamp - postSubsystemUpdateTimestamp);
-                robotTelemetry.update();
+                telemetryPacketQueue.add(telemetryPacket);
                 synchronized (cycleLatches) {
                     int i = 0;
                     while (i < cycleLatches.size()) {
@@ -203,12 +112,116 @@ public class Robot implements Runnable, OpModeManagerNotifier.Notifications, Glo
                 Log.wtf(TAG, t);
             }
         }
+    };
+
+    private Runnable telemetryUpdateRunnable = () -> {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                TelemetryPacket packet = telemetryPacketQueue.take();
+                dashboard.sendTelemetryPacket(packet);
+
+                for (CSVWriter log : subsystemLogs.values()) {
+                    log.flush();
+                }
+                robotLog.flush();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+        }
+    };
+
+    public Robot(OpMode opMode) {
+        dashboard = RobotDashboard.getInstance();
+        config = new OpModeConfiguration(opMode.hardwareMap.appContext);
+
+        listeners = new ArrayList<>();
+
+        File logRoot = LoggingUtil.getLogDir(opMode, config);
+
+        robotLog = new CSVWriter(new File(logRoot, "Robot.csv"));
+
+        subsystems = new ArrayList<>();
+        subsystemLogs = new HashMap<>();
+
+        try {
+            drive = new MecanumDrive(opMode.hardwareMap);
+            subsystemLogs.put(drive, new CSVWriter(new File(logRoot, "Drive.csv")));
+            subsystems.add(drive);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "skipping MecanumDrive");
+        }
+
+        try {
+            intake = new Intake(opMode.hardwareMap);
+            subsystemLogs.put(intake, new CSVWriter(new File(logRoot, "Intake.csv")));
+            subsystems.add(intake);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "skipping Intake");
+        }
+
+        try {
+            dumpBed = new DumpBed(opMode.hardwareMap);
+            subsystemLogs.put(dumpBed, new CSVWriter(new File(logRoot, "DumpBed.csv")));
+            subsystems.add(dumpBed);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "skipping DumpBed");
+        }
+
+        try {
+            jewelSlapper = new JewelSlapper(opMode.hardwareMap);
+            subsystemLogs.put(jewelSlapper, new CSVWriter(new File(logRoot, "JewelSlapper.csv")));
+            subsystems.add(jewelSlapper);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "skipping JewelSlapper");
+        }
+
+        try {
+            relicRecoverer = new RelicRecoverer(opMode.hardwareMap);
+            subsystemLogs.put(relicRecoverer, new CSVWriter(new File(logRoot, "RelicRecoverer.csv")));
+            subsystems.add(relicRecoverer);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "skipping RelicRecoverer");
+        }
+
+        Activity activity = (Activity) opMode.hardwareMap.appContext;
+        opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(activity);
+        if (opModeManager != null) {
+            opModeManager.registerListener(this);
+        }
+
+        subsystemUpdateExecutor = ThreadPool.newSingleThreadExecutor("subsystem update");
+        telemetryUpdateExecutor = ThreadPool.newSingleThreadExecutor("telemetry update");
+
+        telemetryPacketQueue = new ArrayBlockingQueue<>(10);
+
+        subsystemsWithProblems = new ArrayList<>();
+        RobotLog.registerGlobalWarningSource(this);
+
+        cycleLatches = new ArrayList<>();
+    }
+
+    public void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    public void start() {
+        if (!started) {
+            subsystemUpdateExecutor.submit(subsystemUpdateRunnable);
+            telemetryUpdateExecutor.submit(telemetryUpdateRunnable);
+            started = true;
+        }
     }
 
     private void stop() {
-        if (updateExecutor != null) {
-            updateExecutor.shutdownNow();
-            updateExecutor = null;
+        if (subsystemUpdateExecutor != null) {
+            subsystemUpdateExecutor.shutdownNow();
+            subsystemUpdateExecutor = null;
+        }
+
+        if (telemetryUpdateExecutor != null) {
+            telemetryUpdateExecutor.shutdownNow();
+            telemetryUpdateExecutor = null;
         }
 
         RobotLog.unregisterGlobalWarningSource(this);

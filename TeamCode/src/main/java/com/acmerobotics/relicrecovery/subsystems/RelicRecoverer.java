@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.util.TelemetryUtil;
 import com.acmerobotics.library.hardware.CachingDcMotor;
@@ -123,7 +124,7 @@ public class RelicRecoverer extends Subsystem {
     }
 
     @Override
-    public Map<String, Object> update() {
+    public Map<String, Object> update(Canvas fieldOverlay) {
         telemetryData.relicWristPosition = wristPosition;
         telemetryData.relicFingerClosed = fingerClosed;
 

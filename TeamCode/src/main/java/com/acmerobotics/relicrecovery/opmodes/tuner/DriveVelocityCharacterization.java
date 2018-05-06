@@ -130,7 +130,7 @@ public class DriveVelocityCharacterization extends LinearOpMode {
 
             lastPose = estimatedPose;
 
-            drive.update();
+            drive.update(null);
             telemetry.update();
         }
     }

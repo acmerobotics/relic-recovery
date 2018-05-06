@@ -2,6 +2,7 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import android.util.Log;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.dashboard.util.TelemetryUtil;
 import com.acmerobotics.library.hardware.CachingDcMotor;
@@ -122,7 +123,7 @@ public class Intake extends Subsystem {
     }
 
     @Override
-    public Map<String, Object> update() {
+    public Map<String, Object> update(Canvas fieldOverlay) {
         telemetryData.intakeMode = mode;
         telemetryData.leftIntakePower = leftIntakePower;
         telemetryData.rightIntakePower = rightIntakePower;

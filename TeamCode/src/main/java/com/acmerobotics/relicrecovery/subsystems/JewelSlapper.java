@@ -1,5 +1,6 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
+import com.acmerobotics.library.dashboard.canvas.Canvas;
 import com.acmerobotics.library.dashboard.config.Config;
 import com.acmerobotics.library.hardware.CachingServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -64,7 +65,7 @@ public class JewelSlapper extends Subsystem {
     }
 
     @Override
-    public Map<String, Object> update() {
+    public Map<String, Object> update(Canvas fieldOverlay) {
         Map<String, Object> telemetry = new HashMap<>();
         telemetry.put("jewelArmPosition", armPosition);
         telemetry.put("jewelSlapperPosition", slapperPosition);

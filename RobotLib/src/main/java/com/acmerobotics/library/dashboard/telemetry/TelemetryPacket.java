@@ -23,13 +23,13 @@ public class TelemetryPacket {
         fieldOverlay = new Canvas();
     }
 
-    public void add(String key, Object value) {
+    public void put(String key, Object value) {
         data.put(key, value == null ? "null" : value.toString());
     }
 
-    public void addAll(Map<String, Object> map) {
+    public void putAll(Map<String, Object> map) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            add(entry.getKey(), entry.getValue());
+            put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -61,7 +61,7 @@ public class TelemetryPacket {
 
         @Override
         public Item addData(String caption, Object value) {
-            currentPacket.add(caption, value);
+            currentPacket.put(caption, value);
             return null;
         }
 
