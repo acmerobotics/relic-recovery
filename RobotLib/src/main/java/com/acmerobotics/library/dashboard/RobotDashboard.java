@@ -28,32 +28,32 @@ import java.util.List;
 public class RobotDashboard {
     public static final String TAG = "RobotDashboard";
 
-	public static final Gson GSON = new GsonBuilder()
+    public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(Message.class, new MessageDeserializer())
-			.create();
+            .create();
 
-	private static RobotDashboard dashboard;
+    private static RobotDashboard dashboard;
 
-	// TODO I'm sure there's a better way to make a static singleton
-	public static RobotDashboard open(Context ctx, EventLoop eventLoop) {
-		// the eventLoop can be used to get the op mode manager and monitor op mode activity
-		dashboard = new RobotDashboard();
-		return dashboard;
-	}
+    // TODO I'm sure there's a better way to make a static singleton
+    public static RobotDashboard open(Context ctx, EventLoop eventLoop) {
+        // the eventLoop can be used to get the op mode manager and monitor op mode activity
+        dashboard = new RobotDashboard();
+        return dashboard;
+    }
 
-	public static RobotDashboard getInstance() {
-		return dashboard;
-	};
+    public static RobotDashboard getInstance() {
+        return dashboard;
+    };
 
-	private TelemetryPacket.Adapter telemetry;
-	private List<RobotWebSocket> sockets;
-	private RobotWebSocketServer server;
-	private Configuration configuration;
+    private TelemetryPacket.Adapter telemetry;
+    private List<RobotWebSocket> sockets;
+    private RobotWebSocketServer server;
+    private Configuration configuration;
 
-	private RobotDashboard() {
-		sockets = new ArrayList<>();
-		configuration = new Configuration();
-		telemetry = new TelemetryPacket.Adapter(this::sendTelemetryPacket);
+    private RobotDashboard() {
+        sockets = new ArrayList<>();
+        configuration = new Configuration();
+        telemetry = new TelemetryPacket.Adapter(this::sendTelemetryPacket);
 
         ClasspathScanner scanner = new ClasspathScanner(new ClassFilter() {
             @Override
@@ -64,42 +64,42 @@ public class RobotDashboard {
             @Override
             public void processClass(Class klass) {
                 if (klass.isAnnotationPresent(Config.class) && !klass.isAnnotationPresent(Disabled.class)) {
-                	Log.i(TAG, String.format("Found config class %s", klass.getCanonicalName()));
-					configuration.addOptionsFromClass(klass);
+                    Log.i(TAG, String.format("Found config class %s", klass.getCanonicalName()));
+                    configuration.addOptionsFromClass(klass);
                 }
             }
         });
         scanner.scanClasspath();
 
-		server = new RobotWebSocketServer(this);
-		try {
-			server.start();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        server = new RobotWebSocketServer(this);
+        try {
+            server.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	public void sendTelemetryPacket(TelemetryPacket telemetryPacket) {
-		telemetryPacket.addTimestamp();
-		sendAll(new Message(MessageType.RECEIVE_TELEMETRY, telemetryPacket));
-	}
+    public void sendTelemetryPacket(TelemetryPacket telemetryPacket) {
+        telemetryPacket.addTimestamp();
+        sendAll(new Message(MessageType.RECEIVE_TELEMETRY, telemetryPacket));
+    }
 
-	public void addOption(String name, Option option) {
-		configuration.addOption(name, option);
-	}
+    public void addOption(String name, Option option) {
+        configuration.addOption(name, option);
+    }
 
-	public void registerConfigClass(Class<?> configClass, String name) {
-		configuration.addOptionsFromClass(configClass, name);
-	    sendAll(new Message(MessageType.RECEIVE_CONFIG, configuration));
+    public void registerConfigClass(Class<?> configClass, String name) {
+        configuration.addOptionsFromClass(configClass, name);
+        sendAll(new Message(MessageType.RECEIVE_CONFIG, configuration));
     }
 
     public void registerConfigClass(Class<?> configClass) {
-		configuration.addOptionsFromClass(configClass);
-		sendAll(new Message(MessageType.RECEIVE_CONFIG, configuration));
-	}
+        configuration.addOptionsFromClass(configClass);
+        sendAll(new Message(MessageType.RECEIVE_CONFIG, configuration));
+    }
 
     public Telemetry getTelemetry() {
-	    return telemetry;
+        return telemetry;
     }
 
     public Canvas getFieldOverlay() {
@@ -107,37 +107,37 @@ public class RobotDashboard {
     }
 
     public JsonElement getConfigSchemaJson() {
-	    return configuration.getJsonSchema();
+        return configuration.getJsonSchema();
     }
 
     public JsonElement getConfigJson() {
-		return configuration.getJson();
-	}
+        return configuration.getJson();
+    }
 
-	public synchronized void sendAll(Message message) {
-		for (RobotWebSocket ws : sockets) {
-			ws.send(message);
-		}
-	}
+    public synchronized void sendAll(Message message) {
+        for (RobotWebSocket ws : sockets) {
+            ws.send(message);
+        }
+    }
 
-	public synchronized void addSocket(RobotWebSocket socket) {
-		sockets.add(socket);
-		socket.send(new Message(MessageType.RECEIVE_CONFIG_SCHEMA, getConfigSchemaJson()));
-		socket.send(new Message(MessageType.RECEIVE_CONFIG, getConfigJson()));
-	}
+    public synchronized void addSocket(RobotWebSocket socket) {
+        sockets.add(socket);
+        socket.send(new Message(MessageType.RECEIVE_CONFIG_SCHEMA, getConfigSchemaJson()));
+        socket.send(new Message(MessageType.RECEIVE_CONFIG, getConfigJson()));
+    }
 
-	public synchronized void removeSocket(RobotWebSocket socket) {
-		sockets.remove(socket);
-	}
+    public synchronized void removeSocket(RobotWebSocket socket) {
+        sockets.remove(socket);
+    }
 
-	public synchronized void onMessage(RobotWebSocket socket, Message msg) {
+    public synchronized void onMessage(RobotWebSocket socket, Message msg) {
         switch(msg.getType()) {
             case GET_CONFIG: {
                 socket.send(new Message(MessageType.RECEIVE_CONFIG, getConfigJson()));
                 break;
             }
-			case SAVE_CONFIG: {
-            	configuration.updateJson((JsonElement) msg.getData());
+            case SAVE_CONFIG: {
+                configuration.updateJson((JsonElement) msg.getData());
                 break;
             }
             default:
@@ -145,10 +145,10 @@ public class RobotDashboard {
                 Log.w(TAG, msg.toString());
                 break;
         }
-	}
+    }
 
-	public void stop() {
-		server.stop();
-		dashboard = null;
-	}
+    public void stop() {
+        server.stop();
+        dashboard = null;
+    }
 }
