@@ -9,7 +9,7 @@ Code used by ACME Robotics (FTC Team #8367) during the 2017-2018 season, Relic R
   * `CameraStreamServer` automatically creates a TCP socket that listens for connections from the corresponding client running on the DS. Once connected, `send()` can be used to send bitmaps to be displayed on the DS side. Alternatively, `getTracker()` returns a tracker that can be seamlessly integrated with the vision model described below.
   * The DS overlay app is located in `doc/FtcCameraOverlay.apk`. It uses an overlay and an accessibility service, complying with the rule against modifying the DS app.
 
-<img src="images/dsCameraStream.png" alt="DS Camera Overlay Screenshot" style="width: 50%; display: block; margin: 0 auto;"/>
+<p align="center"><img src="images/dsCameraStream.png" alt="DS Camera Overlay Screenshot" width="350"/></span>
 
 * `com.acmerobotics.library.dashboard` — The backend for a websocket-based dashboard. It delivers telemetry and information about the robot's pose and current path for visualization. Additionally, it uses reflection to facilitate configuration variables that can be set while an OpMode is running. More information (including usage) can be found in `dashboard/README.md`.
   * `RobotDashboard.getInstance()` can be used to get an instance of the dashboard. Telemetry messages can be sent through `sendTelemetryPacket()` (including the field overlay) or alternatively through `getTelemetry()` (note that the `Telemetry` instance returned only implements the most commonly-used methods of that interface). Numeric telemetry values are automatically available to graph over time.
