@@ -67,7 +67,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
                     if (subsystem == null) continue;
                     try {
                         Map<String, Object> telemetry = subsystem.update(telemetryPacket.fieldOverlay());
-                        CSVWriter subsystemLog = subsystemLogs.get(telemetry);
+                        CSVWriter subsystemLog = subsystemLogs.get(subsystem);
                         subsystemLog.putAll(telemetry);
                         subsystemLog.write();
                         telemetryPacket.putAll(telemetry);
