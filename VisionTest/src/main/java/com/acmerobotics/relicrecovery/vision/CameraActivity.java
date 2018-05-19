@@ -8,7 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.RobotDashboard;
 import com.acmerobotics.library.vision.MatOverlay;
 import com.acmerobotics.library.vision.OpenCVCamera;
 import com.acmerobotics.library.vision.Overlay;
@@ -36,7 +36,6 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
     private Tracker tracker;
     private int intermediateIndex;
     private Mat bgra, temp;
-    private RobotDashboard dashboard;
 
     private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -94,7 +93,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
             Log.wtf("CameraActivity", "Unknown detector: " + detector);
         }
 
-        dashboard = RobotDashboard.open(this, null);
+        RobotDashboard.start();
     }
 
     @Override
@@ -118,8 +117,7 @@ public class CameraActivity extends AppCompatActivity implements CameraBridgeVie
         super.onDestroy();
         if (cameraView != null)
             cameraView.disableView();
-        if (dashboard != null)
-            dashboard.stop();
+        RobotDashboard.stop();
     }
 
     @Override

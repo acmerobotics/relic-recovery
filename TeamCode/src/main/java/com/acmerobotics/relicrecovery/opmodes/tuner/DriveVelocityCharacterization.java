@@ -1,14 +1,14 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.telemetry.CSVLoggingTelemetry;
+import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
-import com.acmerobotics.library.util.LoggingUtil;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 

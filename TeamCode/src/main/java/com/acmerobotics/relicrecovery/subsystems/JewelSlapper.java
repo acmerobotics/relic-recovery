@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.subsystems;
 
-import com.acmerobotics.library.dashboard.canvas.Canvas;
-import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.hardware.CachingServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;

@@ -94,7 +94,7 @@ public class K9botTeleopTank_Linear extends LinearOpMode {
             else if (gamepad1.y)
                 armPosition -= ARM_SPEED;
 
-            // Use gamepad X & B to open and close the claw
+            // Use gamepad X & B to start and close the claw
             if (gamepad1.x)
                 clawPosition += CLAW_SPEED;
             else if (gamepad1.b)

@@ -2,9 +2,10 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.library.dashboard.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.path.Trajectory;
+import com.acmerobotics.library.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
@@ -15,8 +16,6 @@ import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.localization.TrackingOmniLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;

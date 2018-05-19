@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.localization;
 
-import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;

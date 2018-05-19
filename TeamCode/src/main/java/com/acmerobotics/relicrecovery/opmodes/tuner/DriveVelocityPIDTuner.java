@@ -1,16 +1,14 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.message.Message;
-import com.acmerobotics.library.dashboard.message.MessageType;
-import com.acmerobotics.library.util.ExponentialSmoother;
-import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.motion.MotionConstraints;
 import com.acmerobotics.library.motion.MotionGoal;
 import com.acmerobotics.library.motion.MotionProfile;
 import com.acmerobotics.library.motion.MotionProfileGenerator;
 import com.acmerobotics.library.motion.MotionState;
+import com.acmerobotics.library.util.ExponentialSmoother;
+import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
@@ -54,7 +52,7 @@ public class DriveVelocityPIDTuner extends LinearOpMode {
         LynxModule frontHub = hardwareMap.get(LynxModule.class, "frontHub");
 
         RobotDashboard dashboard = RobotDashboard.getInstance();
-        dashboard.sendAll(new Message(MessageType.RECEIVE_CONFIG, dashboard.getConfigJson()));
+        dashboard.updateConfig();
         Telemetry telemetry = dashboard.getTelemetry();
 
         telemetry.log().add("Ready!");

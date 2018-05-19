@@ -1,12 +1,12 @@
 package com.acmerobotics.library.path;
 
-import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.library.motion.MotionState;
 import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.library.motion.PIDFController;
+import com.acmerobotics.library.util.TimestampedData;
 
 @Config
 public class TrajectoryFollower {

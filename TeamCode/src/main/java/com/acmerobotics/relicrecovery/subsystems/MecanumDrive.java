@@ -2,9 +2,8 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import android.util.Log;
 
-import com.acmerobotics.library.dashboard.canvas.Canvas;
-import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.util.TelemetryUtil;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.hardware.CachingDcMotorEx;
 import com.acmerobotics.library.hardware.CachingServo;
 import com.acmerobotics.library.hardware.LynxOptimizedI2cFactory;
@@ -19,6 +18,7 @@ import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.library.path.Trajectory;
 import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.library.path.TrajectoryFollower;
+import com.acmerobotics.library.telemetry.TelemetryUtil;
 import com.acmerobotics.library.util.DrawingUtil;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;

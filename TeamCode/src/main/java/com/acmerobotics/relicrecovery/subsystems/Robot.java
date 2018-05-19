@@ -3,8 +3,8 @@ package com.acmerobotics.relicrecovery.subsystems;
 import android.app.Activity;
 import android.util.Log;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.library.util.CSVWriter;
 import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;

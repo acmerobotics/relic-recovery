@@ -1,2 +1,2 @@
-include ':TeamCode', ':RobotLib', ':FtcRobotController', ':openCVLibrary331', ':VisionTest'
+include ':TeamCode', ':RobotLib', ':FtcRobotController', ':openCVLibrary331', ':VisionTest', ':FtcDashboard'
 project(':FtcRobotController').projectDir = new File('ftc_app/FtcRobotController')

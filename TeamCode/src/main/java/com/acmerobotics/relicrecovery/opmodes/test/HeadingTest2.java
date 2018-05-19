@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;

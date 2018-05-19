@@ -28,8 +28,8 @@
  */
 package com.acmerobotics.relicrecovery.opmodes.vision;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.library.vision.VuforiaCamera;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

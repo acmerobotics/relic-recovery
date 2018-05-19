@@ -2,7 +2,7 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import android.support.annotation.Nullable;
 
-import com.acmerobotics.library.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.canvas.Canvas;
 
 import java.util.Map;
 
