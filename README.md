@@ -16,7 +16,7 @@ Code used by ACME Robotics (FTC Team #8367) during the 2017-2018 season, Relic R
   * Configuration variables can be set up by annotating classes that contain configurable fields with `@Config`. Then `static`, non-`final` variables of common types will be automatically added as configuration variables. Whenever the values of these variables are changed in the dashboard, the changes will be automatically applied (note that changes made through the dashboard _do not_ persist between app restarts).
   * Telemetry messages are designed to be flexible. To add additional fields, either modify `TelemetryPacket` or subclass it, and they will be sent to the frontend (see `dashboard/README.md` for advice on modifying the frontend).
 
-![Dashboard Screenshot](images/dashboard.png)
+![Dashboard Screenshot](FtcDashboard/images/dashboard.png)
 
 * `com.acmerobotics.library.hardware` — Contains a few standard drivers for sensors used this season and in the past. Most notably, the Sharp IR sensor response has been linearized to provide actual distance. In addition, there is code to bypass the read window for REV hub I2C devices to cut down on unnecessary reads (REV I2C command duration is _linear_ in the number of registers).
   * `LynxOptimizedI2cFactory.createLynxI2cDeviceSynch()` can be used to create `I2cDeviceSynch` instances for REV without the read window to improve performance.

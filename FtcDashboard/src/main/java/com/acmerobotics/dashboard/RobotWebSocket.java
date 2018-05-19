@@ -1,9 +1,9 @@
-package com.acmerobotics.library.dashboard;
+package com.acmerobotics.dashboard;
 
 import android.util.Log;
 
-import com.acmerobotics.library.dashboard.message.Message;
-import com.acmerobotics.library.dashboard.message.MessageType;
+import com.acmerobotics.dashboard.message.Message;
+import com.acmerobotics.dashboard.message.MessageType;
 
 import java.io.IOException;
 
