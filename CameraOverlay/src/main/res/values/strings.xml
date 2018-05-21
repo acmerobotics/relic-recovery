@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Camera Overlay</string>
+    <string name="picture">Picture</string>
+    <string name="description_info">Description Info</string>
+    <string name="request_permission">Request Permission</string>
+    <string name="camera_error">Camera Error</string>
+    <string name="overlay_service_label">Camera Overlay Service</string>
+    <string name="accessibility_service_description">Accessibility Service Description</string>
+    <string name="overlayText">Overlay Permission</string>
+    <string name="accessibilityText">Accessibility Permission</string>
+    <string name="dsText">DS App Installed</string>
+    <string name="openDsText">Open DS</string>
+    <string name="cameraText">Camera</string>
+</resources>
