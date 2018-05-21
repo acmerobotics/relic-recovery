@@ -103,7 +103,7 @@ public class PushbotTeleopPOV_Linear extends LinearOpMode {
             robot.leftDrive.setPower(left);
             robot.rightDrive.setPower(right);
 
-            // Use gamepad left & right Bumpers to open and close the claw
+            // Use gamepad left & right Bumpers to start and close the claw
             if (gamepad1.right_bumper)
                 clawOffset += CLAW_SPEED;
             else if (gamepad1.left_bumper)

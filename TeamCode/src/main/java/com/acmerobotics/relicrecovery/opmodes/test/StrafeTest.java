@@ -1,9 +1,8 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 

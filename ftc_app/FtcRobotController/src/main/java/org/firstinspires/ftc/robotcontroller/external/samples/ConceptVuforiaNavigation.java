@@ -184,7 +184,7 @@ public class ConceptVuforiaNavigation extends LinearOpMode {
          *     float, float, float, float)}, are syntactic shorthands for creating a new transform and
          *     then immediately multiplying the receiver by it, which can be convenient at times.</li>
          *
-         *     <li>If you want to break open the black box of a transformation matrix to understand
+         *     <li>If you want to break start the black box of a transformation matrix to understand
          *     what it's doing inside, use {@link MatrixF#getTranslation()} to fetch how much the
          *     transform will move you in x, y, and z, and use {@link Orientation#getOrientation(MatrixF,
          *     AxesReference, AxesOrder, AngleUnit)} to determine the rotational motion that the transform

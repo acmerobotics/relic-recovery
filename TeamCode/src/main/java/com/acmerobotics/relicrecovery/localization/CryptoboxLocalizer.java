@@ -2,14 +2,14 @@ package com.acmerobotics.relicrecovery.localization;
 
 import android.util.Log;
 
-import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.library.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
-import com.acmerobotics.library.vision.VisionCamera;
 
 import java.util.ArrayList;
 import java.util.Collections;

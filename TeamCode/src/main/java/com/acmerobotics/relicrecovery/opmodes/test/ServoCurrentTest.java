@@ -1,10 +1,10 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.util.ExponentialSmoother;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.hardware.AdafruitINA219CurrentSensor;
 import com.acmerobotics.library.hardware.CurrentSensor;
+import com.acmerobotics.library.util.ExponentialSmoother;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;

@@ -1,4 +1,4 @@
-package com.acmerobotics.library.dashboard.telemetry;
+package com.acmerobotics.library.telemetry;
 
 import com.acmerobotics.library.util.CSVWriter;
 

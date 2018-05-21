@@ -1,7 +1,8 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.util.DrawingUtil;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
@@ -24,7 +25,8 @@ public class AutoPathTest extends OpMode {
 
     @Override
     public void loop() {
-        Canvas fieldOverlay = dashboard.getFieldOverlay();
+        TelemetryPacket telemetryPacket = new TelemetryPacket();
+        Canvas fieldOverlay = telemetryPacket.fieldOverlay();
         fieldOverlay.setStroke("#4CAF50");
         DrawingUtil.drawTrajectory(fieldOverlay, AutoPaths.makeDiagonalTrajectoryToCryptobox(
                 BalancingStone.FAR_BLUE, RelicRecoveryVuMark.LEFT));
@@ -35,6 +37,6 @@ public class AutoPathTest extends OpMode {
         fieldOverlay.setStroke("#F44336");
         DrawingUtil.drawMecanumRobot(fieldOverlay, new Pose2d(
                 BalancingStone.NEAR_BLUE.getPosition(), 0));
-        dashboard.getTelemetry().update();
+        dashboard.sendTelemetryPacket(telemetryPacket);
     }
 }

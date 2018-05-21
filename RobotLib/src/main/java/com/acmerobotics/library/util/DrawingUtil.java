@@ -1,6 +1,7 @@
 package com.acmerobotics.library.util;
 
-import com.acmerobotics.library.dashboard.canvas.Canvas;
+
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.path.ParametricSegment;

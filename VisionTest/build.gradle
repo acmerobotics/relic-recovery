@@ -22,6 +22,7 @@ dependencies {
     implementation(name: 'RobotCore-release', ext: 'aar')
 
     implementation project(':RobotLib')
+    implementation project(':FtcDashboard')
     implementation project(':openCVLibrary331')
 
     implementation('com.android.support:appcompat-v7:26.1.0') {

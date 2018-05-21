@@ -28,6 +28,7 @@ dependencies {
     implementation(name: 'Analytics-release', ext: 'aar')
     implementation(name: 'WirelessP2p-release', ext: 'aar')
 
+    implementation project(':FtcDashboard')
     implementation project(':openCVLibrary331')
 
     // already in a jar

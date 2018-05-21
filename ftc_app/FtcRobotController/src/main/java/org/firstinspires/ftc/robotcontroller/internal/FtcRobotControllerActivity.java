@@ -58,7 +58,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.RobotDashboard;
 import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.relicrecovery.configuration.OpModeConfigurationActivity;
 import com.google.blocks.ftcrobotcontroller.BlocksActivity;
@@ -158,8 +158,6 @@ public class FtcRobotControllerActivity extends Activity
 
   protected FtcEventLoop eventLoop;
   protected Queue<UsbDevice> receivedUsbAttachmentNotifications;
-
-  protected RobotDashboard dashboard;
 
   protected class RobotRestarter implements Restarter {
 
@@ -316,7 +314,7 @@ public class FtcRobotControllerActivity extends Activity
     bindToService();
     logPackageVersions();
 
-    dashboard = RobotDashboard.open(this, eventLoop);
+    RobotDashboard.start();
   }
 
   protected UpdateUI createUpdateUI() {
@@ -397,10 +395,7 @@ public class FtcRobotControllerActivity extends Activity
     preferencesHelper.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(sharedPreferencesListener);
     RobotLog.cancelWriteLogcatToDisk();
 
-    if (dashboard == null) {
-      dashboard.stop();
-      dashboard = null;
-    }
+    RobotDashboard.stop();
   }
 
   protected void bindToService() {

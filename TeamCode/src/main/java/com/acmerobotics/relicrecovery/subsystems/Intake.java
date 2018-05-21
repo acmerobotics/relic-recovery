@@ -2,11 +2,11 @@ package com.acmerobotics.relicrecovery.subsystems;
 
 import android.util.Log;
 
-import com.acmerobotics.library.dashboard.canvas.Canvas;
-import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.util.TelemetryUtil;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.hardware.CachingDcMotor;
 import com.acmerobotics.library.hardware.CachingServo;
+import com.acmerobotics.library.telemetry.TelemetryUtil;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.qualcomm.hardware.lynx.LynxI2cColorRangeSensor;
 import com.qualcomm.hardware.lynx.LynxModule;

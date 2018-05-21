@@ -46,7 +46,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Motor channel:  Left  drive motor:        "left_drive"
  * Motor channel:  Right drive motor:        "right_drive"
  * Servo channel:  Servo to raise/lower arm: "arm"
- * Servo channel:  Servo to open/close claw: "claw"
+ * Servo channel:  Servo to start/close claw: "claw"
  *
  * Note: the configuration of the servos is such that:
  *   As the arm servo approaches 0, the arm position moves up (away from the floor).

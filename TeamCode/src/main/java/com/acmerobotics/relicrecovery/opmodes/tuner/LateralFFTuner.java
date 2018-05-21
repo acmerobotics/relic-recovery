@@ -1,9 +1,8 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
-import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.localization.Pose2d;
 import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.library.path.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;

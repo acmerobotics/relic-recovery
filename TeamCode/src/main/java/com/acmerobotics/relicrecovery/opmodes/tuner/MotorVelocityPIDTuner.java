@@ -1,11 +1,9 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
-import com.acmerobotics.library.dashboard.RobotDashboard;
-import com.acmerobotics.library.dashboard.config.Config;
-import com.acmerobotics.library.dashboard.message.Message;
-import com.acmerobotics.library.dashboard.message.MessageType;
-import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.hardware.CachingDcMotor;
+import com.acmerobotics.library.util.TimestampedData;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -80,7 +78,7 @@ public class MotorVelocityPIDTuner extends LinearOpMode {
         DcMotor cachingMotor = new CachingDcMotor(motor);
 
         RobotDashboard dashboard = RobotDashboard.getInstance();
-        dashboard.sendAll(new Message(MessageType.RECEIVE_CONFIG, dashboard.getConfigJson()));
+        dashboard.updateConfig();
         Telemetry telemetry = dashboard.getTelemetry();
 
         telemetry.log().add("Ready!");

@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.vision;
 
-import com.acmerobotics.library.dashboard.config.Config;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.library.vision.Overlay;
@@ -147,7 +147,7 @@ public class CryptoboxTracker extends Tracker {
 
         Imgproc.morphologyEx(hsvMask, hsvMaskOpen, Imgproc.MORPH_OPEN, openKernel);
 
-        addIntermediate("hsv open", hsvMaskOpen);
+        addIntermediate("hsv start", hsvMaskOpen);
 
         Imgproc.morphologyEx(hsvMaskOpen, hsvMaskClose, Imgproc.MORPH_CLOSE, hsvCloseKernel);
 
@@ -167,7 +167,7 @@ public class CryptoboxTracker extends Tracker {
 
         Imgproc.morphologyEx(grayMask, grayMaskOpen, Imgproc.MORPH_OPEN, openKernel);
 
-        addIntermediate("gray open", grayMaskOpen);
+        addIntermediate("gray start", grayMaskOpen);
 
         Imgproc.morphologyEx(grayMaskOpen, grayMaskClose, Imgproc.MORPH_CLOSE, tapeCloseKernel);
 

@@ -1,4 +1,4 @@
-package com.acmerobotics.library.dashboard.util;
+package com.acmerobotics.library.telemetry;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
