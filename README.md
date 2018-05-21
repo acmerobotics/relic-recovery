@@ -15,7 +15,7 @@ Code used by ACME Robotics (FTC Team #8367) during the 2017-2018 season, Relic R
 
 * `com.acmerobotics.library.cameraoverlay` — Contains the server for a simple DS camera overlay stream. It takes bitmaps from OpenCV/Vuforia, encodes them into JPEGs, and sends them to the client running on the DS (similar to MJPEG).
   * `CameraStreamServer` automatically creates a TCP socket that listens for connections from the corresponding client running on the DS. Once connected, `send()` can be used to send bitmaps to be displayed on the DS side. Alternatively, `getTracker()` returns a tracker that can be seamlessly integrated with the vision model described below.
-  * The DS overlay app is located in `doc/FtcCameraOverlay.apk`. It uses an overlay and an accessibility service, complying with the rule against modifying the DS app.
+  * The DS camera overlay app (client) is located in the `CameraOverlay` module.
 
 <p align="center"><img src="images/dsCameraStream.png" alt="DS Camera Overlay Screenshot" width="350"/></span>
 
@@ -45,6 +45,9 @@ Code used by ACME Robotics (FTC Team #8367) during the 2017-2018 season, Relic R
 
 * `com.acmerobotics.relicrecovery.subsystems` — Contains subsystem classes that abstract low-level hardware interactions. The `Robot` class handles updating the myriad subsystems. The subsystem update thread is constantly running in the background, maximizing the REV hub communication bus utilization.
   * `MecanumDrive` uses `LynxGetBulkInputDataCommand` to read all encoders on a given hub for faster control loops.
+
+### `CameraOverlay` Module
+DS camera overlay app that receives frames from the RC.
 
 ### `VisionTest` Module
 Standalone app for testing trackers.
