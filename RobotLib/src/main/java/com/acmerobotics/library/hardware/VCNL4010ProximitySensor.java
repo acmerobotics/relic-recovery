@@ -87,7 +87,9 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
     public VCNL4010ProximitySensor(I2cDeviceSynch i2cDeviceSynch) {
         super(i2cDeviceSynch, true, new Parameters());
 
-        i2cDeviceSynch.engage();
+        this.deviceClient.engage();
+
+        this.registerArmingStateCallback(false);
     }
 
     @Override
@@ -138,7 +140,7 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
         waitForWriteCompletions();
     }
 
-    public int readProximity() {
+    public int getProximity() {
         if (!parameters.measureProximityPeriodic) {
             if (parameters.measureAmbientPeriodic) {
                 throw new UnsupportedOperationException("Periodic proximity measurements must be enabled");
@@ -159,7 +161,7 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
         return 0;
     }
 
-    public int readAmbient() {
+    public int getAmbient() {
         if (!parameters.measureAmbientPeriodic) {
             if (parameters.measureProximityPeriodic) {
                 throw new UnsupportedOperationException("Periodic ambient measurements must be enabled");
@@ -183,7 +185,7 @@ public class VCNL4010ProximitySensor extends I2cDeviceSynchDeviceWithParameters<
     @Override
     public double getDistance(DistanceUnit unit) {
         // TODO: calibrate this!!
-        return readProximity();
+        return getProximity();
     }
 
     @Override

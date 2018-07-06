@@ -7,7 +7,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.hardware.CachingDcMotorEx;
 import com.acmerobotics.library.hardware.CachingServo;
 import com.acmerobotics.library.hardware.LynxOptimizedI2cFactory;
-import com.acmerobotics.library.hardware.MaxSonarEZ1UltrasonicSensor;
+import com.acmerobotics.library.hardware.AnalogXLMaxSonarEZ;
 import com.acmerobotics.library.hardware.SharpGP2Y0A51SK0FProximitySensor;
 import com.acmerobotics.library.localization.Angle;
 import com.acmerobotics.library.localization.Pose2d;
@@ -125,7 +125,7 @@ public class MecanumDrive extends Subsystem {
 
     private BNO055IMU imu;
 
-    private MaxSonarEZ1UltrasonicSensor ultrasonicSensor;
+    private AnalogXLMaxSonarEZ ultrasonicSensor;
 
     private Servo proximitySwivel;
     private boolean proximitySwivelExtended;
@@ -237,7 +237,7 @@ public class MecanumDrive extends Subsystem {
         proximitySensor = new SharpGP2Y0A51SK0FProximitySensor(map.analogInput.get("proximitySensor"));
         proximitySwivel = new CachingServo(map.servo.get("proximitySwivel"));
 
-        ultrasonicSensor = new MaxSonarEZ1UltrasonicSensor(map.analogInput.get("ultrasonicSensor"));
+        ultrasonicSensor = new AnalogXLMaxSonarEZ(map.analogInput.get("ultrasonicSensor"));
         ultrasonicSwivel = new CachingServo(map.servo.get("ultrasonicSwivel"));
 
         powers = new double[4];

@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 /**
  * This class provides API access to the MaxSonar EZ1 Ultrasonic Sensor.
  */
-public class MaxSonarEZ1UltrasonicSensor implements UltrasonicSensor, DistanceSensor {
+public class AnalogXLMaxSonarEZ implements UltrasonicSensor, DistanceSensor {
     public enum LogicLevel {
         V5,
         V3_3
@@ -18,7 +18,7 @@ public class MaxSonarEZ1UltrasonicSensor implements UltrasonicSensor, DistanceSe
     private AnalogInput input;
     private LogicLevel logicLevel;
 
-    public MaxSonarEZ1UltrasonicSensor(AnalogInput analogInput) {
+    public AnalogXLMaxSonarEZ(AnalogInput analogInput) {
         input = analogInput;
         logicLevel = input.getMaxVoltage() == 5 ? LogicLevel.V5 : LogicLevel.V3_3;
     }
