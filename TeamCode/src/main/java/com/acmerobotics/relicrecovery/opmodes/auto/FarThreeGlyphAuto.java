@@ -2,8 +2,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
@@ -11,11 +9,12 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -26,6 +25,8 @@ import java.util.Map;
 
 @Autonomous
 public class FarThreeGlyphAuto extends AutoOpMode {
+    public static final double EPSILON = 1e-6;
+
     private UltrasonicLocalizer ultrasonicLocalizer;
     private BalancingStone stone;
     private Cryptobox crypto;
@@ -95,12 +96,12 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(stone);
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
-        Vector2d biasedFirstColumnPosition = firstColumnPosition.added(new Vector2d(0, -yMultiplier * LATERAL_BIAS));
+        Vector2d biasedFirstColumnPosition = firstColumnPosition.plus(new Vector2d(0, -yMultiplier * LATERAL_BIAS));
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
-        Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(0, yMultiplier * LATERAL_BIAS));
+        Vector2d biasedSecondColumnPosition = secondColumnPosition.plus(new Vector2d(0, yMultiplier * LATERAL_BIAS));
 
         Trajectory stoneToCrypto = robot.drive.trajectoryBuilder(stonePose)
-                .turnTo(removeLeft ? -Vector2d.EPSILON : Vector2d.EPSILON) // fun hack
+                .turnTo(removeLeft ? -EPSILON : EPSILON) // fun hack
                 .lineTo(new Vector2d(-44, stonePose.y()))
                 .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()))
                 .waitFor(1.0)

@@ -1,10 +1,10 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.acmerobotics.splinelib.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 

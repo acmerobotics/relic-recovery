@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
+import com.acmerobotics.splinelib.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 //@Disabled

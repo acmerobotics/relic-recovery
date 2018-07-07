@@ -3,11 +3,16 @@ dependencies {
     implementation project(':RobotLib')
     implementation project(':FtcDashboard')
     implementation project(':openCVLibrary331')
+
+    implementation project(':SplineLib')
+
     implementation (name: 'RobotCore-release', ext: 'aar')
     implementation (name: 'Hardware-release', ext: 'aar')
     implementation (name: 'FtcCommon-release', ext: 'aar')
     implementation (name: 'Analytics-release', ext: 'aar')
     implementation (name: 'WirelessP2p-release', ext: 'aar')
+
+    implementation 'com.android.support:multidex:1.0.3'
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:2.+'

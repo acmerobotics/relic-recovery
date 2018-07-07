@@ -3,13 +3,13 @@ package com.acmerobotics.relicrecovery.localization;
 import android.util.Log;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.CryptoboxTracker;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,7 +68,7 @@ public class CryptoboxLocalizer implements CryptoboxTracker.Listener {
             case FAR_BLUE:
             case FAR_RED:
                 // intentional fall-through
-                return cryptoPos.added(cryptoRelPos);
+                return cryptoPos.plus(cryptoRelPos);
         }
         throw new RuntimeException("Invalid cryptobox!");
     }
@@ -125,7 +125,7 @@ public class CryptoboxLocalizer implements CryptoboxTracker.Listener {
                     Vector2d pos = getFieldPositionFromCryptoRelativePosition(
                             cryptobox, getPosFromRails(railsCopy));
                     Log.i("CryptoboxLocalizer", "considering " + pos);
-                    double error = robotPose.pos().added(pos.negated()).norm();
+                    double error = robotPose.pos().minus(pos).norm();
                     if (error < bestError) {
                         bestError = error;
                         bestPos = pos;

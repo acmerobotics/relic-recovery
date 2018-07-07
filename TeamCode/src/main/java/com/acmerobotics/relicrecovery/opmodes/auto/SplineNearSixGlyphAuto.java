@@ -3,8 +3,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 import android.annotation.SuppressLint;
 import android.util.TimingLogger;
 
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
@@ -12,10 +10,11 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
@@ -115,7 +114,7 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         Trajectory stoneToPit = robot.drive.trajectoryBuilder(stonePose)
                 .beginComposite()
                 .lineTo(new Vector2d(30, stonePose.y()))
-                .splineThrough(new Pose2d(0, yMultiplier * 12, -yMultiplier * 3 * Math.PI / 4))
+                .splineTo(new Pose2d(0, yMultiplier * 12, -yMultiplier * 3 * Math.PI / 4))
                 .closeComposite()
                 .build();
 
@@ -132,7 +131,7 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         timings.addSplit("stoneToPit");
 
         Trajectory pitToCrypto1 = robot.drive.trajectoryBuilder(stoneToPit.end())
-                .splineThrough(new Pose2d(firstColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(firstColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
 
@@ -185,7 +184,7 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         timings.addSplit("dump1");
 
         Trajectory cryptoToPit2 = robot.drive.trajectoryBuilder(cryptoApproach1.end())
-                .splineThrough(new Pose2d(24, yMultiplier * 12, -yMultiplier * Math.PI / 4))
+                .splineTo(new Pose2d(24, yMultiplier * 12, -yMultiplier * Math.PI / 4))
                 .build();
 
         timings.addSplit("cryptoToPit2 gen");
@@ -202,7 +201,7 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         timings.addSplit("cryptoToPit2");
 
         Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
-                .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
 
@@ -255,7 +254,7 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         timings.addSplit("dump2");
 
         Trajectory cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
-                .splineThrough(new Pose2d(16, 0, -yMultiplier * 3 * Math.PI / 8))
+                .splineTo(new Pose2d(16, 0, -yMultiplier * 3 * Math.PI / 8))
                 .build();
 
         timings.addSplit("cryptoToPit3 gen");
@@ -272,7 +271,7 @@ public class SplineNearSixGlyphAuto extends AutoOpMode {
         timings.addSplit("cryptoToPit3");
 
         Trajectory pitToCrypto3 = robot.drive.trajectoryBuilder(cryptoToPit3.end())
-                .splineThrough(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .waitFor(0.25)
                 .build();
 

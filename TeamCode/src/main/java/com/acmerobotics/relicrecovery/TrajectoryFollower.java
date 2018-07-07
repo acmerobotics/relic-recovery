@@ -1,12 +1,13 @@
-package com.acmerobotics.library.path;
+package com.acmerobotics.relicrecovery;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.motion.MotionState;
 import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.library.motion.PIDFController;
 import com.acmerobotics.library.util.TimestampedData;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 
 @Config
 public class TrajectoryFollower {
@@ -116,16 +117,16 @@ public class TrajectoryFollower {
         }
 
         // all field coordinates
-        pose = trajectory.getPose(time);
-        poseVelocity = trajectory.getVelocity(time);
-        poseAcceleration = trajectory.getAcceleration(time);
+        pose = trajectory.get(time);
+        poseVelocity = trajectory.velocity(time);
+        poseAcceleration = trajectory.acceleration(time);
 
         MotionState headingState = new MotionState(pose.heading(), poseVelocity.heading(), poseAcceleration.heading(), 0, 0);
         headingController.setSetpoint(headingState);
         headingError = headingController.getPositionError(estimatedPose.heading());
         headingUpdate = headingController.update(headingError, time);
 
-        Vector2d fieldError = estimatedPose.pos().added(pose.pos().negated());
+        Vector2d fieldError = estimatedPose.pos().minus(pose.pos());
         Vector2d robotError = fieldError.rotated(-estimatedPose.heading());
 
         axialError = robotError.x();

@@ -1,7 +1,7 @@
 package com.acmerobotics.relicrecovery.localization;
 
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
+import com.acmerobotics.splinelib.Vector2d;
 
 public class DeadReckoningLocalizer implements Localizer {
     protected MecanumDrive drive;
@@ -25,7 +25,7 @@ public class DeadReckoningLocalizer implements Localizer {
             Vector2d robotPoseDelta = MecanumDrive.getPoseDelta(rotationDeltas).pos();
             Vector2d fieldPoseDelta = robotPoseDelta.rotated(drive.getHeading());
 
-            estimatedPosition = estimatedPosition.added(fieldPoseDelta);
+            estimatedPosition = estimatedPosition.plus(fieldPoseDelta);
         }
         lastRotations = rotations;
         return estimatedPosition;

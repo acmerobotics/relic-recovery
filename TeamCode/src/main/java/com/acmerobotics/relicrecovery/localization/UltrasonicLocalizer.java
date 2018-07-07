@@ -1,10 +1,10 @@
 package com.acmerobotics.relicrecovery.localization;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.ExponentialSmoother;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
+import com.acmerobotics.splinelib.Vector2d;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -61,7 +61,7 @@ public class UltrasonicLocalizer extends DeadReckoningLocalizer {
             Cryptobox closestCryptobox = Cryptobox.NEAR_BLUE;
             double closestDistance = Double.POSITIVE_INFINITY;
             for (Cryptobox cryptobox : Cryptobox.values()) {
-                double distance = Vector2d.distance(cryptobox.getPosition(), estimatedPosition);
+                double distance = cryptobox.getPosition().distanceTo(estimatedPosition);
                 if (distance < closestDistance) {
                     closestCryptobox = cryptobox;
                     closestDistance = distance;

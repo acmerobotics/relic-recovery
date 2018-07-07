@@ -1,8 +1,8 @@
 package com.acmerobotics.relicrecovery.opmodes.test;
 
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.localization.TrackingOmniLocalizer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.acmerobotics.splinelib.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 

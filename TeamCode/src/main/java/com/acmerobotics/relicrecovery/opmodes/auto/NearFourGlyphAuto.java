@@ -1,7 +1,5 @@
 package com.acmerobotics.relicrecovery.opmodes.auto;
 
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
@@ -9,11 +7,12 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.Intake;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
@@ -95,7 +94,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(stone);
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
-        Vector2d biasedSecondColumnPosition = secondColumnPosition.added(new Vector2d(-yMultiplier * AutoPaths.VUMARK_MAP.get(secondColumn) * LATERAL_BIAS, 0));
+        Vector2d biasedSecondColumnPosition = secondColumnPosition.plus(new Vector2d(-yMultiplier * AutoPaths.VUMARK_MAP.get(secondColumn) * LATERAL_BIAS, 0));
 
         Trajectory stoneToFloor = robot.drive.trajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))

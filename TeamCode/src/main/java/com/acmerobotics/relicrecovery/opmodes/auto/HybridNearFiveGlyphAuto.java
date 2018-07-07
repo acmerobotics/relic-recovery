@@ -3,8 +3,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 import android.annotation.SuppressLint;
 import android.util.TimingLogger;
 
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
@@ -12,10 +10,12 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.path.SplineInterpolator;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -155,7 +155,8 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         Trajectory cryptoToPit2 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
                 .beginComposite()
-                .lineToPose(new Pose2d(firstColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 4))
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 36),
+                        new SplineInterpolator(stoneToCrypto1.end().heading(), -yMultiplier * Math.PI / 4))
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 12))
                 .closeComposite()
                 .forward(9)
@@ -175,7 +176,8 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
         timings.addSplit("cryptoToPit2");
 
         Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
-                .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 2))
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36),
+                        new SplineInterpolator(cryptoToPit2.end().heading(), -yMultiplier * Math.PI / 2))
                 .waitFor(0.5)
                 .build();
 
@@ -228,7 +230,8 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
 
         Trajectory cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                 .beginComposite()
-                .lineToPose(new Pose2d(secondColumnPosition.x(), yMultiplier * 36, -yMultiplier * 3 * Math.PI / 4))
+                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 36),
+                        new SplineInterpolator(cryptoApproach2.end().heading(), -yMultiplier * 3 * Math.PI / 4))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 12))
                 .closeComposite()
                 .forward(6)
@@ -248,7 +251,8 @@ public class HybridNearFiveGlyphAuto extends AutoOpMode {
         timings.addSplit("cryptoToPit3");
 
         Trajectory pitToCrypto3 = robot.drive.trajectoryBuilder(cryptoToPit3.end())
-                .lineToPose(new Pose2d(thirdColumnPosition.x(), yMultiplier * 36, -yMultiplier * Math.PI / 2))
+                .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 36),
+                        new SplineInterpolator(cryptoToPit3.end().heading(), -yMultiplier * Math.PI / 2))
                 .waitFor(0.5)
                 .build();
 

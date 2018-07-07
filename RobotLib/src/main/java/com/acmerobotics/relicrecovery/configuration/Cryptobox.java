@@ -1,6 +1,6 @@
 package com.acmerobotics.relicrecovery.configuration;
 
-import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.splinelib.Vector2d;
 
 public enum Cryptobox {
     NEAR_BLUE(0, AllianceColor.BLUE, new Vector2d(12, -72)),

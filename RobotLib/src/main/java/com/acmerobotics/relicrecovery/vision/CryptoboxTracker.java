@@ -1,12 +1,12 @@
 package com.acmerobotics.relicrecovery.vision;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.library.vision.Overlay;
 import com.acmerobotics.library.vision.Tracker;
 import com.acmerobotics.library.vision.VisionCamera;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
+import com.acmerobotics.splinelib.Vector2d;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -190,7 +190,7 @@ public class CryptoboxTracker extends Tracker {
             for (int j = i + 1; j < points.size(); j++) {
                 Point pt2 = points.get(j);
                 Vector2d v = new Vector2d(pt2.x - pt1.x, pt2.y - pt1.y);
-                double vertCosAngle = Vector2d.getCosAngle(v, new Vector2d(1, 0));
+                double vertCosAngle = v.x() / v.norm();
                 if (Math.abs(vertCosAngle) < MAX_COS_ANGLE) {
                     if (!verticalPoints.contains(pt1)) {
                         verticalPoints.add(pt1);

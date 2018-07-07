@@ -1,11 +1,11 @@
 package com.acmerobotics.relicrecovery.opmodes.tuner;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.path.TrajectoryFollower;
+import com.acmerobotics.relicrecovery.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;

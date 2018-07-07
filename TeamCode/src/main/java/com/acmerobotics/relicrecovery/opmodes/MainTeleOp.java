@@ -1,10 +1,10 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.subsystems.DumpBed;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.subsystems.RelicRecoverer;
 import com.acmerobotics.relicrecovery.subsystems.Robot;
+import com.acmerobotics.splinelib.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 

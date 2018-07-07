@@ -12,7 +12,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.acmerobotics.library.R;
-import com.acmerobotics.library.localization.Vector2d;
+import com.acmerobotics.splinelib.Vector2d;
 
 public class FieldView extends View {
     private Bitmap fieldBitmap;

@@ -29,6 +29,8 @@ dependencies {
     implementation project(':FtcDashboard')
     implementation project(':openCVLibrary331')
 
+    implementation project(':SplineLib')
+
     implementation('org.nanohttpd:nanohttpd-websocket:2.3.1') {
         exclude module: 'nanohttpd'
     }

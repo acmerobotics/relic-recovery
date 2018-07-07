@@ -2,9 +2,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.path.Trajectory;
 import com.acmerobotics.library.telemetry.CSVLoggingTelemetry;
 import com.acmerobotics.library.util.LoggingUtil;
 import com.acmerobotics.library.util.TimestampedData;
@@ -19,6 +16,9 @@ import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
@@ -121,7 +121,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
         Trajectory stoneToPit = robot.drive.trajectoryBuilder(stonePose)
                 .beginComposite()
                 .lineTo(new Vector2d(30, stonePose.y()))
-                .splineThrough(new Pose2d(0, yMultiplier * 12, -yMultiplier * 3 * Math.PI / 4))
+                .splineTo(new Pose2d(0, yMultiplier * 12, -yMultiplier * 3 * Math.PI / 4))
                 .closeComposite()
                 .build();
         robot.drive.setEstimatedPose(stoneToPit.start());
@@ -136,7 +136,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
 
         Trajectory pitToCrypto1 = robot.drive.trajectoryBuilder(stoneToPit.end())
                 .beginComposite()
-                .splineThrough(new Pose2d(firstColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(firstColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
                 .closeComposite()
                 .waitFor(0.5)
@@ -164,7 +164,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
         robot.sleep(0.5);
 
         Trajectory cryptoToPit2 = robot.drive.trajectoryBuilder(pitToCrypto1.end())
-                .splineThrough(new Pose2d(24, yMultiplier * 12, -yMultiplier * Math.PI / 4))
+                .splineTo(new Pose2d(24, yMultiplier * 12, -yMultiplier * Math.PI / 4))
                 .build();
         robot.drive.followTrajectory(cryptoToPit2);
 
@@ -177,7 +177,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
 
         Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
                 .beginComposite()
-                .splineThrough(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 56))
                 .closeComposite()
                 .waitFor(0.5)
@@ -205,7 +205,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
         robot.sleep(0.5);
 
         Trajectory cryptoToPit3 = robot.drive.trajectoryBuilder(pitToCrypto2.end())
-                .splineThrough(new Pose2d(16, 0, -yMultiplier * 3 * Math.PI / 8))
+                .splineTo(new Pose2d(16, 0, -yMultiplier * 3 * Math.PI / 8))
                 .build();
         robot.drive.followTrajectory(cryptoToPit3);
 
@@ -218,7 +218,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
 
         Trajectory pitToCrypto3 = robot.drive.trajectoryBuilder(cryptoToPit3.end())
                 .beginComposite()
-                .splineThrough(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 40, -yMultiplier * Math.PI / 2))
                 .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 56))
                 .closeComposite()
                 .waitFor(0.5)

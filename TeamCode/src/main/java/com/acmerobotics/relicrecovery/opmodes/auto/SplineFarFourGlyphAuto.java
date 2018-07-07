@@ -3,8 +3,6 @@ package com.acmerobotics.relicrecovery.opmodes.auto;
 import android.annotation.SuppressLint;
 import android.util.TimingLogger;
 
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
@@ -12,10 +10,11 @@ import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
@@ -95,7 +94,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
         RelicRecoveryVuMark firstColumn = (vuMark == RelicRecoveryVuMark.UNKNOWN) ? RelicRecoveryVuMark.LEFT : vuMark;
         RelicRecoveryVuMark secondColumn = COLUMN_TRANSITION1.get(firstColumn);
 
-        Pose2d stonePose = AutoPaths.getBalancingStonePose(stone).added(new Pose2d(0, yMultiplier * AutoPaths.STONE_CORRECTION, 0));
+        Pose2d stonePose = AutoPaths.getBalancingStonePose(stone).plus(new Pose2d(0, yMultiplier * AutoPaths.STONE_CORRECTION, 0));
         Vector2d firstColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, firstColumn);
         Vector2d secondColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, secondColumn);
 
@@ -103,7 +102,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
                 .turnTo(-yMultiplier * Math.PI / 2)
                 .beginComposite()
                 .lineTo(new Vector2d(stonePose.x(),  yMultiplier * 36))
-                .splineThrough(new Pose2d(-8, -8, -yMultiplier * Math.PI / 4))
+                .splineTo(new Pose2d(-8, -8, -yMultiplier * Math.PI / 4))
                 .closeComposite()
                 .build();
 
@@ -118,7 +117,8 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
         timings.addSplit("stoneToPit");
 
         Trajectory pitToCrypto1 = robot.drive.trajectoryBuilder(stoneToPit.end())
-                .splineThrough(new Pose2d(-24, yMultiplier * 12, 0), new Pose2d(-56, firstColumnPosition.y(), 0))
+                .splineTo(new Pose2d(-24, yMultiplier * 12, 0))
+                .splineTo(new Pose2d(-56, firstColumnPosition.y(), 0))
                 .waitFor(0.5)
                 .build();
 
@@ -153,7 +153,8 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
         timings.addSplit("dump1");
 
         Trajectory cryptoToPit2 = robot.drive.trajectoryBuilder(pitToCrypto1.end())
-                .splineThrough(new Pose2d(-24, yMultiplier * 12, 0), new Pose2d(0, 0, -yMultiplier * Math.PI / 4))
+                .splineTo(new Pose2d(-24, yMultiplier * 12, 0))
+                .splineTo(new Pose2d(0, 0, -yMultiplier * Math.PI / 4))
                 .build();
 
         timings.addSplit("cryptoToPit2 gen");
@@ -170,7 +171,8 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
         timings.addSplit("cryptoToPit2");
 
         Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
-                .splineThrough(new Pose2d(-16, yMultiplier * 12, 0), new Pose2d(-40, secondColumnPosition.y(), 0))
+                .splineTo(new Pose2d(-16, yMultiplier * 12, 0))
+                .splineTo(new Pose2d(-40, secondColumnPosition.y(), 0))
                 .waitFor(0.25)
                 .build();
 

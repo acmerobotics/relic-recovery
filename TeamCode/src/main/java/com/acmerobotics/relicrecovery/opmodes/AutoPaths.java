@@ -1,13 +1,13 @@
 package com.acmerobotics.relicrecovery.opmodes;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
+import com.acmerobotics.splinelib.trajectory.TrajectoryBuilder;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
@@ -32,7 +32,7 @@ public class AutoPaths {
     }
 
     public static TrajectoryBuilder trajectoryBuilder(Pose2d pose) {
-        return new TrajectoryBuilder(pose, MecanumDrive.AXIAL_CONSTRAINTS, MecanumDrive.POINT_TURN_CONSTRAINTS);
+        return new TrajectoryBuilder(pose, MecanumDrive.DRIVE_CONSTRAINTS);
     }
 
     public static Pose2d getBalancingStonePose(BalancingStone stone) {
@@ -50,18 +50,18 @@ public class AutoPaths {
         int columnInt = VUMARK_MAP.get(column);
         switch (cryptobox) {
             case NEAR_BLUE:
-                return cryptobox.getPosition().added(new Vector2d(columnInt * CRYPTO_COL_WIDTH, 0));
+                return cryptobox.getPosition().plus(new Vector2d(columnInt * CRYPTO_COL_WIDTH, 0));
             case NEAR_RED:
-                return cryptobox.getPosition().added(new Vector2d(-columnInt * CRYPTO_COL_WIDTH, 0));
+                return cryptobox.getPosition().plus(new Vector2d(-columnInt * CRYPTO_COL_WIDTH, 0));
             case FAR_BLUE:
             case FAR_RED:
-                return cryptobox.getPosition().added(new Vector2d(0, -columnInt * CRYPTO_COL_WIDTH));
+                return cryptobox.getPosition().plus(new Vector2d(0, -columnInt * CRYPTO_COL_WIDTH));
         }
         throw new UnsupportedOperationException(cryptobox + " is not a supported cryptobox");
     }
 
     public static Pose2d getAdjustedBalancingStonePose(BalancingStone stone) {
-        return getBalancingStonePose(stone).added(new Pose2d(STONE_CORRECTION, 0, 0));
+        return getBalancingStonePose(stone).plus(new Pose2d(STONE_CORRECTION, 0, 0));
     }
 
     public static Trajectory makeNormalTrajectoryToCryptobox(BalancingStone stone, RelicRecoveryVuMark vuMark) {

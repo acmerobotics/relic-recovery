@@ -1,10 +1,12 @@
 package com.acmerobotics.relicrecovery.localization;
 
-import com.acmerobotics.library.localization.Angle;
-import com.acmerobotics.library.localization.Vector2d;
 import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
+import com.acmerobotics.splinelib.Angle;
+import com.acmerobotics.splinelib.Vector2d;
 
 public class TrackingOmniLocalizer implements Localizer {
+    public static final double EPSILON = 1e-6;
+
     // position of the omnis in the drive coordinate frame (in)
     public static Vector2d FIRST_WHEEL_POSITION = new Vector2d(-2.375, -7.5);
     public static Vector2d SECOND_WHEEL_POSITION = new Vector2d(-0.25, 0);
@@ -44,7 +46,7 @@ public class TrackingOmniLocalizer implements Localizer {
             double secondWheelNorm = SECOND_WHEEL_DIRECTION.norm();
             double determinant = FIRST_WHEEL_DIRECTION.x() * SECOND_WHEEL_DIRECTION.y() - FIRST_WHEEL_DIRECTION.y() * SECOND_WHEEL_DIRECTION.x();
 
-            if (Math.abs(determinant) < Vector2d.EPSILON) {
+            if (Math.abs(determinant) < EPSILON) {
                 throw new RuntimeException("The tracking omnis must point in different directions");
             }
 
@@ -63,7 +65,7 @@ public class TrackingOmniLocalizer implements Localizer {
 
             Vector2d robotPoseDelta = new Vector2d(deltaX, deltaY);
             Vector2d fieldPoseDelta = robotPoseDelta.rotated(heading);
-            estimatedPosition = estimatedPosition.added(fieldPoseDelta);
+            estimatedPosition = estimatedPosition.plus(fieldPoseDelta);
         } else {
             initialized = true;
         }

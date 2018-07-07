@@ -9,22 +9,22 @@ import com.acmerobotics.library.hardware.CachingServo;
 import com.acmerobotics.library.hardware.LynxOptimizedI2cFactory;
 import com.acmerobotics.library.hardware.AnalogXLMaxSonarEZ;
 import com.acmerobotics.library.hardware.SharpGP2Y0A51SK0FProximitySensor;
-import com.acmerobotics.library.localization.Angle;
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.motion.MotionConstraints;
 import com.acmerobotics.library.motion.PIDController;
 import com.acmerobotics.library.motion.PIDFCoefficients;
-import com.acmerobotics.library.path.Trajectory;
-import com.acmerobotics.library.path.TrajectoryBuilder;
-import com.acmerobotics.library.path.TrajectoryFollower;
 import com.acmerobotics.library.telemetry.TelemetryUtil;
 import com.acmerobotics.library.util.DrawingUtil;
 import com.acmerobotics.library.util.ExponentialSmoother;
+import com.acmerobotics.relicrecovery.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
 import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
+import com.acmerobotics.splinelib.Angle;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.DriveConstraints;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
+import com.acmerobotics.splinelib.trajectory.TrajectoryBuilder;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxEmbeddedIMU;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -68,8 +68,9 @@ public class MecanumDrive extends Subsystem {
     public static final PIDCoefficients NORMAL_VELOCITY_PID = new PIDCoefficients(20, 8, 12);
     public static final PIDCoefficients SLOW_VELOCITY_PID = new PIDCoefficients(10, 3, 1);
 
-    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
+//    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
+//    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
+    public static DriveConstraints DRIVE_CONSTRAINTS = new DriveConstraints(30.0, 40.0, 2.0, 2.67, 500.0);
 
     public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.230, 0);
     public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.05, 0, 0, 0.0177, 0);
@@ -556,19 +557,6 @@ public class MecanumDrive extends Subsystem {
         }
     }
 
-    public void waitForMarker(String name) {
-        while (!Thread.currentThread().isInterrupted() && mode == Mode.FOLLOW_PATH) {
-            if (trajectoryFollower.getTrajectoryTime() >= trajectoryFollower.getTrajectory().getMarkerTime(name)) {
-                return;
-            }
-            try {
-                Thread.sleep(AutoOpMode.POLL_INTERVAL);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
     public Vector2d getEstimatedPosition() {
         return estimatedPose.pos();
     }
@@ -629,7 +617,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d pose) {
-        return new TrajectoryBuilder(pose, AXIAL_CONSTRAINTS, POINT_TURN_CONSTRAINTS);
+        return new TrajectoryBuilder(pose, DRIVE_CONSTRAINTS);
     }
 
     public Map<String, Object> update(Canvas fieldOverlay) {
@@ -650,8 +638,8 @@ public class MecanumDrive extends Subsystem {
             case FOLLOW_PATH:
                 if (trajectoryFollower.isFollowingTrajectory()) {
                     Pose2d estimatedPose = getEstimatedPose();
-                    Pose2d update = trajectoryFollower.update(estimatedPose);
-                    internalSetVelocity(update.pos(), update.heading());
+                    com.acmerobotics.splinelib.Pose2d update = trajectoryFollower.update(estimatedPose);
+                    internalSetVelocity(update.pos(), update.getHeading());
 
                     telemetryData.pathAxialError = trajectoryFollower.getAxialError();
                     telemetryData.pathAxialUpdate = trajectoryFollower.getAxialUpdate();
