@@ -1,10 +1,10 @@
 package com.acmerobotics.relicrecovery.path;
 
-import com.acmerobotics.library.localization.Pose2d;
-import com.acmerobotics.library.localization.Vector2d;
-import com.acmerobotics.library.path.Trajectory;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.vision.OpenCVStaticLoader;
+import com.acmerobotics.splinelib.Pose2d;
+import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.trajectory.Trajectory;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -20,31 +20,31 @@ public class TrajectoryGenerationTest {
         Trajectory trajectory = AutoPaths.trajectoryBuilder(new Pose2d(48, -48, Math.PI))
                 .beginComposite()
                 .lineTo(new Vector2d(36, -48))
-                .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
+                .splineTo(new Pose2d(0, -12, 3 * Math.PI / 4))
                 .closeComposite()
-                .splineThrough(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -60, Math.PI / 2))
-                .splineThrough(new Pose2d(24, -12, Math.PI / 4))
-                .splineThrough(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -60, Math.PI / 2))
-                .splineThrough(new Pose2d(16, 0, 3 * Math.PI / 8))
-                .splineThrough(new Pose2d(12, -60, Math.PI / 2))
+                .splineTo(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -60, Math.PI / 2))
+                .splineTo(new Pose2d(24, -12, Math.PI / 4))
+                .splineTo(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -60, Math.PI / 2))
+                .splineTo(new Pose2d(16, 0, 3 * Math.PI / 8))
+                .splineTo(new Pose2d(12, -60, Math.PI / 2))
                 .build();
         Trajectory trajectory2 = AutoPaths.trajectoryBuilder(new Pose2d(48, -48, Math.PI))
                 .beginComposite()
                 .lineTo(new Vector2d(36, -48))
-                .splineThrough(new Pose2d(0, -12, 3 * Math.PI / 4))
+                .splineTo(new Pose2d(0, -12, 3 * Math.PI / 4))
                 .closeComposite()
 //                .beginComposite()
-                .splineThrough(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
+                .splineTo(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -60))
 //                .closeComposite()
-                .splineThrough(new Pose2d(24, -12, Math.PI / 4))
+                .splineTo(new Pose2d(24, -12, Math.PI / 4))
 //                .beginComposite()
-                .splineThrough(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
+                .splineTo(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -60))
 //                .closeComposite()
-                .splineThrough(new Pose2d(16, 0, 3 * Math.PI / 8))
+                .splineTo(new Pose2d(16, 0, 3 * Math.PI / 8))
 //                .beginComposite()
-                .splineThrough(new Pose2d(12, -44, Math.PI / 2))
+                .splineTo(new Pose2d(12, -44, Math.PI / 2))
                 .lineTo(new Vector2d(12, -60))
 //                .closeComposite()
                 .build();
