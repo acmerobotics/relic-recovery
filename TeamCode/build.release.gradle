@@ -12,8 +12,6 @@ dependencies {
     implementation (name: 'Analytics-release', ext: 'aar')
     implementation (name: 'WirelessP2p-release', ext: 'aar')
 
-    implementation 'com.android.support:multidex:1.0.3'
-
     testImplementation 'junit:junit:4.12'
-    testImplementation 'org.mockito:mockito-core:2.+'
+    testImplementation 'org.mockito:mockito-core:2.19.0'
 }
