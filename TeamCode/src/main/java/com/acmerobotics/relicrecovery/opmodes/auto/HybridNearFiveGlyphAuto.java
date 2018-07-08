@@ -17,6 +17,7 @@ import com.acmerobotics.splinelib.Vector2d;
 import com.acmerobotics.splinelib.path.SplineInterpolator;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
@@ -24,6 +25,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import java.util.HashMap;
 import java.util.Map;
 
+@Disabled
 @Autonomous
 public class HybridNearFiveGlyphAuto extends AutoOpMode {
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION1 = new HashMap<>();

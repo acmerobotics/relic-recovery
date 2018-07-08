@@ -4,7 +4,13 @@ import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.splinelib.Pose2d;
 import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.path.Path;
+import com.acmerobotics.splinelib.path.QuinticSplineSegment;
+import com.acmerobotics.splinelib.path.TangentInterpolator;
+import com.acmerobotics.splinelib.path.WiggleInterpolator;
+import com.acmerobotics.splinelib.trajectory.PathTrajectorySegment;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
+import com.acmerobotics.splinelib.trajectory.TrajectorySegment;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -12,56 +18,26 @@ import org.junit.Test;
 import static com.acmerobotics.relicrecovery.path.TrajectoryUtil.drawTrajectoryOnField;
 
 public class AutoSplineTest {
-    @Ignore
+//    @Ignore
     @Test
-    public void testSixGlyphNear() {
-        Trajectory trajectory = AutoPaths.trajectoryBuilder(
-                new Pose2d(BalancingStone.NEAR_BLUE.getPosition(), Math.PI))
-                .beginComposite()
-                .lineTo(new Vector2d(24, -48))
-//                .turnTo(Math.PI / 2)
-                .splineTo(new Pose2d(0, -12, 3 * Math.PI / 4))
-                .closeComposite()
-//                .beginComposite()
-//                .splineTo(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
-//                .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -60))
-////                .closeComposite()
-//                .splineTo(new Pose2d(28, -16, Math.PI / 4))
-////                .beginComposite()
-//                .splineTo(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -44, Math.PI / 2))
-//                .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -60))
-////                .closeComposite()
-//                .splineTo(new Pose2d(16, 0, 3 * Math.PI / 8))
-////                .beginComposite()
-//                .splineTo(new Pose2d(12, -44, Math.PI / 2))
-//                .lineTo(new Vector2d(12, -60))
-//                .closeComposite()
-                .build();
-        drawTrajectoryOnField(trajectory, "sixGlyphNear");
-        System.out.format("6 Glyph Near Duration: %.2fs\n", trajectory.duration());
-    }
-
-    @Ignore
-    @Test
-    public void testSixGlyphFar() {
-        Trajectory trajectory = AutoPaths.trajectoryBuilder(
-                new Pose2d(BalancingStone.FAR_BLUE.getPosition(), Math.PI))
+    public void testFiveGlyphNear() {
+        Pose2d stonePose = AutoPaths.getAdjustedBalancingStonePose(BalancingStone.NEAR_BLUE);
+        Trajectory trajectory = AutoPaths.trajectoryBuilder(stonePose)
+                .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, stonePose.y()))
                 .turnTo(Math.PI / 2)
+                .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -56))
+                .waitFor(0.5)
                 .beginComposite()
-                .lineTo(new Vector2d(-24, -36))
-                .splineTo(new Pose2d(-8, -8, Math.PI / 4))
+                .splineTo(new Pose2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -24, 7 * Math.PI / 12))
+                .splineTo(new Pose2d(-4, -10, 3 * Math.PI / 4),
+                        new WiggleInterpolator(Math.toRadians(15), 6, new TangentInterpolator()))
                 .closeComposite()
-                .splineTo(new Pose2d(-24, -12, 0))
-                .splineTo(new Pose2d(-56, -36 - AutoPaths.CRYPTO_COL_WIDTH, 0))
-                .splineTo(new Pose2d(-24, -12, 0))
-                .splineTo(new Pose2d(0, 0, Math.PI / 4))
-                .splineTo(new Pose2d(-16, -12, 0))
-                .splineTo(new Pose2d(-40, -36 + AutoPaths.CRYPTO_COL_WIDTH, 0))
-                .lineTo(new Vector2d(-56, -36 + AutoPaths.CRYPTO_COL_WIDTH))
-// .splineTo(new Pose2d(-24, -12, 0), new Pose2d(12, 0, 0))
-//                .splineTo(new Pose2d(-24, -12, 0), new Pose2d(-56, -36, 0))
                 .build();
-        drawTrajectoryOnField(trajectory, "sixGlyphFar");
-        System.out.format("6 Glyph Far Duration: %.2fs\n", trajectory.duration());
+        for (TrajectorySegment segment : trajectory.getSegments()) {
+            System.out.println(segment.duration());
+        }
+        Path splineSegment = ((PathTrajectorySegment) trajectory.getSegments().get(4)).getPaths().get(0);
+        drawTrajectoryOnField(trajectory, "fiveGlyphNear");
+        System.out.format("5 Glyph Near Duration: %.2fs\n", trajectory.duration());
     }
 }

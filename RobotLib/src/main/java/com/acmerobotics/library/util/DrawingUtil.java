@@ -141,7 +141,7 @@ public class DrawingUtil {
     public static void drawParametricCurve(Canvas canvas, ParametricCurve parametricCurve) {
         if (parametricCurve instanceof LineSegment) {
             LineSegment line = (LineSegment) parametricCurve;
-            canvas.strokeLine(line.get(0.0).x(), line.get(0.0).y(), line.get(line.length()).x(), line.get(line.length()).x());
+            canvas.strokeLine(line.start().x(), line.start().y(), line.end().x(), line.end().y());
         } else if (parametricCurve instanceof QuinticSplineSegment) {
             QuinticSplineSegment spline = (QuinticSplineSegment) parametricCurve;
             QuinticPolynomial x = spline.getX();

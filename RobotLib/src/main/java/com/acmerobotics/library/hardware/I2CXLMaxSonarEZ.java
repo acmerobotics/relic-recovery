@@ -3,17 +3,13 @@ package com.acmerobotics.library.hardware;
 import android.support.annotation.NonNull;
 
 import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynchDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchDeviceWithParameters;
 import com.qualcomm.robotcore.hardware.I2cWaitControl;
 import com.qualcomm.robotcore.hardware.configuration.I2cSensor;
 import com.qualcomm.robotcore.util.TypeConversion;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-import static java.lang.Thread.sleep;
 
 /**
  * Interface for the I2CXL MaxSonar EZ ultrasonic sensor from MaxBotix. Based on an earlier version
@@ -40,8 +36,18 @@ public class I2CXLMaxSonarEZ extends I2cDeviceSynchDeviceWithParameters<I2cDevic
     protected boolean internalInitialize(@NonNull Parameters parameters) {
         this.deviceClient.setI2cAddress(parameters.i2cAddr);
 
+        int partInfo = TypeConversion.byteArrayToShort(deviceClient.read(0x01, 2));
+        if (partInfo != 0x44A4) {
+            return false;
+        }
+
         return true;
     }
+
+    public double getMinDistance(DistanceUnit unit) {
+        return unit.fromCm(20);
+    }
+
 
     public double getDistance(DistanceUnit unit) {
         deviceClient.write8(0, 0x51, I2cWaitControl.WRITTEN);

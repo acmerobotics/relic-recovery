@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes.auto;
+package com.acmerobotics.relicrecovery.opmodes.auto2;
 
 import android.annotation.SuppressLint;
 import android.util.TimingLogger;
@@ -16,6 +16,7 @@ import com.acmerobotics.splinelib.Pose2d;
 import com.acmerobotics.splinelib.Vector2d;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;

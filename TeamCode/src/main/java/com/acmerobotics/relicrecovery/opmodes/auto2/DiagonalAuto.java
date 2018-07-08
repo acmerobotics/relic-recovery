@@ -1,4 +1,4 @@
-package com.acmerobotics.relicrecovery.opmodes.auto;
+package com.acmerobotics.relicrecovery.opmodes.auto2;
 
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
@@ -8,6 +8,7 @@ import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.acmerobotics.splinelib.Pose2d;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 

@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.library.hardware.CachingDcMotorEx;
 import com.acmerobotics.library.hardware.CachingServo;
+import com.acmerobotics.library.hardware.I2CXLMaxSonarEZ;
 import com.acmerobotics.library.hardware.LynxOptimizedI2cFactory;
 import com.acmerobotics.library.hardware.AnalogXLMaxSonarEZ;
 import com.acmerobotics.library.hardware.SharpGP2Y0A51SK0FProximitySensor;
@@ -14,6 +15,7 @@ import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.library.telemetry.TelemetryUtil;
 import com.acmerobotics.library.util.DrawingUtil;
 import com.acmerobotics.library.util.ExponentialSmoother;
+import com.acmerobotics.relicrecovery.RelicRecoveryConstraints;
 import com.acmerobotics.relicrecovery.TrajectoryFollower;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
@@ -70,7 +72,7 @@ public class MecanumDrive extends Subsystem {
 
 //    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
 //    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static DriveConstraints DRIVE_CONSTRAINTS = new DriveConstraints(30.0, 40.0, 2.0, 2.67, 500.0);
+    public static DriveConstraints DRIVE_CONSTRAINTS = new RelicRecoveryConstraints(40.0, 40.0, 2.0, 2.67, Double.NaN);
 
     public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.230, 0);
     public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.05, 0, 0, 0.0177, 0);
@@ -126,7 +128,7 @@ public class MecanumDrive extends Subsystem {
 
     private BNO055IMU imu;
 
-    private AnalogXLMaxSonarEZ ultrasonicSensor;
+    private I2CXLMaxSonarEZ ultrasonicSensor;
 
     private Servo proximitySwivel;
     private boolean proximitySwivelExtended;
@@ -238,7 +240,8 @@ public class MecanumDrive extends Subsystem {
         proximitySensor = new SharpGP2Y0A51SK0FProximitySensor(map.analogInput.get("proximitySensor"));
         proximitySwivel = new CachingServo(map.servo.get("proximitySwivel"));
 
-        ultrasonicSensor = new AnalogXLMaxSonarEZ(map.analogInput.get("ultrasonicSensor"));
+        ultrasonicSensor = new I2CXLMaxSonarEZ(map.i2cDeviceSynch.get("ultrasonicSensor"));
+        ultrasonicSensor.initialize();
         ultrasonicSwivel = new CachingServo(map.servo.get("ultrasonicSwivel"));
 
         powers = new double[4];
