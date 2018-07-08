@@ -64,7 +64,7 @@ public class MotionProfileGenerator {
             if (stoppingDistance > goal.pos) {
                 //well, we can't stop now
                 if (constraints.endBehavior == MotionConstraints.EndBehavior.OVERSHOOT) {
-                    //we are going to overshoot so we come to a stop and then reverse back
+                    //we are going to overshoot so we come to a stop and then flipHeading back
                     //first stop
                     stoppingTimes = getDeltaVTimes(start.v, constraints);
                     profile.appendControl(-constraints.maxJ, stoppingTimes[0]);
@@ -225,7 +225,7 @@ public class MotionProfileGenerator {
         double dvInJerk = .5 * constraints.maxJ * jerkTime * jerkTime;
         double maxAccelReached = jerkTime * constraints.maxJ;
         dv = dv - dvInJerk; //now we only have to coast at max accel to finish off dv
-        double coastTime = dv / maxAccelReached; //cool, now we just jerk for jerkTime, then coast for 2*coastTime, then reverse jerk for jerkTime
+        double coastTime = dv / maxAccelReached; //cool, now we just jerk for jerkTime, then coast for 2*coastTime, then flipHeading jerk for jerkTime
         return new double[] {jerkTime, coastTime * 2.0, jerkTime};
     }
 

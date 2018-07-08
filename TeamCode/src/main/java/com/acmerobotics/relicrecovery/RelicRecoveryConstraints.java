@@ -11,7 +11,7 @@ public class RelicRecoveryConstraints extends DriveConstraints {
     @Override
     public double maximumVelocity(Pose2d pose, Pose2d poseDeriv, Pose2d poseSecondDeriv) {
         double maxVel = getMaximumVelocity();
-        if (Math.abs(pose.y()) < 28) {
+        if (Math.abs(pose.y()) < 28 && Math.signum(pose.y()) != Math.signum(poseDeriv.y())) {
             maxVel = 10.0;
         }
 
