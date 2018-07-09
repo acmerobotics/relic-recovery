@@ -153,7 +153,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
 
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
@@ -194,7 +194,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
 
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
@@ -235,7 +235,7 @@ public class SplineNearSixGlyphAutoNoUltrasonic extends AutoOpMode {
 
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();

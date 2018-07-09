@@ -108,6 +108,8 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
                         }
                     }
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             } catch (Throwable t) {
                 Log.wtf(TAG, t);
             }
@@ -127,7 +129,6 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-
         }
     };
 

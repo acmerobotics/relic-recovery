@@ -8,16 +8,13 @@ import com.acmerobotics.library.hardware.CachingDcMotorEx;
 import com.acmerobotics.library.hardware.CachingServo;
 import com.acmerobotics.library.hardware.I2CXLMaxSonarEZ;
 import com.acmerobotics.library.hardware.LynxOptimizedI2cFactory;
-import com.acmerobotics.library.hardware.AnalogXLMaxSonarEZ;
 import com.acmerobotics.library.hardware.SharpGP2Y0A51SK0FProximitySensor;
 import com.acmerobotics.library.motion.PIDController;
 import com.acmerobotics.library.motion.PIDFCoefficients;
 import com.acmerobotics.library.telemetry.TelemetryUtil;
 import com.acmerobotics.library.util.DrawingUtil;
 import com.acmerobotics.library.util.ExponentialSmoother;
-import com.acmerobotics.relicrecovery.RelicRecoveryConstraints;
 import com.acmerobotics.relicrecovery.TrajectoryFollower;
-import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.localization.DeadReckoningLocalizer;
 import com.acmerobotics.relicrecovery.localization.Localizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
@@ -72,7 +69,8 @@ public class MecanumDrive extends Subsystem {
 
 //    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
 //    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static DriveConstraints DRIVE_CONSTRAINTS = new RelicRecoveryConstraints(40.0, 40.0, 2.0, 2.67, Double.NaN);
+    public static DriveConstraints NORMAL_DRIVE_CONSTRAINTS = new DriveConstraints(20.0, 30.0, 2.0, 2.67, 500.0);
+    public static DriveConstraints PILE_DRIVE_CONSTRAINTS = new DriveConstraints(7.5, 30.0, 2.0, 2.67, 500.0);
 
     public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.230, 0);
     public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.05, 0, 0, 0.0177, 0);
@@ -584,7 +582,7 @@ public class MecanumDrive extends Subsystem {
         useCachedTrackingEncoderPositions = false;
     }
 
-    public void alignWithColumn(AllianceColor color) {
+    public void alignWithColumn() {
         columnAlignSurface = SharpGP2Y0A51SK0FProximitySensor.Surface.CRYPTO;
         columnAlignController.reset();
         proximitySmoother.reset();
@@ -599,6 +597,10 @@ public class MecanumDrive extends Subsystem {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    public double getAverageUltrasonicDistance(int samples, DistanceUnit unit) {
+        return ultrasonicSensor.getAverageDistance(samples, unit);
     }
 
     public double getUltrasonicDistance(DistanceUnit unit) {
@@ -620,7 +622,7 @@ public class MecanumDrive extends Subsystem {
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d pose) {
-        return new TrajectoryBuilder(pose, DRIVE_CONSTRAINTS);
+        return new TrajectoryBuilder(pose, NORMAL_DRIVE_CONSTRAINTS);
     }
 
     public Map<String, Object> update(Canvas fieldOverlay) {

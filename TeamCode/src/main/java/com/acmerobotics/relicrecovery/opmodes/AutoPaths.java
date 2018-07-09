@@ -32,7 +32,7 @@ public class AutoPaths {
     }
 
     public static TrajectoryBuilder trajectoryBuilder(Pose2d pose) {
-        return new TrajectoryBuilder(pose, MecanumDrive.DRIVE_CONSTRAINTS);
+        return new TrajectoryBuilder(pose, MecanumDrive.NORMAL_DRIVE_CONSTRAINTS);
     }
 
     public static Pose2d getBalancingStonePose(BalancingStone stone) {

@@ -136,7 +136,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
@@ -195,7 +195,7 @@ public class NearFourGlyphAuto extends AutoOpMode {
         double elapsedTime = TimestampedData.getCurrentTime() - startTime;
         if (elapsedTime < 28) {
             robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
-            robot.drive.alignWithColumn(robot.config.getAllianceColor());
+            robot.drive.alignWithColumn();
             robot.drive.waitForColumnAlign();
             robot.drive.disableHeadingCorrection();
             robot.drive.setEstimatedPosition(pitToCrypto2.end().pos());

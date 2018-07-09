@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchDeviceWithParameters;
 import com.qualcomm.robotcore.hardware.I2cWaitControl;
 import com.qualcomm.robotcore.hardware.configuration.I2cSensor;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.TypeConversion;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -59,15 +60,22 @@ public class I2CXLMaxSonarEZ extends I2cDeviceSynchDeviceWithParameters<I2cDevic
         }
 
         double rawDistance = TypeConversion.byteArrayToShort(deviceClient.read(0x01, 2));
+        RobotLog.i("I2CXL: read distance: " + DistanceUnit.INCH.fromCm(rawDistance));
         return unit.fromCm(rawDistance);
     }
 
     public double getAverageDistance(int samples, DistanceUnit unit) {
+        RobotLog.i("I2CXL: begin avg read");
         double sum = 0;
+        int count = 0;
         for (int i = 0; i < samples; i++) {
-            sum += getDistance(unit);
+            double distance = getDistance(unit);
+            if (distance < unit.fromInches(100)) {
+                sum += distance;
+                count++;
+            }
         }
-        return sum / samples;
+        return sum / count;
     }
 
     @Override

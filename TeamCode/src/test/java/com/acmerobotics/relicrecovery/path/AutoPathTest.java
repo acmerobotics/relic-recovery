@@ -12,8 +12,9 @@ import com.acmerobotics.splinelib.trajectory.TrajectorySegment;
 import org.junit.Test;
 
 import static com.acmerobotics.relicrecovery.path.TrajectoryUtil.drawTrajectoryOnField;
+import static com.acmerobotics.relicrecovery.path.TrajectoryUtil.writeTrajectory;
 
-public class AutoSplineTest {
+public class AutoPathTest {
 //    @Ignore
     @Test
     public void testFiveGlyphNear() {
@@ -21,8 +22,10 @@ public class AutoSplineTest {
         Trajectory trajectory = AutoPaths.trajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, stonePose.y()))
                 .turnTo(Math.PI / 2)
+                .reverse()
                 .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -56))
                 // deposit
+                .reverse()
                 .beginComposite()
                 .lineTo(new Vector2d(12 - AutoPaths.CRYPTO_COL_WIDTH, -44))
                 .splineTo(new Pose2d(16, -24, Math.PI / 3))
@@ -30,22 +33,24 @@ public class AutoSplineTest {
                         new WiggleInterpolator(Math.toRadians(15), 6, new TangentInterpolator()))
                 .closeComposite()
                 // collect
+                .reverse()
                 .beginComposite()
-                .splineTo(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -24, -Math.PI / 2))
+                .splineTo(new Pose2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -24, Math.PI / 2))
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44))
                 .closeComposite()
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -56))
                 // deposit
+                .reverse()
                 .beginComposite()
                 .lineTo(new Vector2d(12 + AutoPaths.CRYPTO_COL_WIDTH, -44))
-                .flipHeading()
                 .splineTo(new Pose2d(8, -24, 2 * Math.PI / 3))
                 .splineTo(new Pose2d(0, -10, 3 * Math.PI / 4),
                         new WiggleInterpolator(Math.toRadians(15), 6, new TangentInterpolator()))
                 .closeComposite()
                 // collect
+                .reverse()
                 .beginComposite()
-                .splineTo(new Pose2d(12, -34, -Math.PI / 2))
+                .splineTo(new Pose2d(12, -24, Math.PI / 2))
                 .lineTo(new Vector2d(12, -44))
                 .closeComposite()
                 .lineTo(new Vector2d(12, -56))
@@ -55,6 +60,7 @@ public class AutoSplineTest {
             System.out.println(segment.duration());
         }
         drawTrajectoryOnField(trajectory, "fiveGlyphNear");
+        writeTrajectory(trajectory, "fiveGlyphNear");
         System.out.format("5 Glyph Near Duration: %.2fs\n", trajectory.duration());
     }
 }

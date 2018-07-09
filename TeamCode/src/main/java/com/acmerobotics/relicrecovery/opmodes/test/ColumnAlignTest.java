@@ -14,7 +14,7 @@ public class ColumnAlignTest extends AutoOpMode {
 
     @Override
     protected void run() {
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         sleep(500);

@@ -138,7 +138,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
 
         robot.drive.enableHeadingCorrection(0);
 
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();
@@ -210,7 +210,7 @@ public class SplineFarFourGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
         robot.drive.enableHeadingCorrection(0);
 
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
 
         robot.drive.disableHeadingCorrection();

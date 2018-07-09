@@ -136,7 +136,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.retractUltrasonicSwivel();
 
         robot.drive.enableHeadingCorrection(cryptoApproach1.end().heading());
-        robot.drive.alignWithColumn(robot.config.getAllianceColor());
+        robot.drive.alignWithColumn();
         robot.drive.waitForColumnAlign();
         robot.drive.disableHeadingCorrection();
         robot.drive.setEstimatedPosition(new Vector2d(-56, firstColumnPosition.y()));
@@ -190,7 +190,7 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         double elapsedTime = TimestampedData.getCurrentTime() - startTime;
         if (elapsedTime < 28) {
             robot.drive.enableHeadingCorrection(cryptoApproach2.end().heading());
-            robot.drive.alignWithColumn(robot.config.getAllianceColor());
+            robot.drive.alignWithColumn();
             robot.drive.waitForColumnAlign();
             robot.drive.disableHeadingCorrection();
             robot.drive.setEstimatedPosition(new Vector2d(-56, secondColumnPosition.y()));
