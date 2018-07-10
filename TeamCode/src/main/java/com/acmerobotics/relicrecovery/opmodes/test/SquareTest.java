@@ -4,11 +4,10 @@ import com.acmerobotics.relicrecovery.subsystems.Robot;
 import com.acmerobotics.splinelib.Pose2d;
 import com.acmerobotics.splinelib.Vector2d;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@Disabled
+//@Disabled
 @TeleOp
 public class SquareTest extends LinearOpMode {
     @Override
