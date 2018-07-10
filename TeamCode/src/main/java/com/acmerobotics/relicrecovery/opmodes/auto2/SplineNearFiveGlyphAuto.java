@@ -16,6 +16,7 @@ import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.acmerobotics.splinelib.Pose2d;
 import com.acmerobotics.splinelib.Vector2d;
 import com.acmerobotics.splinelib.path.SplineInterpolator;
+import com.acmerobotics.splinelib.path.TangentInterpolator;
 import com.acmerobotics.splinelib.path.WiggleInterpolator;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -154,8 +155,8 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
             cryptoToPit2 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
                     .beginComposite()
 //                    .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 44))
-                    .splineTo(new Pose2d(8, yMultiplier * 28, -yMultiplier * 2 * Math.PI / 3))
-                    .splineTo(new Pose2d(0, yMultiplier * 14, -yMultiplier * 3 * Math.PI / 4),
+                    .splineTo(new Pose2d(secondColumnPosition.x() + 8, yMultiplier * 28, -yMultiplier * 2 * Math.PI / 3))
+                    .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 14, -yMultiplier * 3 * Math.PI / 4),
                             new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD,
                                     new SplineInterpolator(-yMultiplier * 2 * Math.PI / 3, -yMultiplier * 3 * Math.PI / 4)),
                             MecanumDrive.PILE_DRIVE_CONSTRAINTS)
@@ -190,7 +191,8 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
                 .reverse()
                 .beginComposite()
-                .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 24, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 24, -yMultiplier * Math.PI / 2),
+                        new TangentInterpolator(), MecanumDrive.PILE_DRIVE_CONSTRAINTS)
                 .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 44))
                 .closeComposite()
                 .build();
@@ -258,8 +260,8 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
             cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .beginComposite()
 //                    .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 44))
-                    .splineTo(new Pose2d(8, yMultiplier * 24, -yMultiplier * 2 * Math.PI / 3))
-                    .splineTo(new Pose2d(0, yMultiplier * 10, -yMultiplier * 3 * Math.PI / 4),
+                    .splineTo(new Pose2d(8, yMultiplier * 20, -yMultiplier * 2 * Math.PI / 3))
+                    .splineTo(new Pose2d(0, yMultiplier * 6, -yMultiplier * 3 * Math.PI / 4),
                             new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD,
                                     new SplineInterpolator(-yMultiplier * 2 * Math.PI / 3, -yMultiplier * 3 * Math.PI / 4)),
                             MecanumDrive.PILE_DRIVE_CONSTRAINTS)
@@ -269,8 +271,8 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
             cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .beginComposite()
 //                    .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 44))
-                    .splineTo(new Pose2d(16, yMultiplier * 24, -yMultiplier * Math.PI / 3))
-                    .splineTo(new Pose2d(24, yMultiplier * 10, -yMultiplier * Math.PI / 4),
+                    .splineTo(new Pose2d(thirdColumnPosition.x() - 8, yMultiplier * 20, -yMultiplier * Math.PI / 3))
+                    .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 6, -yMultiplier * Math.PI / 4),
                             new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD,
                                     new SplineInterpolator(-yMultiplier * Math.PI / 3, -yMultiplier * Math.PI / 4)),
                             MecanumDrive.PILE_DRIVE_CONSTRAINTS)
@@ -294,7 +296,8 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto3 = robot.drive.trajectoryBuilder(cryptoToPit3.end())
                 .reverse()
                 .beginComposite()
-                .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 24, -yMultiplier * Math.PI / 2))
+                .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 24, -yMultiplier * Math.PI / 2),
+                        new TangentInterpolator(), MecanumDrive.PILE_DRIVE_CONSTRAINTS)
                 .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 44))
                 .closeComposite()
                 .build();
