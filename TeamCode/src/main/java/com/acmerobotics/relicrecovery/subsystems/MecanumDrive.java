@@ -69,12 +69,12 @@ public class MecanumDrive extends Subsystem {
 
 //    public static MotionConstraints AXIAL_CONSTRAINTS = new MotionConstraints(30.0, 40.0, 160.0, MotionConstraints.EndBehavior.OVERSHOOT);
 //    public static MotionConstraints POINT_TURN_CONSTRAINTS = new MotionConstraints(2.0, 2.67, 10.67, MotionConstraints.EndBehavior.OVERSHOOT);
-    public static DriveConstraints NORMAL_DRIVE_CONSTRAINTS = new DriveConstraints(40.0, 35.0, 2.0, 2.67, 500.0);
-    public static DriveConstraints PILE_DRIVE_CONSTRAINTS = new DriveConstraints(10.0, 25.0, 2.0, 2.67, 500.0);
+    public static DriveConstraints NORMAL_DRIVE_CONSTRAINTS = new DriveConstraints(40.0, 40.0, 2.0, 2.67, 500.0);
+    public static DriveConstraints PILE_DRIVE_CONSTRAINTS = new DriveConstraints(7.5, 40.0, 2.0, 2.67, 500.0);
 
-    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, 0, 0, 0.230, 0);
-    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.05, 0, -0.01, 0.0177, 0);
-    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.05, 0, -0.01, 0.0179, 0);
+    public static PIDFCoefficients HEADING_PIDF = new PIDFCoefficients(-0.5, -0.05, 0, 0.230, 0);
+    public static PIDFCoefficients AXIAL_PIDF = new PIDFCoefficients(-0.05, 0, -0.0075, 0.0177, 0);
+    public static PIDFCoefficients LATERAL_PIDF = new PIDFCoefficients(-0.05, 0, -0.0075, 0.0179, 0);
 
     // units in cm
     public static PIDCoefficients COLUMN_ALIGN_PID = new PIDCoefficients(-0.06, 0, -0.01);
@@ -239,7 +239,9 @@ public class MecanumDrive extends Subsystem {
         proximitySwivel = new CachingServo(map.servo.get("proximitySwivel"));
 
         ultrasonicSensor = new I2CXLMaxSonarEZ(map.i2cDeviceSynch.get("ultrasonicSensor"));
-        ultrasonicSensor.initialize();
+        I2CXLMaxSonarEZ.Parameters ultrasonicParameters = new I2CXLMaxSonarEZ.Parameters();
+        ultrasonicParameters.msRangeWait = 25;
+        ultrasonicSensor.initialize(ultrasonicParameters);
         ultrasonicSwivel = new CachingServo(map.servo.get("ultrasonicSwivel"));
 
         powers = new double[4];

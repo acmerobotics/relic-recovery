@@ -6,7 +6,6 @@ import com.acmerobotics.library.util.TimestampedData;
 import com.acmerobotics.relicrecovery.configuration.AllianceColor;
 import com.acmerobotics.relicrecovery.configuration.BalancingStone;
 import com.acmerobotics.relicrecovery.configuration.Cryptobox;
-import com.acmerobotics.relicrecovery.localization.UltrasonicLocalizer;
 import com.acmerobotics.relicrecovery.opmodes.AutoOpMode;
 import com.acmerobotics.relicrecovery.opmodes.AutoPaths;
 import com.acmerobotics.relicrecovery.subsystems.JewelSlapper;
@@ -14,6 +13,7 @@ import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.acmerobotics.splinelib.Pose2d;
 import com.acmerobotics.splinelib.Vector2d;
+import com.acmerobotics.splinelib.path.ConstantInterpolator;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
@@ -27,7 +27,6 @@ import java.util.Map;
 public class FarThreeGlyphAuto extends AutoOpMode {
     public static final double EPSILON = 1e-6;
 
-    private UltrasonicLocalizer ultrasonicLocalizer;
     private BalancingStone stone;
     private Cryptobox crypto;
 
@@ -47,12 +46,6 @@ public class FarThreeGlyphAuto extends AutoOpMode {
             return;
         }
 
-        ultrasonicLocalizer = new UltrasonicLocalizer(robot.drive);
-        robot.addListener(() -> {
-            robot.dashboard.getTelemetry().addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
-            telemetry.addData("ultrasonicDistance", ultrasonicLocalizer.getUltrasonicDistance(DistanceUnit.INCH));
-        });
-        robot.drive.setLocalizer(ultrasonicLocalizer);
         robot.drive.setEstimatedPosition(stone.getPosition());
     }
 
@@ -101,9 +94,10 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         Vector2d biasedSecondColumnPosition = secondColumnPosition.plus(new Vector2d(0, yMultiplier * LATERAL_BIAS));
 
         Trajectory stoneToCrypto = robot.drive.trajectoryBuilder(stonePose)
+                .reverse()
                 .turnTo(removeLeft ? -EPSILON : EPSILON) // fun hack
                 .lineTo(new Vector2d(-44, stonePose.y()))
-                .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()))
+                .lineTo(new Vector2d(-44, biasedFirstColumnPosition.y()), new ConstantInterpolator(0))
                 .waitFor(1.0)
                 .build();
         robot.drive.setEstimatedPose(stoneToCrypto.start());
@@ -120,12 +114,14 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
         robot.drive.setVelocityPIDCoefficients(MecanumDrive.NORMAL_VELOCITY_PID);
 
-        ultrasonicLocalizer.enableUltrasonicFeedback();
-        robot.waitOneFullCycle();
-        ultrasonicLocalizer.disableUltrasonicFeedback();
+        robot.drive.getUltrasonicDistance(DistanceUnit.INCH);
+        robot.drive.getUltrasonicDistance(DistanceUnit.INCH);
+        double distance = (robot.drive.getUltrasonicDistance(DistanceUnit.INCH) + 7) - 71;
+        robot.drive.setEstimatedPosition(new Vector2d(distance, robot.drive.getEstimatedPosition().y()));
 
         Vector2d estimatedPosition = robot.drive.getEstimatedPosition();
         Trajectory cryptoApproach1 = robot.drive.trajectoryBuilder(new Pose2d(estimatedPosition, stoneToCrypto.end().heading()))
+                .reverse()
                 .lineTo(new Vector2d(-56, biasedFirstColumnPosition.y()))
                 .waitFor(0.5)
                 .build();
@@ -147,10 +143,11 @@ public class FarThreeGlyphAuto extends AutoOpMode {
 
         Trajectory cryptoToPit = robot.drive.trajectoryBuilder(new Pose2d(-56, firstColumnPosition.y(), cryptoApproach1.end().heading()))
                 .lineTo(new Vector2d(-44, firstColumnPosition.y()))
-                .lineTo(new Vector2d(-44, yMultiplier * 16))
+                .lineTo(new Vector2d(-44, yMultiplier * 16), new ConstantInterpolator(0))
                 .turnTo(-yMultiplier * Math.PI / 4)
-                .lineTo(new Vector2d(-12, yMultiplier * 16))
+                .lineTo(new Vector2d(-12, yMultiplier * 16), new ConstantInterpolator(-yMultiplier * Math.PI / 4))
                 .forward(12)
+                .reverse()
                 .back(12)
                 .build();
         robot.drive.followTrajectory(cryptoToPit);
@@ -160,9 +157,10 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
 
         Trajectory pitToCrypto = robot.drive.trajectoryBuilder(cryptoToPit.end())
+                .reverse()
                 .turnTo(0)
 //                .lineTo(new Vector2d(-44, yMultiplier * 16))
-                .lineTo(new Vector2d(-40, biasedSecondColumnPosition.y()))
+                .lineTo(new Vector2d(-40, biasedSecondColumnPosition.y()), new ConstantInterpolator(0))
                 .waitFor(1.0)
                 .build();
         robot.drive.followTrajectory(pitToCrypto);
@@ -173,12 +171,14 @@ public class FarThreeGlyphAuto extends AutoOpMode {
         robot.drive.waitForTrajectoryFollower();
         robot.intake.setIntakePower(0);
 
-        ultrasonicLocalizer.enableUltrasonicFeedback();
-        robot.waitOneFullCycle();
-        ultrasonicLocalizer.disableUltrasonicFeedback();
+        robot.drive.getUltrasonicDistance(DistanceUnit.INCH);
+        robot.drive.getUltrasonicDistance(DistanceUnit.INCH);
+        double distance2 = (robot.drive.getUltrasonicDistance(DistanceUnit.INCH) + 7) - 71;
+        robot.drive.setEstimatedPosition(new Vector2d(distance2, robot.drive.getEstimatedPosition().y()));
 
         estimatedPosition = robot.drive.getEstimatedPosition();
         Trajectory cryptoApproach2 = robot.drive.trajectoryBuilder(new Pose2d(estimatedPosition, pitToCrypto.end().heading()))
+                .reverse()
                 .lineTo(new Vector2d(-56, biasedSecondColumnPosition.y()))
                 .waitFor(0.5)
                 .build();

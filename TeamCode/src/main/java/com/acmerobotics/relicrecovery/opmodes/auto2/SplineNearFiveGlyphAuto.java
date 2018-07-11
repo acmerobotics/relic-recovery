@@ -15,7 +15,6 @@ import com.acmerobotics.relicrecovery.subsystems.MecanumDrive;
 import com.acmerobotics.relicrecovery.vision.JewelPosition;
 import com.acmerobotics.splinelib.Pose2d;
 import com.acmerobotics.splinelib.Vector2d;
-import com.acmerobotics.splinelib.path.SplineInterpolator;
 import com.acmerobotics.splinelib.path.TangentInterpolator;
 import com.acmerobotics.splinelib.path.WiggleInterpolator;
 import com.acmerobotics.splinelib.trajectory.Trajectory;
@@ -31,7 +30,7 @@ import java.util.Map;
 @Autonomous
 public class SplineNearFiveGlyphAuto extends AutoOpMode {
     public static double WIGGLE_AMPLITUDE = 5; // deg
-    public static double WIGGLE_PERIOD = 6.0;
+    public static double WIGGLE_PERIOD = 6;
 
     public static final Map<RelicRecoveryVuMark, RelicRecoveryVuMark> COLUMN_TRANSITION1 = new HashMap<>();
     static {
@@ -106,7 +105,18 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("jewel");
 
-        RelicRecoveryVuMark firstColumn = (vuMark == RelicRecoveryVuMark.UNKNOWN) ? RelicRecoveryVuMark.LEFT : vuMark;
+//        RelicRecoveryVuMark firstColumn = (vuMark == RelicRecoveryVuMark.UNKNOWN) ? RelicRecoveryVuMark.LEFT : vuMark;
+        RelicRecoveryVuMark firstColumn = vuMark;
+        if (firstColumn == RelicRecoveryVuMark.UNKNOWN) {
+            double x = Math.random();
+            if (x < 0.33) {
+                firstColumn = RelicRecoveryVuMark.LEFT;
+            } else if (x < 0.67) {
+                firstColumn = RelicRecoveryVuMark.CENTER;
+            } else {
+                firstColumn = RelicRecoveryVuMark.RIGHT;
+            }
+        }
         RelicRecoveryVuMark secondColumn = COLUMN_TRANSITION1.get(firstColumn);
         RelicRecoveryVuMark thirdColumn = COLUMN_TRANSITION2.get(firstColumn);
 
@@ -118,9 +128,6 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         Trajectory stoneToCrypto1 = robot.drive.trajectoryBuilder(stonePose)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turnTo(-yMultiplier * Math.PI / 2)
-                .reverse()
-                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
-                .waitFor(0.5)
                 .build();
 
         timings.addSplit("stoneToCrypto1 gen");
@@ -129,10 +136,32 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         robot.drive.followTrajectory(stoneToCrypto1);
         robot.sleep(0.5);
         robot.drive.extendProximitySwivel();
+        robot.drive.extendUltrasonicSwivel();
         raiseArmAndSlapper();
         robot.drive.waitForTrajectoryFollower();
 
         timings.addSplit("stoneToCrypto1");
+
+        robot.drive.getUltrasonicDistance(DistanceUnit.INCH);
+        robot.drive.getUltrasonicDistance(DistanceUnit.INCH);
+        double distance1 = 71 - (robot.drive.getUltrasonicDistance(DistanceUnit.INCH) + 7);
+        robot.drive.setEstimatedPosition(new Vector2d(robot.drive.getEstimatedPosition().x(), yMultiplier * distance1));
+
+        timings.addSplit("ultrasonic1");
+
+        Trajectory cryptoApproach1 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
+                .reverse()
+                .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 56))
+                .waitFor(0.25)
+                .build();
+
+        timings.addSplit("cryptoApproach1 gen");
+
+        robot.drive.retractUltrasonicSwivel();
+        robot.drive.followTrajectory(cryptoApproach1);
+        robot.drive.waitForTrajectoryFollower();
+
+        timings.addSplit("cryptoApproach1");
 
         robot.drive.enableHeadingCorrection(-yMultiplier * Math.PI / 2);
 
@@ -154,22 +183,18 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         if (firstColumn == RelicRecoveryVuMark.CENTER || isNearColumn(firstColumn, robot.config.getAllianceColor())) {
             cryptoToPit2 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
                     .beginComposite()
-//                    .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 44))
-                    .splineTo(new Pose2d(secondColumnPosition.x() + 8, yMultiplier * 28, -yMultiplier * 2 * Math.PI / 3))
-                    .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 14, -yMultiplier * 3 * Math.PI / 4),
-                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD,
-                                    new SplineInterpolator(-yMultiplier * 2 * Math.PI / 3, -yMultiplier * 3 * Math.PI / 4)),
+                    .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 28))
+                    .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 10, -yMultiplier * 3 * Math.PI / 4),
+                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD, new TangentInterpolator()),
                             MecanumDrive.PILE_DRIVE_CONSTRAINTS)
                     .closeComposite()
                     .build();
         } else {
             cryptoToPit2 = robot.drive.trajectoryBuilder(stoneToCrypto1.end())
                     .beginComposite()
-//                    .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 44))
-                    .splineTo(new Pose2d(16, yMultiplier * 28, -yMultiplier * Math.PI / 3))
-                    .splineTo(new Pose2d(24, yMultiplier * 14, -yMultiplier * Math.PI / 4),
-                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD,
-                                    new SplineInterpolator(-yMultiplier * Math.PI / 3, -yMultiplier * Math.PI / 4)),
+                    .lineTo(new Vector2d(firstColumnPosition.x(), yMultiplier * 28))
+                    .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 10, -yMultiplier * Math.PI / 4),
+                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD, new TangentInterpolator()),
                             MecanumDrive.PILE_DRIVE_CONSTRAINTS)
                     .closeComposite()
                     .build();
@@ -191,9 +216,8 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto2 = robot.drive.trajectoryBuilder(cryptoToPit2.end())
                 .reverse()
                 .beginComposite()
-                .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 24, -yMultiplier * Math.PI / 2),
-                        new TangentInterpolator(), MecanumDrive.PILE_DRIVE_CONSTRAINTS)
-                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 44))
+                .splineTo(new Pose2d(secondColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
+//                .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 44))
                 .closeComposite()
                 .build();
 
@@ -259,22 +283,18 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         if (isNearColumn(secondColumn, robot.config.getAllianceColor())) {
             cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .beginComposite()
-//                    .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 44))
-                    .splineTo(new Pose2d(8, yMultiplier * 20, -yMultiplier * 2 * Math.PI / 3))
-                    .splineTo(new Pose2d(0, yMultiplier * 6, -yMultiplier * 3 * Math.PI / 4),
-                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD,
-                                    new SplineInterpolator(-yMultiplier * 2 * Math.PI / 3, -yMultiplier * 3 * Math.PI / 4)),
+                    .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 24))
+                    .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 6, -yMultiplier * 3 * Math.PI / 4),
+                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD, new TangentInterpolator()),
                             MecanumDrive.PILE_DRIVE_CONSTRAINTS)
                     .closeComposite()
                     .build();
         } else {
             cryptoToPit3 = robot.drive.trajectoryBuilder(cryptoApproach2.end())
                     .beginComposite()
-//                    .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 44))
-                    .splineTo(new Pose2d(thirdColumnPosition.x() - 8, yMultiplier * 20, -yMultiplier * Math.PI / 3))
+                    .lineTo(new Vector2d(secondColumnPosition.x(), yMultiplier * 24))
                     .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 6, -yMultiplier * Math.PI / 4),
-                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD,
-                                    new SplineInterpolator(-yMultiplier * Math.PI / 3, -yMultiplier * Math.PI / 4)),
+                            new WiggleInterpolator(Math.toRadians(WIGGLE_AMPLITUDE), WIGGLE_PERIOD, new TangentInterpolator()),
                             MecanumDrive.PILE_DRIVE_CONSTRAINTS)
                     .closeComposite()
                     .build();
@@ -296,9 +316,8 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         Trajectory pitToCrypto3 = robot.drive.trajectoryBuilder(cryptoToPit3.end())
                 .reverse()
                 .beginComposite()
-                .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 24, -yMultiplier * Math.PI / 2),
-                        new TangentInterpolator(), MecanumDrive.PILE_DRIVE_CONSTRAINTS)
-                .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 44))
+                .splineTo(new Pose2d(thirdColumnPosition.x(), yMultiplier * 44, -yMultiplier * Math.PI / 2))
+//                .lineTo(new Vector2d(thirdColumnPosition.x(), yMultiplier * 44))
                 .closeComposite()
                 .build();
 
