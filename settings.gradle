@@ -2,4 +2,4 @@ include ':TeamCode', ':RobotLib', ':FtcRobotController', ':openCVLibrary331', ':
 project(':FtcRobotController').projectDir = new File('ftc_app/FtcRobotController')
 // hackily include the new spline lib temporarily
 include ':SplineLib'
-project(':SplineLib').projectDir = new File('../motion-planner/spline-lib')
+project(':SplineLib').projectDir = new File('../motion-planner/core')

@@ -105,18 +105,18 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
 
         timings.addSplit("jewel");
 
-//        RelicRecoveryVuMark firstColumn = (vuMark == RelicRecoveryVuMark.UNKNOWN) ? RelicRecoveryVuMark.LEFT : vuMark;
-        RelicRecoveryVuMark firstColumn = vuMark;
-        if (firstColumn == RelicRecoveryVuMark.UNKNOWN) {
-            double x = Math.random();
-            if (x < 0.33) {
-                firstColumn = RelicRecoveryVuMark.LEFT;
-            } else if (x < 0.67) {
-                firstColumn = RelicRecoveryVuMark.CENTER;
-            } else {
-                firstColumn = RelicRecoveryVuMark.RIGHT;
-            }
-        }
+        RelicRecoveryVuMark firstColumn = (vuMark == RelicRecoveryVuMark.UNKNOWN) ? RelicRecoveryVuMark.LEFT : vuMark;
+//        RelicRecoveryVuMark firstColumn = vuMark
+//        if (firstColumn == RelicRecoveryVuMark.UNKNOWN) {
+//            double x = Math.random();
+//            if (x < 0.33) {
+//                firstColumn = RelicRecoveryVuMark.LEFT;
+//            } else if (x < 0.67) {
+//                firstColumn = RelicRecoveryVuMark.CENTER;
+//            } else {
+//                firstColumn = RelicRecoveryVuMark.RIGHT;
+//            }
+//        }
         RelicRecoveryVuMark secondColumn = COLUMN_TRANSITION1.get(firstColumn);
         RelicRecoveryVuMark thirdColumn = COLUMN_TRANSITION2.get(firstColumn);
 
@@ -126,6 +126,7 @@ public class SplineNearFiveGlyphAuto extends AutoOpMode {
         Vector2d thirdColumnPosition = AutoPaths.getCryptoboxColumnPosition(crypto, thirdColumn);
 
         Trajectory stoneToCrypto1 = robot.drive.trajectoryBuilder(stonePose)
+                .setReversed(robot.config.getAllianceColor() == AllianceColor.RED)
                 .lineTo(new Vector2d(firstColumnPosition.x(), stonePose.y()))
                 .turnTo(-yMultiplier * Math.PI / 2)
                 .build();

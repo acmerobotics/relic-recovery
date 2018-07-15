@@ -41,8 +41,10 @@ public class JewelSlapper extends Subsystem {
     private ArmPosition armPosition;
 
     public JewelSlapper(HardwareMap map) {
-        jewelArm = new CachingServo(map.servo.get("jewelArm"));
-        jewelSlapper = new CachingServo(map.servo.get("jewelSlapper"));
+//        jewelArm = new CachingServo(map.servo.get("jewelArm"));
+//        jewelSlapper = new CachingServo(map.servo.get("jewelSlapper"));
+        jewelArm = map.servo.get("jewelArm");
+        jewelSlapper = map.servo.get("jewelSlapper");
 
         setSlapperPosition(SlapperPosition.STOW);
         setArmPosition(ArmPosition.UP);
